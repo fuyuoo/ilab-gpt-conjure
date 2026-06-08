@@ -197,7 +197,7 @@ jobs:
           - macOS Apple Silicon：ilab-gpt-conjure_macos_portable_arm64_${release_version}.zip
           - macOS Intel：ilab-gpt-conjure_macos_portable_x64_${release_version}.zip
 
-          macOS 包是未签名的 portable zip。如果 macOS 拦截启动脚本，可以右键或 Control-click 启动脚本，选择 Open；也可以对解压目录移除 quarantine 标记。
+          macOS 包是未签名的 portable zip。启动脚本会尝试在启动前移除当前解压目录内的 quarantine 标记。如果 macOS 仍然拦截启动脚本，可以右键或 Control-click 启动脚本，选择 Open；也可以对解压目录执行 xattr -dr com.apple.quarantine。
           EOF
             gh release create "$RELEASE_TAG" --title "$RELEASE_TAG" --notes-file release-notes.md
           fi

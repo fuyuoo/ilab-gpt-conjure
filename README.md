@@ -116,7 +116,7 @@ http://127.0.0.1:8787/
 ## 免安装一键包
 
 当前可用的一键包见 [下载 / Releases](RELEASES.md)，也可以直接打开
-[GitHub Release v0.1.1](https://github.com/kadevin/ilab-gpt-conjure/releases/tag/v0.1.1)。
+[GitHub Release v0.1.2](https://github.com/kadevin/ilab-gpt-conjure/releases/tag/v0.1.2)。
 
 这些包面向希望像 ComfyUI 一样“解压即用”的用户：
 
@@ -134,9 +134,10 @@ Apple Silicon Mac 下载 `macos_portable_arm64`，Intel Mac 下载
 `macos_portable_x64`。
 
 macOS 包是未签名 portable zip，不是已签名 `.app` 或 notarized DMG；构建它
-不需要 Apple Developer 账号。如果 macOS 拦截下载后的启动脚本，可以右键或
-Control-click `Start WebUI Portable.command`，选择 Open，并在系统安全提示里
-再次确认 Open。也可以对解压目录执行：
+不需要 Apple Developer 账号。启动脚本会尝试在启动前移除当前解压目录内的
+quarantine 标记，再启动包内 Python.framework。如果 macOS 仍然拦截下载后的
+启动脚本，可以右键或 Control-click `Start WebUI Portable.command`，选择 Open，
+并在系统安全提示里再次确认 Open。也可以对解压目录执行：
 
 ```bash
 xattr -dr com.apple.quarantine /path/to/ilab-gpt-conjure_macos_portable_arm64

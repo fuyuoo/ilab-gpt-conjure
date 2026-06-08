@@ -16,8 +16,10 @@ without installing Python separately.
    images, unless you intentionally use the advanced local OAuth mode.
 
 This is an unsigned portable zip. It is not a signed `.app`, not notarized, and
-does not require an Apple Developer account to build. If macOS blocks the
-launcher after download, use one of these local actions:
+does not require an Apple Developer account to build. The launcher tries to
+remove quarantine attributes from its own extracted folder before starting the
+bundled Python framework. If macOS still blocks the package after download, use
+one of these local actions:
 
 - Right-click or Control-click `Start WebUI Portable.command`, choose Open, then
   confirm Open again in the macOS security prompt.

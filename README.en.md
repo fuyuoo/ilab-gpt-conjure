@@ -124,7 +124,7 @@ http://127.0.0.1:8787/
 ## Portable packages
 
 Download the current portable packages from [Downloads / Releases](RELEASES.md),
-or open [GitHub Release v0.1.1](https://github.com/kadevin/ilab-gpt-conjure/releases/tag/v0.1.1)
+or open [GitHub Release v0.1.2](https://github.com/kadevin/ilab-gpt-conjure/releases/tag/v0.1.2)
 directly.
 
 These packages are intended for users who want a ComfyUI-style unzip-and-run
@@ -144,10 +144,12 @@ Choose `macos_portable_arm64` for Apple Silicon Macs and
 `macos_portable_x64` for Intel Macs.
 
 The macOS packages are unsigned portable zips, not signed `.app` bundles or
-notarized DMGs, and they do not require an Apple Developer account to build. If
-macOS blocks the launcher after download, right-click or Control-click
-`Start WebUI Portable.command`, choose Open, then confirm Open again in the
-macOS security prompt. You can also remove quarantine from the extracted folder:
+notarized DMGs, and they do not require an Apple Developer account to build.
+The launcher tries to remove quarantine attributes from its own extracted folder
+before starting the bundled Python framework. If macOS still blocks the launcher
+after download, right-click or Control-click `Start WebUI Portable.command`,
+choose Open, then confirm Open again in the macOS security prompt. You can also
+remove quarantine from the extracted folder:
 
 ```bash
 xattr -dr com.apple.quarantine /path/to/ilab-gpt-conjure_macos_portable_arm64

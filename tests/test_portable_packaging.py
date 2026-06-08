@@ -78,6 +78,10 @@ class PortablePackagingTests(unittest.TestCase):
 
         launcher_text = launcher.read_text(encoding="utf-8")
         self.assertIn("Python.framework/Versions/3.11/bin/python3", launcher_text)
+        self.assertIn("PYTHON_FRAMEWORK=", launcher_text)
+        self.assertIn("clear_macos_quarantine", launcher_text)
+        self.assertIn("com.apple.quarantine", launcher_text)
+        self.assertIn("xattr -dr com.apple.quarantine", launcher_text)
         self.assertIn("SSL_CERT_FILE", launcher_text)
         self.assertIn("REQUESTS_CA_BUNDLE", launcher_text)
         self.assertIn(".deps/certifi/cacert.pem", launcher_text)
@@ -94,6 +98,7 @@ class PortablePackagingTests(unittest.TestCase):
         self.assertIn("Apple Silicon", readme_text)
         self.assertIn("Intel", readme_text)
         self.assertIn("unsigned portable zip", readme_text)
+        self.assertIn("tries to\nremove quarantine", readme_text)
         self.assertIn("xattr -dr com.apple.quarantine", readme_text)
         self.assertIn("OpenAI-compatible API", readme_text)
 

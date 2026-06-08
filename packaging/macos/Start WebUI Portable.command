@@ -5,6 +5,7 @@ set -o pipefail
 BUNDLE_DIR="$(cd "$(dirname "$0")" && pwd)"
 APP_DIR="${BUNDLE_DIR}/app"
 DATA_DIR="${BUNDLE_DIR}/data"
+PYTHON_FRAMEWORK="${BUNDLE_DIR}/python/Python.framework"
 PYTHON_BIN="${BUNDLE_DIR}/python/Python.framework/Versions/3.11/bin/python3"
 PORT="8787"
 URL="http://127.0.0.1:${PORT}/"
@@ -22,6 +23,41 @@ if [ ! -f "${APP_DIR}/portable_webui_app.py" ]; then
   read -r "?Press Enter to close..."
   exit 1
 fi
+
+clear_macos_quarantine() {
+  if ! command -v xattr >/dev/null 2>&1; then
+    return 0
+  fi
+
+  local needs_clear=0
+  for path in "$BUNDLE_DIR" "$PYTHON_FRAMEWORK" "$PYTHON_BIN"; do
+    if xattr -p com.apple.quarantine "$path" >/dev/null 2>&1; then
+      needs_clear=1
+      break
+    fi
+  done
+
+  if [ "$needs_clear" -eq 0 ]; then
+    return 0
+  fi
+
+  echo "Detected macOS quarantine attributes on this portable bundle."
+  echo "Removing quarantine from: ${BUNDLE_DIR}"
+  xattr -dr com.apple.quarantine "$BUNDLE_DIR" 2>/dev/null || true
+
+  if xattr -p com.apple.quarantine "$PYTHON_FRAMEWORK" >/dev/null 2>&1 || \
+     xattr -p com.apple.quarantine "$PYTHON_BIN" >/dev/null 2>&1; then
+    echo "macOS may still block the bundled Python framework."
+    echo "Run this command in Terminal, then start again:"
+    echo "  xattr -dr com.apple.quarantine \"${BUNDLE_DIR}\""
+    read -r "?Press Enter to close..."
+    exit 1
+  fi
+
+  echo "Quarantine attributes removed for the portable bundle."
+}
+
+clear_macos_quarantine
 
 mkdir -p "${DATA_DIR}/logs"
 export ILAB_CONJURE_DATA_DIR="${DATA_DIR}"
