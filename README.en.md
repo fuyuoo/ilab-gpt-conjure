@@ -126,7 +126,7 @@ http://127.0.0.1:8787/
 ## Portable packages
 
 Download the current portable packages from [Downloads / Releases](RELEASES.md),
-or open [GitHub Release v0.3.2](https://github.com/kadevin/ilab-gpt-conjure/releases/tag/v0.3.2)
+or open [GitHub Release v0.3.3](https://github.com/kadevin/ilab-gpt-conjure/releases/tag/v0.3.3)
 directly.
 
 These packages are intended for users who want a ComfyUI-style unzip-and-run
@@ -141,6 +141,11 @@ experience:
 The portable package contains bundled CPython, installed WebUI dependencies,
 the app source, license files, and a local `data/` directory for settings,
 gallery files, inputs, outputs, task databases, and logs.
+
+To update an extracted portable package, close the WebUI server window and run
+`Update WebUI Portable.bat` on Windows or `Update WebUI Portable.command` on
+macOS. The updater downloads the latest matching GitHub Release asset, verifies
+its SHA256 file, preserves `data/`, and saves replaced files under `.backup/`.
 
 Choose `macos_portable_arm64` for Apple Silicon Macs and
 `macos_portable_x64` for Intel Macs.

@@ -15,6 +15,7 @@ WebUI without installing Python separately.
 ## Directory layout
 
 - `Start WebUI Portable.bat`: one-click WebUI launcher.
+- `Update WebUI Portable.bat`: one-click updater for the latest GitHub Release.
 - `app/`: iLab GPT Conjure source code and static WebUI assets.
 - `python/`: embedded CPython runtime and installed WebUI dependencies.
 - `data/`: local settings, gallery files, inputs, outputs, queue database, and
@@ -31,6 +32,13 @@ not an officially recommended OpenAI API integration path.
 
 ## Upgrading
 
-To upgrade, extract the new package next to the old one, close the old WebUI,
-and copy the old `data/` directory into the new package if you want to keep
-settings, gallery assets, history, and outputs.
+Close the WebUI server window, then double-click `Update WebUI Portable.bat`.
+The updater downloads the latest Windows x64 portable package from GitHub
+Releases, verifies its SHA256 file, replaces the app and bundled Python files,
+and preserves the existing `data/` directory. A backup of replaced files is
+saved under `.backup/`.
+
+Do not move `data/` out of the package unless you are intentionally migrating
+settings, gallery assets, history, outputs, and local task databases. For a
+manual upgrade, extract the new package next to the old one and copy the old
+`data/` directory into the new package.

@@ -105,6 +105,8 @@ foreach ($Item in $AppItems) {
 
 Copy-Item -Path (Join-Path $ScriptDir "portable_webui_app.py") -Destination (Join-Path $AppDir "portable_webui_app.py") -Force
 Copy-Item -Path (Join-Path $ScriptDir "Start WebUI Portable.bat") -Destination (Join-Path $BundleRoot "Start WebUI Portable.bat") -Force
+Copy-Item -Path (Join-Path $ScriptDir "Update WebUI Portable.bat") -Destination (Join-Path $BundleRoot "Update WebUI Portable.bat") -Force
+Copy-Item -Path (Join-Path $ScriptDir "Update WebUI Portable.ps1") -Destination (Join-Path $BundleRoot "Update WebUI Portable.ps1") -Force
 Copy-Item -Path (Join-Path $ScriptDir "README-portable.md") -Destination (Join-Path $BundleRoot "README-portable.md") -Force
 Copy-Item -Path (Join-Path $ScriptDir "THIRD_PARTY_NOTICES.md") -Destination (Join-Path $BundleRoot "THIRD_PARTY_NOTICES.md") -Force
 if (Test-Path (Join-Path $AppDir "LICENSE")) {

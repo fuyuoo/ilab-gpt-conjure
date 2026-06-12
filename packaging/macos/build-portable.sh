@@ -178,12 +178,14 @@ done
 
 cp "${SCRIPT_DIR}/portable_webui_app.py" "${APP_DIR}/portable_webui_app.py"
 cp "${SCRIPT_DIR}/Start WebUI Portable.command" "${BUNDLE_ROOT}/Start WebUI Portable.command"
+cp "${SCRIPT_DIR}/Update WebUI Portable.command" "${BUNDLE_ROOT}/Update WebUI Portable.command"
 cp "${SCRIPT_DIR}/README-portable.md" "${BUNDLE_ROOT}/README-portable.md"
 cp "${SCRIPT_DIR}/THIRD_PARTY_NOTICES.md" "${BUNDLE_ROOT}/THIRD_PARTY_NOTICES.md"
 if [[ -f "${APP_DIR}/LICENSE" ]]; then
   cp "${APP_DIR}/LICENSE" "${BUNDLE_ROOT}/LICENSE"
 fi
 chmod +x "${BUNDLE_ROOT}/Start WebUI Portable.command"
+chmod +x "${BUNDLE_ROOT}/Update WebUI Portable.command"
 remove_local_artifacts "$APP_DIR"
 
 PYTHON_PKG_PATH="${CACHE_DIR}/${PYTHON_PKG}"

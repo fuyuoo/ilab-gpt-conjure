@@ -18,10 +18,12 @@ class PortablePackagingTests(unittest.TestCase):
     def test_windows_portable_packaging_files_define_self_contained_bundle(self) -> None:
         build_script = Path("packaging/windows/build-portable.ps1")
         launcher = Path("packaging/windows/Start WebUI Portable.bat")
+        updater = Path("packaging/windows/Update WebUI Portable.bat")
+        updater_helper = Path("packaging/windows/Update WebUI Portable.ps1")
         readme = Path("packaging/windows/README-portable.md")
         notices = Path("packaging/windows/THIRD_PARTY_NOTICES.md")
 
-        for path in (build_script, launcher, readme, notices):
+        for path in (build_script, launcher, updater, updater_helper, readme, notices):
             self.assertTrue(path.exists(), f"{path} should exist")
 
         build_text = build_script.read_text(encoding="utf-8")
@@ -31,6 +33,8 @@ class PortablePackagingTests(unittest.TestCase):
         self.assertIn("requirements-webui.txt", build_text)
         self.assertIn("certifi\\cacert.pem", build_text)
         self.assertIn("Start WebUI Portable.bat", build_text)
+        self.assertIn("Update WebUI Portable.bat", build_text)
+        self.assertIn("Update WebUI Portable.ps1", build_text)
         self.assertIn("THIRD_PARTY_NOTICES.md", build_text)
         self.assertIn("Invoke-WebRequest", build_text)
         self.assertIn("Compress-Archive", build_text)
@@ -47,18 +51,33 @@ class PortablePackagingTests(unittest.TestCase):
         self.assertIn("api/health", launcher_text)
         self.assertIn("data", launcher_text)
 
+        updater_text = updater.read_text(encoding="utf-8")
+        updater_helper_text = updater_helper.read_text(encoding="utf-8")
+        self.assertIn("Update WebUI Portable.ps1", updater_text)
+        self.assertIn("ExecutionPolicy Bypass", updater_text)
+        self.assertIn("https://api.github.com/repos/kadevin/ilab-gpt-conjure/releases/latest", updater_helper_text)
+        self.assertIn("browser_download_url", updater_helper_text)
+        self.assertIn("ilab-gpt-conjure_windows_portable_x64_", updater_helper_text)
+        self.assertIn("Get-FileHash", updater_helper_text)
+        self.assertIn("Expand-Archive", updater_helper_text)
+        self.assertIn("data", updater_helper_text)
+        self.assertIn("backup", updater_helper_text.lower())
+        self.assertIn("Do not move data", updater_helper_text)
+
         readme_text = readme.read_text(encoding="utf-8")
         self.assertIn("Do not put API keys", readme_text)
         self.assertIn("OpenAI-compatible API", readme_text)
+        self.assertIn("Update WebUI Portable.bat", readme_text)
 
     def test_macos_portable_packaging_files_define_arch_specific_bundles(self) -> None:
         build_script = Path("packaging/macos/build-portable.sh")
         launcher = Path("packaging/macos/Start WebUI Portable.command")
+        updater = Path("packaging/macos/Update WebUI Portable.command")
         app_module = Path("packaging/macos/portable_webui_app.py")
         readme = Path("packaging/macos/README-portable.md")
         notices = Path("packaging/macos/THIRD_PARTY_NOTICES.md")
 
-        for path in (build_script, launcher, app_module, readme, notices):
+        for path in (build_script, launcher, updater, app_module, readme, notices):
             self.assertTrue(path.exists(), f"{path} should exist")
 
         build_text = build_script.read_text(encoding="utf-8")
@@ -75,6 +94,7 @@ class PortablePackagingTests(unittest.TestCase):
         self.assertIn("requirements-webui.txt", build_text)
         self.assertIn("certifi/cacert.pem", build_text)
         self.assertIn("Start WebUI Portable.command", build_text)
+        self.assertIn("Update WebUI Portable.command", build_text)
         self.assertIn("THIRD_PARTY_NOTICES.md", build_text)
         self.assertIn("ditto -c -k", build_text)
         self.assertIn("portable_webui_app", build_text)
@@ -97,6 +117,17 @@ class PortablePackagingTests(unittest.TestCase):
         self.assertIn("api/health", launcher_text)
         self.assertIn("data", launcher_text)
 
+        updater_text = updater.read_text(encoding="utf-8")
+        self.assertIn("https://api.github.com/repos/kadevin/ilab-gpt-conjure/releases/latest", updater_text)
+        self.assertIn("browser_download_url", updater_text)
+        self.assertIn("ilab-gpt-conjure_macos_portable_${PACKAGE_ARCH}_", updater_text)
+        self.assertIn("shasum -a 256", updater_text)
+        self.assertIn("ditto -x -k", updater_text)
+        self.assertIn("data", updater_text)
+        self.assertIn("backup", updater_text.lower())
+        self.assertIn("Do not move data", updater_text)
+        self.assertIn("xattr -dr com.apple.quarantine", updater_text)
+
         app_module_text = app_module.read_text(encoding="utf-8")
         self.assertIn("ILAB_CONJURE_DATA_DIR", app_module_text)
         self.assertIn("create_app", app_module_text)
@@ -109,6 +140,7 @@ class PortablePackagingTests(unittest.TestCase):
         self.assertIn("tries to\nremove quarantine", readme_text)
         self.assertIn("xattr -dr com.apple.quarantine", readme_text)
         self.assertIn("OpenAI-compatible API", readme_text)
+        self.assertIn("Update WebUI Portable.command", readme_text)
 
     def test_root_launchers_initialize_auth_settings(self) -> None:
         mac_launcher = Path("Start WebUI.command")
