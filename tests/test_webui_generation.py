@@ -163,6 +163,7 @@ class WebUIGenerationTests(unittest.TestCase):
     def test_queue_worker_persists_web_search_tool_usage(self) -> None:
         from codex_image.client import ImageResult
         from codex_image.webui.app import create_app
+        from codex_image.webui.queue import QueueChannel
 
         class WebSearchUsageClient(FakeImageClient):
             def generate_image(inner_self, **kwargs: Any):
@@ -189,6 +190,7 @@ class WebUIGenerationTests(unittest.TestCase):
                 batch_delay_seconds=0,
                 auto_start_queue=False,
             )
+            app.state.queue_manager.channels = [QueueChannel(channel_id="codex:local", auth_source="codex")]
             client = TestClient(app)
             created = client.post(
                 "/api/generate",
