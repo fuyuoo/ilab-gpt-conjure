@@ -2299,7 +2299,7 @@ body.lightbox-open {
 .system-settings-tabs {
   --segmented-indicator-radius: 999px;
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 4px;
   width: 100%;
   margin: 0 0 18px;
@@ -2661,7 +2661,7 @@ body.lightbox-open {
 
 .gallery-grid-layer {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 220px), 1fr));
   gap: 14px;
 }
 
@@ -2683,6 +2683,26 @@ body.lightbox-open {
 .archive-list {
   display: grid;
   gap: 10px;
+}
+
+.language-settings-panel {
+  display: grid;
+  gap: 12px;
+  max-width: 640px;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface-soft);
+}
+
+.language-select-field {
+  max-width: 420px;
+}
+
+.language-settings-status {
+  margin: 0;
+  width: fit-content;
+  max-width: 100%;
 }
 
 .settings-path-grid {
@@ -3030,6 +3050,10 @@ body.lightbox-open {
 }
 
 @media (max-width: 720px) {
+  .language-settings-panel {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
   .api-provider-choice-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -3204,6 +3228,9 @@ body.lightbox-open {
   position: relative;
   display: grid;
   grid-template-rows: auto auto auto auto;
+  container-type: inline-size;
+  min-width: 0;
+  max-width: 100%;
   overflow: hidden;
   border: 1px solid var(--line);
   border-radius: 12px;
@@ -3287,30 +3314,52 @@ body.lightbox-open {
 .gallery-card-body {
   display: grid;
   gap: 6px;
+  min-width: 0;
   min-height: 58px;
   padding: 10px;
 }
 
 .gallery-card-heading {
   display: block;
+  min-width: 0;
 }
 
 .gallery-card-heading strong {
+  display: block;
+  min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .gallery-card-body span {
+  min-width: 0;
+  overflow: hidden;
   color: var(--muted);
   font-size: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .gallery-card-actions {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 6px;
+  min-width: 0;
   padding: 0 10px 10px;
+}
+
+.gallery-card-actions .ghost-button {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@container (max-width: 219px) {
+  .gallery-card-actions {
+    grid-template-columns: 1fr;
+  }
 }
 
 .danger-button {
@@ -3444,11 +3493,25 @@ body.lightbox-open {
   padding: 14px;
 }
 
+.image-editor-workspace {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 220px;
+  align-items: stretch;
+  gap: 12px;
+  place-items: stretch;
+}
+
 .image-editor-canvas-wrap {
   position: relative;
   line-height: 0;
   touch-action: none;
   user-select: none;
+  min-width: 0;
+  max-width: 100%;
+  max-height: min(62vh, 640px);
+  display: grid;
+  place-items: center;
+  overflow: auto;
 }
 
 .image-editor-canvas {
@@ -3460,12 +3523,236 @@ body.lightbox-open {
   cursor: crosshair;
 }
 
+.image-editor-fallback-canvas {
+  display: none;
+}
+
+.image-editor-konva-mount {
+  width: var(--image-editor-stage-width, 100%);
+  height: var(--image-editor-stage-height, auto);
+  min-height: 0;
+  display: block;
+  overflow: hidden;
+  position: relative;
+}
+
+.image-editor-konva-mount .konvajs-content {
+  width: var(--image-editor-stage-raw-width, var(--image-editor-stage-width, 100%)) !important;
+  height: var(--image-editor-stage-raw-height, var(--image-editor-stage-height, auto)) !important;
+  max-width: none;
+  max-height: none;
+  transform: scale(var(--image-editor-stage-scale, 1));
+  transform-origin: top left;
+}
+
+.image-editor-konva-mount canvas {
+  width: var(--image-editor-stage-raw-width, var(--image-editor-stage-width, 100%)) !important;
+  height: var(--image-editor-stage-raw-height, var(--image-editor-stage-height, auto)) !important;
+  max-width: none;
+  max-height: none;
+}
+
+.image-editor-konva-mount canvas {
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(29, 52, 46, 0.14);
+  cursor: crosshair;
+}
+
 .image-editor-crop-box {
   position: absolute;
   border: 2px solid var(--primary);
   background: color-mix(in srgb, var(--primary) 12%, transparent);
   box-shadow: 0 0 0 9999px rgba(12, 28, 23, 0.28);
   pointer-events: none;
+}
+
+.image-editor-side-panel {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.image-editor-side-section {
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--surface) 86%, transparent);
+}
+
+.image-editor-side-section:first-child {
+  flex: 0 0 auto;
+}
+
+.image-editor-side-section:last-child {
+  flex: 1 1 auto;
+}
+
+.image-editor-side-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  color: var(--text);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.image-editor-canvas-scope-control {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+
+.image-editor-canvas-scope-control .ghost-button {
+  min-height: 34px;
+  padding: 0 8px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.image-editor-canvas-scope-control .ghost-button.active {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: var(--primary-foreground);
+}
+
+.image-editor-layer-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.image-editor-layer-actions .ghost-button {
+  min-height: 28px;
+  padding: 0 8px;
+  border-radius: 7px;
+  font-size: 11px;
+}
+
+.image-editor-insert-list,
+.image-editor-layer-list {
+  display: grid;
+  gap: 6px;
+}
+
+.image-editor-insert-list {
+  max-height: 164px;
+  overflow: auto;
+}
+
+.image-editor-layer-list {
+  min-height: 0;
+  overflow: auto;
+}
+
+.image-editor-insert-empty {
+  padding: 12px;
+  border: 1px dashed var(--line);
+  border-radius: 8px;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.image-editor-insert-item,
+.image-editor-layer-item {
+  width: 100%;
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr);
+  align-items: center;
+  gap: 8px;
+  padding: 8px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--text);
+  text-align: left;
+  cursor: pointer;
+  transition:
+    background var(--motion-base),
+    border-color var(--motion-base),
+    color var(--motion-base);
+}
+
+.image-editor-insert-item:hover,
+.image-editor-insert-item:focus-visible,
+.image-editor-layer-item:hover,
+.image-editor-layer-item:focus-visible {
+  border-color: color-mix(in srgb, var(--primary) 40%, var(--line));
+  background: var(--primary-light);
+}
+
+.image-editor-layer-item.active {
+  border-color: var(--primary);
+  background: var(--primary);
+  color: var(--primary-foreground);
+}
+
+.image-editor-insert-item img,
+.image-editor-layer-thumb {
+  width: 44px;
+  height: 44px;
+  border-radius: 6px;
+  object-fit: cover;
+  background: var(--surface-soft);
+}
+
+.image-editor-layer-thumb {
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.image-editor-layer-thumb img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+  object-fit: cover;
+}
+
+.image-editor-layer-item > span:last-child {
+  min-width: 0;
+  display: grid;
+  gap: 2px;
+}
+
+.image-editor-layer-item.active .image-editor-layer-thumb {
+  color: var(--primary-foreground);
+  background: color-mix(in srgb, var(--surface) 22%, transparent);
+}
+
+.image-editor-insert-name,
+.image-editor-layer-name {
+  min-width: 0;
+  overflow: hidden;
+  font-size: 12px;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.image-editor-layer-meta {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--muted);
+  font-size: 11px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.image-editor-layer-item.active .image-editor-layer-meta {
+  color: color-mix(in srgb, var(--primary-foreground) 78%, transparent);
 }
 
 .image-editor-footer {

@@ -48,6 +48,34 @@ function canAcceptTaskSuccesses(...args: any[]) { return legacyMethod("canAccept
 function currentApiProviderId(...args: any[]) { return legacyMethod("currentApiProviderId", ...args); }
 function updateTaskInState(...args: any[]) { return legacyMethod("updateTaskInState", ...args); }
 
+function taskListStructureKey(task: any): string {
+  if (!task) return "";
+  return JSON.stringify([
+    task.status,
+    task.local_pending,
+    task.updated_at,
+    task.completed_at,
+    task.started_at,
+    task.generated_count,
+    task.failed_count,
+    task.total_count,
+    task.output_url,
+    Array.isArray(task.output_urls) ? task.output_urls.join("|") : "",
+    Array.isArray(task.thumbnail_urls) ? task.thumbnail_urls.join("|") : "",
+    Array.isArray(task.input_thumbnail_urls) ? task.input_thumbnail_urls.join("|") : "",
+    Array.isArray(task.outputs)
+      ? task.outputs.map((item: any) => [
+        item?.index,
+        item?.status,
+        item?.url,
+        item?.thumbnail_url,
+        item?.error,
+        item?.completed_at,
+      ].join(":")).join("|")
+      : "",
+  ]);
+}
+
 async function refreshTaskAfterActionConflict(taskId: any): Promise<boolean> {
   const normalizedTaskId = String(taskId || "").trim();
   if (!normalizedTaskId) return false;
@@ -181,6 +209,7 @@ async function markTaskViewed(taskId: any) {
   if (!taskId || state.taskViewedRequestIds.has(String(taskId))) return;
   const task = state.tasks.find((item: any) => String(item.task_id) === String(taskId));
   if (!task || task.local_pending) return;
+  const beforeStructureKey = taskListStructureKey(task);
   state.taskViewedRequestIds.add(String(taskId));
   const viewedAt = new Date().toISOString();
   task.viewed_at = viewedAt;
@@ -192,8 +221,19 @@ async function markTaskViewed(taskId: any) {
     });
     const data = await response.json().catch(() => ({}));
     if (!response.ok) throw new Error(data.detail || translate("taskActions.viewedUpdateFailed"));
-    if (data.task) updateTaskInState(data.task);
-    updateTaskSelectionVisuals(taskId);
+    let renderedStructuralUpdate = false;
+    if (data.task) {
+      const afterStructureKey = taskListStructureKey(data.task);
+      const updated = updateTaskInState(data.task);
+      if (updated && beforeStructureKey !== afterStructureKey) {
+        renderTasks({ preserveScroll: true });
+        renderArchiveButton();
+        renderArchiveModal();
+        renderPreview(data.task);
+        renderedStructuralUpdate = true;
+      }
+    }
+    if (!renderedStructuralUpdate) updateTaskSelectionVisuals(taskId);
   } catch (error) {
     console.warn(error);
   } finally {

@@ -118,7 +118,7 @@ class ClientTests(unittest.TestCase):
             raise socket.timeout("timed out")
 
         with patch("codex_image.http.request.urlopen", fake_urlopen):
-            with self.assertRaisesRegex(TimeoutError, "timed out after 1.5s"):
+            with self.assertRaisesRegex(TimeoutError, r"timed out after [0-9.]+s \(timeout limit 1.5s\)"):
                 UrllibTransport(timeout=1.5).request(
                     method="POST",
                     url="https://example.test/responses",
@@ -139,7 +139,7 @@ class ClientTests(unittest.TestCase):
             raise urllib.error.URLError(socket.timeout("read timed out"))
 
         with patch("codex_image.http.request.urlopen", fake_urlopen):
-            with self.assertRaisesRegex(TimeoutError, "read timed out"):
+            with self.assertRaisesRegex(TimeoutError, r"timed out after [0-9.]+s \(timeout limit 2s\): read timed out"):
                 UrllibTransport(timeout=2.0).request(
                     method="GET",
                     url="https://example.test/image.png",

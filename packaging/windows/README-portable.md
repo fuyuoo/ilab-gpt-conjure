@@ -21,10 +21,15 @@ updates, run `Update WebUI Portable.bat` manually.
 
 - `Start WebUI Portable.bat`: one-click WebUI launcher.
 - `Update WebUI Portable.bat`: one-click updater for the latest GitHub Release.
-- `app/`: iLab GPT Conjure source code and static WebUI assets.
+- `app/`: iLab GPT Conjure source code, prebuilt static WebUI assets, and
+  frontend package metadata/build config for source rebuilds.
 - `python/`: embedded CPython runtime and installed WebUI dependencies.
 - `data/`: local settings, gallery files, inputs, outputs, queue database, and
   logs created while using the app.
+
+The portable startup launcher does not run `npm install` or rebuild frontend
+assets. Node.js is only needed if you intentionally edit TypeScript or CSS and
+rebuild `app/codex_image/webui/static/app.js` from source.
 
 ## Security notes
 

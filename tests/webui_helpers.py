@@ -499,6 +499,26 @@ class FailsSecondImageClient(FakeImageClient):
         )
 
 
+class FailsFirstWithLegacyTimeoutImageClient(FakeImageClient):
+    def generate_image(self, **kwargs: Any):
+        from codex_image.client import ImageResult
+
+        self.generate_calls.append(kwargs)
+        call_number = len(self.generate_calls)
+        if call_number == 1:
+            time.sleep(0.02)
+            raise TimeoutError("Image request timed out after 600s")
+        return ImageResult(
+            f"generated-{call_number}".encode("utf-8"),
+            f"revised-{call_number}",
+            "png",
+            kwargs["size"],
+            "auto",
+            kwargs["quality"],
+            {"call": call_number},
+        )
+
+
 class QuotaLimitedImageClient(FakeImageClient):
     def generate_image(self, **kwargs: Any):
         self.generate_calls.append(kwargs)
@@ -729,6 +749,11 @@ class WebUIStaticTestCase(unittest.TestCase):
                 "image-editor.ts",
                 "legacy-bridge.ts",
                 "event-bindings.ts",
+                "i18n/types.ts",
+                "i18n/zh-cn.ts",
+                "i18n/en.ts",
+                "i18n/dictionaries.ts",
+                "i18n.ts",
                 "boot.ts",
                 "bootstrap.ts",
                 "main.ts",
@@ -746,6 +771,16 @@ class WebUIStaticTestCase(unittest.TestCase):
             )
             return "\n".join(sources)
         return Path("codex_image/webui/static/app.js").read_text(encoding="utf-8")
+
+    def _i18n_dictionary_source(self) -> str:
+        src_dir = Path("codex_image/webui/frontend/src/i18n")
+        return "\n".join(
+            path.read_text(encoding="utf-8")
+            for path in [
+                src_dir / "zh-cn.ts",
+                src_dir / "en.ts",
+            ]
+        )
 
     def _frontend_bundle_source(self) -> str:
         return Path("codex_image/webui/static/app.js").read_text(encoding="utf-8")

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import json
+import time
 from typing import Any, AsyncContextManager, Callable
 
 from codex_image.client import DEFAULT_MAIN_MODEL, CodexImagesImageClient, ImageResult, OpenAIImagesImageClient
@@ -40,7 +41,7 @@ from .executor_transport import (
     _prompt_for_transport,
 )
 from .prompt_ratio import append_ratio_prompt_instruction
-from .storage import GalleryStorage, ReferenceAssetStorage, TaskStorage
+from .storage import GalleryStorage, ReferenceAssetStorage, TaskStorage, utc_now
 from .task_metadata import (
     _append_output_record_state,
     _finalize_generated_task,
@@ -50,6 +51,25 @@ from .task_metadata import (
     _positive_int,
     _write_progress_metadata,
 )
+
+
+def _format_elapsed_seconds(seconds: float) -> str:
+    return f"{max(0.0, seconds):.2f}".rstrip("0").rstrip(".")
+
+
+def _elapsed_seconds(started_at: float) -> float:
+    return round(max(0.0, time.monotonic() - started_at), 3)
+
+
+def _output_error_message(exc: Exception, *, elapsed_seconds: float, timeout_seconds: float | None) -> str:
+    message = str(exc)
+    if timeout_seconds is None:
+        return message
+    legacy_timeout = f"Image request timed out after {timeout_seconds:g}s"
+    if message.strip() == legacy_timeout:
+        elapsed = _format_elapsed_seconds(elapsed_seconds)
+        return f"Image request failed after {elapsed}s (timeout limit {timeout_seconds:g}s): {message}"
+    return message
 
 
 async def _execute_stored_task(
@@ -191,9 +211,14 @@ async def _execute_stored_task(
             )
 
         async def run_single_output(output_number: int) -> dict[str, Any]:
+            slot_started_at = utc_now()
+            slot_started_monotonic = time.monotonic()
             try:
                 async with semaphore:
-                    _append_output_record_state(output_records, {"index": output_number, "status": "running"})
+                    _append_output_record_state(
+                        output_records,
+                        {"index": output_number, "status": "running", "started_at": slot_started_at},
+                    )
                     write_progress_metadata()
                     prompt_kwargs = image_prompt_kwargs()
                     if mode == "edit":
@@ -261,6 +286,15 @@ async def _execute_stored_task(
                     }
                     if result.tool_usage:
                         output_record["tool_usage"] = result.tool_usage
+                    completed_at = utc_now()
+                    output_record.update(
+                        {
+                            "started_at": slot_started_at,
+                            "updated_at": completed_at,
+                            "completed_at": completed_at,
+                            "elapsed_seconds": _elapsed_seconds(slot_started_monotonic),
+                        }
+                    )
                     output_record.update(_output_thumbnail_fields(storage, task_id, output_number, output_path))
                     _append_output_record_state(output_records, output_record)
                     completed_output_numbers.add(output_number)
@@ -268,11 +302,21 @@ async def _execute_stored_task(
                     return {"index": output_number}
             except Exception as exc:
                 _raise_if_task_cancelled(storage, task_id)
+                elapsed_seconds = _elapsed_seconds(slot_started_monotonic)
+                failed_at = utc_now()
                 failed_record = {
                     "index": output_number,
                     "status": "failed",
-                    "error": str(exc),
+                    "error": _output_error_message(
+                        exc,
+                        elapsed_seconds=elapsed_seconds,
+                        timeout_seconds=image_request_timeout_seconds,
+                    ),
                     "attempts": 1,
+                    "started_at": slot_started_at,
+                    "updated_at": failed_at,
+                    "failed_at": failed_at,
+                    "elapsed_seconds": elapsed_seconds,
                 }
                 _append_output_record_state(output_records, failed_record)
                 write_progress_metadata()
@@ -306,6 +350,8 @@ async def _execute_stored_task(
             result: ImageResult | None = None
             max_output_attempts = 1
             for attempt in range(1, max_output_attempts + 1):
+                slot_started_at = utc_now()
+                slot_started_monotonic = time.monotonic()
                 try:
                     prompt_kwargs = image_prompt_kwargs()
                     if mode == "edit":
@@ -357,12 +403,22 @@ async def _execute_stored_task(
                     if _is_usage_limit_error(exc):
                         raise
                     if attempt >= max_output_attempts:
+                        elapsed_seconds = _elapsed_seconds(slot_started_monotonic)
+                        failed_at = utc_now()
                         output_records.append(
                             {
                                 "index": output_number,
                                 "status": "failed",
-                                "error": str(exc),
+                                "error": _output_error_message(
+                                    exc,
+                                    elapsed_seconds=elapsed_seconds,
+                                    timeout_seconds=image_request_timeout_seconds,
+                                ),
                                 "attempts": attempt,
+                                "started_at": slot_started_at,
+                                "updated_at": failed_at,
+                                "failed_at": failed_at,
+                                "elapsed_seconds": elapsed_seconds,
                             }
                         )
                         _write_progress_metadata(
@@ -408,6 +464,15 @@ async def _execute_stored_task(
             }
             if result.tool_usage:
                 output_record["tool_usage"] = result.tool_usage
+            completed_at = utc_now()
+            output_record.update(
+                {
+                    "started_at": slot_started_at,
+                    "updated_at": completed_at,
+                    "completed_at": completed_at,
+                    "elapsed_seconds": _elapsed_seconds(slot_started_monotonic),
+                }
+            )
             output_record.update(_output_thumbnail_fields(storage, task_id, output_number, output_path))
             output_records.append(output_record)
             completed_output_numbers.add(output_number)

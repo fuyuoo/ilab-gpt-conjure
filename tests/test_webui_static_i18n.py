@@ -7,41 +7,175 @@ from tests.webui_helpers import WebUIStaticTestCase
 
 
 class WebUIStaticI18nTests(WebUIStaticTestCase):
-    def test_language_bootstrap_and_switcher_exist_before_github(self) -> None:
+    def test_language_bootstrap_detects_browser_language_and_settings_select_replaces_top_nav(self) -> None:
         html = Path("codex_image/webui/static/index.html").read_text(encoding="utf-8")
+        nav_actions = html[html.index('<div class="nav-actions">'):html.index('<div id="taskNotificationCenter"')]
+        language_panel = html[html.index('<section id="systemSettingsLanguagePanel"'):html.index('</section>', html.index('<section id="systemSettingsLanguagePanel"'))]
 
         self.assertIn('const LOCALE_STORAGE_KEY = "codex-image-locale-preference";', html)
+        self.assertIn("function detectPreferredLocale", html)
+        self.assertIn("navigator.languages", html)
+        self.assertIn('const valid = new Set(["zh-CN", "zh-TW", "zh-HK", "ja", "ko", "en", "es", "pt", "fr", "de", "ru", "it", "hi"]);', html)
         self.assertRegex(html, r"document\.documentElement\.lang = locale;")
         self.assertRegex(html, r"document\.documentElement\.dataset\.locale = locale;")
-        self.assertIn('id="languageSwitcher"', html)
-        self.assertLess(html.index('id="languageSwitcher"'), html.index('id="githubLink"'))
-        self.assertIn('data-language-option="zh-CN"', html)
-        self.assertIn('data-language-option="en"', html)
-        self.assertIn('aria-label="语言 / Language"', html)
+        self.assertNotIn('id="languageSwitcher"', html)
+        self.assertNotIn('id="languageSelect"', nav_actions)
+        self.assertLess(nav_actions.index('id="themeSwitcher"'), nav_actions.index('id="githubLink"'))
+        self.assertIn('id="systemSettingsLanguageTab"', html)
+        self.assertIn('data-i18n="systemSettings.languageTab"', html)
+        self.assertIn('id="languageSelect"', language_panel)
+        self.assertIn('<option value="zh-TW">正體中文</option>', language_panel)
+        self.assertIn('<option value="zh-HK">繁体中文</option>', language_panel)
+        self.assertIn('<option value="es">Español</option>', language_panel)
+        self.assertIn('<option value="pt">Português</option>', language_panel)
+        self.assertIn('<option value="fr">Français</option>', language_panel)
+        self.assertIn('<option value="de">Deutsch</option>', language_panel)
+        self.assertIn('<option value="ru">Русский</option>', language_panel)
+        self.assertIn('<option value="it">Italiano</option>', language_panel)
+        self.assertIn('<option value="hi">हिन्दी</option>', language_panel)
+        self.assertIn('language.startsWith("ru")', html)
+        self.assertIn('language.startsWith("it")', html)
+        self.assertIn('language.startsWith("hi")', html)
+        self.assertNotIn("繁體中文（台灣）", language_panel)
+        self.assertNotIn("繁體中文（香港）", language_panel)
+        self.assertIn('data-i18n="settings.language"', language_panel)
+        self.assertIn('data-i18n="settings.languageCopy"', language_panel)
+        self.assertIn('data-i18n="languageSettings.instantStatus"', language_panel)
+        for locale in ("zh-CN", "zh-TW", "zh-HK", "ja", "ko", "en", "es", "pt", "fr", "de", "ru", "it", "hi"):
+            self.assertIn(f'<option value="{locale}"', language_panel)
+        self.assertNotIn("settings.status", language_panel)
 
     def test_i18n_source_exposes_locales_and_dom_translation(self) -> None:
         source_path = Path("codex_image/webui/frontend/src/i18n.ts")
         self.assertTrue(source_path.exists(), "i18n feature module should exist")
+        types_path = Path("codex_image/webui/frontend/src/i18n/types.ts")
+        dictionaries_path = Path("codex_image/webui/frontend/src/i18n/dictionaries.ts")
+        zh_dictionary_path = Path("codex_image/webui/frontend/src/i18n/zh-cn.ts")
+        zh_tw_dictionary_path = Path("codex_image/webui/frontend/src/i18n/zh-tw.ts")
+        zh_hk_dictionary_path = Path("codex_image/webui/frontend/src/i18n/zh-hk.ts")
+        ja_dictionary_path = Path("codex_image/webui/frontend/src/i18n/ja.ts")
+        ko_dictionary_path = Path("codex_image/webui/frontend/src/i18n/ko.ts")
+        en_dictionary_path = Path("codex_image/webui/frontend/src/i18n/en.ts")
+        es_dictionary_path = Path("codex_image/webui/frontend/src/i18n/es.ts")
+        pt_dictionary_path = Path("codex_image/webui/frontend/src/i18n/pt.ts")
+        fr_dictionary_path = Path("codex_image/webui/frontend/src/i18n/fr.ts")
+        de_dictionary_path = Path("codex_image/webui/frontend/src/i18n/de.ts")
+        ru_dictionary_path = Path("codex_image/webui/frontend/src/i18n/ru.ts")
+        it_dictionary_path = Path("codex_image/webui/frontend/src/i18n/it.ts")
+        hi_dictionary_path = Path("codex_image/webui/frontend/src/i18n/hi.ts")
+        self.assertTrue(types_path.exists(), "i18n types should be isolated from runtime code")
+        self.assertTrue(dictionaries_path.exists(), "i18n dictionary registry should be isolated from runtime code")
+        self.assertTrue(zh_dictionary_path.exists(), "zh-CN dictionary should live in its own file")
+        self.assertTrue(zh_tw_dictionary_path.exists(), "zh-TW dictionary should live in its own file")
+        self.assertTrue(zh_hk_dictionary_path.exists(), "zh-HK dictionary should live in its own file")
+        self.assertTrue(ja_dictionary_path.exists(), "Japanese dictionary should live in its own file")
+        self.assertTrue(ko_dictionary_path.exists(), "Korean dictionary should live in its own file")
+        self.assertTrue(en_dictionary_path.exists(), "English dictionary should live in its own file")
+        self.assertTrue(es_dictionary_path.exists(), "Spanish dictionary should live in its own file")
+        self.assertTrue(pt_dictionary_path.exists(), "Portuguese dictionary should live in its own file")
+        self.assertTrue(fr_dictionary_path.exists(), "French dictionary should live in its own file")
+        self.assertTrue(de_dictionary_path.exists(), "German dictionary should live in its own file")
+        self.assertTrue(ru_dictionary_path.exists(), "Russian dictionary should live in its own file")
+        self.assertTrue(it_dictionary_path.exists(), "Italian dictionary should live in its own file")
+        self.assertTrue(hi_dictionary_path.exists(), "Hindi dictionary should live in its own file")
 
         source = source_path.read_text(encoding="utf-8")
+        types_source = types_path.read_text(encoding="utf-8")
+        dictionaries_source = dictionaries_path.read_text(encoding="utf-8")
+        zh_dictionary_source = zh_dictionary_path.read_text(encoding="utf-8")
+        zh_tw_dictionary_source = zh_tw_dictionary_path.read_text(encoding="utf-8")
+        zh_hk_dictionary_source = zh_hk_dictionary_path.read_text(encoding="utf-8")
+        ja_dictionary_source = ja_dictionary_path.read_text(encoding="utf-8")
+        ko_dictionary_source = ko_dictionary_path.read_text(encoding="utf-8")
+        en_dictionary_source = en_dictionary_path.read_text(encoding="utf-8")
+        es_dictionary_source = es_dictionary_path.read_text(encoding="utf-8")
+        pt_dictionary_source = pt_dictionary_path.read_text(encoding="utf-8")
+        fr_dictionary_source = fr_dictionary_path.read_text(encoding="utf-8")
+        de_dictionary_source = de_dictionary_path.read_text(encoding="utf-8")
+        ru_dictionary_source = ru_dictionary_path.read_text(encoding="utf-8")
+        it_dictionary_source = it_dictionary_path.read_text(encoding="utf-8")
+        hi_dictionary_source = hi_dictionary_path.read_text(encoding="utf-8")
         main_source = Path("codex_image/webui/frontend/src/main.ts").read_text(encoding="utf-8")
         elements_source = Path("codex_image/webui/frontend/src/elements.ts").read_text(encoding="utf-8")
-        indicator_source = Path("codex_image/webui/frontend/src/segmented-indicator.ts").read_text(encoding="utf-8")
 
-        self.assertIn('export type Locale = "zh-CN" | "en";', source)
+        self.assertIn('export type Locale = "zh-CN" | "zh-TW" | "zh-HK" | "ja" | "ko" | "en" | "es" | "pt" | "fr" | "de" | "ru" | "it" | "hi";', types_source)
+        self.assertIn("export type TranslationDictionary", types_source)
         self.assertIn('const LOCALE_STORAGE_KEY = "codex-image-locale-preference";', source)
-        self.assertIn("const DICTIONARIES", source)
-        self.assertIn('"app.newTask": "新建"', source)
-        self.assertIn('"app.newTask": "New"', source)
-        self.assertIn('"outputSettings.title": "输出设置"', source)
-        self.assertIn('"outputSettings.title": "Output"', source)
+        self.assertIn('import { DEFAULT_LOCALE, DICTIONARIES, LOCALES } from "./i18n/dictionaries";', source)
+        self.assertIn("export function detectPreferredLocale", source)
+        self.assertIn("navigator.languages", source)
+        self.assertIn('language.startsWith("zh-hk")', source)
+        self.assertIn('language.startsWith("ja")', source)
+        self.assertIn('language.startsWith("ko")', source)
+        self.assertIn('language.startsWith("es")', source)
+        self.assertIn('language.startsWith("pt")', source)
+        self.assertIn('language.startsWith("fr")', source)
+        self.assertIn('language.startsWith("de")', source)
+        self.assertIn('language.startsWith("ru")', source)
+        self.assertIn('language.startsWith("it")', source)
+        self.assertIn('language.startsWith("hi")', source)
+        self.assertNotIn("const DICTIONARIES", source)
+        self.assertIn("export const DEFAULT_LOCALE", dictionaries_source)
+        self.assertIn("export const LOCALES", dictionaries_source)
+        self.assertIn("export const DICTIONARIES", dictionaries_source)
+        self.assertIn('"zh-CN": ZH_CN_DICTIONARY', dictionaries_source)
+        self.assertIn('"zh-TW": ZH_TW_DICTIONARY', dictionaries_source)
+        self.assertIn('"zh-HK": ZH_HK_DICTIONARY', dictionaries_source)
+        self.assertIn('"ja": JA_DICTIONARY', dictionaries_source)
+        self.assertIn('"ko": KO_DICTIONARY', dictionaries_source)
+        self.assertIn('"en": EN_DICTIONARY', dictionaries_source)
+        self.assertIn('"es": ES_DICTIONARY', dictionaries_source)
+        self.assertIn('"pt": PT_DICTIONARY', dictionaries_source)
+        self.assertIn('"fr": FR_DICTIONARY', dictionaries_source)
+        self.assertIn('"de": DE_DICTIONARY', dictionaries_source)
+        self.assertIn('"ru": RU_DICTIONARY', dictionaries_source)
+        self.assertIn('"it": IT_DICTIONARY', dictionaries_source)
+        self.assertIn('"hi": HI_DICTIONARY', dictionaries_source)
+        self.assertIn("export const ZH_CN_DICTIONARY", zh_dictionary_source)
+        self.assertIn("export const ZH_TW_DICTIONARY", zh_tw_dictionary_source)
+        self.assertIn("export const ZH_HK_DICTIONARY", zh_hk_dictionary_source)
+        self.assertIn("export const JA_DICTIONARY", ja_dictionary_source)
+        self.assertIn("export const KO_DICTIONARY", ko_dictionary_source)
+        self.assertIn("export const EN_DICTIONARY", en_dictionary_source)
+        self.assertIn("export const ES_DICTIONARY", es_dictionary_source)
+        self.assertIn("export const PT_DICTIONARY", pt_dictionary_source)
+        self.assertIn("export const FR_DICTIONARY", fr_dictionary_source)
+        self.assertIn("export const DE_DICTIONARY", de_dictionary_source)
+        self.assertIn("export const RU_DICTIONARY", ru_dictionary_source)
+        self.assertIn("export const IT_DICTIONARY", it_dictionary_source)
+        self.assertIn("export const HI_DICTIONARY", hi_dictionary_source)
+        self.assertIn('"app.newTask": "新建"', zh_dictionary_source)
+        self.assertIn('"app.newTask": "新增"', zh_tw_dictionary_source)
+        self.assertIn('"app.newTask": "新增"', zh_hk_dictionary_source)
+        self.assertIn('"app.newTask": "新規"', ja_dictionary_source)
+        self.assertIn('"app.newTask": "새로 만들기"', ko_dictionary_source)
+        self.assertIn('"app.newTask": "New"', en_dictionary_source)
+        self.assertIn('"app.newTask": "Nuevo"', es_dictionary_source)
+        self.assertIn('"app.newTask": "Novo"', pt_dictionary_source)
+        self.assertIn('"app.newTask": "Nouveau"', fr_dictionary_source)
+        self.assertIn('"app.newTask": "Neu"', de_dictionary_source)
+        self.assertIn('"app.newTask": "Новый"', ru_dictionary_source)
+        self.assertIn('"app.newTask": "Nuovo"', it_dictionary_source)
+        self.assertIn('"app.newTask": "नया"', hi_dictionary_source)
+        self.assertIn('"outputSettings.title": "输出设置"', zh_dictionary_source)
+        self.assertIn('"outputSettings.title": "輸出設定"', zh_tw_dictionary_source)
+        self.assertIn('"outputSettings.title": "輸出設定"', zh_hk_dictionary_source)
+        self.assertIn('"outputSettings.title": "出力設定"', ja_dictionary_source)
+        self.assertIn('"outputSettings.title": "출력 설정"', ko_dictionary_source)
+        self.assertIn('"outputSettings.title": "Output"', en_dictionary_source)
+        self.assertIn('"language.es": "Español"', es_dictionary_source)
+        self.assertIn('"language.pt": "Português"', pt_dictionary_source)
+        self.assertIn('"language.fr": "Français"', fr_dictionary_source)
+        self.assertIn('"language.de": "Deutsch"', de_dictionary_source)
+        self.assertIn('"language.ru": "Русский"', ru_dictionary_source)
+        self.assertIn('"language.it": "Italiano"', it_dictionary_source)
+        self.assertIn('"language.hi": "हिन्दी"', hi_dictionary_source)
         self.assertIn('document.querySelectorAll<HTMLElement>("[data-i18n]")', source)
         self.assertIn('querySelectorAll<HTMLElement>("[data-i18n-attr]")', source)
         self.assertIn("window.__codexImageI18n", source)
         self.assertIn('import { initI18nFeature } from "./i18n";', main_source)
         self.assertIn("initI18nFeature();", main_source)
-        self.assertIn('languageSwitcher: document.querySelector("#languageSwitcher")', elements_source)
-        self.assertIn('"#languageSwitcher"', indicator_source)
+        self.assertIn('languageSelect: document.querySelector("#languageSelect")', elements_source)
 
     def test_static_markup_uses_translation_keys_for_primary_shell(self) -> None:
         html = Path("codex_image/webui/static/index.html").read_text(encoding="utf-8")
@@ -57,7 +191,9 @@ class WebUIStaticI18nTests(WebUIStaticTestCase):
             "preview.title",
             "systemSettings.title",
             "systemSettings.codexTab",
+            "systemSettings.languageTab",
             "settings.status",
+            "settings.language",
             "apiSettings.providers",
             "apiSettings.copyProvider",
             "apiSettings.sortProviders",
@@ -68,17 +204,27 @@ class WebUIStaticI18nTests(WebUIStaticTestCase):
         self.assertIn('data-i18n-attr="placeholder:sidebar.searchPlaceholder"', html)
         self.assertIn('data-i18n-attr="aria-label:prompt.editorLabel;data-placeholder:prompt.placeholder"', html)
 
-    def test_language_switcher_styles_match_top_nav_controls(self) -> None:
+    def test_language_select_styles_match_settings_panel_controls(self) -> None:
         styles = Path("codex_image/webui/static/styles.css").read_text(encoding="utf-8")
 
-        self.assertRegex(styles, r"\.language-switcher\s*\{[^}]*display:\s*inline-flex")
-        self.assertRegex(styles, r"\.language-switcher\s*\{[^}]*height:\s*var\(--top-nav-control-height\)")
-        self.assertRegex(styles, r"\.language-switcher\s*\{[^}]*border-radius:\s*var\(--top-nav-control-radius\)")
-        self.assertRegex(styles, r"\.language-option\s*\{[^}]*height:\s*var\(--top-nav-segment-height\)")
-        self.assertRegex(styles, r"\.language-option\.active\s*\{[^}]*background:\s*var\(--primary\)")
+        self.assertRegex(styles, r"\.language-settings-panel\s*\{[^}]*display:\s*grid")
+        self.assertRegex(styles, r"\.language-settings-panel\s*\{[^}]*max-width:\s*640px")
+        self.assertRegex(styles, r"\.language-select-field\s*\{[^}]*max-width:\s*420px")
+        self.assertNotRegex(styles, r"\.language-switcher\s*\{")
+        self.assertNotRegex(styles, r"\.language-option\s*\{")
 
     def test_runtime_rendered_surfaces_use_i18n_keys(self) -> None:
         i18n_source = Path("codex_image/webui/frontend/src/i18n.ts").read_text(encoding="utf-8")
+        dictionary_source = "\n".join(
+            [
+                Path("codex_image/webui/frontend/src/i18n/zh-cn.ts").read_text(encoding="utf-8"),
+                Path("codex_image/webui/frontend/src/i18n/zh-tw.ts").read_text(encoding="utf-8"),
+                Path("codex_image/webui/frontend/src/i18n/zh-hk.ts").read_text(encoding="utf-8"),
+                Path("codex_image/webui/frontend/src/i18n/ja.ts").read_text(encoding="utf-8"),
+                Path("codex_image/webui/frontend/src/i18n/ko.ts").read_text(encoding="utf-8"),
+                Path("codex_image/webui/frontend/src/i18n/en.ts").read_text(encoding="utf-8"),
+            ]
+        )
         runtime_sources = {
             "queue": Path("codex_image/webui/frontend/src/queue.ts").read_text(encoding="utf-8"),
             "notifications": Path("codex_image/webui/frontend/src/task-notifications.ts").read_text(encoding="utf-8"),
@@ -190,7 +336,7 @@ class WebUIStaticI18nTests(WebUIStaticTestCase):
             "colors.hexValue",
             "colors.pendingUpdate",
         ):
-            self.assertIn(f'"{key}"', i18n_source)
+            self.assertIn(f'"{key}"', dictionary_source)
 
         self.assertIn('formatTranslation("queue.runningWaiting"', runtime_sources["queue"])
         self.assertIn('translate("queue.empty")', runtime_sources["queue"])

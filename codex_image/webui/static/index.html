@@ -24,19 +24,46 @@
     <script>
       (() => {
         const LOCALE_STORAGE_KEY = "codex-image-locale-preference";
-        const valid = new Set(["zh-CN", "en"]);
-        let locale = "zh-CN";
+        const valid = new Set(["zh-CN", "zh-TW", "zh-HK", "ja", "ko", "en", "es", "pt", "fr", "de", "ru", "it", "hi"]);
+        const defaultLocale = "zh-CN";
+        function detectPreferredLocale(languages) {
+          const candidates = languages && languages.length
+            ? languages
+            : [...Array.from(navigator.languages || []), navigator.language];
+          for (const candidate of candidates) {
+            const language = String(candidate || "").trim().toLowerCase();
+            if (!language) continue;
+            for (const locale of valid) {
+              if (locale.toLowerCase() === language) return locale;
+            }
+            if (language.startsWith("zh-hk") || language.startsWith("zh-mo")) return "zh-HK";
+            if (language.startsWith("zh-tw") || language.startsWith("zh-hant")) return "zh-TW";
+            if (language.startsWith("zh-cn") || language.startsWith("zh-sg") || language.startsWith("zh-hans") || language === "zh") return "zh-CN";
+            if (language.startsWith("ja")) return "ja";
+            if (language.startsWith("ko")) return "ko";
+            if (language.startsWith("en")) return "en";
+            if (language.startsWith("es")) return "es";
+            if (language.startsWith("pt")) return "pt";
+            if (language.startsWith("fr")) return "fr";
+            if (language.startsWith("de")) return "de";
+            if (language.startsWith("ru")) return "ru";
+            if (language.startsWith("it")) return "it";
+            if (language.startsWith("hi")) return "hi";
+          }
+          return defaultLocale;
+        }
+        let locale = detectPreferredLocale();
         try {
           const stored = localStorage.getItem(LOCALE_STORAGE_KEY);
           if (valid.has(stored)) locale = stored;
         } catch {
-          locale = "zh-CN";
+          locale = detectPreferredLocale();
         }
         document.documentElement.lang = locale;
         document.documentElement.dataset.locale = locale;
       })();
     </script>
-    <link rel="stylesheet" href="/static/styles.css?v=runtime-346" />
+    <link rel="stylesheet" href="/static/styles.css?v=runtime-368" />
   </head>
   <body>
     <div class="layout-container">
@@ -192,10 +219,6 @@
               <button class="theme-option" data-theme-option="system" type="button" aria-pressed="true" data-i18n="theme.system">跟随</button>
               <button class="theme-option" data-theme-option="light" type="button" aria-pressed="false" data-i18n="theme.light">浅色</button>
               <button class="theme-option" data-theme-option="dark" type="button" aria-pressed="false" data-i18n="theme.dark">深色</button>
-            </div>
-            <div id="languageSwitcher" class="language-switcher" aria-label="语言 / Language">
-              <button class="language-option active" data-language-option="zh-CN" type="button" aria-pressed="true" data-i18n="language.zh">中</button>
-              <button class="language-option" data-language-option="en" type="button" aria-pressed="false" data-i18n="language.en">EN</button>
             </div>
             <a id="githubLink" class="queue-button github-link" href="https://github.com/kadevin/ilab-gpt-conjure" target="_blank" rel="noreferrer" aria-label="GitHub" title="GitHub">
               <svg class="github-link-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
@@ -745,6 +768,7 @@
         <div id="systemSettingsTabs" class="system-settings-tabs" role="tablist" aria-label="系统设置选项" data-i18n-attr="aria-label:systemSettings.tabsLabel">
           <button id="systemSettingsApiTab" class="system-settings-tab active" type="button" role="tab" aria-selected="true" aria-controls="systemSettingsApiPanel" data-system-settings-tab="api" data-i18n="systemSettings.apiTab">API 设置</button>
           <button id="systemSettingsCodexTab" class="system-settings-tab" type="button" role="tab" aria-selected="false" aria-controls="systemSettingsCodexPanel" data-system-settings-tab="codex" data-i18n="systemSettings.codexTab">Codex 通道</button>
+          <button id="systemSettingsLanguageTab" class="system-settings-tab" type="button" role="tab" aria-selected="false" aria-controls="systemSettingsLanguagePanel" data-system-settings-tab="language" data-i18n="systemSettings.languageTab">语言 / Language</button>
           <button id="systemSettingsStorageTab" class="system-settings-tab" type="button" role="tab" aria-selected="false" aria-controls="systemSettingsStoragePanel" data-system-settings-tab="storage" data-i18n="systemSettings.storageTab">存储与通知</button>
         </div>
         <section id="systemSettingsApiPanel" class="system-settings-section" role="tabpanel" aria-labelledby="systemSettingsApiTab">
@@ -864,6 +888,30 @@
             <button id="saveCodexSettingsButton" class="run-button" type="button" data-i18n="codexSettings.save">保存 Codex 通道</button>
           </div>
         </section>
+        <section id="systemSettingsLanguagePanel" class="system-settings-section" role="tabpanel" aria-labelledby="systemSettingsLanguageTab" hidden aria-hidden="true">
+          <div class="language-settings-panel">
+            <label class="field language-select-field">
+              <span data-i18n="settings.language">界面语言</span>
+              <select id="languageSelect" class="control" autocomplete="off" aria-describedby="languageSettingsCopy languageSettingsStatus">
+                <option value="zh-CN">简体中文</option>
+                <option value="zh-TW">正體中文</option>
+                <option value="zh-HK">繁体中文</option>
+                <option value="ja">日本語</option>
+                <option value="ko">한국어</option>
+                <option value="en">English</option>
+                <option value="es">Español</option>
+                <option value="pt">Português</option>
+                <option value="fr">Français</option>
+                <option value="de">Deutsch</option>
+                <option value="ru">Русский</option>
+                <option value="it">Italiano</option>
+                <option value="hi">हिन्दी</option>
+              </select>
+              <span id="languageSettingsCopy" class="field-hint" data-i18n="settings.languageCopy">首次启动会自动跟随浏览器语言，手动选择后会记住偏好。</span>
+            </label>
+            <p id="languageSettingsStatus" class="settings-action-status language-settings-status" data-i18n="languageSettings.instantStatus" aria-live="polite">切换后立即生效</p>
+          </div>
+        </section>
         <section id="systemSettingsStoragePanel" class="system-settings-section" role="tabpanel" aria-labelledby="systemSettingsStorageTab" hidden aria-hidden="true">
           <div class="settings-path-grid">
             <label class="field">
@@ -898,7 +946,7 @@
             </label>
           </div>
           <div class="settings-modal-actions">
-            <p id="settingsStatus" class="settings-action-status" data-i18n="settings.status" aria-live="polite">保存后重启 WebUI 生效</p>
+            <p id="settingsStatus" class="settings-action-status" data-i18n="settings.status" aria-live="polite">保存存储路径后重启 WebUI 生效</p>
             <button id="saveSettingsButton" class="run-button" type="button" data-i18n="settings.save">保存设置</button>
           </div>
         </section>
@@ -954,6 +1002,14 @@
         </div>
         <div class="image-editor-toolbar" aria-label="图片编辑工具栏" data-i18n-attr="aria-label:imageEditor.toolbar">
           <div class="image-editor-tool-group" aria-label="工具" data-i18n-attr="aria-label:imageEditor.tools">
+            <button id="imageEditorToolSelect" class="ghost-button text-sm image-editor-tool" type="button" data-image-editor-tool="select">
+              <span class="image-editor-tool-icon" data-tool-icon="select" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" focusable="false" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M5 3l10 10-4.2 1.1L8.6 19 5 3Z" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M12.5 13.5 18 19" stroke="currentColor" stroke-linecap="round"/>
+                </svg>
+              </span><span data-i18n="imageEditor.select">选择</span>
+            </button>
             <button id="imageEditorToolBrush" class="ghost-button text-sm image-editor-tool" type="button" data-image-editor-tool="brush">
               <span class="image-editor-tool-icon" data-tool-icon="brush" aria-hidden="true">
                 <svg viewBox="0 0 24 24" fill="none" focusable="false" xmlns="http://www.w3.org/2000/svg">
@@ -987,6 +1043,14 @@
                 </svg>
               </span><span data-i18n="imageEditor.fill">油漆桶</span>
             </button>
+            <button id="imageEditorToolEraser" class="ghost-button text-sm image-editor-tool" type="button" data-image-editor-tool="eraser">
+              <span class="image-editor-tool-icon" data-tool-icon="eraser" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" focusable="false" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M4.5 14.6 13.2 6a2.4 2.4 0 0 1 3.4 0l1.4 1.4a2.4 2.4 0 0 1 0 3.4l-7.1 7.1H7.2l-2.7-2.7a.8.8 0 0 1 0-1.1Z" stroke="currentColor" stroke-linejoin="round"/>
+                  <path d="M10.2 9 15 13.8M11 18h8" stroke="currentColor" stroke-linecap="round"/>
+                </svg>
+              </span><span data-i18n="imageEditor.eraser">擦除</span>
+            </button>
           </div>
           <div class="image-editor-tool-group" aria-label="颜色" data-i18n-attr="aria-label:imageEditor.colors">
             <button class="image-editor-swatch active" type="button" data-image-editor-color="#ff3b30" aria-label="红色" data-i18n-attr="aria-label:imageEditor.red"></button>
@@ -999,7 +1063,7 @@
           </div>
           <label class="image-editor-stroke-field">
             <span data-i18n="imageEditor.stroke">粗细</span>
-            <input id="imageEditorStroke" class="slider" type="range" min="2" max="32" step="1" value="8" />
+            <input id="imageEditorStroke" class="slider" type="range" min="2" max="96" step="1" value="8" />
             <output id="imageEditorStrokeValue">8px</output>
           </label>
           <div class="image-editor-tool-group" aria-label="历史" data-i18n-attr="aria-label:imageEditor.history">
@@ -1008,11 +1072,40 @@
             <button id="imageEditorReset" class="ghost-button text-sm" type="button" data-i18n="imageEditor.reset">重置原图</button>
           </div>
         </div>
-        <div id="imageEditorStage" class="image-editor-stage">
+        <div id="imageEditorStage" class="image-editor-stage image-editor-workspace">
           <div id="imageEditorCanvasWrap" class="image-editor-canvas-wrap" role="img" aria-label="图片编辑画布" data-i18n-attr="aria-label:imageEditor.canvas">
-            <canvas id="imageEditorCanvas" class="image-editor-canvas"></canvas>
+            <div id="imageEditorKonvaMount" class="image-editor-konva-mount"></div>
+            <canvas id="imageEditorCanvas" class="image-editor-canvas image-editor-fallback-canvas" aria-hidden="true"></canvas>
             <div id="imageEditorCropBox" class="image-editor-crop-box hidden" aria-hidden="true"></div>
           </div>
+          <aside class="image-editor-side-panel" aria-label="图片编辑图层" data-i18n-attr="aria-label:imageEditor.layers">
+            <section class="image-editor-side-section image-editor-canvas-scope-section">
+              <div class="image-editor-side-header">
+                <span data-i18n="imageEditor.canvasScope">画布范围</span>
+              </div>
+              <div class="image-editor-canvas-scope-control" role="group" aria-label="画布范围" data-i18n-attr="aria-label:imageEditor.canvasScope">
+                <button class="ghost-button text-sm active" type="button" data-image-editor-canvas-scope="base" data-i18n="imageEditor.canvasScopeBase">首图</button>
+                <button class="ghost-button text-sm" type="button" data-image-editor-canvas-scope="fit" data-i18n="imageEditor.canvasScopeFit">适应图层</button>
+              </div>
+            </section>
+            <section class="image-editor-side-section">
+              <div class="image-editor-side-header">
+                <span data-i18n="imageEditor.insertImages">插入图片</span>
+              </div>
+              <div id="imageEditorInsertList" class="image-editor-insert-list"></div>
+            </section>
+            <section class="image-editor-side-section">
+              <div class="image-editor-side-header">
+                <span data-i18n="imageEditor.layers">图层</span>
+                <div class="image-editor-layer-actions">
+                  <button id="imageEditorLayerUp" class="ghost-button text-sm" type="button" data-i18n="imageEditor.layerUp">上移</button>
+                  <button id="imageEditorLayerDown" class="ghost-button text-sm" type="button" data-i18n="imageEditor.layerDown">下移</button>
+                  <button id="imageEditorLayerDelete" class="ghost-button text-sm danger" type="button" data-i18n="action.delete">删除</button>
+                </div>
+              </div>
+              <div id="imageEditorLayerList" class="image-editor-layer-list"></div>
+            </section>
+          </aside>
         </div>
         <div class="image-editor-footer">
           <div id="imageEditorStatus" class="image-editor-status" aria-live="polite"></div>
@@ -1099,7 +1192,7 @@
     </div>
 
     <div id="taskNotificationToastRegion" class="task-notification-toast-region" aria-live="polite"></div>
-  <script src="/static/app.js?v=runtime-346"></script>
+  <script src="/static/app.js?v=runtime-368"></script>
     <script>
       (() => {
         document.querySelectorAll(".radio-group").forEach((group) => {

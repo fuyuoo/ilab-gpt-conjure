@@ -3,6 +3,7 @@ from __future__ import annotations
 import os
 import socket
 import ssl
+import time
 from dataclasses import dataclass
 from functools import lru_cache
 from pathlib import Path
@@ -23,6 +24,10 @@ def _request_timeout_seconds(value: float | None = None) -> float:
     except ValueError:
         return DEFAULT_REQUEST_TIMEOUT_SECONDS
     return parsed if parsed > 0 else DEFAULT_REQUEST_TIMEOUT_SECONDS
+
+
+def _format_elapsed_seconds(seconds: float) -> str:
+    return f"{max(0.0, seconds):.2f}".rstrip("0").rstrip(".")
 
 
 @lru_cache(maxsize=1)
@@ -72,6 +77,7 @@ class UrllibTransport:
         body: bytes,
     ) -> HTTPResponse:
         req = request.Request(url=url, data=body, headers=headers, method=method)
+        started_at = time.monotonic()
         try:
             context = _https_ssl_context() if url.lower().startswith("https://") else None
             with request.urlopen(req, timeout=self.timeout, context=context) as response:
@@ -87,8 +93,12 @@ class UrllibTransport:
                 headers=dict(exc.headers.items()),
             )
         except socket.timeout as exc:
-            raise TimeoutError(f"HTTP request timed out after {self.timeout:g}s") from exc
+            elapsed = _format_elapsed_seconds(time.monotonic() - started_at)
+            raise TimeoutError(f"HTTP request timed out after {elapsed}s (timeout limit {self.timeout:g}s)") from exc
         except error.URLError as exc:
             if isinstance(exc.reason, (socket.timeout, TimeoutError)):
-                raise TimeoutError(f"HTTP request timed out after {self.timeout:g}s: {exc.reason}") from exc
+                elapsed = _format_elapsed_seconds(time.monotonic() - started_at)
+                raise TimeoutError(
+                    f"HTTP request timed out after {elapsed}s (timeout limit {self.timeout:g}s): {exc.reason}"
+                ) from exc
             raise

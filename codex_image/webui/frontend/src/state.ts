@@ -1,5 +1,6 @@
 import type { QueueState, TaskNotification, TaskNotificationSettings, WebUITask } from "./types";
 import type { WebUIBridge } from "./legacy-bridge";
+import type { Locale } from "./i18n/types";
 
 export interface WebUIState {
   [key: string]: any;
@@ -29,9 +30,9 @@ declare global {
     __codexImageWebUI?: LegacyBridge;
     __codexImageI18n?: {
       applyLocaleToDocument: () => void;
-      locale: () => "zh-CN" | "en";
-      setLocale: (locale: "zh-CN" | "en", options?: { persist?: boolean }) => void;
-      t: (key: string, locale?: "zh-CN" | "en") => string;
+      locale: () => Locale;
+      setLocale: (locale: Locale, options?: { persist?: boolean }) => void;
+      t: (key: string, locale?: Locale) => string;
     };
     startRealtimeUpdates?: (options?: { migrateLegacyArchives?: boolean }) => boolean;
     closeRealtimeUpdates?: () => void;

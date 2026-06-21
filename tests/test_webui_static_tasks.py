@@ -14,7 +14,7 @@ class WebUIStaticTaskTests(WebUIStaticTestCase):
         tasks_source = Path("codex_image/webui/frontend/src/tasks.ts").read_text(encoding="utf-8")
         render_source = self._task_list_render_source()
         html = Path("codex_image/webui/static/index.html").read_text(encoding="utf-8")
-        i18n_source = Path("codex_image/webui/frontend/src/i18n.ts").read_text(encoding="utf-8")
+        i18n_source = self._i18n_dictionary_source()
         sidebar_styles = Path("codex_image/webui/static/styles/10-sidebar.css").read_text(encoding="utf-8")
 
         self.assertIn('fetch("/api/tasks/recent?limit=200")', tasks_source)
@@ -192,6 +192,24 @@ class WebUIStaticTaskTests(WebUIStaticTestCase):
         self.assertIn("revealActiveTaskGroup", render_source)
         self.assertIn('revealActiveTaskGroup: proxy("revealActiveTaskGroup")', bootstrap_source)
         self.assertIn('isQueueDispatchPending: proxy("isQueueDispatchPending")', bootstrap_source)
+
+    def test_task_viewed_update_rerenders_when_backend_returns_structural_task_change(self) -> None:
+        task_actions_source = self._task_actions_source()
+        render_source = self._task_list_render_source()
+
+        self.assertIn("function taskListStructureKey(task: any)", task_actions_source)
+        self.assertIn("const beforeStructureKey = taskListStructureKey(task)", task_actions_source)
+        self.assertIn("const afterStructureKey = taskListStructureKey(data.task)", task_actions_source)
+        self.assertIn("if (updated && beforeStructureKey !== afterStructureKey)", task_actions_source)
+        self.assertIn("renderTasks({ preserveScroll: true })", task_actions_source)
+        self.assertIn("renderPreview(data.task)", task_actions_source)
+        self.assertNotIn("viewed_at", task_actions_source[task_actions_source.index("function taskListStructureKey"):task_actions_source.index("async function refreshTaskAfterActionConflict")])
+        for marker in [
+            "task.updated_at",
+            "task.completed_at",
+            "task.started_at",
+        ]:
+            self.assertIn(marker, render_source[render_source.index("function taskListRenderKey"):render_source.index("function activeQueueTaskListRenderKey")])
 
     def test_active_task_cards_expose_queue_actions_only_for_queue_states(self) -> None:
         render_source = self._task_list_render_source()

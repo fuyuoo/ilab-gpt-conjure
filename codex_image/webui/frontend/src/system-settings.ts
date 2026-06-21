@@ -5,10 +5,10 @@ let systemSettingsFeatureInitialized = false;
 let systemSettingsHeightAnimationToken = 0;
 let systemSettingsHeightAnimationTimer: number | undefined;
 
-type SystemSettingsTab = "api" | "codex" | "storage";
+type SystemSettingsTab = "api" | "codex" | "language" | "storage";
 
 const MIN_SYSTEM_SETTINGS_MODAL_EDGE = 30;
-const VALID_TABS = new Set<SystemSettingsTab>(["api", "codex", "storage"]);
+const VALID_TABS = new Set<SystemSettingsTab>(["api", "codex", "language", "storage"]);
 
 function normalizedTab(tab: any): SystemSettingsTab {
   return VALID_TABS.has(tab) ? tab : "api";
@@ -108,6 +108,7 @@ export function setSystemSettingsTab(tab: any, options: { refresh?: boolean } = 
   [
     ["api", els.systemSettingsApiPanel],
     ["codex", els.systemSettingsCodexPanel],
+    ["language", els.systemSettingsLanguagePanel],
     ["storage", els.systemSettingsStoragePanel],
   ].forEach(([name, panel]: any[]) => {
     if (!panel) return;

@@ -1,7 +1,8 @@
 # Third-Party Notices
 
 This portable package contains iLab GPT Conjure, CPython for Windows, and Python
-packages installed from `requirements-webui.txt`.
+packages installed from `requirements-webui.txt`, and a prebuilt WebUI
+JavaScript bundle that includes frontend npm packages from `package-lock.json`.
 
 ## CPython
 
@@ -19,6 +20,13 @@ The packaging workflow installs the WebUI dependencies listed in
 
 Review each dependency's license before redistributing modified packages or
 using the bundle in a commercial environment.
+
+## Frontend npm packages
+
+The WebUI JavaScript bundle is built from `package.json` / `package-lock.json`.
+It currently includes Konva for the layered input-image editor. Konva is
+distributed under the MIT license; review the lock file and upstream package
+metadata before redistributing modified bundles.
 
 ## iLab GPT Conjure
 

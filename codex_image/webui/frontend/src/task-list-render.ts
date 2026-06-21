@@ -882,6 +882,9 @@ function taskListRenderKey(tasks: any, query: any, layout: any = {}, filters: an
     tasks: tasks.map((task: any) => [
       task.task_id,
       task.status,
+      task.updated_at,
+      task.completed_at,
+      task.started_at,
       task.prompt,
       task.mode,
       task.backend,

@@ -54,6 +54,10 @@ class PortablePackagingTests(unittest.TestCase):
         self.assertIn("python-${PythonVersion}-embed-amd64.zip", build_text)
         self.assertIn("get-pip.py", build_text)
         self.assertIn("requirements-webui.txt", build_text)
+        self.assertIn("package.json", build_text)
+        self.assertIn("package-lock.json", build_text)
+        self.assertIn("tsconfig.webui.json", build_text)
+        self.assertIn("scripts/build-webui-css.mjs", build_text)
         self.assertIn("certifi\\cacert.pem", build_text)
         self.assertIn("Start WebUI Portable.bat", build_text)
         self.assertIn("Update WebUI Portable.bat", build_text)
@@ -123,6 +127,10 @@ class PortablePackagingTests(unittest.TestCase):
         self.assertIn("or update files automatically", readme_text)
         self.assertIn("selected release asset", readme_text)
         self.assertNotIn("ILAB_SKIP_VERSION_CHECK=1", readme_text)
+        notices_text = notices.read_text(encoding="utf-8")
+        self.assertIn("Frontend npm packages", notices_text)
+        self.assertIn("Konva", notices_text)
+        self.assertIn("package-lock.json", notices_text)
 
     def test_macos_portable_packaging_files_define_arch_specific_bundles(self) -> None:
         build_script = Path("packaging/macos/build-portable.sh")
@@ -147,6 +155,10 @@ class PortablePackagingTests(unittest.TestCase):
         self.assertIn('name "*.dylib"', build_text)
         self.assertIn("codesign --force --sign -", build_text)
         self.assertIn("requirements-webui.txt", build_text)
+        self.assertIn("package.json", build_text)
+        self.assertIn("package-lock.json", build_text)
+        self.assertIn("tsconfig.webui.json", build_text)
+        self.assertIn("scripts/build-webui-css.mjs", build_text)
         self.assertIn("certifi/cacert.pem", build_text)
         self.assertIn("Start WebUI Portable.command", build_text)
         self.assertIn("Update WebUI Portable.command", build_text)
@@ -226,6 +238,10 @@ class PortablePackagingTests(unittest.TestCase):
         self.assertIn("or update files automatically", readme_text)
         self.assertIn("selected release asset", readme_text)
         self.assertNotIn("ILAB_SKIP_VERSION_CHECK=1", readme_text)
+        notices_text = notices.read_text(encoding="utf-8")
+        self.assertIn("Frontend npm packages", notices_text)
+        self.assertIn("Konva", notices_text)
+        self.assertIn("package-lock.json", notices_text)
 
     def test_root_launchers_initialize_auth_settings(self) -> None:
         mac_launcher = Path("Start WebUI.command")

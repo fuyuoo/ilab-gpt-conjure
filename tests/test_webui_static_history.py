@@ -397,7 +397,12 @@ class WebUIStaticHistoryTests(unittest.TestCase):
         html = Path("codex_image/webui/static/history.html").read_text(encoding="utf-8")
         source = Path("codex_image/webui/frontend/src/history.ts").read_text(encoding="utf-8")
         styles = Path("codex_image/webui/static/styles/90-history.css").read_text(encoding="utf-8")
-        i18n_source = Path("codex_image/webui/frontend/src/i18n.ts").read_text(encoding="utf-8")
+        i18n_source = "\n".join(
+            [
+                Path("codex_image/webui/frontend/src/i18n/zh-cn.ts").read_text(encoding="utf-8"),
+                Path("codex_image/webui/frontend/src/i18n/en.ts").read_text(encoding="utf-8"),
+            ]
+        )
 
         for marker in [
             'data-i18n="history.back"',

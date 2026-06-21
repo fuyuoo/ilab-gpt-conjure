@@ -41,11 +41,16 @@ xattr -dr com.apple.quarantine /path/to/ilab-gpt-conjure_macos_portable_x64
 - `Start WebUI Portable.command`: one-click WebUI launcher.
 - `Update WebUI Portable.command`: one-click updater for the latest GitHub
   Release matching this Mac architecture.
-- `app/`: iLab GPT Conjure source code, static WebUI assets, and installed
+- `app/`: iLab GPT Conjure source code, prebuilt static WebUI assets,
+  frontend package metadata/build config for source rebuilds, and installed
   WebUI Python dependencies under `app/.deps`.
 - `python/`: bundled Python.org Python framework.
 - `data/`: local settings, gallery files, inputs, outputs, queue database, and
   logs created while using the app.
+
+The portable startup launcher does not run `npm install` or rebuild frontend
+assets. Node.js is only needed if you intentionally edit TypeScript or CSS and
+rebuild `app/codex_image/webui/static/app.js` from source.
 
 ## Security notes
 

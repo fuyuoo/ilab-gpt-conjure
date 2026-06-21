@@ -29,6 +29,7 @@ from tests.webui_helpers import (
     CapturingApiResponsesImageClient,
     ConcurrentApiImageClient,
     FailFastSlowCompleteQueueTestExecutor,
+    FailsFirstWithLegacyTimeoutImageClient,
     FailsSecondImageClient,
     FakeImageClient,
     InvalidRequestImageClient,
@@ -761,6 +762,36 @@ class WebUIQueueTests(unittest.TestCase):
         )
         self.assertIn("temporary server failure", task["outputs"][1]["error"])
         self.assertEqual(output_files_exist, [True, False, False, True])
+
+    def test_queue_worker_records_elapsed_for_fast_legacy_timeout_message(self) -> None:
+        from codex_image.webui.app import create_app
+
+        fake = FailsFirstWithLegacyTimeoutImageClient()
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            app = create_app(
+                output_root=root,
+                client_factory=lambda: fake,
+                auth_checker=lambda: True,
+                batch_delay_seconds=0,
+                auto_start_queue=False,
+            )
+            client = TestClient(app)
+            created = client.post("/api/generate", data={"prompt": "many", "size": "1024x1024", "quality": "low", "n": "2"})
+            task_id = created.json()["task"]["task_id"]
+
+            asyncio.run(app.state.queue_manager.run_available_once())
+            task = client.get(f"/api/tasks/{task_id}").json()["task"]
+
+        failed = task["outputs"][0]
+        self.assertEqual(task["status"], "partial_failed")
+        self.assertIn("timeout limit 600s", failed["error"])
+        self.assertIn("failed after", failed["error"])
+        self.assertNotEqual(failed["error"], "Image request timed out after 600s")
+        self.assertIsInstance(failed["elapsed_seconds"], float)
+        self.assertGreaterEqual(failed["elapsed_seconds"], 0)
+        self.assertEqual(task["outputs"][1]["status"], "completed")
+
     def test_queue_worker_times_out_single_output_and_runs_next_task(self) -> None:
         from codex_image.webui.app import create_app
         from codex_image.webui.queue import QueueChannel
@@ -808,6 +839,19 @@ class WebUIQueueTests(unittest.TestCase):
         self.assertEqual(queue_state["waiting"], [])
         self.assertEqual(queue_state["running"], {})
         self.assertEqual(output_files_exist, [True, True, True, False])
+
+    def test_call_image_client_preserves_inner_timeout_error(self) -> None:
+        from codex_image.webui.executor_transport import _call_image_client
+
+        def fail_with_http_timeout() -> object:
+            raise TimeoutError("HTTP request timed out after 0.2s (timeout limit 600s)")
+
+        async def run_call() -> None:
+            await _call_image_client(None, {}, fail_with_http_timeout, timeout_seconds=600)
+
+        with self.assertRaisesRegex(TimeoutError, "HTTP request timed out after 0.2s"):
+            asyncio.run(run_call())
+
     def test_queue_worker_publishes_partial_outputs_while_running(self) -> None:
         from codex_image.webui.app import create_app
 

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import os
+import time
 from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import Any, AsyncContextManager, Callable
@@ -74,6 +75,10 @@ async def _noop_request_context():
     yield
 
 
+def _format_elapsed_seconds(seconds: float) -> str:
+    return f"{max(0.0, seconds):.2f}".rstrip("0").rstrip(".")
+
+
 async def _call_image_client(
     request_context: Callable[[dict[str, Any]], AsyncContextManager[None]] | None,
     params: dict[str, Any],
@@ -83,13 +88,19 @@ async def _call_image_client(
 ) -> ImageResult:
     context = request_context(params) if request_context is not None else _noop_request_context()
     async with context:
-        call = asyncio.to_thread(method, **kwargs)
+        call = asyncio.create_task(asyncio.to_thread(method, **kwargs))
         if timeout_seconds is None:
             return await call
+        started_at = time.monotonic()
         try:
             return await asyncio.wait_for(call, timeout=timeout_seconds)
-        except asyncio.TimeoutError as exc:
-            raise TimeoutError(f"Image request timed out after {timeout_seconds:g}s") from exc
+        except TimeoutError as exc:
+            if call.done() and not call.cancelled():
+                raise
+            elapsed = _format_elapsed_seconds(time.monotonic() - started_at)
+            raise TimeoutError(
+                f"Image request timed out after {elapsed}s (timeout limit {timeout_seconds:g}s)"
+            ) from exc
 
 
 def _direct_images_concurrent_enabled(client: Any, auth_source: str, api_mode: str | None) -> bool:

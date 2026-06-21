@@ -58,10 +58,15 @@ Download portable packages from [Downloads / Releases](RELEASES.md).
   plus prompt and task ID search across recent and historical tasks.
 - Shared gallery references, recent reference images, color chips, prompt
   snippet chips, and reusable prompt templates.
-- Chinese / English WebUI localization with a top-bar language switch and a
+- Layered input-image editor with inserted input images, multi-image
+  composition, default ratio-locked transform, Shift free transform, local
+  erasing, and real layer thumbnails.
+- System Settings language dropdown for Simplified Chinese, Traditional
+  Chinese, Japanese, Korean, English, Spanish, Portuguese, French, German,
+  Russian, Italian, and Hindi, with first-launch browser detection and a
   browser-local language preference.
-- Centered System Settings with API Settings, Codex Channel, and Storage &
-  Notifications tabs.
+- Centered System Settings with API Settings, Codex Channel, a discoverable
+  Language tab, and Storage & Notifications tabs.
 - API provider cards for fast selection, read-only details by default, explicit
   editing, provider copy, delete confirmation, and multi-provider sorting.
 - Portable startup launchers stay local-only; update scripts are run manually,
@@ -140,7 +145,7 @@ http://127.0.0.1:8787/
 ## Portable packages
 
 Download the current portable packages from [Downloads / Releases](RELEASES.md),
-or open [GitHub Release v0.5.1](https://github.com/kadevin/ilab-gpt-conjure/releases/tag/v0.5.1)
+or open [GitHub Release v0.5.2](https://github.com/kadevin/ilab-gpt-conjure/releases/tag/v0.5.2)
 directly.
 
 These packages are intended for users who want a ComfyUI-style unzip-and-run
@@ -153,8 +158,13 @@ experience:
 4. Open `http://127.0.0.1:8787/` if the browser does not open automatically.
 
 The portable package contains bundled CPython, installed WebUI dependencies,
-the app source, license files, and a local `data/` directory for settings,
-gallery files, inputs, outputs, task databases, and logs.
+prebuilt static WebUI assets, frontend package metadata/build config for source
+rebuilds, the app source, license files, and a local `data/` directory for
+settings, gallery files, inputs, outputs, task databases, and logs.
+
+Portable startup launchers do not run `npm install` or rebuild frontend assets.
+Node.js is only needed if you intentionally edit TypeScript or CSS and rebuild
+the static WebUI assets from source.
 
 To update an extracted portable package, close the WebUI server window and run
 `Update WebUI Portable.bat` on Windows or `Update WebUI Portable.command` on
@@ -197,7 +207,7 @@ be run manually with `ref` and `release_tag`.
    Image channel when local OAuth is available, and `API` is the recommended
    OpenAI-compatible mode for stable or shared use.
 2. Open System Settings to manage API provider cards, Codex Image/Responses
-   mode, storage paths, and notification preferences.
+   mode, interface language, storage paths, and notification preferences.
 3. Add reference images by upload, drag-and-drop, paste, recent uploads, or the
    public gallery.
 4. Write the prompt directly, insert gallery/color/snippet chips when useful,
@@ -266,7 +276,9 @@ Use `--help` for all CLI options.
 npm run check:webui
 ```
 
-When changing frontend TypeScript or CSS, commit the generated browser assets in
+When changing frontend TypeScript or CSS, run `npm install` first. This installs
+the frontend build dependencies pinned by `package-lock.json`, including Konva
+for the layered input-image editor. Commit the generated browser assets in
 `codex_image/webui/static/`.
 
 GitHub CI runs the Python test suite and WebUI frontend checks on pull requests
