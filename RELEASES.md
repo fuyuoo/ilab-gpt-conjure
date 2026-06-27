@@ -1,31 +1,29 @@
 # 下载 / Releases
 
-当前正式版本：[v0.5.2](https://github.com/kadevin/ilab-gpt-conjure/releases/tag/v0.5.2)
+当前正式版本：[v0.5.3](https://github.com/kadevin/ilab-gpt-conjure/releases/tag/v0.5.3)
 
 ## 版本说明
 
-当前版本：`v0.5.2`。这个版本提供 Windows x64、macOS Apple Silicon、macOS Intel 三种免安装一键包；下载对应平台的 zip 后解压即可启动本地 WebUI，并可手动运行包内更新脚本升级到后续版本。
+当前版本：`v0.5.3`。这个版本提供 Windows x64、macOS Apple Silicon、macOS Intel 三种免安装一键包；下载对应平台的 zip 后解压即可启动本地 WebUI，并可手动运行包内更新脚本升级到后续版本。
 
-本版重点：这一版主要发布多语言界面和输入图像画布编辑能力。WebUI 增加语言设置下拉菜单和多语言字典，输入图片编辑器升级为可插入多张输入图、调整画布范围、缩放旋转和局部擦除的多图层编辑器；同时修复任务状态同步和公用图库窄卡片操作区溢出问题。
+本版重点：这是一个偏修复的小版本，重点解决图片输入格式兼容和任务列表尺寸显示不准确的问题。WebUI 现在会在发送参考图前规范化不被生成接口直接支持的图片格式，减少 MPO、HEIC 等输入图导致的请求失败；同时修复 OpenAI-compatible Images 返回结果把字节数误当作 `size` 时，任务槽显示 `952614`、`388070` 这类数字而不是图片尺寸的问题。
 
 本版详情：
 
-- 多语言界面：语言设置改为下拉菜单，第一次启动会按浏览器语言自动选择，手动选择后即时生效并记住偏好；已加入简体中文、正體中文、繁体中文、日本語、한국어、English、Español、Português、Français、Deutsch、Русский、Italiano 和 हिन्दी。
-- 语言入口可找回：语言设置放在独立 Tab，Tab 标题保留当前语言文案和 English 提示，避免用户切错语言后找不到入口；右上角中英文切换按钮已移除。
-- 输入图像画布编辑：编辑输入图片时可插入输入框里的其他一张或多张图片，进行多图组合、选择移动、缩放旋转、局部擦除和图层排序，编辑后保存为一张输入图。
-- 画布范围控制：新增“首图范围 / 适应图层”画布范围选择；既可以保持第一张输入图的尺寸，也可以按全部图层自动扩展画布，适合把多张参考图拼成一张更大的编辑输入图。
-- 图层和变换体验：图层列表显示真实缩略图；图片变换默认锁定长宽比例，按住 Shift 才自由变换；箭头和擦除等工具改进实时反馈，减少绘制延迟感和错位感。
-- 公用图库溢出修复：合入 PR #3 的窄宽度卡片修复，图库卡片、标题、说明和操作按钮都允许收缩并使用省略显示，极窄容器下操作按钮自动变为单列，避免抽屉变窄时按钮挤出卡片。
-- 任务状态同步：修复已生成结果但左侧任务列表仍显示“生成中”的状态不同步问题，任务状态、输出槽位和历史详情以真实可显示结果为准更新。
-- 前端依赖与测试：图层编辑器使用 Konva，`package-lock.json` 锁定对应 npm 依赖；前端资源版本提升到 `runtime-368`，静态测试覆盖多语言字典、语言下拉菜单、输入图像画布范围、图层缩略图、图库卡片窄宽度按钮溢出和任务状态同步，降低后续回归风险。
+- 输入图格式兼容：参考图发送前会检测真实图片格式；PNG、JPEG、WebP、非动画 GIF 继续按原格式发送，不支持的可解码图片会自动取首帧并转为 PNG。
+- 错误处理更明确：无法解码的图片会返回 `Unsupported image type: could not decode image`，避免坏文件进入生成请求后才失败。
+- 任务槽尺寸显示修复：生成结果会优先从输出图片本身读取真实像素尺寸，例如 `1024x1536`；不再把 API 返回的字节数当成尺寸展示。
+- 旧任务兼容：历史 metadata 中已有的纯数字 `output_size` / `outputs[].size` 会被过滤；读不到真实输出尺寸时回退到请求参数里的合法尺寸。
+- 测试覆盖：新增和补充输入图、客户端解析、任务 API 单测，覆盖 MPO 转 PNG、声明类型错误但内容为 JPEG、坏图拒绝、数字 size 过滤和尺寸回退等场景。
+- 社区贡献：合入 RobinZhiBin 的 PR #5：`fix(webui): normalize unsupported image input formats`。
 
 ## 免安装一键包
 
 | 平台 | 适用设备 | 下载 | SHA256 |
 | --- | --- | --- | --- |
-| Windows x64 | Windows 10/11 x64 | [ilab-gpt-conjure_windows_portable_x64_0.5.2.zip](https://github.com/kadevin/ilab-gpt-conjure/releases/download/v0.5.2/ilab-gpt-conjure_windows_portable_x64_0.5.2.zip) | [sha256](https://github.com/kadevin/ilab-gpt-conjure/releases/download/v0.5.2/ilab-gpt-conjure_windows_portable_x64_0.5.2.zip.sha256.txt) |
-| macOS Apple Silicon | M1/M2/M3/M4 | [ilab-gpt-conjure_macos_portable_arm64_0.5.2.zip](https://github.com/kadevin/ilab-gpt-conjure/releases/download/v0.5.2/ilab-gpt-conjure_macos_portable_arm64_0.5.2.zip) | [sha256](https://github.com/kadevin/ilab-gpt-conjure/releases/download/v0.5.2/ilab-gpt-conjure_macos_portable_arm64_0.5.2.zip.sha256.txt) |
-| macOS Intel | Intel x64 | [ilab-gpt-conjure_macos_portable_x64_0.5.2.zip](https://github.com/kadevin/ilab-gpt-conjure/releases/download/v0.5.2/ilab-gpt-conjure_macos_portable_x64_0.5.2.zip) | [sha256](https://github.com/kadevin/ilab-gpt-conjure/releases/download/v0.5.2/ilab-gpt-conjure_macos_portable_x64_0.5.2.zip.sha256.txt) |
+| Windows x64 | Windows 10/11 x64 | [ilab-gpt-conjure_windows_portable_x64_0.5.3.zip](https://github.com/kadevin/ilab-gpt-conjure/releases/download/v0.5.3/ilab-gpt-conjure_windows_portable_x64_0.5.3.zip) | [sha256](https://github.com/kadevin/ilab-gpt-conjure/releases/download/v0.5.3/ilab-gpt-conjure_windows_portable_x64_0.5.3.zip.sha256.txt) |
+| macOS Apple Silicon | M1/M2/M3/M4 | [ilab-gpt-conjure_macos_portable_arm64_0.5.3.zip](https://github.com/kadevin/ilab-gpt-conjure/releases/download/v0.5.3/ilab-gpt-conjure_macos_portable_arm64_0.5.3.zip) | [sha256](https://github.com/kadevin/ilab-gpt-conjure/releases/download/v0.5.3/ilab-gpt-conjure_macos_portable_arm64_0.5.3.zip.sha256.txt) |
+| macOS Intel | Intel x64 | [ilab-gpt-conjure_macos_portable_x64_0.5.3.zip](https://github.com/kadevin/ilab-gpt-conjure/releases/download/v0.5.3/ilab-gpt-conjure_macos_portable_x64_0.5.3.zip) | [sha256](https://github.com/kadevin/ilab-gpt-conjure/releases/download/v0.5.3/ilab-gpt-conjure_macos_portable_x64_0.5.3.zip.sha256.txt) |
 
 使用方式：
 
