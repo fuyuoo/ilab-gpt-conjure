@@ -6,7 +6,7 @@
 
 当前版本：`v0.5.5`。这个版本是启动器、标准应用包、自动更新和迁移过渡版本。新用户建议下载标准包：macOS 使用 DMG，Windows 使用独立 App ZIP；老用户和调试用户仍可下载 portable zip 继续沿用同目录 `data/` 工作流。
 
-本版重点：0.5.5 新增小兔子 Rust 托盘 / 菜单栏启动器、macOS 标准 `.app` + DMG、Windows 标准 App ZIP、标准包数据目录、旧 portable 数据确认复制迁移，以及 portable-only signed `latest.json` 自动更新。同时补齐系统设置实时保存、Codex Image / Codex Responses 命名、生成页历史搜索和批量管理滚动稳定性。标准包在本版只提供检查更新并打开 Release 页面，不做未签名 `.app` / Windows ZIP 的自替换。
+本版重点：0.5.5 新增小兔子 Rust 托盘 / 菜单栏启动器、macOS 标准 `.app` + DMG、Windows 标准 App ZIP、标准包数据目录、旧 portable 数据确认复制迁移，以及 portable-only signed `latest.json` 自动更新。同时补齐系统设置实时保存、任务卡信息重排、Codex Image / Codex Responses 命名、生成页历史搜索和批量管理滚动稳定性。标准包在本版只提供检查更新并打开 Release 页面，不做未签名 `.app` / Windows ZIP 的自替换。
 
 本版详情：
 
@@ -41,7 +41,9 @@
 ### WebUI 与交互改进
 
 - 系统设置调整为实时保存：API 供应商选择、Codex 通道和语言切换会即时生效，界面不再保留容易误解的“保存当前选择 / 保存 Codex 通道”按钮；只有供应商编辑草稿和存储路径仍需要明确保存。
+- 任务卡信息重排：状态、耗时、尺寸、供应商 / 通道和完成时间分层显示，失败任务不再用长错误文本挤占摘要，运行中和已完成任务更容易快速扫描。
 - Codex 通道命名改为 `Codex Image` 与 `Codex Responses`，任务卡片也区分 `Codex Image`、`Codex Responses`、`API Image` 和 `API Responses`，避免把 Responses 误认为只有 Codex 通道。
+- 复用历史任务只恢复提示词、尺寸、质量、数量等生成参数，不再把旧任务的 API 供应商、API 调用方式或 Codex 通道覆盖到当前全局设置；下一次新生成始终使用右上角当前选择的供应商 / 通道。
 - 生成页搜索会使用历史库全文索引补充历史任务命中结果，不再因为卡片摘要被截断而漏掉完整历史里能搜到的任务。
 - 批量管理点击选择任务改为局部更新选中态和工具条，不再重绘整条任务列表，避免长列表滚动位置跳到顶部。
 - `0.5.4` 用户通过 portable 更新到 `0.5.5` 后，会弹出标准包过渡说明，提示标准 App、portable 数据目录和迁移助手的区别。
