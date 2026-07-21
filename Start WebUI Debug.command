@@ -71,7 +71,7 @@ if webui_is_ready; then
   exit 0
 fi
 
-"$PYTHON_BIN" -m uvicorn codex_image.webui.app:app --host 127.0.0.1 --port 8787 --no-access-log 2>&1 | tee -a "$LOG_FILE" &
+"$PYTHON_BIN" -m uvicorn codex_image.webui.app:app --host 0.0.0.0 --port 8787 --no-access-log 2>&1 | tee -a "$LOG_FILE" &
 SERVER_PID="$!"
 
 if wait_for_webui; then

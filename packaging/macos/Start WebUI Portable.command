@@ -109,7 +109,7 @@ if webui_is_ready; then
   exit 0
 fi
 
-"$PYTHON_BIN" -m uvicorn portable_webui_app:app --host 127.0.0.1 --port "$PORT" --no-access-log >> "$LOG_FILE" 2>&1 &
+"$PYTHON_BIN" -m uvicorn portable_webui_app:app --host 0.0.0.0 --port "$PORT" --no-access-log >> "$LOG_FILE" 2>&1 &
 SERVER_PID="$!"
 
 if wait_for_webui; then

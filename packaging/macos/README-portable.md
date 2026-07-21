@@ -13,6 +13,10 @@ without installing Python separately.
 3. Double-click `Start iLab GPT CONJURE.app` for the menu bar launcher, or
    `Start WebUI Portable.command` for the legacy terminal launcher.
 4. Open `http://127.0.0.1:8787/` if the browser does not open automatically.
+
+The server listens on all network interfaces. Devices on the same trusted LAN
+can open `http://<LAN IP of this Mac>:8787/`; macOS may ask you to allow incoming
+connections.
 5. Choose `Codex` if this machine has a local Codex / ChatGPT OAuth session, or
    configure an OpenAI-compatible API provider in the WebUI for the recommended
    stable integration path.

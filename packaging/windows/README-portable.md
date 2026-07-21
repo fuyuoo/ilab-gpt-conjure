@@ -10,6 +10,10 @@ WebUI without installing Python separately.
 2. Double-click `Start iLab GPT CONJURE.exe` for the system tray launcher, or
    `Start WebUI Portable.bat` for the legacy terminal launcher.
 3. Open `http://127.0.0.1:8787/` if the browser does not open automatically.
+
+The server listens on all network interfaces. Devices on the same trusted LAN
+can open `http://<LAN IP of this computer>:8787/`; Windows Firewall may need an
+inbound allow rule for TCP port 8787.
 4. Choose `Codex` if this machine has a local Codex / ChatGPT OAuth session, or
    configure an OpenAI-compatible API provider in the WebUI for the recommended
    stable integration path.

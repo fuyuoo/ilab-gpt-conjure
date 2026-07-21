@@ -5,6 +5,12 @@ import unittest
 
 
 class TrayLauncherStaticTests(unittest.TestCase):
+    def test_rust_launcher_listens_on_all_network_interfaces(self) -> None:
+        source = Path("launcher/src/lib.rs").read_text(encoding="utf-8")
+
+        self.assertIn('pub const UVICORN_HOST: &str = "0.0.0.0";', source)
+        self.assertIn('"--host",\n                UVICORN_HOST,', source)
+
     def test_rust_tray_launcher_declares_core_behavior_and_assets(self) -> None:
         launcher_root = Path("launcher")
         manifest = launcher_root / "Cargo.toml"

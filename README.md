@@ -117,7 +117,7 @@ Start WebUI.bat
 手动启动：
 
 ```bash
-.venv/bin/python -m uvicorn codex_image.webui.app:app --host 127.0.0.1 --port 8787 --no-access-log
+.venv/bin/python -m uvicorn codex_image.webui.app:app --host 0.0.0.0 --port 8787 --no-access-log
 ```
 
 然后打开：
@@ -125,6 +125,10 @@ Start WebUI.bat
 ```text
 http://127.0.0.1:8787/
 ```
+
+启动器会监听所有网络接口。同一局域网内的设备可访问
+`http://<运行 WebUI 的电脑局域网 IP>:8787/`。Windows 或 macOS 防火墙可能需要
+允许 8787/TCP 入站连接。请仅在可信网络中开放，WebUI 不提供独立的局域网访问认证。
 
 ## 应用包下载
 

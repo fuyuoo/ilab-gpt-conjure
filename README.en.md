@@ -150,7 +150,7 @@ Start WebUI.bat
 Manual:
 
 ```bash
-.venv/bin/python -m uvicorn codex_image.webui.app:app --host 127.0.0.1 --port 8787 --no-access-log
+.venv/bin/python -m uvicorn codex_image.webui.app:app --host 0.0.0.0 --port 8787 --no-access-log
 ```
 
 Then open:
@@ -158,6 +158,11 @@ Then open:
 ```text
 http://127.0.0.1:8787/
 ```
+
+The launchers listen on all network interfaces. Devices on the same LAN can open
+`http://<LAN IP of the WebUI computer>:8787/`. Windows or macOS may require an
+inbound firewall rule for TCP port 8787. Only expose the WebUI on trusted
+networks because it does not provide separate authentication for LAN access.
 
 ## App packages
 

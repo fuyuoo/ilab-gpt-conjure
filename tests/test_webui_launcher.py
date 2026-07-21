@@ -5,15 +5,22 @@ from pathlib import Path
 
 
 class WebUILauncherTests(unittest.TestCase):
-    def test_launcher_starts_uvicorn_on_localhost(self) -> None:
-        launcher = Path("Start WebUI.command")
-        text = launcher.read_text(encoding="utf-8")
+    def test_launchers_listen_on_all_network_interfaces(self) -> None:
+        launchers = (
+            Path("Start WebUI.command"),
+            Path("Start WebUI Debug.command"),
+            Path("Start WebUI.bat"),
+            Path("packaging/macos/Start WebUI Portable.command"),
+            Path("packaging/windows/Start WebUI Portable.bat"),
+        )
 
-        self.assertIn("uvicorn", text)
-        self.assertIn("codex_image.webui.app:app", text)
-        self.assertIn("--host 127.0.0.1", text)
-        self.assertIn("--port 8787", text)
-        self.assertIn("--no-access-log", text)
+        for launcher in launchers:
+            with self.subTest(launcher=launcher):
+                text = launcher.read_text(encoding="utf-8")
+
+                self.assertIn("uvicorn", text)
+                self.assertIn("--host 0.0.0.0", text)
+                self.assertNotIn("--host 127.0.0.1", text)
 
     def test_launcher_uses_project_venv(self) -> None:
         launcher = Path("Start WebUI.command")
