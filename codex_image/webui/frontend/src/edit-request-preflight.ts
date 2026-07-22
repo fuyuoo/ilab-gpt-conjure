@@ -215,14 +215,32 @@ async function inspectCurrentEditRequest(request: any): Promise<EditRequestPrefl
   }
 }
 
+function setEditRequestPreflightOpen(open: boolean): void {
+  const { els } = getLegacyBridge();
+  els.editPreflightList?.classList.toggle("hidden", !open);
+  els.editPreflightToggle?.setAttribute("aria-expanded", String(open));
+}
+
 function renderEditRequestPreflight(result: EditRequestPreflightResult): void {
   const { els } = getLegacyBridge();
   const panel = els.editPreflight;
+  const summary = els.editPreflightSummary;
   const list = els.editPreflightList;
   lastRenderedResult = result;
   if (!panel || !list) return;
   list.replaceChildren();
   panel.classList.toggle("hidden", result.issues.length === 0);
+  if (!result.issues.length) {
+    setEditRequestPreflightOpen(false);
+    panel.removeAttribute("data-level");
+    if (summary) summary.textContent = "0";
+    return;
+  }
+  const level = result.issues.some((issue) => issue.level === "error")
+    ? "error"
+    : result.issues.some((issue) => issue.level === "warning") ? "warning" : "info";
+  panel.dataset.level = level;
+  if (summary) summary.textContent = String(result.issues.length);
   result.issues.forEach((issue) => {
     const item = document.createElement("div");
     item.className = `edit-preflight-item ${issue.level}`;
@@ -244,6 +262,17 @@ export async function updateEditRequestPreflight(request: any): Promise<EditRequ
 }
 
 export function initEditRequestPreflightFeature(): void {
-  Object.assign(getLegacyBridge().methods, { updateEditRequestPreflight });
+  const { els, methods } = getLegacyBridge();
+  Object.assign(methods, { updateEditRequestPreflight });
+  els.editPreflightToggle?.addEventListener("click", () => {
+    const open = els.editPreflightToggle?.getAttribute("aria-expanded") !== "true";
+    setEditRequestPreflightOpen(open);
+  });
+  document.addEventListener("click", (event) => {
+    if (!els.editPreflight?.contains(event.target as Node)) setEditRequestPreflightOpen(false);
+  });
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") setEditRequestPreflightOpen(false);
+  });
   document.addEventListener(LOCALE_CHANGE_EVENT, () => renderEditRequestPreflight(lastRenderedResult));
 }

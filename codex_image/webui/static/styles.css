@@ -4096,6 +4096,7 @@ svg.button-icon {
 }
 
 .prompt-heading {
+  position: relative;
   display: grid;
   grid-template-columns: minmax(0, 1fr) var(--prompt-action-column-width);
   gap: var(--prompt-action-gap);
@@ -5592,28 +5593,91 @@ svg.button-icon {
 }
 
 .edit-preflight {
-  display: grid;
-  gap: 6px;
-  margin: 0 0 10px;
-  padding: 10px 12px;
-  border: 1px solid color-mix(in srgb, var(--status-blue) 24%, var(--line));
-  border-radius: 8px;
-  background: color-mix(in srgb, var(--status-blue) 5%, var(--surface-soft));
+  position: absolute;
+  top: 50%;
+  right: 0;
+  width: var(--prompt-action-column-width);
+  min-width: 0;
+  transform: translateY(-50%);
 }
 
 .edit-preflight.hidden {
   display: none;
 }
 
+.edit-preflight-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+  min-height: 24px;
+  padding: 2px 8px;
+  border: 1px solid color-mix(in srgb, var(--status-blue) 24%, var(--line));
+  border-radius: 7px;
+  color: var(--text-secondary);
+  background: color-mix(in srgb, var(--status-blue) 5%, var(--surface-soft));
+  cursor: pointer;
+}
+
+.edit-preflight-toggle:hover,
+.edit-preflight-toggle:focus-visible,
+.edit-preflight-toggle[aria-expanded="true"] {
+  border-color: color-mix(in srgb, var(--status-blue) 48%, var(--line));
+}
+
 .edit-preflight-title {
+  overflow: hidden;
   color: var(--text-secondary);
   font-size: 12px;
   font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.edit-preflight-summary {
+  display: inline-grid;
+  place-items: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 999px;
+  color: var(--status-blue);
+  background: color-mix(in srgb, var(--status-blue) 14%, transparent);
+  font-size: 10px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.edit-preflight[data-level="warning"] .edit-preflight-summary {
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 16%, transparent);
+}
+
+.edit-preflight[data-level="error"] .edit-preflight-summary {
+  color: var(--danger);
+  background: color-mix(in srgb, var(--danger) 14%, transparent);
 }
 
 .edit-preflight-list {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  z-index: 30;
   display: grid;
   gap: 5px;
+  width: min(420px, calc(100vw - 32px));
+  max-height: min(360px, 50vh);
+  overflow-y: auto;
+  padding: 10px 12px;
+  border: 1px solid color-mix(in srgb, var(--status-blue) 28%, var(--line));
+  border-radius: 8px;
+  background: var(--surface);
+  box-shadow: var(--shadow-popover);
+}
+
+.edit-preflight-list.hidden {
+  display: none;
 }
 
 .edit-preflight-item {

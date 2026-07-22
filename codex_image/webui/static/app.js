@@ -205,6 +205,8 @@
       taskNotificationInApp: document.querySelector("#taskNotificationInApp"),
       taskNotificationSystem: document.querySelector("#taskNotificationSystem"),
       editPreflight: document.querySelector("#editPreflight"),
+      editPreflightToggle: document.querySelector("#editPreflightToggle"),
+      editPreflightSummary: document.querySelector("#editPreflightSummary"),
       editPreflightList: document.querySelector("#editPreflightList"),
       taskHistoryShell: document.querySelector(".task-history-shell"),
       sidebarContent: document.querySelector(".sidebar-content"),
@@ -40751,14 +40753,29 @@ ${galleryText}`;
       return { issues: [{ code: "inspection_failed", level: "warning" }] };
     }
   }
+  function setEditRequestPreflightOpen(open) {
+    const { els: els43 } = getLegacyBridge();
+    els43.editPreflightList?.classList.toggle("hidden", !open);
+    els43.editPreflightToggle?.setAttribute("aria-expanded", String(open));
+  }
   function renderEditRequestPreflight(result) {
     const { els: els43 } = getLegacyBridge();
     const panel = els43.editPreflight;
+    const summary = els43.editPreflightSummary;
     const list = els43.editPreflightList;
     lastRenderedResult = result;
     if (!panel || !list) return;
     list.replaceChildren();
     panel.classList.toggle("hidden", result.issues.length === 0);
+    if (!result.issues.length) {
+      setEditRequestPreflightOpen(false);
+      panel.removeAttribute("data-level");
+      if (summary) summary.textContent = "0";
+      return;
+    }
+    const level = result.issues.some((issue) => issue.level === "error") ? "error" : result.issues.some((issue) => issue.level === "warning") ? "warning" : "info";
+    panel.dataset.level = level;
+    if (summary) summary.textContent = String(result.issues.length);
     result.issues.forEach((issue) => {
       const item = document.createElement("div");
       item.className = `edit-preflight-item ${issue.level}`;
@@ -40778,7 +40795,18 @@ ${galleryText}`;
     return result;
   }
   function initEditRequestPreflightFeature() {
-    Object.assign(getLegacyBridge().methods, { updateEditRequestPreflight: updateEditRequestPreflight2 });
+    const { els: els43, methods } = getLegacyBridge();
+    Object.assign(methods, { updateEditRequestPreflight: updateEditRequestPreflight2 });
+    els43.editPreflightToggle?.addEventListener("click", () => {
+      const open = els43.editPreflightToggle?.getAttribute("aria-expanded") !== "true";
+      setEditRequestPreflightOpen(open);
+    });
+    document.addEventListener("click", (event) => {
+      if (!els43.editPreflight?.contains(event.target)) setEditRequestPreflightOpen(false);
+    });
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape") setEditRequestPreflightOpen(false);
+    });
     document.addEventListener(LOCALE_CHANGE_EVENT, () => renderEditRequestPreflight(lastRenderedResult));
   }
 

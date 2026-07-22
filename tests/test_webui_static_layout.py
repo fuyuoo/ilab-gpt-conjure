@@ -10,6 +10,18 @@ from tests.webui_helpers import WebUIStaticTestCase, run_typescript_node
 
 
 class WebUIStaticLayoutTests(WebUIStaticTestCase):
+    def _extract_div(self, html: str, marker: str) -> str:
+        start = html.index(marker)
+        depth = 0
+        for match in re.finditer(r"<div\b|</div>", html[start:]):
+            if match.group(0).startswith("<div"):
+                depth += 1
+            else:
+                depth -= 1
+                if depth == 0:
+                    return html[start:start + match.end()]
+        raise AssertionError(f"Could not extract div {marker}")
+
     def _extract_css_at_rule(self, styles: str, marker: str) -> str:
         start = styles.index(marker)
         return self._extract_css_at_rule_from(styles, marker, start)
@@ -187,8 +199,8 @@ class WebUIStaticLayoutTests(WebUIStaticTestCase):
         script = self._frontend_script_source()
         styles = Path("codex_image/webui/static/styles.css").read_text(encoding="utf-8")
 
-        self.assertIn('/static/app.js?v=runtime-570', html)
-        self.assertIn('/static/styles.css?v=runtime-570', html)
+        self.assertIn('/static/app.js?v=runtime-571', html)
+        self.assertIn('/static/styles.css?v=runtime-571', html)
         self.assertIn('id="recentAssetDock"', html)
         self.assertRegex(html, r'class="image-input-footer"[\s\S]*id="recentAssetDock"[\s\S]*id="recentAssetList"')
         self.assertRegex(html, r'id="recentAssetDock"[\s\S]*id="quickGalleryDock"[\s\S]*id="galleryManagePanel"')
@@ -1079,6 +1091,8 @@ class WebUIStaticLayoutTests(WebUIStaticTestCase):
         self.assertNotIn("setMask", script)
     def test_image_editor_exposes_active_only_edit_region_workflow(self) -> None:
         html = Path("codex_image/webui/static/index.html").read_text(encoding="utf-8")
+        styles = Path("codex_image/webui/static/styles.css").read_text(encoding="utf-8")
+        prompt_heading = self._extract_div(html, '<div class="panel-heading prompt-heading">')
         image_editor_source = self._image_editor_source()
         task_submit_source = Path(
             "codex_image/webui/frontend/src/task-submit.ts"
@@ -1102,6 +1116,11 @@ class WebUIStaticLayoutTests(WebUIStaticTestCase):
         self.assertIn('data-i18n="imageEditor.maskHelp"', html)
         self.assertIn('id="editPreflight"', html)
         self.assertIn('id="editPreflightList"', html)
+        self.assertIn('id="editPreflight"', prompt_heading)
+        self.assertIn('id="editPreflightToggle"', prompt_heading)
+        self.assertIn('id="editPreflightSummary"', prompt_heading)
+        self.assertRegex(styles, r"\.edit-preflight\s*\{[^}]*position:\s*absolute;")
+        self.assertRegex(styles, r"\.edit-preflight-list\s*\{[^}]*position:\s*absolute;")
         self.assertIn("editRegionCanvas: null", image_editor_source)
         self.assertIn("editRegionPreviewCanvas: null", image_editor_source)
         self.assertIn('activeGuidance: "instruction-marks"', image_editor_source)
@@ -3155,8 +3174,8 @@ class WebUIStaticLayoutTests(WebUIStaticTestCase):
         script = self._frontend_script_source()
         styles = Path("codex_image/webui/static/styles.css").read_text(encoding="utf-8")
 
-        self.assertIn('/static/app.js?v=runtime-570', html)
-        self.assertIn('/static/styles.css?v=runtime-570', html)
+        self.assertIn('/static/app.js?v=runtime-571', html)
+        self.assertIn('/static/styles.css?v=runtime-571', html)
         self.assertIn('id="pasteClipboardButton"', html)
         self.assertIn('id="statusText"', html)
         self.assertRegex(
@@ -3604,8 +3623,8 @@ class WebUIStaticLayoutTests(WebUIStaticTestCase):
         script = self._frontend_script_source()
         styles = Path("codex_image/webui/static/styles.css").read_text(encoding="utf-8")
 
-        self.assertIn("/static/app.js?v=runtime-570", html)
-        self.assertIn("/static/styles.css?v=runtime-570", html)
+        self.assertIn("/static/app.js?v=runtime-571", html)
+        self.assertIn("/static/styles.css?v=runtime-571", html)
         self.assertIn('const THEME_STORAGE_KEY = "codex-image-theme-preference";', script)
         self.assertIn('themePreference: "system"', script)
         self.assertIn('call(methods, "restoreThemePreference")', script)
