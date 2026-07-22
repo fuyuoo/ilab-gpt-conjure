@@ -498,6 +498,31 @@ class EditingGuidanceStateTests(unittest.TestCase):
         self.assertEqual(result["restored"]["editRegionFile"]["name"], "edit-region.png")
         self.assertEqual(result["restored"]["editMaskFile"]["name"], "edit-mask.png")
 
+    def test_missing_legacy_edit_mask_preserves_edit_region_guidance_with_stable_error(self) -> None:
+        result = self._run_module_probe(
+            """
+            const { loadEditingGuidanceFiles } = require(process.argv[1]);
+            loadEditingGuidanceFiles({
+              version: 1,
+              activeGuidance: "edit-region",
+              legacyAlphaMask: true,
+              sharedBaseUrl: "/inputs/base",
+              editMaskUrl: "/inputs/missing-mask",
+            }, async (url, name) => {
+              if (url.includes("missing-mask")) throw new Error("404");
+              return { name };
+            }).then((restored) => {
+              process.stdout.write(JSON.stringify(restored));
+            });
+            """,
+            module="codex_image/webui/frontend/src/editing-guidance-persistence.ts",
+        )
+
+        self.assertEqual(result["activeGuidance"], "edit-region")
+        self.assertEqual(result["baseFile"]["name"], "shared-base.png")
+        self.assertIsNone(result["editMaskFile"])
+        self.assertEqual(result["restoreError"], "legacy_edit_mask_unavailable")
+
     def test_fractional_crop_uses_one_bounded_integer_rectangle(self) -> None:
         result = self._run_module_probe(
             """

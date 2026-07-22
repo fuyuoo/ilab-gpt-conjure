@@ -413,22 +413,30 @@ def _with_file_urls(
         enriched["input_sources"] = _input_sources(task_id, input_names, gallery_refs, reference_assets)
     editing_guidance = _editing_guidance_with_urls(metadata)
     mask_file = str(metadata.get("mask_file") or "")
-    if editing_guidance is None and metadata.get("mode") == "edit" and mask_file:
+    if editing_guidance is None and metadata.get("mode") == "edit":
         shared_base_url = ""
-        if reference_assets:
-            shared_base_url = str(reference_assets[0].get("image_url") or "")
-        elif input_names:
+        if input_names:
             shared_base_url = _input_urls(task_id, input_names)[0]
+        elif reference_assets:
+            shared_base_url = str(reference_assets[0].get("image_url") or "")
         elif gallery_refs:
             shared_base_url = str(gallery_refs[0].get("image_url") or "")
         if shared_base_url:
-            editing_guidance = {
-                "version": 1,
-                "activeGuidance": "edit-region",
-                "legacyAlphaMask": True,
-                "sharedBaseUrl": shared_base_url,
-                "editMaskUrl": f"/inputs/{quote(mask_file, safe='')}",
-            }
+            if mask_file:
+                editing_guidance = {
+                    "version": 1,
+                    "activeGuidance": "edit-region",
+                    "legacyAlphaMask": True,
+                    "sharedBaseUrl": shared_base_url,
+                    "editMaskUrl": f"/inputs/{quote(mask_file, safe='')}",
+                }
+            else:
+                editing_guidance = {
+                    "version": 1,
+                    "activeGuidance": "instruction-marks",
+                    "legacyFlattenedBase": True,
+                    "sharedBaseUrl": shared_base_url,
+                }
     if editing_guidance is not None:
         enriched["editing_guidance"] = editing_guidance
     _with_output_thumbnail_urls(enriched, metadata, task_id)

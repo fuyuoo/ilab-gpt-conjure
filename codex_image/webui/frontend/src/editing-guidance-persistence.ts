@@ -2,6 +2,10 @@ import type { EditingGuidanceType } from "./editing-guidance-state";
 
 export const EDITING_GUIDANCE_PERSISTENCE_VERSION = 1 as const;
 
+export type EditingGuidanceRestoreError =
+  | "legacy_edit_mask_unavailable"
+  | "legacy_edit_mask_invalid";
+
 export interface PersistedEditingGuidance {
   version: typeof EDITING_GUIDANCE_PERSISTENCE_VERSION;
   activeGuidance: EditingGuidanceType;
@@ -38,21 +42,39 @@ export function editingGuidanceForSubmission(source: EditingGuidanceSource | nul
 
 type GuidanceFileLoader = (url: string, filename: string) => Promise<File>;
 
+interface LoadedEditingGuidanceFiles {
+  activeGuidance: EditingGuidanceType;
+  baseFile: File;
+  originalFile: File;
+  instructionMarksFile: File | null;
+  editRegionFile: File | null;
+  editMaskFile: File | null;
+  restoreError?: EditingGuidanceRestoreError;
+}
+
 export async function loadEditingGuidanceFiles(
   guidance: PersistedEditingGuidance | null | undefined,
   loadFile: GuidanceFileLoader,
-) {
+): Promise<LoadedEditingGuidanceFiles | null> {
   if (
     guidance?.version !== EDITING_GUIDANCE_PERSISTENCE_VERSION
     || !["instruction-marks", "edit-region"].includes(String(guidance.activeGuidance))
     || !guidance.sharedBaseUrl
   ) return null;
 
+  let legacyEditMaskUnavailable = false;
+  const loadEditMask = () => guidance.editMaskUrl
+    ? loadFile(guidance.editMaskUrl, "edit-mask.png").catch((error) => {
+      if (!guidance.legacyAlphaMask) throw error;
+      legacyEditMaskUnavailable = true;
+      return null;
+    })
+    : Promise.resolve(null);
   const [baseFile, instructionMarksFile, editRegionFile, editMaskFile] = await Promise.all([
     loadFile(guidance.sharedBaseUrl, "shared-base.png"),
     guidance.instructionMarksUrl ? loadFile(guidance.instructionMarksUrl, "instruction-marks.png") : null,
     guidance.editRegionUrl ? loadFile(guidance.editRegionUrl, "edit-region.png") : null,
-    guidance.editMaskUrl ? loadFile(guidance.editMaskUrl, "edit-mask.png") : null,
+    loadEditMask(),
   ]);
   return {
     activeGuidance: guidance.activeGuidance,
@@ -61,5 +83,6 @@ export async function loadEditingGuidanceFiles(
     instructionMarksFile,
     editRegionFile,
     editMaskFile,
+    ...(legacyEditMaskUnavailable ? { restoreError: "legacy_edit_mask_unavailable" as const } : {}),
   };
 }

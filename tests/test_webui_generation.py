@@ -373,6 +373,39 @@ class WebUIGenerationTests(unittest.TestCase):
         self.assertIn("sharedBaseUrl", task_detail["editing_guidance"])
         self.assertIn("editMaskUrl", task_detail["editing_guidance"])
 
+    def test_legacy_flattened_edit_uses_shared_base_without_instruction_marks_draft(self) -> None:
+        from codex_image.webui.app import create_app
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            app = create_app(
+                output_root=root,
+                client_factory=lambda: FakeImageClient(),
+                auth_checker=lambda: True,
+                auto_start_queue=False,
+            )
+            client = TestClient(app)
+            response = client.post(
+                "/api/edit",
+                data={"prompt": "legacy flattened marks", "size": "1024x1024", "codex_mode": "responses"},
+                files=[("images", ("flattened.png", self._png_bytes(), "image/png"))],
+            )
+
+            self.assertEqual(response.status_code, 200, response.text)
+            task_id = response.json()["task"]["task_id"]
+            detail = client.get(f"/api/tasks/{task_id}").json()["task"]
+            guidance = detail["editing_guidance"]
+            shared_base = client.get(guidance["sharedBaseUrl"])
+
+        self.assertEqual(guidance["version"], 1)
+        self.assertEqual(guidance["activeGuidance"], "instruction-marks")
+        self.assertTrue(guidance["legacyFlattenedBase"])
+        self.assertNotIn("instructionMarksUrl", guidance)
+        self.assertNotIn("editRegionUrl", guidance)
+        self.assertNotIn("editMaskUrl", guidance)
+        self.assertEqual(shared_base.status_code, 200)
+        self.assertEqual(shared_base.content, self._png_bytes())
+
     def test_edit_task_round_trip_restores_versioned_guidance_and_deletes_its_artifacts(self) -> None:
         from codex_image.webui.app import create_app
 

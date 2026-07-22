@@ -39722,11 +39722,17 @@ ${galleryText}`;
   }
   async function loadEditingGuidanceFiles(guidance, loadFile) {
     if (guidance?.version !== EDITING_GUIDANCE_PERSISTENCE_VERSION || !["instruction-marks", "edit-region"].includes(String(guidance.activeGuidance)) || !guidance.sharedBaseUrl) return null;
+    let legacyEditMaskUnavailable = false;
+    const loadEditMask = () => guidance.editMaskUrl ? loadFile(guidance.editMaskUrl, "edit-mask.png").catch((error) => {
+      if (!guidance.legacyAlphaMask) throw error;
+      legacyEditMaskUnavailable = true;
+      return null;
+    }) : Promise.resolve(null);
     const [baseFile, instructionMarksFile, editRegionFile, editMaskFile] = await Promise.all([
       loadFile(guidance.sharedBaseUrl, "shared-base.png"),
       guidance.instructionMarksUrl ? loadFile(guidance.instructionMarksUrl, "instruction-marks.png") : null,
       guidance.editRegionUrl ? loadFile(guidance.editRegionUrl, "edit-region.png") : null,
-      guidance.editMaskUrl ? loadFile(guidance.editMaskUrl, "edit-mask.png") : null
+      loadEditMask()
     ]);
     return {
       activeGuidance: guidance.activeGuidance,
@@ -39734,7 +39740,8 @@ ${galleryText}`;
       originalFile: baseFile,
       instructionMarksFile,
       editRegionFile,
-      editMaskFile
+      editMaskFile,
+      ...legacyEditMaskUnavailable ? { restoreError: "legacy_edit_mask_unavailable" } : {}
     };
   }
 
@@ -43748,7 +43755,12 @@ ${galleryText}`;
     const restored = await loadEditingGuidanceFiles(task?.editing_guidance, fetchEditingGuidanceFile);
     if (!restored) return sources;
     if (task?.editing_guidance?.legacyAlphaMask && !restored.editRegionFile && restored.editMaskFile) {
-      restored.editRegionFile = await editRegionFileFromLegacyMask(restored.editMaskFile);
+      try {
+        restored.editRegionFile = await editRegionFileFromLegacyMask(restored.editMaskFile);
+      } catch {
+        restored.editMaskFile = null;
+        restored.restoreError = "legacy_edit_mask_invalid";
+      }
     }
     const submissionFile = restored.activeGuidance === "instruction-marks" && restored.instructionMarksFile ? restored.instructionMarksFile : restored.baseFile;
     const primary = {
@@ -43758,6 +43770,12 @@ ${galleryText}`;
       edited: true
     };
     return [primary, ...sources.slice(1)];
+  }
+  function showEditingGuidanceRestoreError() {
+    const code = state30.images?.[0]?.restoreError;
+    if (!code) return false;
+    setStatus21(`${translate("imageEditor.loadForEditFailed")} (${code})`, "error");
+    return true;
   }
   async function applyTaskInputRestoreSources(sources, taskId, restoreSeq, task) {
     if (!selectedTaskInputRestoreCurrent(taskId, restoreSeq)) {
@@ -43974,6 +43992,7 @@ ${galleryText}`;
     if (!selectedTaskInputRestoreCurrent(taskId, restoreSeq)) return;
     applySelectedTaskRequestPreview(task);
     if (task.status !== "running") renderSelectedTask(task, taskId);
+    showEditingGuidanceRestoreError();
   }
   async function restoreHistoryTaskReuseHandoff() {
     let raw = "";
@@ -44010,6 +44029,7 @@ ${galleryText}`;
       applySelectedTaskRequestPreview(task);
       renderSelectedTask(task, taskId);
       setStatus21(formatTranslation("status.reusedTask", { taskId }), "ok");
+      showEditingGuidanceRestoreError();
     } catch (error) {
       localStorage.removeItem(HISTORY_TASK_REUSE_HANDOFF_KEY);
       setStatus21(error.message || translate("taskContext.actionFailed"), "error");

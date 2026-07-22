@@ -85,7 +85,12 @@ async function restoreTaskEditingGuidance(sources, task) {
   const restored = await loadEditingGuidanceFiles(task?.editing_guidance, fetchEditingGuidanceFile);
   if (!restored) return sources;
   if (task?.editing_guidance?.legacyAlphaMask && !restored.editRegionFile && restored.editMaskFile) {
-    restored.editRegionFile = await editRegionFileFromLegacyMask(restored.editMaskFile);
+    try {
+      restored.editRegionFile = await editRegionFileFromLegacyMask(restored.editMaskFile);
+    } catch {
+      restored.editMaskFile = null;
+      restored.restoreError = "legacy_edit_mask_invalid";
+    }
   }
   const submissionFile = restored.activeGuidance === "instruction-marks" && restored.instructionMarksFile
     ? restored.instructionMarksFile
@@ -97,6 +102,13 @@ async function restoreTaskEditingGuidance(sources, task) {
     edited: true,
   };
   return [primary, ...sources.slice(1)];
+}
+
+function showEditingGuidanceRestoreError() {
+  const code = state.images?.[0]?.restoreError;
+  if (!code) return false;
+  setStatus(`${translate("imageEditor.loadForEditFailed")} (${code})`, "error");
+  return true;
 }
 
 async function applyTaskInputRestoreSources(sources, taskId, restoreSeq, task) {
@@ -330,6 +342,7 @@ async function selectTask(taskId) {
   if (!selectedTaskInputRestoreCurrent(taskId, restoreSeq)) return;
   applySelectedTaskRequestPreview(task);
   if (task.status !== "running") renderSelectedTask(task, taskId);
+  showEditingGuidanceRestoreError();
 }
 
 async function restoreHistoryTaskReuseHandoff() {
@@ -367,6 +380,7 @@ async function restoreHistoryTaskReuseHandoff() {
     applySelectedTaskRequestPreview(task);
     renderSelectedTask(task, taskId);
     setStatus(formatTranslation("status.reusedTask", { taskId }), "ok");
+    showEditingGuidanceRestoreError();
   } catch (error) {
     localStorage.removeItem(HISTORY_TASK_REUSE_HANDOFF_KEY);
     setStatus(error.message || translate("taskContext.actionFailed"), "error");

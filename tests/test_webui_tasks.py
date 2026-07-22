@@ -621,6 +621,24 @@ class WebUITaskTests(unittest.TestCase):
         )
 
         self.assertEqual(task["params"]["main_model"], "gpt-5.5")
+
+    def test_legacy_editing_guidance_uses_first_input_as_primary_before_references(self) -> None:
+        from codex_image.webui.app import _with_file_urls
+
+        task = _with_file_urls(
+            {
+                "task_id": "task-mixed",
+                "mode": "edit",
+                "status": "completed",
+                "input_files": ["primary.png"],
+                "reference_assets": [{"id": "reference-1", "filename": "reference.png"}],
+                "mask_file": "legacy-mask.png",
+            }
+        )
+
+        self.assertEqual(task["input_sources"][0]["kind"], "upload")
+        self.assertEqual(task["editing_guidance"]["sharedBaseUrl"], "/inputs/primary.png")
+        self.assertEqual(task["editing_guidance"]["editMaskUrl"], "/inputs/legacy-mask.png")
     def test_tasks_list_omits_stored_request_payloads(self) -> None:
         from codex_image.webui.app import create_app
         from codex_image.webui.storage import TaskStorage

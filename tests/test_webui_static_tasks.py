@@ -11,6 +11,71 @@ from tests.webui_helpers import WebUIStaticTestCase, run_typescript_node
 
 
 class WebUIStaticTaskTests(WebUIStaticTestCase):
+    def test_corrupt_legacy_edit_mask_blocks_silent_fallback_without_discarding_inputs(self) -> None:
+        node = shutil.which("node")
+        if node is None:
+            self.skipTest("node is required for frontend behavior checks")
+        module_path = Path("codex_image/webui/frontend/src/task-selection.ts").resolve()
+        harness = textwrap.dedent(
+            f"""
+            const fs = require("fs");
+            const ts = require("typescript");
+            const vm = require("vm");
+            const source = fs.readFileSync({str(module_path)!r}, "utf8")
+              + "\\nexport {{ restoreTaskEditingGuidance as __restore, showEditingGuidanceRestoreError as __showError }};\\n";
+            const code = ts.transpileModule(source, {{
+              compilerOptions: {{ module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2020 }},
+            }}).outputText;
+            const bridge = {{ state: {{}}, els: {{}}, methods: {{
+              uploadSource(file) {{ return {{ kind: "upload", file, originalFile: file, name: file.name }}; }},
+              setStatus(message, type) {{ bridge.lastStatus = [message, type]; }},
+            }} }};
+            const module = {{ exports: {{}} }};
+            vm.runInNewContext(code, {{
+              module, exports: module.exports, console, Promise, Set, Map, Array,
+              createImageBitmap: async () => {{ throw new Error("invalid png"); }},
+              require(name) {{
+                if (name === "./i18n") return {{ formatTranslation: (key) => key, translate: (key) => key }};
+                if (name === "./state") return {{ getLegacyBridge: () => bridge }};
+                if (name === "./edit-region-materialization") return {{ legacyEditMaskPixelsToEditRegion: (pixels) => pixels }};
+                if (name === "./editing-guidance-persistence") return {{
+                  loadEditingGuidanceFiles: async () => ({{
+                    activeGuidance: "edit-region",
+                    baseFile: {{ name: "shared-base.png" }},
+                    originalFile: {{ name: "shared-base.png" }},
+                    instructionMarksFile: null,
+                    editRegionFile: null,
+                    editMaskFile: {{ name: "corrupt-mask.png" }},
+                  }}),
+                }};
+                throw new Error(`unexpected require: ${{name}}`);
+              }},
+            }});
+            module.exports.__restore(
+              [{{ kind: "upload", file: {{ name: "flattened.png" }} }}, {{ kind: "asset", id: "reference" }}],
+              {{ editing_guidance: {{ legacyAlphaMask: true }} }},
+            ).then((restored) => {{
+              bridge.state.images = restored;
+              module.exports.__showError();
+              process.stdout.write(JSON.stringify({{ restored, status: bridge.lastStatus }}));
+            }});
+            """
+        )
+        result = subprocess.run([node, "-e", harness], check=False, text=True, capture_output=True)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        payload = json.loads(result.stdout)
+        restored = payload["restored"]
+        self.assertEqual(len(restored), 2)
+        self.assertEqual(restored[1]["id"], "reference")
+        self.assertEqual(restored[0]["file"]["name"], "shared-base.png")
+        self.assertEqual(restored[0]["activeGuidance"], "edit-region")
+        self.assertIsNone(restored[0]["editMaskFile"])
+        self.assertEqual(restored[0]["restoreError"], "legacy_edit_mask_invalid")
+        self.assertEqual(
+            payload["status"],
+            ["imageEditor.loadForEditFailed (legacy_edit_mask_invalid)", "error"],
+        )
+
     def test_history_reuse_restores_both_guidance_drafts_and_active_type(self) -> None:
         node = shutil.which("node")
         if node is None:
