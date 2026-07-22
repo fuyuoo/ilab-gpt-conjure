@@ -326,6 +326,8 @@ class ClientTests(unittest.TestCase):
     def test_codex_images_edits_posts_json_images_array_not_multipart(self) -> None:
         image_bytes = b"codex-edited"
         input_data_url = "data:image/png;base64," + base64.b64encode(b"input").decode("ascii")
+        reference_data_url = "data:image/png;base64," + base64.b64encode(b"reference").decode("ascii")
+        mask_data_url = "data:image/png;base64," + base64.b64encode(b"mask").decode("ascii")
         transport = FakeTransport(
             [
                 FakeResponse(
@@ -352,7 +354,8 @@ class ClientTests(unittest.TestCase):
         client = CodexImagesImageClient(_auth_state(access_token="token-edit", account_id="acct-edit"), transport=transport)
         result = client.edit_image(
             prompt="edit the image",
-            images=[input_data_url],
+            images=[input_data_url, reference_data_url],
+            mask_image=mask_data_url,
             size="1152x2048",
             quality="high",
             output_format="png",
@@ -364,7 +367,8 @@ class ClientTests(unittest.TestCase):
         self.assertEqual(request["headers"]["Content-Type"], "application/json")
         self.assertNotIn("multipart/form-data", request["headers"]["Content-Type"])
         payload = json.loads(request["body"].decode("utf-8"))
-        self.assertEqual(payload["images"], [{"image_url": input_data_url}])
+        self.assertEqual(payload["images"], [{"image_url": input_data_url}, {"image_url": reference_data_url}])
+        self.assertEqual(payload["mask"], {"image_url": mask_data_url})
         self.assertEqual(payload["prompt"], "edit the image")
         self.assertEqual(payload["size"], "1152x2048")
         self.assertNotIn("endpoint", payload)
@@ -712,7 +716,7 @@ class ClientTests(unittest.TestCase):
         )
         result = client.edit_image(
             prompt="edit through responses",
-            images=["data:image/png;base64,aW1hZ2U="],
+            images=["data:image/png;base64,aW1hZ2U=", "data:image/png;base64,cmVmZXJlbmNl"],
             mask_image="data:image/png;base64,bWFzaw==",
             main_model="gpt-5.4-mini",
             size="auto",
@@ -728,6 +732,10 @@ class ClientTests(unittest.TestCase):
         self.assertEqual(payload["tools"][0]["action"], "edit")
         self.assertEqual(payload["tools"][0]["input_image_mask"], {"image_url": "data:image/png;base64,bWFzaw=="})
         self.assertEqual(payload["input"][0]["content"][1], {"type": "input_image", "image_url": "data:image/png;base64,aW1hZ2U="})
+        self.assertEqual(
+            payload["input"][0]["content"][2],
+            {"type": "input_image", "image_url": "data:image/png;base64,cmVmZXJlbmNl"},
+        )
 
     def test_openai_images_client_posts_direct_edit_request_with_input_images(self) -> None:
         image_b64 = base64.b64encode(b"edited-api-image").decode("ascii")
@@ -751,7 +759,8 @@ class ClientTests(unittest.TestCase):
         )
         client.edit_image(
             prompt="edit the first image",
-            images=["data:image/png;base64,aW1hZ2U="],
+            images=["data:image/png;base64,aW1hZ2U=", "data:image/png;base64,cmVmZXJlbmNl"],
+            mask_image="data:image/png;base64,bWFzaw==",
             main_model="gpt-5.4-mini",
             size="auto",
             quality="auto",
@@ -766,7 +775,10 @@ class ClientTests(unittest.TestCase):
         self.assertIn('name="prompt"', request["body"].decode("utf-8", errors="replace"))
         self.assertIn("edit the first image", request["body"].decode("utf-8", errors="replace"))
         self.assertIn('name="image"; filename="image-1.png"', request["body"].decode("utf-8", errors="replace"))
+        self.assertIn('name="image"; filename="image-2.png"', request["body"].decode("utf-8", errors="replace"))
+        self.assertIn('name="mask"; filename="mask.png"', request["body"].decode("utf-8", errors="replace"))
         self.assertIn(b"image", request["body"])
+        self.assertIn(b"mask", request["body"])
 
     def test_openai_images_client_downloads_url_image_output(self) -> None:
         transport = FakeTransport(
@@ -1227,7 +1239,7 @@ class ClientTests(unittest.TestCase):
         client = CodexImageClient(load_auth_state(self.auth_path), transport=transport)
         result = client.edit_image(
             prompt="change only background",
-            images=["data:image/png;base64,input1"],
+            images=["data:image/png;base64,input1", "data:image/png;base64,reference2"],
             mask_image="data:image/png;base64,mask1",
             size="1536x1024",
             input_fidelity="high",
@@ -1239,6 +1251,7 @@ class ClientTests(unittest.TestCase):
         self.assertEqual(payload["tools"][0]["input_image_mask"]["image_url"], "data:image/png;base64,mask1")
         self.assertNotIn("input_fidelity", payload["tools"][0])
         self.assertEqual(payload["input"][0]["content"][1]["image_url"], "data:image/png;base64,input1")
+        self.assertEqual(payload["input"][0]["content"][2]["image_url"], "data:image/png;base64,reference2")
 
     def test_edit_image_passes_input_fidelity_for_models_that_support_it(self) -> None:
         write_auth_file(self.auth_path, access_token="token-edit-fidelity", account_id="acct-edit-fidelity")

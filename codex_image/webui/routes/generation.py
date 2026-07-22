@@ -7,6 +7,7 @@ from fastapi import FastAPI, File, Form, HTTPException, UploadFile
 
 from codex_image.client import DEFAULT_MAIN_MODEL, image_model_supports_input_fidelity
 from codex_image.webui.context import WebUIContext
+from codex_image.webui.edit_mask import EditMaskContractError, decode_image_data_url, validate_edit_mask
 from codex_image.webui.executor import (
     _file_to_data_url,
     _instructions_for_transport,
@@ -363,15 +364,23 @@ def register_generation_routes(app: FastAPI, ctx: WebUIContext) -> None:
             reference_files or [],
             reference_file_ids or [],
         )
-        task = ctx.storage.create_task("edit")
-        created_at = utc_now()
-        input_files: list[Path] = []
-        mask_files = await h["save_uploads"](task.task_id, [mask] if mask is not None else [], kind="mask")
         image_data_urls = [
             _file_to_data_url(ctx.reference_asset_storage.image_path(str(item["id"])), mime_type=str(item.get("mime_type") or ""))
             for item in reference_assets
         ]
         all_image_data_urls = image_data_urls + gallery_data_urls
+        if mask is not None:
+            mask_bytes = await mask.read()
+            await mask.seek(0)
+            try:
+                validate_edit_mask(mask_bytes, decode_image_data_url(all_image_data_urls[0]))
+            except EditMaskContractError as exc:
+                raise HTTPException(status_code=400, detail=exc.detail) from exc
+
+        task = ctx.storage.create_task("edit")
+        created_at = utc_now()
+        input_files: list[Path] = []
+        mask_files = await h["save_uploads"](task.task_id, [mask] if mask is not None else [], kind="mask")
         mask_data_url = _file_to_data_url(mask_files[0]) if mask_files else None
         compression = _normalize_compression(output_format, output_compression)
         fidelity = _normalize_prompt_fidelity(prompt_fidelity)

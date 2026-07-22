@@ -9,6 +9,7 @@ from fastapi import HTTPException
 
 from codex_image.client import ImageResult
 
+from .edit_mask import EditMaskContractError
 from .storage import TaskStorage, utc_now
 from .task_enrichment import _input_sources, _input_urls
 from .thumbnails import create_image_thumbnail, thumbnail_needs_refresh
@@ -234,6 +235,8 @@ def _is_non_retryable_error(exc: BaseException) -> bool:
     if isinstance(exc, HTTPException):
         detail = str(exc.detail or "").lower()
         return exc.status_code in {400, 404} and "reference asset" in detail
+    if isinstance(exc, EditMaskContractError):
+        return not exc.retryable
     message = str(exc).lower()
     if "reference asset" in message and (
         "404:" in message

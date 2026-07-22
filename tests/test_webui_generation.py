@@ -59,6 +59,13 @@ class WebUIGenerationTests(unittest.TestCase):
         image.save(buffer, format="PNG")
         return buffer.getvalue()
 
+    def _mask_png_bytes(self, size: tuple[int, int] = (400, 640), *, editable: bool = True) -> bytes:
+        alpha = 0 if editable else 255
+        image = Image.new("RGBA", size, (0, 0, 0, alpha))
+        buffer = BytesIO()
+        image.save(buffer, format="PNG")
+        return buffer.getvalue()
+
     def test_generate_route_persists_task_and_passes_parameters(self) -> None:
         from codex_image.webui.app import create_app
 
@@ -306,10 +313,11 @@ class WebUIGenerationTests(unittest.TestCase):
             response = TestClient(app).post(
                 "/api/edit",
                 data={"prompt": "edit reference", "size": "1024x1024", "codex_mode": "responses"},
-                files={
-                    "images": ("input.png", b"input-bytes", "image/png"),
-                    "mask": ("mask.png", b"mask-bytes", "image/png"),
-                },
+                files=[
+                    ("images", ("primary.png", self._png_bytes(), "image/png")),
+                    ("images", ("reference.png", self._png_bytes((200, 320)), "image/png")),
+                    ("mask", ("mask.png", self._mask_png_bytes(), "image/png")),
+                ],
             )
             task_id = response.json()["task"]["task_id"]
             request_text = request_path(root, task_id).read_text(encoding="utf-8")
@@ -319,8 +327,42 @@ class WebUIGenerationTests(unittest.TestCase):
         self.assertNotIn("data:image/", request_text)
         self.assertNotIn("base64", request_text)
         self.assertEqual(request_payload["webui_image_refs"]["input_files"], [])
-        self.assertEqual(request_payload["webui_image_refs"]["reference_assets"][0]["filename"], "input.png")
+        self.assertEqual(
+            [item["filename"] for item in request_payload["webui_image_refs"]["reference_assets"]],
+            ["primary.png", "reference.png"],
+        )
         self.assertEqual(request_payload["webui_image_refs"]["mask_file"], input_name(task_id, "mask.png", kind="mask"))
+
+    def test_edit_route_rejects_empty_invalid_and_mismatched_masks_before_creating_task(self) -> None:
+        from codex_image.webui.app import create_app
+
+        cases = [
+            (b"", "edit_mask_empty"),
+            (b"not-an-image", "edit_mask_invalid"),
+            (self._mask_png_bytes((20, 20)), "edit_mask_dimensions_mismatch"),
+            (self._mask_png_bytes(editable=False), "edit_mask_empty_region"),
+        ]
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            app = create_app(output_root=root, client_factory=lambda: FakeImageClient(), auth_checker=lambda: True, auto_start_queue=False)
+            client = TestClient(app)
+            for mask_bytes, expected_code in cases:
+                with self.subTest(code=expected_code):
+                    response = client.post(
+                        "/api/edit",
+                        data={"prompt": "edit reference", "size": "1024x1024", "codex_mode": "responses"},
+                        files={
+                            "images": ("input.png", self._png_bytes(), "image/png"),
+                            "mask": ("mask.png", mask_bytes, "image/png"),
+                        },
+                    )
+                    self.assertEqual(response.status_code, 400)
+                    self.assertEqual(response.json()["detail"]["code"], expected_code)
+
+            task_metadata_files = list((root / "source-data" / "tasks").rglob("*.metadata.json"))
+
+        self.assertEqual(task_metadata_files, [])
+
     def test_generate_route_enqueues_without_calling_client_inline(self) -> None:
         from codex_image.webui.app import create_app
 
@@ -658,8 +700,8 @@ class WebUIGenerationTests(unittest.TestCase):
                     "codex_mode": "responses",
                 },
                 files={
-                    "images": ("input.png", b"input-bytes", "image/png"),
-                    "mask": ("mask.png", b"mask-bytes", "image/png"),
+                    "images": ("input.png", self._png_bytes(), "image/png"),
+                    "mask": ("mask.png", self._mask_png_bytes(), "image/png"),
                 },
             )
             body = response.json()

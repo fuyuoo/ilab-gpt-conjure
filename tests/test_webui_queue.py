@@ -14,6 +14,7 @@ from pathlib import Path
 from unittest.mock import patch
 
 from fastapi.testclient import TestClient
+from PIL import Image
 
 from tests.webui_helpers import (
     AlwaysFailQueueTestExecutor,
@@ -52,6 +53,14 @@ from tests.webui_helpers import (
 
 
 class WebUIQueueTests(unittest.TestCase):
+    def _png_bytes(self, size: tuple[int, int] = (32, 24), *, alpha: int | None = None) -> bytes:
+        mode = "RGB" if alpha is None else "RGBA"
+        color = (120, 180, 160) if alpha is None else (0, 0, 0, alpha)
+        image = Image.new(mode, size, color)
+        buffer = BytesIO()
+        image.save(buffer, format="PNG")
+        return buffer.getvalue()
+
     def test_queue_api_reports_waiting_tasks(self) -> None:
         from codex_image.webui.app import create_app
 
@@ -582,10 +591,11 @@ class WebUIQueueTests(unittest.TestCase):
             created = client.post(
                 "/api/edit",
                 data={"prompt": "edit queued", "size": "1024x1024", "quality": "low"},
-                files={
-                    "images": ("input.png", b"input", "image/png"),
-                    "mask": ("mask.png", b"mask", "image/png"),
-                },
+                files=[
+                    ("images", ("primary.png", self._png_bytes(), "image/png")),
+                    ("images", ("reference.png", self._png_bytes((16, 12)), "image/png")),
+                    ("mask", ("mask.png", self._png_bytes(alpha=0), "image/png")),
+                ],
             )
             task_id = created.json()["task"]["task_id"]
 
@@ -597,7 +607,137 @@ class WebUIQueueTests(unittest.TestCase):
         self.assertEqual(task["input_files"], [])
         self.assertEqual(task["input_sources"][0]["kind"], "asset")
         self.assertNotIn("mask.png", task["input_files"])
+        self.assertEqual(len(fake.edit_calls[0]["images"]), 2)
         self.assertTrue(fake.edit_calls[0]["mask_image"].startswith("data:image/png;base64,"))
+
+    def test_queue_worker_fails_if_task_owned_mask_disappears_without_calling_provider(self) -> None:
+        from codex_image.webui.app import create_app
+
+        fake = FakeImageClient()
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            app = create_app(output_root=root, client_factory=lambda: fake, auth_checker=lambda: True, auto_start_queue=False)
+            client = TestClient(app)
+            created = client.post(
+                "/api/edit",
+                data={"prompt": "edit queued", "size": "1024x1024", "quality": "low"},
+                files={
+                    "images": ("input.png", self._png_bytes(), "image/png"),
+                    "mask": ("mask.png", self._png_bytes(alpha=0), "image/png"),
+                },
+            )
+            task = created.json()["task"]
+            app.state.storage.input_path(task["mask_file"]).unlink()
+
+            with self.assertRaisesRegex(RuntimeError, "edit_mask_missing"):
+                asyncio.run(app.state.queue_manager.run_available_once())
+            failed = client.get(f"/api/tasks/{task['task_id']}").json()["task"]
+
+        self.assertEqual(fake.edit_calls, [])
+        self.assertEqual(failed["status"], "failed")
+        self.assertIn("edit_mask_missing", failed["error"])
+
+    def test_queue_worker_surfaces_mask_provider_rejection_without_unmasked_retry(self) -> None:
+        from codex_image.webui.app import create_app
+
+        class RejectingMaskClient(FakeImageClient):
+            def edit_image(self, **kwargs):
+                self.edit_calls.append(kwargs)
+                raise RuntimeError("provider does not support mask")
+
+        fake = RejectingMaskClient()
+        with tempfile.TemporaryDirectory() as tmp:
+            app = create_app(output_root=Path(tmp), client_factory=lambda: fake, auth_checker=lambda: True, auto_start_queue=False)
+            client = TestClient(app)
+            created = client.post(
+                "/api/edit",
+                data={"prompt": "edit queued", "size": "1024x1024", "quality": "low"},
+                files={
+                    "images": ("input.png", self._png_bytes(), "image/png"),
+                    "mask": ("mask.png", self._png_bytes(alpha=0), "image/png"),
+                },
+            )
+            task_id = created.json()["task"]["task_id"]
+
+            with self.assertRaisesRegex(RuntimeError, "edit_mask_provider_rejected"):
+                asyncio.run(app.state.queue_manager.run_available_once())
+            failed = client.get(f"/api/tasks/{task_id}").json()["task"]
+
+        self.assertEqual(len(fake.edit_calls), 1)
+        self.assertIsNotNone(fake.edit_calls[0]["mask_image"])
+        self.assertEqual(failed["status"], "failed")
+        self.assertIn("edit_mask_provider_rejected", failed["error"])
+
+    def test_queue_worker_retries_transient_failure_with_the_same_mask(self) -> None:
+        from codex_image.webui.app import create_app
+
+        class TransientMaskClient(FakeImageClient):
+            def edit_image(self, **kwargs):
+                if not self.edit_calls:
+                    self.edit_calls.append(kwargs)
+                    raise TimeoutError("temporary network timeout")
+                return super().edit_image(**kwargs)
+
+        fake = TransientMaskClient()
+        with tempfile.TemporaryDirectory() as tmp:
+            app = create_app(output_root=Path(tmp), client_factory=lambda: fake, auth_checker=lambda: True, auto_start_queue=False)
+            client = TestClient(app)
+            created = client.post(
+                "/api/edit",
+                data={"prompt": "edit queued", "size": "1024x1024", "quality": "low"},
+                files={
+                    "images": ("input.png", self._png_bytes(), "image/png"),
+                    "mask": ("mask.png", self._png_bytes(alpha=0), "image/png"),
+                },
+            )
+            self.assertEqual(created.status_code, 200)
+            app.state.queue_manager.auto_retry = True
+            app.state.queue_manager.max_attempts = 2
+
+            with self.assertRaisesRegex(RuntimeError, "temporary network timeout"):
+                asyncio.run(app.state.queue_manager.run_available_once())
+            asyncio.run(app.state.queue_manager.run_available_once())
+
+        self.assertEqual(len(fake.edit_calls), 2)
+        self.assertTrue(all(call["mask_image"] == fake.edit_calls[0]["mask_image"] for call in fake.edit_calls))
+
+    def test_queue_worker_does_not_misreport_generic_bad_request_as_mask_rejection(self) -> None:
+        from codex_image.webui.app import create_app
+
+        class GenericBadRequest(RuntimeError):
+            status = 400
+
+        class GenericBadRequestClient(FakeImageClient):
+            def edit_image(self, **kwargs):
+                if not self.edit_calls:
+                    self.edit_calls.append(kwargs)
+                    raise GenericBadRequest("invalid prompt parameter")
+                return super().edit_image(**kwargs)
+
+        fake = GenericBadRequestClient()
+        with tempfile.TemporaryDirectory() as tmp:
+            app = create_app(output_root=Path(tmp), client_factory=lambda: fake, auth_checker=lambda: True, auto_start_queue=False)
+            client = TestClient(app)
+            created = client.post(
+                "/api/edit",
+                data={"prompt": "edit queued", "size": "1024x1024", "quality": "low"},
+                files={
+                    "images": ("input.png", self._png_bytes(), "image/png"),
+                    "mask": ("mask.png", self._png_bytes(alpha=0), "image/png"),
+                },
+            )
+            self.assertEqual(created.status_code, 200)
+            app.state.queue_manager.auto_retry = True
+            app.state.queue_manager.max_attempts = 2
+
+            with self.assertRaisesRegex(RuntimeError, "invalid prompt parameter") as caught:
+                asyncio.run(app.state.queue_manager.run_available_once())
+            self.assertNotIn("edit_mask_provider_rejected", str(caught.exception))
+            asyncio.run(app.state.queue_manager.run_available_once())
+
+        self.assertEqual(len(fake.edit_calls), 2)
+        self.assertTrue(all(call["mask_image"] == fake.edit_calls[0]["mask_image"] for call in fake.edit_calls))
+
     def test_queue_worker_executes_multiple_outputs(self) -> None:
         from codex_image.webui.app import create_app
 

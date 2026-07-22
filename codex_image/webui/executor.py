@@ -19,6 +19,7 @@ from .executor_inputs import (
     _sniff_image_mime_type,
     _task_cancel_requested,
 )
+from .edit_mask import EditMaskContractError, is_explicit_edit_mask_rejection, validate_edit_mask_data_urls
 from .executor_progress import _restore_completed_output_progress
 from .executor_transport import (
     DEFAULT_API_IMAGES_CONCURRENCY,
@@ -74,6 +75,20 @@ def _output_error_message(exc: Exception, *, elapsed_seconds: float, timeout_sec
         elapsed = _format_elapsed_seconds(elapsed_seconds)
         return f"Image request failed after {elapsed}s (timeout limit {timeout_seconds:g}s): {message}"
     return message
+
+
+async def _call_edit_image_client(*, mask_image: str | None, **kwargs: Any) -> ImageResult:
+    try:
+        return await _call_image_client(mask_image=mask_image, **kwargs)
+    except asyncio.CancelledError:
+        raise
+    except Exception as exc:
+        if mask_image and is_explicit_edit_mask_rejection(exc):
+            raise EditMaskContractError(
+                "edit_mask_provider_rejected",
+                f"The provider rejected or could not process the Edit Mask: {exc}",
+            ) from exc
+        raise
 
 
 async def _execute_stored_task(
@@ -132,7 +147,9 @@ async def _execute_stored_task(
     mask_data_url = None
     if isinstance(mask_name, str) and mask_name:
         mask_path = storage.input_path(mask_name)
-        mask_data_url = _file_to_data_url(mask_path) if mask_path.exists() else None
+        if not mask_path.exists():
+            raise EditMaskContractError("edit_mask_missing", "The task-owned Edit Mask is no longer available.")
+        mask_data_url = _file_to_data_url(mask_path)
 
     raw_reference_assets = metadata.get("reference_assets")
     reference_asset_items = raw_reference_assets if isinstance(raw_reference_assets, list) else []
@@ -149,6 +166,10 @@ async def _execute_stored_task(
         [str(ref.get("id")) for ref in metadata.get("gallery_refs", []) if isinstance(ref, dict)],
     )
     data_urls = [_file_to_data_url(path) for path in input_paths if path.exists()] + reference_asset_data_urls + gallery_data_urls
+    if mask_data_url:
+        if not data_urls:
+            raise EditMaskContractError("edit_primary_image_missing", "The Primary Edit Image is no longer available.")
+        validate_edit_mask_data_urls(mask_data_url, data_urls[0])
     count = int(params.get("n") or 1)
     debug_sse_path = _debug_sse_path(storage, task_id)
     image_request_timeout_seconds = _image_request_timeout_seconds()
@@ -268,10 +289,10 @@ async def _execute_stored_task(
                                     )
                                     response_file_kwargs["reference_files"] = response_input_files
                                 if mode == "edit":
-                                    result = await _call_image_client(
-                                        None,
-                                        params,
-                                        client.edit_image,
+                                    result = await _call_edit_image_client(
+                                        request_context=None,
+                                        params=params,
+                                        method=client.edit_image,
                                         timeout_seconds=image_request_timeout_seconds,
                                         prompt=transport_prompt,
                                         images=data_urls,
@@ -401,10 +422,10 @@ async def _execute_stored_task(
                             )
                             response_file_kwargs["reference_files"] = response_input_files
                         if mode == "edit":
-                            result = await _call_image_client(
-                                request_context,
-                                params,
-                                client.edit_image,
+                            result = await _call_edit_image_client(
+                                request_context=request_context,
+                                params=params,
+                                method=client.edit_image,
                                 timeout_seconds=image_request_timeout_seconds,
                                 prompt=transport_prompt,
                                 images=data_urls,
