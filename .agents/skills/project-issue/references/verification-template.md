@@ -45,4 +45,4 @@
 }
 ```
 
-每个 repair round 必须包含：`round`、`amended=true`、不同的 `beforeHead/afterHead`、布尔 `codeChanged/testsChanged`、`retestRunId`、`standards/spec`、`findings`。未勾选的 mixed AC 必须在 `automatedSatisfied` 中按 AC index 指向一条当前 HEAD 上通过的 `testRunId` 并提供非空 evidence。人工 AC 不放入该数组，完成入口会保留其 checkbox 并记录为 pending manual。
+每个 repair round 必须包含：`round`、`amended=true`、不同的 `beforeHead/afterHead`、布尔 `codeChanged/testsChanged`、`testRunId`、`standards/spec`、`remainingFindings`。未勾选的 mixed AC 必须在 `automatedSatisfied` 中按 AC index 指向一条当前 HEAD 上通过的 `testRunId` 并提供非空 evidence。人工 AC 不放入该数组，完成入口会保留其 checkbox 并记录为 pending manual。

@@ -24,15 +24,15 @@
 
 ## 3. IMPLEMENT 与 VERIFY
 
-1. 先定义 `begin_issue.ps1`、`complete_issue.ps1` 及必要持久化解析 seam 上的可观察目标。
+1. 先根据 Issue/AC、规范或已批准设计，确定本次改动的可观察目标和公共 seam；无法确定时停止并转人工。
 2. 按照用户在规范或工单中描述的工作进行实施。
-3. 尽可能在预先约定的接缝处使用 /tdd。
+3. 新增或改变可观察行为时使用 /tdd；Issue/AC、规范或已批准设计中的公共接口视为已约定 seam，无法确定时停止并转人工。纯文档、机械迁移或不改变行为的重构不要求 TDD。
 4. 定期运行类型检查，定期运行单个测试文件，并在最后运行一次完整的测试套件。
 5. 直接实现当前 Issue；本阶段不 commit、不 review，不修改全局技能。
 6. 保留仍有效的故障、安全、恢复与人工 AC 场景。仅服务已废弃内部状态的测试与其生产代码一起删除，不机械改写成无意义断言。
-7. 运行解析/静态检查、目标 Pester 与完整 Pester。每次记录命令、mode、exitCode、total/passed/failed、skipped 明细、reportPath、runId 和绑定 HEAD。
+7. 运行当前技术栈适用的解析/静态检查、目标测试与完整测试套件。每次记录命令、mode、exitCode、total/passed/failed、skipped 明细、reportPath、runId 和绑定 HEAD。
 8. 预计长操作所需安全窗口超过 owner 剩余时间时，先调用 `renew_owner.ps1`，传入 WorkContext owner 与 `RequiredMinutes`。返回 `unchanged|renewed` 后原样记录 metrics；续租失败立即停止，旧任务不得继续修改共享状态。
-9. Unity 验证仅在当前 Issue 涉及 Unity 生产代码时执行；本自动化基础设施任务使用 CLI/Pester。
+9. Unity 验证仅在当前 Issue 涉及 Unity 生产代码时执行；其它 Issue 使用其技术栈对应的验证方式。
 
 ## 4. COMMIT 与最终 REVIEW
 

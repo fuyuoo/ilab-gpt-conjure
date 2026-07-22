@@ -5,7 +5,7 @@ description: 从动态 Parent 队列交付或恢复一张 GitHub issue。
 
 # Project Issue
 
-每次运行只处理一个明确执行对象。`begin_issue.ps1` 决定动态 Parent、原生关系、owner、恢复边界和 WorkContext；skill 在 WorkContext 内直接完成 TDD、实现、验证、单一 commit 与最终双轴 review；`complete_issue.ps1` 执行唯一交付门禁、发布结构化证据、关闭或转人工并返回下一目标。
+每次运行只处理一个明确执行对象。`begin_issue.ps1` 决定动态 Parent、原生关系、owner、恢复边界和 WorkContext；skill 在 WorkContext 内按适用性完成 TDD、实现、验证、单一 commit 与最终双轴 review；`complete_issue.ps1` 执行唯一交付门禁、发布结构化证据、关闭或转人工并返回下一目标。
 
 ## 1. 解析输入
 
