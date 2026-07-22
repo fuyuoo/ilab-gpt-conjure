@@ -610,6 +610,66 @@ class WebUIQueueTests(unittest.TestCase):
         self.assertEqual(len(fake.edit_calls[0]["images"]), 2)
         self.assertTrue(fake.edit_calls[0]["mask_image"].startswith("data:image/png;base64,"))
 
+    def test_queue_worker_normalizes_large_responses_edit_image_and_mask_as_a_pair(self) -> None:
+        from codex_image.client import ImageResult
+        from codex_image.webui.app import create_app
+        from codex_image.webui.edit_mask import decode_image_data_url
+
+        class ResponsesMaskSizeCheckingClient(FakeImageClient):
+            def edit_image(self, **kwargs):
+                self.edit_calls.append(kwargs)
+                primary = Image.open(BytesIO(decode_image_data_url(kwargs["images"][0])))
+                mask = Image.open(BytesIO(decode_image_data_url(kwargs["mask_image"])))
+                if primary.size != mask.size or max(primary.size) > 2048:
+                    raise RuntimeError(
+                        "Responses request failed: HTTP 200: invalid_mask_image_format: "
+                        "Invalid mask image format - mask size does not match image size"
+                    )
+                return ImageResult(
+                    image_bytes=b"normalized-edit",
+                    revised_prompt="",
+                    output_format="png",
+                    size="1024x1024",
+                    background="",
+                    quality="low",
+                    usage={},
+                )
+
+        fake = ResponsesMaskSizeCheckingClient()
+        with tempfile.TemporaryDirectory() as tmp:
+            app = create_app(
+                output_root=Path(tmp),
+                client_factory=lambda: fake,
+                auth_checker=lambda: True,
+                batch_delay_seconds=0,
+                auto_start_queue=False,
+            )
+            client = TestClient(app)
+            created = client.post(
+                "/api/edit",
+                data={
+                    "prompt": "edit a large portrait image",
+                    "size": "1024x1024",
+                    "quality": "low",
+                    "codex_mode": "responses",
+                },
+                files={
+                    "images": ("primary.png", self._png_bytes((1080, 2100)), "image/png"),
+                    "mask": ("mask.png", self._png_bytes((1080, 2100), alpha=0), "image/png"),
+                },
+            )
+            task_id = created.json()["task"]["task_id"]
+
+            asyncio.run(app.state.queue_manager.run_available_once())
+            task = client.get(f"/api/tasks/{task_id}").json()["task"]
+
+        self.assertEqual(task["status"], "completed")
+        self.assertEqual(len(fake.edit_calls), 1)
+        primary = Image.open(BytesIO(decode_image_data_url(fake.edit_calls[0]["images"][0])))
+        mask = Image.open(BytesIO(decode_image_data_url(fake.edit_calls[0]["mask_image"])))
+        self.assertEqual(primary.size, mask.size)
+        self.assertEqual(max(primary.size), 2048)
+
     def test_queue_worker_fails_if_task_owned_mask_disappears_without_calling_provider(self) -> None:
         from codex_image.webui.app import create_app
 

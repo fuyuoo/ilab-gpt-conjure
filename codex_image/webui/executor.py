@@ -19,7 +19,12 @@ from .executor_inputs import (
     _sniff_image_mime_type,
     _task_cancel_requested,
 )
-from .edit_mask import EditMaskContractError, is_explicit_edit_mask_rejection, validate_edit_mask_data_urls
+from .edit_mask import (
+    EditMaskContractError,
+    is_explicit_edit_mask_rejection,
+    normalize_responses_edit_mask_data_urls,
+    validate_edit_mask_data_urls,
+)
 from .executor_progress import _restore_completed_output_progress
 from .executor_transport import (
     DEFAULT_API_IMAGES_CONCURRENCY,
@@ -170,6 +175,8 @@ async def _execute_stored_task(
         if not data_urls:
             raise EditMaskContractError("edit_primary_image_missing", "The Primary Edit Image is no longer available.")
         validate_edit_mask_data_urls(mask_data_url, data_urls[0])
+        if effective_api_mode == "responses":
+            data_urls[0], mask_data_url = normalize_responses_edit_mask_data_urls(data_urls[0], mask_data_url)
     count = int(params.get("n") or 1)
     debug_sse_path = _debug_sse_path(storage, task_id)
     image_request_timeout_seconds = _image_request_timeout_seconds()

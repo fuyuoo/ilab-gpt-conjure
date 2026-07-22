@@ -8,6 +8,9 @@ from io import BytesIO
 from PIL import Image, UnidentifiedImageError
 
 
+RESPONSES_EDIT_MASK_MAX_EDGE = 2048
+
+
 class EditMaskContractError(RuntimeError):
     def __init__(self, code: str, message: str, *, retryable: bool = False) -> None:
         super().__init__(f"{code}: {message}")
@@ -62,6 +65,47 @@ def validate_edit_mask_data_urls(mask_data_url: str, primary_image_data_url: str
     validate_edit_mask(mask_bytes, primary_bytes)
 
 
+def normalize_responses_edit_mask_data_urls(
+    primary_image_data_url: str,
+    mask_data_url: str,
+    *,
+    max_edge: int = RESPONSES_EDIT_MASK_MAX_EDGE,
+) -> tuple[str, str]:
+    if max_edge <= 0:
+        raise ValueError("max_edge must be positive")
+
+    primary_bytes = decode_image_data_url(primary_image_data_url)
+    mask_bytes = _decode_mask_data_url(mask_data_url)
+    validate_edit_mask(mask_bytes, primary_bytes)
+
+    try:
+        with Image.open(BytesIO(primary_bytes)) as primary_source:
+            primary_source.load()
+            primary_size = primary_source.size
+            if max(primary_size) <= max_edge:
+                return primary_image_data_url, mask_data_url
+            primary = primary_source.convert("RGBA")
+        with Image.open(BytesIO(mask_bytes)) as mask_source:
+            mask_source.load()
+            mask = mask_source.convert("RGBA")
+    except (UnidentifiedImageError, OSError, ValueError) as exc:
+        raise EditMaskContractError("edit_mask_invalid", "The Edit Mask must be a valid PNG image.") from exc
+
+    scale = max_edge / max(primary_size)
+    target_size = tuple(max(1, int(round(dimension * scale))) for dimension in primary_size)
+    primary = primary.resize(target_size, Image.Resampling.LANCZOS)
+    mask = mask.resize(target_size, Image.Resampling.NEAREST)
+
+    primary_buffer = BytesIO()
+    primary.save(primary_buffer, format="PNG")
+    mask_buffer = BytesIO()
+    mask.save(mask_buffer, format="PNG")
+    normalized_primary = _png_data_url(primary_buffer.getvalue())
+    normalized_mask = _png_data_url(mask_buffer.getvalue())
+    validate_edit_mask_data_urls(normalized_mask, normalized_primary)
+    return normalized_primary, normalized_mask
+
+
 def _decode_mask_data_url(data_url: str) -> bytes:
     return _decode_image_data_url(
         data_url,
@@ -78,6 +122,10 @@ def _decode_image_data_url(data_url: str, *, code: str, message: str) -> bytes:
         return base64.b64decode(match.group(1), validate=True)
     except (ValueError, binascii.Error) as exc:
         raise EditMaskContractError(code, message) from exc
+
+
+def _png_data_url(image_bytes: bytes) -> str:
+    return f"data:image/png;base64,{base64.b64encode(image_bytes).decode('ascii')}"
 
 
 def is_explicit_edit_mask_rejection(exc: BaseException) -> bool:
