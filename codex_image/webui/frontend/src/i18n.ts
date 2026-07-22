@@ -68,6 +68,10 @@ export function translate(key: string, locale: Locale = currentLocale): string {
   return DICTIONARIES[locale]?.[key] ?? DICTIONARIES[DEFAULT_LOCALE][key] ?? key;
 }
 
+export function translationsForKey(key: string): string[] {
+  return [...new Set(LOCALES.map((locale) => translate(key, locale)))];
+}
+
 export function formatTranslation(key: string, values: TranslationValues = {}, locale: Locale = currentLocale): string {
   return translate(key, locale).replace(/\{(\w+)\}/g, (match, name) => {
     const value = values[name];

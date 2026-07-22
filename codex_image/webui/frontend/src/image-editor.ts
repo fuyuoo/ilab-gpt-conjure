@@ -15,7 +15,6 @@ import type {
   ImageEditorState,
 } from "./image-editor-types";
 
-const IMAGE_EDITOR_PROMPT_HINT_LEGACY = "\u56fe\u4e2d\u7684\u624b\u7ed8\u7bad\u5934\u548c\u6807\u8bb0\u4ec5\u7528\u4e8e\u6307\u793a\u7f16\u8f91\u8981\u6c42\uff0c\u4e0d\u8981\u4fdd\u7559\u5728\u6700\u7ec8\u753b\u9762\u4e2d\u3002";
 const IMAGE_EDITOR_MAX_EXPORT_EDGE = 4096;
 const IMAGE_EDITOR_HISTORY_LIMIT = 30;
 const IMAGE_EDITOR_LAYER_FIT_RATIO = 0.72;
@@ -1520,24 +1519,6 @@ function imageEditorExportBlob(canvas: any) {
   });
 }
 
-function ensureImageEditorPromptHint() {
-  const current = legacyMethod("getPromptText");
-  const hint = translate("imageEditor.promptHint");
-  if (current.includes(hint) || current.includes(IMAGE_EDITOR_PROMPT_HINT_LEGACY)) return;
-  const next = current ? `${current}\n${hint}` : hint;
-  legacyMethod("setPromptText", next);
-  legacyMethod("updatePromptCount");
-}
-
-function removeImageEditorPromptHint() {
-  const current = String(legacyMethod("getPromptText") || "");
-  const hints = [translate("imageEditor.promptHint"), IMAGE_EDITOR_PROMPT_HINT_LEGACY];
-  const next = current.split("\n").filter((line) => !hints.includes(line.trim())).join("\n").trim();
-  if (next === current) return;
-  legacyMethod("setPromptText", next);
-  legacyMethod("updatePromptCount");
-}
-
 async function saveImageEdit() {
   const state = getState();
   const els = getEls();
@@ -1604,11 +1585,6 @@ async function saveImageEdit() {
     state.images[sourceIndex] = nextSource;
     legacyMethod("revokeUploadPreviewUrl", source);
     legacyMethod("syncPromptGalleryMentionsFromInputs");
-    if (imageEditorState.activeGuidance === "instruction-marks" && imageEditorState.hasInstructionMarks) {
-      ensureImageEditorPromptHint();
-    } else {
-      removeImageEditorPromptHint();
-    }
     legacyMethod("renderImageStrip");
     legacyMethod("updateRequestPreview");
     closeImageEditor();

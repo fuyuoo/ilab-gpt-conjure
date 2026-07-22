@@ -255,6 +255,202 @@ class EditingGuidanceStateTests(unittest.TestCase):
             },
         )
 
+    def test_task_mode_switch_submits_marks_only_in_generate_and_restores_edit_region(self) -> None:
+        result = self._run_module_probe(
+            """
+            const {
+              editMaskForSubmission,
+              imageFilesForSubmission,
+              instructionMarksAreSubmitted,
+            } = require(process.argv[1]);
+            const cleanPrimary = { name: "clean-primary.png" };
+            const instructionMarks = { name: "instruction-marks.png" };
+            const editMask = { name: "edit-mask.png" };
+            const sources = [{
+              activeGuidance: "edit-region",
+              file: cleanPrimary,
+              baseFile: cleanPrimary,
+              instructionMarksFile: instructionMarks,
+              editMaskFile: editMask,
+            }];
+            const generate = {
+              files: imageFilesForSubmission("generate", sources).map((file) => file.name),
+              mask: editMaskForSubmission("generate", sources)?.name || null,
+              instructionMarksSubmitted: instructionMarksAreSubmitted("generate", sources),
+            };
+            const edit = {
+              files: imageFilesForSubmission("edit", sources).map((file) => file.name),
+              mask: editMaskForSubmission("edit", sources)?.name || null,
+              instructionMarksSubmitted: instructionMarksAreSubmitted("edit", sources),
+              activeGuidance: sources[0].activeGuidance,
+            };
+            process.stdout.write(JSON.stringify({ generate, edit }));
+            """,
+            "codex_image/webui/frontend/src/edit-region-materialization.ts",
+        )
+
+        self.assertEqual(
+            result,
+            {
+                "generate": {
+                    "files": ["instruction-marks.png"],
+                    "mask": None,
+                    "instructionMarksSubmitted": True,
+                },
+                "edit": {
+                    "files": ["clean-primary.png"],
+                    "mask": "edit-mask.png",
+                    "instructionMarksSubmitted": False,
+                    "activeGuidance": "edit-region",
+                },
+            },
+        )
+
+    def test_task_mode_switch_updates_prompt_hint_for_actual_submission(self) -> None:
+        result = self._run_module_probe(
+            """
+            const { promptForEditingGuidanceSubmission } = require(process.argv[1]);
+            const source = {
+              activeGuidance: "edit-region",
+              file: { name: "clean.png" },
+              baseFile: { name: "clean.png" },
+              instructionMarksFile: { name: "marks.png" },
+              editMaskFile: { name: "mask.png" },
+            };
+            const currentHint = "Marks are instructions only.";
+            const legacyHint = "Legacy marks hint.";
+            const generate = promptForEditingGuidanceSubmission(
+              `Change the shirt.\nEnglish marks hint.`,
+              currentHint,
+              [currentHint, legacyHint, "English marks hint."],
+              "generate",
+              [source],
+            );
+            const edit = promptForEditingGuidanceSubmission(
+              generate,
+              currentHint,
+              [currentHint, legacyHint, "English marks hint."],
+              "edit",
+              [source],
+            );
+            const cleanGenerate = promptForEditingGuidanceSubmission(
+              "Change the shirt.",
+              currentHint,
+              [currentHint, legacyHint, "English marks hint."],
+              "generate",
+              [{ activeGuidance: "edit-region", file: source.file, baseFile: source.baseFile }],
+            );
+            const markedEdit = promptForEditingGuidanceSubmission(
+              "Change the shirt.",
+              currentHint,
+              [currentHint, legacyHint, "English marks hint."],
+              "edit",
+              [{ ...source, activeGuidance: "instruction-marks" }],
+            );
+            process.stdout.write(JSON.stringify({ generate, edit, cleanGenerate, markedEdit }));
+            """,
+            "codex_image/webui/frontend/src/edit-region-materialization.ts",
+        )
+
+        self.assertEqual(
+            result,
+            {
+                "generate": "Change the shirt.\nMarks are instructions only.",
+                "edit": "Change the shirt.",
+                "cleanGenerate": "Change the shirt.",
+                "markedEdit": "Change the shirt.\nMarks are instructions only.",
+            },
+        )
+
+    def test_real_mode_control_preserves_both_drafts_across_round_trip(self) -> None:
+        form_controls_path = json.dumps(str(Path("codex_image/webui/frontend/src/form-controls.ts").resolve()))
+        script = """
+            const fs = require("fs");
+            const ts = require("typescript");
+            const vm = require("vm");
+            const guidance = require(process.argv[1]);
+            const sourceCode = fs.readFileSync(__FORM_CONTROLS_PATH__, "utf8");
+            const code = ts.transpileModule(sourceCode, {
+              compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2020 },
+            }).outputText;
+            const source = {
+              activeGuidance: "edit-region",
+              file: { name: "clean-primary.png" },
+              baseFile: { name: "clean-primary.png" },
+              instructionMarksFile: { name: "instruction-marks.png" },
+              editRegionFile: { name: "edit-region.png" },
+              editMaskFile: { name: "edit-mask.png" },
+            };
+            const initialSource = JSON.stringify(source);
+            const state = { mode: "edit", images: [source], runTimerId: null };
+            const modeButtons = [
+              { dataset: { mode: "generate" }, classList: { toggle() {} } },
+              { dataset: { mode: "edit" }, classList: { toggle() {} } },
+            ];
+            let previewUpdates = 0;
+            const bridge = { state, els: {}, methods: {} };
+            const noop = () => {};
+            const module = { exports: {} };
+            vm.runInNewContext(code, {
+              module,
+              exports: module.exports,
+              console,
+              document: { querySelectorAll: () => modeButtons },
+              require(name) {
+                if (name === "./state") return { getLegacyBridge: () => bridge };
+                if (name === "./output-controls") return {
+                  syncRadioButtons: noop,
+                  updateRequestPreview: () => { previewUpdates += 1; },
+                };
+                if (name === "./i18n") return {
+                  LOCALE_CHANGE_EVENT: "locale-change",
+                  translate: (key) => key,
+                };
+                return new Proxy({}, { get: () => noop });
+              },
+            });
+            module.exports.setMode("generate");
+            const generate = {
+              mode: state.mode,
+              files: guidance.imageFilesForSubmission(state.mode, state.images).map((file) => file.name),
+              mask: guidance.editMaskForSubmission(state.mode, state.images)?.name || null,
+            };
+            module.exports.setMode("edit");
+            const edit = {
+              mode: state.mode,
+              files: guidance.imageFilesForSubmission(state.mode, state.images).map((file) => file.name),
+              mask: guidance.editMaskForSubmission(state.mode, state.images)?.name || null,
+            };
+            process.stdout.write(JSON.stringify({
+              generate,
+              edit,
+              sourceUnchanged: JSON.stringify(source) === initialSource,
+              previewUpdates,
+            }));
+        """.replace("__FORM_CONTROLS_PATH__", form_controls_path)
+        result = self._run_module_probe(
+            script,
+            "codex_image/webui/frontend/src/edit-region-materialization.ts",
+        )
+
+        self.assertEqual(
+            result,
+            {
+                "generate": {
+                    "mode": "generate",
+                    "files": ["instruction-marks.png"],
+                    "mask": None,
+                },
+                "edit": {
+                    "mode": "edit",
+                    "files": ["clean-primary.png"],
+                    "mask": "edit-mask.png",
+                },
+                "sourceUnchanged": True,
+                "previewUpdates": 2,
+            },
+        )
+
     def test_task_persistence_maps_both_drafts_without_browser_urls_or_history(self) -> None:
         result = self._run_module_probe(
             """

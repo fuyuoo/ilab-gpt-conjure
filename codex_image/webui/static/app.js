@@ -13342,6 +13342,9 @@
   function translate(key, locale = currentLocale) {
     return DICTIONARIES[locale]?.[key] ?? DICTIONARIES[DEFAULT_LOCALE][key] ?? key;
   }
+  function translationsForKey(key) {
+    return [...new Set(LOCALES.map((locale) => translate(key, locale)))];
+  }
   function formatTranslation(key, values = {}, locale = currentLocale) {
     return translate(key, locale).replace(/\{(\w+)\}/g, (match, name) => {
       const value = values[name];
@@ -26640,9 +26643,27 @@ js: import "konva/skia-backend";
       return file ? [file] : [];
     });
   }
+  function instructionMarksAreSubmitted(mode, sources) {
+    if (editMaskForSubmission(mode, sources)) return false;
+    if (mode === "generate") {
+      const submittedFiles = new Set(imageFilesForSubmission(mode, sources));
+      return sources.some((source) => Boolean(
+        source.instructionMarksFile && submittedFiles.has(source.instructionMarksFile)
+      ));
+    }
+    return sources.some((source) => Boolean(
+      source.activeGuidance === "instruction-marks" && source.instructionMarksFile
+    ));
+  }
+  function promptForEditingGuidanceSubmission(prompt, instructionMarksHint, knownInstructionMarksHints, mode, sources) {
+    const hints = new Set(knownInstructionMarksHints.map((hint) => hint.trim()));
+    const withoutHint = prompt.split("\n").filter((line) => !hints.has(line.trim())).join("\n").trim();
+    if (!instructionMarksAreSubmitted(mode, sources)) return withoutHint;
+    return withoutHint ? `${withoutHint}
+${instructionMarksHint}` : instructionMarksHint;
+  }
 
   // codex_image/webui/frontend/src/image-editor.ts
-  var IMAGE_EDITOR_PROMPT_HINT_LEGACY = "\u56FE\u4E2D\u7684\u624B\u7ED8\u7BAD\u5934\u548C\u6807\u8BB0\u4EC5\u7528\u4E8E\u6307\u793A\u7F16\u8F91\u8981\u6C42\uFF0C\u4E0D\u8981\u4FDD\u7559\u5728\u6700\u7EC8\u753B\u9762\u4E2D\u3002";
   var IMAGE_EDITOR_MAX_EXPORT_EDGE = 4096;
   var IMAGE_EDITOR_HISTORY_LIMIT = 30;
   var IMAGE_EDITOR_LAYER_FIT_RATIO = 0.72;
@@ -28001,23 +28022,6 @@ js: import "konva/skia-backend";
       }, "image/png");
     });
   }
-  function ensureImageEditorPromptHint() {
-    const current = legacyMethod4("getPromptText");
-    const hint = translate("imageEditor.promptHint");
-    if (current.includes(hint) || current.includes(IMAGE_EDITOR_PROMPT_HINT_LEGACY)) return;
-    const next = current ? `${current}
-${hint}` : hint;
-    legacyMethod4("setPromptText", next);
-    legacyMethod4("updatePromptCount");
-  }
-  function removeImageEditorPromptHint() {
-    const current = String(legacyMethod4("getPromptText") || "");
-    const hints = [translate("imageEditor.promptHint"), IMAGE_EDITOR_PROMPT_HINT_LEGACY];
-    const next = current.split("\n").filter((line) => !hints.includes(line.trim())).join("\n").trim();
-    if (next === current) return;
-    legacyMethod4("setPromptText", next);
-    legacyMethod4("updatePromptCount");
-  }
   async function saveImageEdit() {
     const state32 = getState();
     const els43 = getEls();
@@ -28072,11 +28076,6 @@ ${hint}` : hint;
       state32.images[sourceIndex] = nextSource;
       legacyMethod4("revokeUploadPreviewUrl", source);
       legacyMethod4("syncPromptGalleryMentionsFromInputs");
-      if (imageEditorState.activeGuidance === "instruction-marks" && imageEditorState.hasInstructionMarks) {
-        ensureImageEditorPromptHint();
-      } else {
-        removeImageEditorPromptHint();
-      }
       legacyMethod4("renderImageStrip");
       legacyMethod4("updateRequestPreview");
       closeImageEditor();
@@ -35791,7 +35790,14 @@ ${galleryText}`;
     });
   }
   function currentPromptForModel() {
-    return currentPromptFidelity() === "original" ? expandPromptSnippets2(getPromptText8()) : buildPromptForModel();
+    const prompt = currentPromptFidelity() === "original" ? expandPromptSnippets2(getPromptText8()) : buildPromptForModel();
+    return promptForEditingGuidanceSubmission(
+      prompt,
+      translate("imageEditor.promptHint"),
+      translationsForKey("imageEditor.promptHint"),
+      bridge19.state.mode,
+      uploadInputs2()
+    );
   }
   function currentPromptFidelity() {
     const value = els20.promptFidelity?.value || "strict";

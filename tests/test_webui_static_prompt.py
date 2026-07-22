@@ -70,7 +70,9 @@ class WebUIStaticPromptTests(WebUIStaticTestCase):
         self.assertIn("promptFidelity: document.querySelector", script)
         self.assertIn("function currentPromptFidelity()", script)
         self.assertIn("function currentPromptForModel()", script)
-        self.assertIn('currentPromptFidelity() === "original" ? expandPromptSnippets(getPromptText()) : buildPromptForModel()', script)
+        self.assertIn('currentPromptFidelity() === "original"', script)
+        self.assertIn("promptForEditingGuidanceSubmission(", script)
+        self.assertIn('translate("imageEditor.promptHint")', script)
         self.assertIn("prompt_fidelity: currentPromptFidelity()", script)
         self.assertIn('form.append("prompt_fidelity", currentPromptFidelity())', script)
 

@@ -102,3 +102,36 @@ export function imageFilesForSubmission(
     return file ? [file] : [];
   });
 }
+
+export function instructionMarksAreSubmitted(
+  mode: string,
+  sources: EditingGuidanceSubmissionSource[],
+): boolean {
+  if (editMaskForSubmission(mode, sources)) return false;
+  if (mode === "generate") {
+    const submittedFiles = new Set(imageFilesForSubmission(mode, sources));
+    return sources.some((source) => Boolean(
+      source.instructionMarksFile && submittedFiles.has(source.instructionMarksFile),
+    ));
+  }
+  return sources.some((source) => Boolean(
+    source.activeGuidance === "instruction-marks" && source.instructionMarksFile,
+  ));
+}
+
+export function promptForEditingGuidanceSubmission(
+  prompt: string,
+  instructionMarksHint: string,
+  knownInstructionMarksHints: readonly string[],
+  mode: string,
+  sources: EditingGuidanceSubmissionSource[],
+): string {
+  const hints = new Set(knownInstructionMarksHints.map((hint) => hint.trim()));
+  const withoutHint = prompt
+    .split("\n")
+    .filter((line) => !hints.has(line.trim()))
+    .join("\n")
+    .trim();
+  if (!instructionMarksAreSubmitted(mode, sources)) return withoutHint;
+  return withoutHint ? `${withoutHint}\n${instructionMarksHint}` : instructionMarksHint;
+}

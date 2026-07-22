@@ -1,5 +1,6 @@
 import { getLegacyBridge } from "./state";
-import { formatTranslation, translate } from "./i18n";
+import { formatTranslation, translate, translationsForKey } from "./i18n";
+import { promptForEditingGuidanceSubmission } from "./edit-region-materialization";
 
 const bridge = getLegacyBridge();
 const els = bridge.els;
@@ -49,7 +50,16 @@ export function galleryReferenceInstruction(source: any, number: any): string {
 }
 
 export function currentPromptForModel(): string {
-  return currentPromptFidelity() === "original" ? expandPromptSnippets(getPromptText()) : buildPromptForModel();
+  const prompt = currentPromptFidelity() === "original"
+    ? expandPromptSnippets(getPromptText())
+    : buildPromptForModel();
+  return promptForEditingGuidanceSubmission(
+    prompt,
+    translate("imageEditor.promptHint"),
+    translationsForKey("imageEditor.promptHint"),
+    bridge.state.mode,
+    uploadInputs(),
+  );
 }
 
 export function currentPromptFidelity(): string {
