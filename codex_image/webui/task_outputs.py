@@ -685,6 +685,7 @@ def _write_queued_metadata(
     prompt_constraints: list[str] | None = None,
     requested_backend: str | None = None,
     max_attempts: int = 2,
+    editing_guidance: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     file_references = _reference_files_for_metadata(reference_files)
     metadata = {
@@ -712,6 +713,8 @@ def _write_queued_metadata(
     }
     if requested_backend:
         metadata["requested_backend"] = requested_backend
+    if editing_guidance:
+        metadata["editing_guidance"] = dict(editing_guidance)
     _apply_api_provider_metadata(metadata, params)
     _apply_api_images_concurrency_metadata(metadata, params)
     if prompt_constraints:

@@ -4,12 +4,106 @@ import json
 import re
 import shutil
 import subprocess
+import textwrap
 from pathlib import Path
 
 from tests.webui_helpers import WebUIStaticTestCase, run_typescript_node
 
 
 class WebUIStaticTaskTests(WebUIStaticTestCase):
+    def test_history_reuse_restores_both_guidance_drafts_and_active_type(self) -> None:
+        node = shutil.which("node")
+        if node is None:
+            self.skipTest("node is required for frontend behavior checks")
+        module_path = Path("codex_image/webui/frontend/src/task-selection.ts").resolve()
+        harness = textwrap.dedent(
+            f"""
+            const fs = require("fs");
+            const ts = require("typescript");
+            const vm = require("vm");
+            const source = fs.readFileSync({str(module_path)!r}, "utf8")
+              + "\\nexport {{ restoreHistoryTaskReuseHandoff as __reuse }};\\n";
+            const code = ts.transpileModule(source, {{
+              compilerOptions: {{ module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2020 }},
+            }}).outputText;
+            const task = {{
+              task_id: "task-5", mode: "edit", status: "completed", input_sources: [
+                {{ kind: "asset", id: "primary", image_url: "/assets/primary" }},
+                {{ kind: "asset", id: "reference", image_url: "/assets/reference" }},
+              ],
+              editing_guidance: {{
+                version: 1, activeGuidance: "edit-region",
+                sharedBaseUrl: "/inputs/base", instructionMarksUrl: "/inputs/marks",
+                editRegionUrl: "/inputs/region", editMaskUrl: "/inputs/mask",
+              }},
+            }};
+            const state = {{ images: [], tasks: [], referenceFiles: [], selectedTaskId: null, taskInputRestoreSeq: 0 }};
+            const statuses = [];
+            const bridge = {{ state, els: {{}}, methods: {{
+              closePromptPopover() {{}},
+              applyTaskToForm() {{}}, isOutputSettingsLocked() {{ return false; }}, showLockedOutputSettings() {{}},
+              renderReferenceFiles() {{}}, renderImageStrip() {{}}, updateRequestPreview() {{}},
+              updateTaskSelectionVisuals() {{}}, renderPreview() {{}}, taskRequestPreviewPayload() {{ return null; }},
+              taskFailureMessage() {{ return ""; }}, revokeUploadPreviewUrls() {{}},
+              uploadSource(file) {{ return {{ kind: "upload", file, name: file.name, previewUrl: `blob:${{file.name}}` }}; }},
+              assetSource(item) {{ return {{ kind: "asset", id: item.id, image_url: item.image_url }}; }},
+              gallerySource(item) {{ return item; }}, taskInputUrls() {{ return []; }},
+              setStatus(message, type) {{ statuses.push([message, type]); }},
+            }} }};
+            let handoff = JSON.stringify({{ task_id: "task-5" }});
+            const localStorage = {{ getItem() {{ return handoff; }}, removeItem() {{ handoff = ""; }} }};
+            class File {{ constructor(parts, name, options = {{}}) {{ this.parts = parts; this.name = name; this.type = options.type || ""; }} }}
+            async function fetch(url) {{
+              if (url === "/api/tasks/task-5") return {{ ok: true, json: async () => ({{ task }}) }};
+              return {{ ok: true, blob: async () => ({{ type: "image/png", url }}) }};
+            }}
+            const module = {{ exports: {{}} }};
+            vm.runInNewContext(code, {{
+              module, exports: module.exports, console, Promise, Set, Map, Array, File, fetch, localStorage,
+              require(name) {{
+                if (name === "./i18n") return {{ formatTranslation: (key) => key, translate: (key) => key }};
+                if (name === "./state") return {{ getLegacyBridge: () => bridge }};
+                if (name === "./edit-region-materialization") return {{ legacyEditMaskPixelsToEditRegion: (pixels) => pixels }};
+                if (name === "./editing-guidance-persistence") return {{
+                  loadEditingGuidanceFiles: async (guidance, loader) => ({{
+                    activeGuidance: guidance.activeGuidance,
+                    baseFile: await loader(guidance.sharedBaseUrl, "shared-base.png"),
+                    originalFile: await loader(guidance.sharedBaseUrl, "shared-base.png"),
+                    instructionMarksFile: await loader(guidance.instructionMarksUrl, "instruction-marks.png"),
+                    editRegionFile: await loader(guidance.editRegionUrl, "edit-region.png"),
+                    editMaskFile: await loader(guidance.editMaskUrl, "edit-mask.png"),
+                  }}),
+                }};
+                throw new Error(`unexpected require: ${{name}}`);
+              }},
+            }});
+            (async () => {{
+              await module.exports.__reuse();
+              const primary = state.images[0];
+              if (state.images.length !== 2 || state.images[1].id !== "reference") throw new Error(`references not restored: ${{JSON.stringify({{ images: state.images, statuses }})}}`);
+              if (primary.activeGuidance !== "edit-region") throw new Error("active guidance not restored");
+              if (primary.baseFile.name !== "shared-base.png") throw new Error("shared base not restored");
+              if (primary.instructionMarksFile.name !== "instruction-marks.png") throw new Error("marks not restored");
+              if (primary.editRegionFile.name !== "edit-region.png") throw new Error("region not restored");
+              if (primary.editMaskFile.name !== "edit-mask.png") throw new Error("mask not restored");
+              process.stdout.write(JSON.stringify({{ status: statuses.at(-1), selectedTaskId: state.selectedTaskId }}));
+            }})().catch((error) => {{ console.error(error); process.exit(1); }});
+            """
+        )
+        result = subprocess.run([node, "-e", harness], check=False, text=True, capture_output=True)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(json.loads(result.stdout)["selectedTaskId"], "task-5")
+
+    def test_task_submit_and_history_reuse_wire_editing_guidance_persistence(self) -> None:
+        submit = Path("codex_image/webui/frontend/src/task-submit.ts").read_text(encoding="utf-8")
+        selection = Path("codex_image/webui/frontend/src/task-selection.ts").read_text(encoding="utf-8")
+
+        self.assertIn("editingGuidanceForSubmission", submit)
+        self.assertIn('form.append("editing_guidance"', submit)
+        self.assertIn("loadEditingGuidanceFiles", selection)
+        self.assertIn("editing_guidance", selection)
+        self.assertIn("...restored", selection)
+
     def test_main_sidebar_uses_recent_tasks_and_links_history_page(self) -> None:
         tasks_source = Path("codex_image/webui/frontend/src/tasks.ts").read_text(encoding="utf-8")
         render_source = self._task_list_render_source()

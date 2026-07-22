@@ -14,6 +14,23 @@ def _input_urls(task_id: str, input_files: list[str]) -> list[str]:
     return [f"/inputs/{quote(filename, safe='')}" for filename in input_files]
 
 
+def _editing_guidance_with_urls(metadata: dict[str, Any]) -> dict[str, Any] | None:
+    raw = metadata.get("editing_guidance")
+    if not isinstance(raw, dict):
+        return None
+    enriched = dict(raw)
+    for file_key, url_key in (
+        ("sharedBaseFile", "sharedBaseUrl"),
+        ("instructionMarksFile", "instructionMarksUrl"),
+        ("editRegionFile", "editRegionUrl"),
+        ("editMaskFile", "editMaskUrl"),
+    ):
+        filename = str(raw.get(file_key) or "")
+        if filename:
+            enriched[url_key] = f"/inputs/{quote(filename, safe='')}"
+    return enriched
+
+
 def _input_thumbnail_route_url(task_id: str, input_index: int) -> str:
     return f"/api/tasks/{quote(task_id, safe='')}/inputs/{input_index}/thumbnail"
 
@@ -394,6 +411,26 @@ def _with_file_urls(
         enriched["gallery_refs"] = gallery_refs
     if reference_assets or gallery_refs:
         enriched["input_sources"] = _input_sources(task_id, input_names, gallery_refs, reference_assets)
+    editing_guidance = _editing_guidance_with_urls(metadata)
+    mask_file = str(metadata.get("mask_file") or "")
+    if editing_guidance is None and metadata.get("mode") == "edit" and mask_file:
+        shared_base_url = ""
+        if reference_assets:
+            shared_base_url = str(reference_assets[0].get("image_url") or "")
+        elif input_names:
+            shared_base_url = _input_urls(task_id, input_names)[0]
+        elif gallery_refs:
+            shared_base_url = str(gallery_refs[0].get("image_url") or "")
+        if shared_base_url:
+            editing_guidance = {
+                "version": 1,
+                "activeGuidance": "edit-region",
+                "legacyAlphaMask": True,
+                "sharedBaseUrl": shared_base_url,
+                "editMaskUrl": f"/inputs/{quote(mask_file, safe='')}",
+            }
+    if editing_guidance is not None:
+        enriched["editing_guidance"] = editing_guidance
     _with_output_thumbnail_urls(enriched, metadata, task_id)
     return enriched
 

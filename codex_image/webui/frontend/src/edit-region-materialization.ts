@@ -5,6 +5,7 @@ export type EditingGuidanceSubmissionSource = {
   file?: File | null;
   baseFile?: File | null;
   originalFile?: File | null;
+  instructionMarksFile?: File | null;
   editMaskFile?: File | null;
 };
 
@@ -59,6 +60,17 @@ export function editRegionHasPixels(editRegionPixels: Uint8ClampedArray): boolea
   return false;
 }
 
+export function legacyEditMaskPixelsToEditRegion(maskPixels: Uint8ClampedArray): Uint8ClampedArray {
+  const region = new Uint8ClampedArray(maskPixels.length);
+  for (let offset = 0; offset < maskPixels.length; offset += 4) {
+    region[offset] = 255;
+    region[offset + 1] = 59;
+    region[offset + 2] = 48;
+    region[offset + 3] = 255 - (maskPixels[offset + 3] ?? 255);
+  }
+  return region;
+}
+
 export function editMaskForSubmission(
   mode: string,
   sources: EditingGuidanceSubmissionSource[],
@@ -78,9 +90,15 @@ export function imageFilesForSubmission(
 ): File[] {
   const useCleanImages = Boolean(editMaskForSubmission(mode, sources));
   return sources.flatMap((source) => {
-    const file = useCleanImages
-      ? source.baseFile || source.originalFile || source.file
-      : source.file;
+    const file = mode === "generate"
+      ? source.instructionMarksFile
+        || (source.activeGuidance === "instruction-marks" ? source.file : null)
+        || source.baseFile
+        || source.originalFile
+        || source.file
+      : useCleanImages
+        ? source.baseFile || source.originalFile || source.file
+        : source.file;
     return file ? [file] : [];
   });
 }

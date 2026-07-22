@@ -3563,7 +3563,7 @@ class WebUIStaticLayoutTests(WebUIStaticTestCase):
             script,
             r'if \(source\.kind === "upload"\) \{[\s\S]*const edit = document\.createElement\("button"\)',
         )
-        self.assertIn('form.append("reference_images", source.file)', script)
+        self.assertIn('form.append("reference_images", file)', script)
         self.assertIn('form.append("images", file)', script)
         self.assertIn("imageFilesForSubmission(state.mode, uploads)", script)
     def test_theme_mode_markup_and_bootstrap_exist(self) -> None:

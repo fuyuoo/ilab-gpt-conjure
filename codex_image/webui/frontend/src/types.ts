@@ -106,6 +106,7 @@ export interface WebUITask {
   params?: TaskParams;
   input_urls?: string[];
   input_files?: string[];
+  editing_guidance?: Record<string, unknown>;
   output_url?: string;
   output_urls?: string[];
   outputs?: TaskOutputRecord[];

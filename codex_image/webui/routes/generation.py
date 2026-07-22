@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 from pathlib import Path
 from typing import Any
 
@@ -147,6 +148,11 @@ def register_generation_routes(app: FastAPI, ctx: WebUIContext) -> None:
         reference_asset_ids: list[str] | None = Form(None),
         reference_file_ids: list[str] | None = Form(None),
         reference_images: list[UploadFile] | None = File(None),
+        editing_guidance: str | None = Form(None),
+        editing_shared_base: UploadFile | None = File(None),
+        editing_instruction_marks: UploadFile | None = File(None),
+        editing_edit_region: UploadFile | None = File(None),
+        editing_edit_mask: UploadFile | None = File(None),
         reference_files: list[UploadFile] | None = File(None),
     ) -> dict[str, Any]:
         if not ctx.auth_checker():
@@ -185,9 +191,38 @@ def register_generation_routes(app: FastAPI, ctx: WebUIContext) -> None:
             reference_files or [],
             reference_file_ids or [],
         )
+        guidance_state: dict[str, Any] | None = None
+        if editing_guidance is not None:
+            try:
+                candidate = json.loads(editing_guidance)
+            except json.JSONDecodeError as exc:
+                raise HTTPException(status_code=400, detail="Invalid Editing Guidance state") from exc
+            if (
+                not isinstance(candidate, dict)
+                or candidate.get("version") != 1
+                or candidate.get("activeGuidance") not in {"instruction-marks", "edit-region"}
+                or editing_shared_base is None
+            ):
+                raise HTTPException(status_code=400, detail="Invalid Editing Guidance state")
+            guidance_state = {"version": 1, "activeGuidance": candidate["activeGuidance"]}
         task = ctx.storage.create_task("generate")
         created_at = utc_now()
         input_files: list[Path] = []
+        guidance_uploads = [
+            upload
+            for upload in (editing_shared_base, editing_instruction_marks, editing_edit_region, editing_edit_mask)
+            if upload is not None
+        ]
+        guidance_files = await h["save_uploads"](task.task_id, guidance_uploads, kind="guidance")
+        if guidance_state is not None:
+            guidance_file_iter = iter(guidance_files)
+            guidance_state["sharedBaseFile"] = next(guidance_file_iter).name
+            if editing_instruction_marks is not None:
+                guidance_state["instructionMarksFile"] = next(guidance_file_iter).name
+            if editing_edit_region is not None:
+                guidance_state["editRegionFile"] = next(guidance_file_iter).name
+            if editing_edit_mask is not None:
+                guidance_state["editMaskFile"] = next(guidance_file_iter).name
         reference_data_urls = [
             _file_to_data_url(ctx.reference_asset_storage.image_path(str(item["id"])), mime_type=str(item.get("mime_type") or ""))
             for item in reference_assets
@@ -283,6 +318,7 @@ def register_generation_routes(app: FastAPI, ctx: WebUIContext) -> None:
             prompt_constraints=prompt_constraints,
             requested_backend=requested_backend,
             max_attempts=ctx.queue_manager.max_attempts if ctx.queue_manager is not None else 1,
+            editing_guidance=guidance_state,
         )
         ctx.queue_storage.enqueue(task.task_id)
         h["ensure_queue_worker_running"]()
@@ -324,6 +360,10 @@ def register_generation_routes(app: FastAPI, ctx: WebUIContext) -> None:
         reference_file_ids: list[str] | None = Form(None),
         images: list[UploadFile] | None = File(None),
         mask: UploadFile | None = File(None),
+        editing_guidance: str | None = Form(None),
+        editing_shared_base: UploadFile | None = File(None),
+        editing_instruction_marks: UploadFile | None = File(None),
+        editing_edit_region: UploadFile | None = File(None),
         reference_files: list[UploadFile] | None = File(None),
     ) -> dict[str, Any]:
         if not ctx.auth_checker():
@@ -377,10 +417,43 @@ def register_generation_routes(app: FastAPI, ctx: WebUIContext) -> None:
             except EditMaskContractError as exc:
                 raise HTTPException(status_code=400, detail=exc.detail) from exc
 
+        guidance_state: dict[str, Any] | None = None
+        if editing_guidance is not None:
+            try:
+                candidate = json.loads(editing_guidance)
+            except json.JSONDecodeError as exc:
+                raise HTTPException(status_code=400, detail="Invalid Editing Guidance state") from exc
+            if (
+                not isinstance(candidate, dict)
+                or candidate.get("version") != 1
+                or candidate.get("activeGuidance") not in {"instruction-marks", "edit-region"}
+                or editing_shared_base is None
+            ):
+                raise HTTPException(status_code=400, detail="Invalid Editing Guidance state")
+            if candidate["activeGuidance"] == "edit-region" and (editing_edit_region is None or mask is None):
+                raise HTTPException(status_code=400, detail="Edit Region guidance requires an Edit Region and Edit Mask")
+            guidance_state = {
+                "version": 1,
+                "activeGuidance": candidate["activeGuidance"],
+            }
+
         task = ctx.storage.create_task("edit")
         created_at = utc_now()
         input_files: list[Path] = []
         mask_files = await h["save_uploads"](task.task_id, [mask] if mask is not None else [], kind="mask")
+        guidance_uploads = [
+            upload
+            for upload in (editing_shared_base, editing_instruction_marks, editing_edit_region)
+            if upload is not None
+        ]
+        guidance_files = await h["save_uploads"](task.task_id, guidance_uploads, kind="guidance")
+        if guidance_state is not None:
+            guidance_file_iter = iter(guidance_files)
+            guidance_state["sharedBaseFile"] = next(guidance_file_iter).name
+            if editing_instruction_marks is not None:
+                guidance_state["instructionMarksFile"] = next(guidance_file_iter).name
+            if editing_edit_region is not None:
+                guidance_state["editRegionFile"] = next(guidance_file_iter).name
         mask_data_url = _file_to_data_url(mask_files[0]) if mask_files else None
         compression = _normalize_compression(output_format, output_compression)
         fidelity = _normalize_prompt_fidelity(prompt_fidelity)
@@ -427,6 +500,8 @@ def register_generation_routes(app: FastAPI, ctx: WebUIContext) -> None:
         request_payload = h["build_image_request_payload"](**request_kwargs)
         image_input_names = [path.name for path in input_files]
         mask_file = mask_files[0].name if mask_files else None
+        if guidance_state is not None and mask_file:
+            guidance_state["editMaskFile"] = mask_file
         stored_request_payload = h["slim_request_payload"](
             request_payload,
             input_files=image_input_names,
@@ -481,6 +556,7 @@ def register_generation_routes(app: FastAPI, ctx: WebUIContext) -> None:
             prompt_constraints=prompt_constraints,
             requested_backend=requested_backend,
             max_attempts=ctx.queue_manager.max_attempts if ctx.queue_manager is not None else 1,
+            editing_guidance=guidance_state,
         )
         ctx.queue_storage.enqueue(task.task_id)
         h["ensure_queue_worker_running"]()

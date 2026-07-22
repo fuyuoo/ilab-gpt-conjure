@@ -26614,6 +26614,16 @@ js: import "konva/skia-backend";
     }
     return false;
   }
+  function legacyEditMaskPixelsToEditRegion(maskPixels) {
+    const region = new Uint8ClampedArray(maskPixels.length);
+    for (let offset = 0; offset < maskPixels.length; offset += 4) {
+      region[offset] = 255;
+      region[offset + 1] = 59;
+      region[offset + 2] = 48;
+      region[offset + 3] = 255 - (maskPixels[offset + 3] ?? 255);
+    }
+    return region;
+  }
   function editMaskForSubmission(mode, sources) {
     if (mode !== "edit") return null;
     const primary = sources[0];
@@ -26626,7 +26636,7 @@ js: import "konva/skia-backend";
   function imageFilesForSubmission(mode, sources) {
     const useCleanImages = Boolean(editMaskForSubmission(mode, sources));
     return sources.flatMap((source) => {
-      const file = useCleanImages ? source.baseFile || source.originalFile || source.file : source.file;
+      const file = mode === "generate" ? source.instructionMarksFile || (source.activeGuidance === "instruction-marks" ? source.file : null) || source.baseFile || source.originalFile || source.file : useCleanImages ? source.baseFile || source.originalFile || source.file : source.file;
       return file ? [file] : [];
     });
   }
@@ -39689,6 +39699,39 @@ ${galleryText}`;
     });
   }
 
+  // codex_image/webui/frontend/src/editing-guidance-persistence.ts
+  var EDITING_GUIDANCE_PERSISTENCE_VERSION = 1;
+  function editingGuidanceForSubmission(source) {
+    const activeGuidance = source?.activeGuidance;
+    const sharedBase = source?.baseFile || source?.originalFile;
+    if (!sharedBase || !["instruction-marks", "edit-region"].includes(String(activeGuidance))) return null;
+    const files = { editing_shared_base: sharedBase };
+    if (source?.instructionMarksFile) files.editing_instruction_marks = source.instructionMarksFile;
+    if (source?.editRegionFile) files.editing_edit_region = source.editRegionFile;
+    if (source?.editMaskFile) files.editing_edit_mask = source.editMaskFile;
+    return {
+      state: { version: EDITING_GUIDANCE_PERSISTENCE_VERSION, activeGuidance },
+      files
+    };
+  }
+  async function loadEditingGuidanceFiles(guidance, loadFile) {
+    if (guidance?.version !== EDITING_GUIDANCE_PERSISTENCE_VERSION || !["instruction-marks", "edit-region"].includes(String(guidance.activeGuidance)) || !guidance.sharedBaseUrl) return null;
+    const [baseFile, instructionMarksFile, editRegionFile, editMaskFile] = await Promise.all([
+      loadFile(guidance.sharedBaseUrl, "shared-base.png"),
+      guidance.instructionMarksUrl ? loadFile(guidance.instructionMarksUrl, "instruction-marks.png") : null,
+      guidance.editRegionUrl ? loadFile(guidance.editRegionUrl, "edit-region.png") : null,
+      guidance.editMaskUrl ? loadFile(guidance.editMaskUrl, "edit-mask.png") : null
+    ]);
+    return {
+      activeGuidance: guidance.activeGuidance,
+      baseFile,
+      originalFile: baseFile,
+      instructionMarksFile,
+      editRegionFile,
+      editMaskFile
+    };
+  }
+
   // codex_image/webui/frontend/src/task-submit.ts
   var bridge30 = getLegacyBridge();
   var state24 = bridge30.state;
@@ -40121,8 +40164,13 @@ ${galleryText}`;
     assets.forEach((source) => form.append("reference_asset_ids", source.id));
     fileUploads.forEach((source) => form.append("reference_files", source.file));
     storedFiles.forEach((source) => form.append("reference_file_ids", source.id));
+    const persistedGuidance = editingGuidanceForSubmission(uploads[0]);
+    if (persistedGuidance) {
+      form.append("editing_guidance", JSON.stringify(persistedGuidance.state));
+      Object.entries(persistedGuidance.files).forEach(([field, file]) => form.append(field, file));
+    }
     if (state24.mode === "generate") {
-      uploads.forEach((source) => form.append("reference_images", source.file));
+      editImageFiles.forEach((file) => form.append("reference_images", file));
     } else {
       editImageFiles.forEach((file) => form.append("images", file));
       if (editMask) form.append("mask", editMask);
@@ -43666,13 +43714,57 @@ ${galleryText}`;
       els39.requestJson.textContent = JSON.stringify(requestPayload, null, 2);
     }
   }
-  function applyTaskInputRestoreSources(sources, taskId, restoreSeq) {
+  async function fetchEditingGuidanceFile(url, filename) {
+    const response = await fetch(url);
+    if (!response.ok) throw new Error(formatTranslation("status.historyInputLoadFailed", { url }));
+    const blob = await response.blob();
+    return new File([blob], filename, { type: blob.type || "image/png" });
+  }
+  async function editRegionFileFromLegacyMask(maskFile) {
+    const bitmap = await createImageBitmap(maskFile);
+    const canvas = document.createElement("canvas");
+    canvas.width = bitmap.width;
+    canvas.height = bitmap.height;
+    const context = canvas.getContext("2d", { willReadFrequently: true });
+    if (!context) throw new Error(translate("imageEditor.loadForEditFailed"));
+    context.drawImage(bitmap, 0, 0);
+    bitmap.close();
+    const image = context.getImageData(0, 0, canvas.width, canvas.height);
+    image.data.set(legacyEditMaskPixelsToEditRegion(image.data));
+    context.putImageData(image, 0, 0);
+    const blob = await new Promise((resolve, reject) => canvas.toBlob(
+      (value) => value ? resolve(value) : reject(new Error(translate("imageEditor.loadForEditFailed"))),
+      "image/png"
+    ));
+    return new File([blob], "edit-region.png", { type: "image/png" });
+  }
+  async function restoreTaskEditingGuidance(sources, task) {
+    const restored = await loadEditingGuidanceFiles(task?.editing_guidance, fetchEditingGuidanceFile);
+    if (!restored) return sources;
+    if (task?.editing_guidance?.legacyAlphaMask && !restored.editRegionFile && restored.editMaskFile) {
+      restored.editRegionFile = await editRegionFileFromLegacyMask(restored.editMaskFile);
+    }
+    const submissionFile = restored.activeGuidance === "instruction-marks" && restored.instructionMarksFile ? restored.instructionMarksFile : restored.baseFile;
+    const primary = {
+      ...uploadSource3(submissionFile),
+      ...restored,
+      file: submissionFile,
+      edited: true
+    };
+    return [primary, ...sources.slice(1)];
+  }
+  async function applyTaskInputRestoreSources(sources, taskId, restoreSeq, task) {
     if (!selectedTaskInputRestoreCurrent(taskId, restoreSeq)) {
       revokeUploadPreviewUrls2(sources);
       return false;
     }
+    const restoredSources = await restoreTaskEditingGuidance(sources, task);
+    if (!selectedTaskInputRestoreCurrent(taskId, restoreSeq)) {
+      revokeUploadPreviewUrls2(restoredSources);
+      return false;
+    }
     revokeUploadPreviewUrls2(state30.images);
-    state30.images = sources.filter(Boolean);
+    state30.images = restoredSources.filter(Boolean);
     renderImageStrip6();
     updateRequestPreview12();
     return true;
@@ -43769,7 +43861,7 @@ ${galleryText}`;
     const taskId = options.taskId ?? task?.task_id;
     const restoreSeq = options.restoreSeq;
     if (Array.isArray(task.local_input_files)) {
-      return applyTaskInputRestoreSources(task.local_input_files.slice(), taskId, restoreSeq);
+      return applyTaskInputRestoreSources(task.local_input_files.slice(), taskId, restoreSeq, task);
     }
     if (Array.isArray(task.input_sources) && task.input_sources.length) {
       const restoredSources = [];
@@ -43806,12 +43898,12 @@ ${galleryText}`;
         revokeUploadPreviewUrls2(restoredSources);
         throw error;
       }
-      return applyTaskInputRestoreSources(restoredSources, taskId, restoreSeq);
+      return applyTaskInputRestoreSources(restoredSources, taskId, restoreSeq, task);
     }
     const urls = taskInputUrls2(task);
     const gallerySources = Array.isArray(task.gallery_refs) ? task.gallery_refs.map((ref) => gallerySource4(ref)) : [];
     if (!urls.length) {
-      return applyTaskInputRestoreSources(gallerySources, taskId, restoreSeq);
+      return applyTaskInputRestoreSources(gallerySources, taskId, restoreSeq, task);
     }
     if (selectedTaskInputRestoreCurrent(taskId, restoreSeq)) {
       setStatus21(translate("status.loadingHistoryInputs"), "");
@@ -43836,7 +43928,7 @@ ${galleryText}`;
       revokeUploadPreviewUrls2(files);
       throw error;
     }
-    return applyTaskInputRestoreSources([...files, ...gallerySources], taskId, restoreSeq);
+    return applyTaskInputRestoreSources([...files, ...gallerySources], taskId, restoreSeq, task);
   }
   async function selectTask2(taskId) {
     closePromptPopover8();

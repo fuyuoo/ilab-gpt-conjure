@@ -1,6 +1,8 @@
 // @ts-nocheck
 import { formatTranslation, translate } from "./i18n";
 import { getLegacyBridge } from "./state";
+import { loadEditingGuidanceFiles } from "./editing-guidance-persistence";
+import { legacyEditMaskPixelsToEditRegion } from "./edit-region-materialization";
 
 const bridge = getLegacyBridge();
 const state = bridge.state;
@@ -53,13 +55,62 @@ function applySelectedTaskRequestPreview(task) {
   }
 }
 
-function applyTaskInputRestoreSources(sources, taskId, restoreSeq) {
+async function fetchEditingGuidanceFile(url, filename) {
+  const response = await fetch(url);
+  if (!response.ok) throw new Error(formatTranslation("status.historyInputLoadFailed", { url }));
+  const blob = await response.blob();
+  return new File([blob], filename, { type: blob.type || "image/png" });
+}
+
+async function editRegionFileFromLegacyMask(maskFile) {
+  const bitmap = await createImageBitmap(maskFile);
+  const canvas = document.createElement("canvas");
+  canvas.width = bitmap.width;
+  canvas.height = bitmap.height;
+  const context = canvas.getContext("2d", { willReadFrequently: true });
+  if (!context) throw new Error(translate("imageEditor.loadForEditFailed"));
+  context.drawImage(bitmap, 0, 0);
+  bitmap.close();
+  const image = context.getImageData(0, 0, canvas.width, canvas.height);
+  image.data.set(legacyEditMaskPixelsToEditRegion(image.data));
+  context.putImageData(image, 0, 0);
+  const blob = await new Promise((resolve, reject) => canvas.toBlob(
+    (value) => value ? resolve(value) : reject(new Error(translate("imageEditor.loadForEditFailed"))),
+    "image/png",
+  ));
+  return new File([blob], "edit-region.png", { type: "image/png" });
+}
+
+async function restoreTaskEditingGuidance(sources, task) {
+  const restored = await loadEditingGuidanceFiles(task?.editing_guidance, fetchEditingGuidanceFile);
+  if (!restored) return sources;
+  if (task?.editing_guidance?.legacyAlphaMask && !restored.editRegionFile && restored.editMaskFile) {
+    restored.editRegionFile = await editRegionFileFromLegacyMask(restored.editMaskFile);
+  }
+  const submissionFile = restored.activeGuidance === "instruction-marks" && restored.instructionMarksFile
+    ? restored.instructionMarksFile
+    : restored.baseFile;
+  const primary = {
+    ...uploadSource(submissionFile),
+    ...restored,
+    file: submissionFile,
+    edited: true,
+  };
+  return [primary, ...sources.slice(1)];
+}
+
+async function applyTaskInputRestoreSources(sources, taskId, restoreSeq, task) {
   if (!selectedTaskInputRestoreCurrent(taskId, restoreSeq)) {
     revokeUploadPreviewUrls(sources);
     return false;
   }
+  const restoredSources = await restoreTaskEditingGuidance(sources, task);
+  if (!selectedTaskInputRestoreCurrent(taskId, restoreSeq)) {
+    revokeUploadPreviewUrls(restoredSources);
+    return false;
+  }
   revokeUploadPreviewUrls(state.images);
-  state.images = sources.filter(Boolean);
+  state.images = restoredSources.filter(Boolean);
   renderImageStrip();
   updateRequestPreview();
   return true;
@@ -166,7 +217,7 @@ async function restoreTaskInputs(task, options = {}) {
   const taskId = options.taskId ?? task?.task_id;
   const restoreSeq = options.restoreSeq;
   if (Array.isArray(task.local_input_files)) {
-    return applyTaskInputRestoreSources(task.local_input_files.slice(), taskId, restoreSeq);
+    return applyTaskInputRestoreSources(task.local_input_files.slice(), taskId, restoreSeq, task);
   }
 
   if (Array.isArray(task.input_sources) && task.input_sources.length) {
@@ -204,7 +255,7 @@ async function restoreTaskInputs(task, options = {}) {
       revokeUploadPreviewUrls(restoredSources);
       throw error;
     }
-    return applyTaskInputRestoreSources(restoredSources, taskId, restoreSeq);
+    return applyTaskInputRestoreSources(restoredSources, taskId, restoreSeq, task);
   }
 
   const urls = taskInputUrls(task);
@@ -212,7 +263,7 @@ async function restoreTaskInputs(task, options = {}) {
     ? task.gallery_refs.map((ref) => gallerySource(ref))
     : [];
   if (!urls.length) {
-    return applyTaskInputRestoreSources(gallerySources, taskId, restoreSeq);
+    return applyTaskInputRestoreSources(gallerySources, taskId, restoreSeq, task);
   }
 
   if (selectedTaskInputRestoreCurrent(taskId, restoreSeq)) {
@@ -238,7 +289,7 @@ async function restoreTaskInputs(task, options = {}) {
     revokeUploadPreviewUrls(files);
     throw error;
   }
-  return applyTaskInputRestoreSources([...files, ...gallerySources], taskId, restoreSeq);
+  return applyTaskInputRestoreSources([...files, ...gallerySources], taskId, restoreSeq, task);
 }
 
 async function selectTask(taskId) {

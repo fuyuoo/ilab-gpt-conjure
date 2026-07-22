@@ -97,8 +97,8 @@ class TaskStorage:
         return path
 
     def write_input(self, task_id: str, filename: str, data: bytes, *, kind: str = "input", index: int | None = None) -> Path:
-        if kind not in {"input", "mask"}:
-            raise ValueError("Input kind must be input or mask")
+        if kind not in {"input", "mask", "guidance"}:
+            raise ValueError("Input kind must be input, mask, or guidance")
         self._validate_task_id(task_id)
         next_index = index if index is not None else self._next_input_index(task_id, kind)
         prefix = f"{task_id}-{kind}-{next_index:02d}-"
@@ -135,6 +135,7 @@ class TaskStorage:
         paths = [
             *self.input_root.glob(f"{task_id}-input-*"),
             *self.input_root.glob(f"{task_id}-mask-*"),
+            *self.input_root.glob(f"{task_id}-guidance-*"),
             *output_paths,
             *thumbnail_paths,
             *self._task_source_data_paths(task_id),

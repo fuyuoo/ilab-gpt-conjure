@@ -569,6 +569,8 @@ class ReferenceFileFrontendContractTests(unittest.TestCase):
               require(name) {{
                 if (name === "./i18n") return {{ formatTranslation: (key) => key, translate: (key) => key }};
                 if (name === "./state") return {{ getLegacyBridge: () => bridge }};
+                if (name === "./editing-guidance-persistence") return {{ loadEditingGuidanceFiles: async () => null }};
+                if (name === "./edit-region-materialization") return {{ legacyEditMaskPixelsToEditRegion: (pixels) => pixels }};
                 throw new Error(`unexpected require: ${{name}}`);
               }},
             }});
@@ -627,6 +629,8 @@ class ReferenceFileFrontendContractTests(unittest.TestCase):
               require(name) {{
                 if (name === "./i18n") return {{ formatTranslation: (key) => key, translate: (key) => key }};
                 if (name === "./state") return {{ getLegacyBridge: () => bridge }};
+                if (name === "./editing-guidance-persistence") return {{ loadEditingGuidanceFiles: async () => null }};
+                if (name === "./edit-region-materialization") return {{ legacyEditMaskPixelsToEditRegion: (pixels) => pixels }};
                 throw new Error(`unexpected require: ${{name}}`);
               }},
             }});

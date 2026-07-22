@@ -141,14 +141,18 @@ class EditingGuidanceStateTests(unittest.TestCase):
     def test_edit_region_pixels_materialize_as_provider_alpha_mask(self) -> None:
         result = self._run_module_probe(
             """
-            const { materializeEditMaskPixels } = require(process.argv[1]);
+            const { legacyEditMaskPixelsToEditRegion, materializeEditMaskPixels } = require(process.argv[1]);
             const mask = materializeEditMaskPixels(2, 2, new Uint8ClampedArray([
               0, 0, 0, 0,
               255, 0, 0, 1,
               255, 0, 0, 128,
               255, 0, 0, 255,
             ]));
-            process.stdout.write(JSON.stringify({ pixels: Array.from(mask) }));
+            const restored = legacyEditMaskPixelsToEditRegion(new Uint8ClampedArray([
+              0, 0, 0, 255,
+              0, 0, 0, 0,
+            ]));
+            process.stdout.write(JSON.stringify({ pixels: Array.from(mask), restored: Array.from(restored) }));
             """,
             "codex_image/webui/frontend/src/edit-region-materialization.ts",
         )
@@ -162,6 +166,7 @@ class EditingGuidanceStateTests(unittest.TestCase):
                 0, 0, 0, 0,
             ],
         )
+        self.assertEqual(result["restored"], [255, 59, 48, 0, 255, 59, 48, 255])
 
     def test_mask_submission_is_edit_only_primary_only_and_active_only(self) -> None:
         result = self._run_module_probe(
@@ -203,6 +208,7 @@ class EditingGuidanceStateTests(unittest.TestCase):
             """
             const { editMaskForSubmission, imageFilesForSubmission } = require(process.argv[1]);
             const markedPrimary = { name: "marked-primary.png" };
+            const instructionMarksDraft = { name: "instruction-marks-draft.png" };
             const cleanPrimary = { name: "clean-primary.png" };
             const markedReference = { name: "marked-reference.png" };
             const cleanReference = { name: "clean-reference.png" };
@@ -212,6 +218,7 @@ class EditingGuidanceStateTests(unittest.TestCase):
                 activeGuidance: "edit-region",
                 file: markedPrimary,
                 baseFile: cleanPrimary,
+                instructionMarksFile: instructionMarksDraft,
                 editMaskFile: mask,
               },
               {
@@ -229,6 +236,7 @@ class EditingGuidanceStateTests(unittest.TestCase):
             process.stdout.write(JSON.stringify({
               missingMaskError,
               editFiles: imageFilesForSubmission("edit", sources).map((file) => file.name),
+              generateFiles: imageFilesForSubmission("generate", sources).map((file) => file.name),
               instructionMarksFiles: imageFilesForSubmission("edit", [
                 { activeGuidance: "instruction-marks", file: markedPrimary, baseFile: cleanPrimary },
               ]).map((file) => file.name),
@@ -242,9 +250,57 @@ class EditingGuidanceStateTests(unittest.TestCase):
             {
                 "missingMaskError": "An active Edit Region requires a materialized Edit Mask.",
                 "editFiles": ["clean-primary.png", "clean-reference.png"],
+                "generateFiles": ["instruction-marks-draft.png", "marked-reference.png"],
                 "instructionMarksFiles": ["marked-primary.png"],
             },
         )
+
+    def test_task_persistence_maps_both_drafts_without_browser_urls_or_history(self) -> None:
+        result = self._run_module_probe(
+            """
+            const {
+              editingGuidanceForSubmission,
+              loadEditingGuidanceFiles,
+            } = require(process.argv[1]);
+            const source = {
+              baseFile: { name: "base.png" },
+              instructionMarksFile: { name: "marks.png" },
+              editRegionFile: { name: "region.png" },
+              editMaskFile: { name: "mask.png" },
+              activeGuidance: "edit-region",
+              undoStack: ["must-not-persist"],
+            };
+            const submission = editingGuidanceForSubmission(source);
+            const loaded = [];
+            loadEditingGuidanceFiles({
+              version: 1,
+              activeGuidance: "edit-region",
+              sharedBaseUrl: "/inputs/base",
+              instructionMarksUrl: "/inputs/marks",
+              editRegionUrl: "/inputs/region",
+              editMaskUrl: "/inputs/mask",
+            }, async (url, name) => {
+              loaded.push(url);
+              return { name };
+            }).then((restored) => {
+              process.stdout.write(JSON.stringify({ submission, restored, loaded }));
+            });
+            """,
+            module="codex_image/webui/frontend/src/editing-guidance-persistence.ts",
+        )
+
+        self.assertEqual(result["submission"]["state"], {"version": 1, "activeGuidance": "edit-region"})
+        self.assertEqual(
+            list(result["submission"]["files"]),
+            ["editing_shared_base", "editing_instruction_marks", "editing_edit_region", "editing_edit_mask"],
+        )
+        self.assertNotIn("undoStack", json.dumps(result["submission"]))
+        self.assertEqual(result["loaded"], ["/inputs/base", "/inputs/marks", "/inputs/region", "/inputs/mask"])
+        self.assertEqual(result["restored"]["activeGuidance"], "edit-region")
+        self.assertEqual(result["restored"]["baseFile"]["name"], "shared-base.png")
+        self.assertEqual(result["restored"]["instructionMarksFile"]["name"], "instruction-marks.png")
+        self.assertEqual(result["restored"]["editRegionFile"]["name"], "edit-region.png")
+        self.assertEqual(result["restored"]["editMaskFile"]["name"], "edit-mask.png")
 
     def test_fractional_crop_uses_one_bounded_integer_rectangle(self) -> None:
         result = self._run_module_probe(

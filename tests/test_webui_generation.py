@@ -103,6 +103,41 @@ class WebUIGenerationTests(unittest.TestCase):
         self.assertEqual(metadata["status"], "queued")
         self.assertEqual(fake.generate_calls, [])
 
+    def test_generate_task_preserves_editing_guidance_without_submitting_a_mask(self) -> None:
+        from codex_image.webui.app import create_app
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            app = create_app(
+                output_root=root,
+                client_factory=lambda: FakeImageClient(),
+                auth_checker=lambda: True,
+                auto_start_queue=False,
+            )
+            client = TestClient(app)
+            response = client.post(
+                "/api/generate",
+                data={
+                    "prompt": "generate from retained marks",
+                    "codex_mode": "responses",
+                    "editing_guidance": json.dumps({"version": 1, "activeGuidance": "edit-region"}),
+                },
+                files=[
+                    ("reference_images", ("marks.png", self._png_bytes(), "image/png")),
+                    ("editing_shared_base", ("shared-base.png", self._png_bytes(), "image/png")),
+                    ("editing_instruction_marks", ("instruction-marks.png", self._png_bytes(), "image/png")),
+                    ("editing_edit_region", ("edit-region.png", self._mask_png_bytes(), "image/png")),
+                    ("editing_edit_mask", ("edit-mask.png", self._mask_png_bytes(), "image/png")),
+                ],
+            )
+
+            self.assertEqual(response.status_code, 200, response.text)
+            task_id = response.json()["task"]["task_id"]
+            detail = client.get(f"/api/tasks/{task_id}").json()["task"]
+            self.assertEqual(detail["editing_guidance"]["activeGuidance"], "edit-region")
+            self.assertIn("editMaskUrl", detail["editing_guidance"])
+            self.assertNotIn("mask_file", response.json()["request"].get("webui_image_refs", {}))
+
     def test_generate_route_persists_web_search_for_codex_responses(self) -> None:
         from codex_image.webui.app import create_app
 
@@ -322,6 +357,7 @@ class WebUIGenerationTests(unittest.TestCase):
             task_id = response.json()["task"]["task_id"]
             request_text = request_path(root, task_id).read_text(encoding="utf-8")
             request_payload = json.loads(request_text)
+            task_detail = TestClient(app).get(f"/api/tasks/{task_id}").json()["task"]
 
         self.assertEqual(response.status_code, 200)
         self.assertNotIn("data:image/", request_text)
@@ -332,6 +368,64 @@ class WebUIGenerationTests(unittest.TestCase):
             ["primary.png", "reference.png"],
         )
         self.assertEqual(request_payload["webui_image_refs"]["mask_file"], input_name(task_id, "mask.png", kind="mask"))
+        self.assertTrue(task_detail["editing_guidance"]["legacyAlphaMask"])
+        self.assertEqual(task_detail["editing_guidance"]["activeGuidance"], "edit-region")
+        self.assertIn("sharedBaseUrl", task_detail["editing_guidance"])
+        self.assertIn("editMaskUrl", task_detail["editing_guidance"])
+
+    def test_edit_task_round_trip_restores_versioned_guidance_and_deletes_its_artifacts(self) -> None:
+        from codex_image.webui.app import create_app
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            app = create_app(
+                output_root=root,
+                client_factory=lambda: FakeImageClient(),
+                auth_checker=lambda: True,
+                auto_start_queue=False,
+            )
+            client = TestClient(app)
+            response = client.post(
+                "/api/edit",
+                data={
+                    "prompt": "restore both drafts",
+                    "size": "1024x1024",
+                    "codex_mode": "responses",
+                    "editing_guidance": json.dumps({"version": 1, "activeGuidance": "edit-region"}),
+                },
+                files=[
+                    ("images", ("submitted-primary.png", self._png_bytes(), "image/png")),
+                    ("mask", ("mask.png", self._mask_png_bytes(), "image/png")),
+                    ("editing_shared_base", ("shared-base.png", self._png_bytes(), "image/png")),
+                    ("editing_instruction_marks", ("instruction-marks.png", self._png_bytes(), "image/png")),
+                    ("editing_edit_region", ("edit-region.png", self._mask_png_bytes(), "image/png")),
+                ],
+            )
+
+            self.assertEqual(response.status_code, 200, response.text)
+            task_id = response.json()["task"]["task_id"]
+            detail = client.get(f"/api/tasks/{task_id}")
+            self.assertEqual(detail.status_code, 200)
+            guidance = detail.json()["task"]["editing_guidance"]
+            self.assertEqual(guidance["version"], 1)
+            self.assertEqual(guidance["activeGuidance"], "edit-region")
+            self.assertNotIn("blob:", json.dumps(guidance))
+            self.assertNotIn("undo", json.dumps(guidance).lower())
+            resource_urls = [
+                guidance["sharedBaseUrl"],
+                guidance["instructionMarksUrl"],
+                guidance["editRegionUrl"],
+                guidance["editMaskUrl"],
+            ]
+            for url in resource_urls:
+                artifact = client.get(url)
+                self.assertEqual(artifact.status_code, 200, url)
+                self.assertTrue(artifact.content)
+
+            deleted = client.delete(f"/api/tasks/{task_id}")
+            self.assertEqual(deleted.status_code, 200, deleted.text)
+            for url in resource_urls:
+                self.assertEqual(client.get(url).status_code, 404, url)
 
     def test_edit_route_rejects_empty_invalid_and_mismatched_masks_before_creating_task(self) -> None:
         from codex_image.webui.app import create_app

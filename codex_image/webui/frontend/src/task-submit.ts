@@ -1,6 +1,7 @@
 import { getLegacyBridge } from "./state";
 import { translate } from "./i18n";
 import { editMaskForSubmission, imageFilesForSubmission } from "./edit-region-materialization";
+import { editingGuidanceForSubmission } from "./editing-guidance-persistence";
 
 const bridge = getLegacyBridge();
 const state = bridge.state;
@@ -380,9 +381,14 @@ async function runTask() {
   assets.forEach((source: any) => form.append("reference_asset_ids", source.id));
   fileUploads.forEach((source: any) => form.append("reference_files", source.file));
   storedFiles.forEach((source: any) => form.append("reference_file_ids", source.id));
+  const persistedGuidance = editingGuidanceForSubmission(uploads[0]);
+  if (persistedGuidance) {
+    form.append("editing_guidance", JSON.stringify(persistedGuidance.state));
+    Object.entries(persistedGuidance.files).forEach(([field, file]) => form.append(field, file));
+  }
 
   if (state.mode === "generate") {
-    uploads.forEach((source: any) => form.append("reference_images", source.file));
+    editImageFiles.forEach((file) => form.append("reference_images", file));
   } else {
     editImageFiles.forEach((file) => form.append("images", file));
     if (editMask) form.append("mask", editMask);
