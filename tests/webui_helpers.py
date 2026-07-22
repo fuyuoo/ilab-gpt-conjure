@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import re
+import shutil
 import subprocess
 import tempfile
 import threading
@@ -9,6 +10,42 @@ import time
 import unittest
 from pathlib import Path
 from typing import Any
+
+
+def run_typescript_node(node: str, source: str) -> subprocess.CompletedProcess[str]:
+    esbuild = shutil.which("esbuild", path=str(Path("node_modules/.bin").resolve()))
+    if esbuild is None:
+        return subprocess.CompletedProcess(
+            args=["esbuild"],
+            returncode=127,
+            stdout="",
+            stderr="npm install is required for TypeScript behavior checks",
+        )
+
+    compiled = subprocess.run(
+        [
+            esbuild,
+            "--loader=ts",
+            "--format=cjs",
+            "--target=node22",
+            "--log-level=warning",
+        ],
+        input=source,
+        check=False,
+        text=True,
+        encoding="utf-8",
+        capture_output=True,
+    )
+    if compiled.returncode != 0:
+        return compiled
+    return subprocess.run(
+        [node],
+        input=compiled.stdout,
+        check=False,
+        text=True,
+        encoding="utf-8",
+        capture_output=True,
+    )
 
 
 class FakeImageClient:

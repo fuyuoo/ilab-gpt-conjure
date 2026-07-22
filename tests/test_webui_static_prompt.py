@@ -6,7 +6,7 @@ import shutil
 import subprocess
 from pathlib import Path
 
-from tests.webui_helpers import WebUIStaticTestCase
+from tests.webui_helpers import WebUIStaticTestCase, run_typescript_node
 
 
 class WebUIStaticPromptTests(WebUIStaticTestCase):
@@ -1272,7 +1272,7 @@ console.log(cases.map((color) => readableTextColor(color)).join("\\n"));
                 """,
             ]
         )
-        result = subprocess.run([node, "-e", harness], check=False, text=True, capture_output=True)
+        result = run_typescript_node(node, harness)
 
         self.assertEqual(result.returncode, 0, result.stderr)
     def test_main_model_restore_resets_retired_builtin_option(self) -> None:
@@ -1310,7 +1310,7 @@ console.log(cases.map((color) => readableTextColor(color)).join("\\n"));
                 """,
             ]
         )
-        result = subprocess.run([node, "-e", harness], check=False, text=True, capture_output=True)
+        result = run_typescript_node(node, harness)
 
         self.assertEqual(result.returncode, 0, result.stderr)
     def test_api_direct_mode_hides_non_applicable_main_model_but_keeps_prompt_fidelity(self) -> None:

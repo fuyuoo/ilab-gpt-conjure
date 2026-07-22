@@ -6,7 +6,7 @@ import shutil
 import subprocess
 from pathlib import Path
 
-from tests.webui_helpers import WebUIStaticTestCase
+from tests.webui_helpers import WebUIStaticTestCase, run_typescript_node
 
 
 class WebUIStaticTaskTests(WebUIStaticTestCase):
@@ -936,7 +936,7 @@ class WebUIStaticTaskTests(WebUIStaticTestCase):
                 """,
             ]
         )
-        result = subprocess.run([node, "-e", harness], check=False, text=True, capture_output=True)
+        result = run_typescript_node(node, harness)
         self.assertEqual(result.returncode, 0, result.stderr)
     def test_queue_items_wrap_long_account_and_channel_text(self) -> None:
         render_source = self._task_list_render_source()
@@ -1627,7 +1627,7 @@ class WebUIStaticTaskTests(WebUIStaticTestCase):
                 """,
             ]
         )
-        result = subprocess.run([node, "-e", harness], check=False, text=True, capture_output=True)
+        result = run_typescript_node(node, harness)
 
         self.assertEqual(result.returncode, 0, result.stderr)
 
@@ -1703,7 +1703,7 @@ class WebUIStaticTaskTests(WebUIStaticTestCase):
                 """,
             ]
         )
-        result = subprocess.run([node, "-e", harness], check=False, text=True, capture_output=True)
+        result = run_typescript_node(node, harness)
 
         self.assertEqual(result.returncode, 0, result.stderr)
 
@@ -1807,7 +1807,7 @@ class WebUIStaticTaskTests(WebUIStaticTestCase):
                 """,
             ]
         )
-        result = subprocess.run([node, "-e", harness], check=False, text=True, capture_output=True)
+        result = run_typescript_node(node, harness)
         self.assertEqual(result.returncode, 0, result.stderr)
 
     def test_task_cards_have_scoped_context_menu_actions(self) -> None:
@@ -2059,7 +2059,7 @@ class WebUIStaticTaskTests(WebUIStaticTestCase):
                 """,
             ]
         )
-        result = subprocess.run([node, "-e", harness], check=False, text=True, capture_output=True)
+        result = run_typescript_node(node, harness)
 
         self.assertEqual(result.returncode, 0, result.stderr)
     def test_preview_supports_multiple_output_urls(self) -> None:

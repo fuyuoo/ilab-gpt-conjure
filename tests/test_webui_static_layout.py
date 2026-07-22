@@ -6,7 +6,7 @@ import shutil
 import subprocess
 from pathlib import Path
 
-from tests.webui_helpers import WebUIStaticTestCase
+from tests.webui_helpers import WebUIStaticTestCase, run_typescript_node
 
 
 class WebUIStaticLayoutTests(WebUIStaticTestCase):
@@ -2561,7 +2561,7 @@ class WebUIStaticLayoutTests(WebUIStaticTestCase):
                 """,
             ]
         )
-        result = subprocess.run([node, "-e", harness], check=False, text=True, capture_output=True)
+        result = run_typescript_node(node, harness)
 
         self.assertEqual(result.returncode, 0, result.stderr)
     def test_custom_size_can_use_first_reference_image_ratio(self) -> None:
@@ -2690,7 +2690,7 @@ class WebUIStaticLayoutTests(WebUIStaticTestCase):
                 """,
             ]
         )
-        result = subprocess.run([node, "-e", harness], check=False, text=True, capture_output=True)
+        result = run_typescript_node(node, harness)
 
         self.assertEqual(result.returncode, 0, result.stderr)
     def test_custom_size_manual_ratio_preserves_aspect_ratio_when_dimensions_change(self) -> None:
@@ -2762,7 +2762,7 @@ class WebUIStaticLayoutTests(WebUIStaticTestCase):
                 """,
             ]
         )
-        result = subprocess.run([node, "-e", harness], check=False, text=True, capture_output=True)
+        result = run_typescript_node(node, harness)
 
         self.assertEqual(result.returncode, 0, result.stderr)
     def test_custom_size_mode_prefills_current_preset_dimensions(self) -> None:
@@ -2832,7 +2832,7 @@ class WebUIStaticLayoutTests(WebUIStaticTestCase):
                 """,
             ]
         )
-        result = subprocess.run([node, "-e", harness], check=False, text=True, capture_output=True)
+        result = run_typescript_node(node, harness)
 
         self.assertEqual(result.returncode, 0, result.stderr)
     def test_custom_size_validation_rejects_invalid_dimensions(self) -> None:
@@ -2897,7 +2897,7 @@ class WebUIStaticLayoutTests(WebUIStaticTestCase):
                 """,
             ]
         )
-        result = subprocess.run([node, "-e", harness], check=False, text=True, capture_output=True)
+        result = run_typescript_node(node, harness)
 
         self.assertEqual(result.returncode, 0, result.stderr)
     def test_right_column_size_reference_panels_are_removed(self) -> None:
