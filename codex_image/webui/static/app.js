@@ -1453,7 +1453,17 @@
     "referenceFiles.historyPathMismatch": "These reference files use different Responses paths",
     "history.referenceFiles": "Reference files",
     "history.downloadReferenceFile": "Download file",
-    "history.readdReferenceFile": "Add again"
+    "history.readdReferenceFile": "Add again",
+    "imageEditor.guidance": "Editing Guidance",
+    "imageEditor.instructionMarksGuidance": "Instruction Marks",
+    "imageEditor.editRegionGuidance": "Edit Region",
+    "imageEditor.maskTools": "Mask Tool",
+    "imageEditor.maskPaint": "Paint",
+    "imageEditor.maskErase": "Erase",
+    "imageEditor.maskClear": "Clear",
+    "imageEditor.emptyEditRegion": "Paint an Edit Region before saving.",
+    "imageInput.instructionMarksApplied": "Instruction Marks applied",
+    "imageInput.editRegionApplied": "Edit Region applied"
   };
 
   // codex_image/webui/frontend/src/i18n/de.ts
@@ -2424,7 +2434,17 @@
     "referenceFiles.historyPathMismatch": "Diese Dateien verwenden unterschiedliche Responses-Pfade",
     "history.referenceFiles": "Referenzdateien",
     "history.downloadReferenceFile": "Datei herunterladen",
-    "history.readdReferenceFile": "Erneut hinzuf\xFCgen"
+    "history.readdReferenceFile": "Erneut hinzuf\xFCgen",
+    "imageEditor.guidance": "Bearbeitungshinweise",
+    "imageEditor.instructionMarksGuidance": "Anweisungsmarkierungen",
+    "imageEditor.editRegionGuidance": "Bearbeitungsbereich",
+    "imageEditor.maskTools": "Maskenwerkzeug",
+    "imageEditor.maskPaint": "Malen",
+    "imageEditor.maskErase": "Radieren",
+    "imageEditor.maskClear": "Leeren",
+    "imageEditor.emptyEditRegion": "Zeichnen Sie vor dem Speichern einen Bearbeitungsbereich.",
+    "imageInput.instructionMarksApplied": "Anweisungsmarkierungen angewendet",
+    "imageInput.editRegionApplied": "Bearbeitungsbereich angewendet"
   };
 
   // codex_image/webui/frontend/src/i18n/es.ts
@@ -3395,7 +3415,17 @@
     "referenceFiles.historyPathMismatch": "Estos archivos usan rutas de Responses distintas",
     "history.referenceFiles": "Archivos de referencia",
     "history.downloadReferenceFile": "Descargar archivo",
-    "history.readdReferenceFile": "A\xF1adir de nuevo"
+    "history.readdReferenceFile": "A\xF1adir de nuevo",
+    "imageEditor.guidance": "Gu\xEDa de edici\xF3n",
+    "imageEditor.instructionMarksGuidance": "Marcas de instrucci\xF3n",
+    "imageEditor.editRegionGuidance": "Regi\xF3n de edici\xF3n",
+    "imageEditor.maskTools": "Herramienta de m\xE1scara",
+    "imageEditor.maskPaint": "Pintar",
+    "imageEditor.maskErase": "Borrar",
+    "imageEditor.maskClear": "Limpiar",
+    "imageEditor.emptyEditRegion": "Pinta una regi\xF3n de edici\xF3n antes de guardar.",
+    "imageInput.instructionMarksApplied": "Marcas de instrucci\xF3n aplicadas",
+    "imageInput.editRegionApplied": "Regi\xF3n de edici\xF3n aplicada"
   };
 
   // codex_image/webui/frontend/src/i18n/fr.ts
@@ -4366,7 +4396,17 @@
     "referenceFiles.historyPathMismatch": "Ces fichiers utilisent des chemins Responses diff\xE9rents",
     "history.referenceFiles": "Fichiers de r\xE9f\xE9rence",
     "history.downloadReferenceFile": "T\xE9l\xE9charger le fichier",
-    "history.readdReferenceFile": "Ajouter \xE0 nouveau"
+    "history.readdReferenceFile": "Ajouter \xE0 nouveau",
+    "imageEditor.guidance": "Guide d\u2019\xE9dition",
+    "imageEditor.instructionMarksGuidance": "Marques d\u2019instruction",
+    "imageEditor.editRegionGuidance": "Zone d\u2019\xE9dition",
+    "imageEditor.maskTools": "Outil de masque",
+    "imageEditor.maskPaint": "Peindre",
+    "imageEditor.maskErase": "Effacer",
+    "imageEditor.maskClear": "Vider",
+    "imageEditor.emptyEditRegion": "Peignez une zone d\u2019\xE9dition avant d\u2019enregistrer.",
+    "imageInput.instructionMarksApplied": "Marques d\u2019instruction appliqu\xE9es",
+    "imageInput.editRegionApplied": "Zone d\u2019\xE9dition appliqu\xE9e"
   };
 
   // codex_image/webui/frontend/src/i18n/ja.ts
@@ -5337,7 +5377,17 @@
     "referenceFiles.historyPathMismatch": "\u53C2\u7167\u30D5\u30A1\u30A4\u30EB\u306E Responses \u30D1\u30B9\u304C\u7570\u306A\u308A\u307E\u3059",
     "history.referenceFiles": "\u53C2\u7167\u30D5\u30A1\u30A4\u30EB",
     "history.downloadReferenceFile": "\u30D5\u30A1\u30A4\u30EB\u3092\u30C0\u30A6\u30F3\u30ED\u30FC\u30C9",
-    "history.readdReferenceFile": "\u518D\u8FFD\u52A0"
+    "history.readdReferenceFile": "\u518D\u8FFD\u52A0",
+    "imageEditor.guidance": "\u7DE8\u96C6\u30AC\u30A4\u30C0\u30F3\u30B9",
+    "imageEditor.instructionMarksGuidance": "\u6307\u793A\u30DE\u30FC\u30AF",
+    "imageEditor.editRegionGuidance": "\u7DE8\u96C6\u9818\u57DF",
+    "imageEditor.maskTools": "\u30DE\u30B9\u30AF\u30C4\u30FC\u30EB",
+    "imageEditor.maskPaint": "\u63CF\u753B",
+    "imageEditor.maskErase": "\u6D88\u53BB",
+    "imageEditor.maskClear": "\u30AF\u30EA\u30A2",
+    "imageEditor.emptyEditRegion": "\u4FDD\u5B58\u3059\u308B\u524D\u306B\u7DE8\u96C6\u9818\u57DF\u3092\u63CF\u753B\u3057\u3066\u304F\u3060\u3055\u3044\u3002",
+    "imageInput.instructionMarksApplied": "\u6307\u793A\u30DE\u30FC\u30AF\u3092\u9069\u7528\u6E08\u307F",
+    "imageInput.editRegionApplied": "\u7DE8\u96C6\u9818\u57DF\u3092\u9069\u7528\u6E08\u307F"
   };
 
   // codex_image/webui/frontend/src/i18n/ko.ts
@@ -6308,7 +6358,17 @@
     "referenceFiles.historyPathMismatch": "\uCC38\uC870 \uD30C\uC77C\uC758 Responses \uACBD\uB85C\uAC00 \uC11C\uB85C \uB2E4\uB985\uB2C8\uB2E4",
     "history.referenceFiles": "\uCC38\uC870 \uD30C\uC77C",
     "history.downloadReferenceFile": "\uD30C\uC77C \uB2E4\uC6B4\uB85C\uB4DC",
-    "history.readdReferenceFile": "\uB2E4\uC2DC \uCD94\uAC00"
+    "history.readdReferenceFile": "\uB2E4\uC2DC \uCD94\uAC00",
+    "imageEditor.guidance": "\uD3B8\uC9D1 \uC548\uB0B4",
+    "imageEditor.instructionMarksGuidance": "\uC9C0\uC2DC \uD45C\uC2DC",
+    "imageEditor.editRegionGuidance": "\uD3B8\uC9D1 \uC601\uC5ED",
+    "imageEditor.maskTools": "\uB9C8\uC2A4\uD06C \uB3C4\uAD6C",
+    "imageEditor.maskPaint": "\uADF8\uB9AC\uAE30",
+    "imageEditor.maskErase": "\uC9C0\uC6B0\uAE30",
+    "imageEditor.maskClear": "\uBAA8\uB450 \uC9C0\uC6B0\uAE30",
+    "imageEditor.emptyEditRegion": "\uC800\uC7A5\uD558\uAE30 \uC804\uC5D0 \uD3B8\uC9D1 \uC601\uC5ED\uC744 \uADF8\uB9AC\uC138\uC694.",
+    "imageInput.instructionMarksApplied": "\uC9C0\uC2DC \uD45C\uC2DC \uC801\uC6A9\uB428",
+    "imageInput.editRegionApplied": "\uD3B8\uC9D1 \uC601\uC5ED \uC801\uC6A9\uB428"
   };
 
   // codex_image/webui/frontend/src/i18n/pt.ts
@@ -7279,7 +7339,17 @@
     "referenceFiles.historyPathMismatch": "Estes arquivos usam caminhos Responses diferentes",
     "history.referenceFiles": "Arquivos de refer\xEAncia",
     "history.downloadReferenceFile": "Baixar arquivo",
-    "history.readdReferenceFile": "Adicionar novamente"
+    "history.readdReferenceFile": "Adicionar novamente",
+    "imageEditor.guidance": "Orienta\xE7\xE3o de edi\xE7\xE3o",
+    "imageEditor.instructionMarksGuidance": "Marcas de instru\xE7\xE3o",
+    "imageEditor.editRegionGuidance": "Regi\xE3o de edi\xE7\xE3o",
+    "imageEditor.maskTools": "Ferramenta de m\xE1scara",
+    "imageEditor.maskPaint": "Pintar",
+    "imageEditor.maskErase": "Apagar",
+    "imageEditor.maskClear": "Limpar",
+    "imageEditor.emptyEditRegion": "Pinte uma regi\xE3o de edi\xE7\xE3o antes de salvar.",
+    "imageInput.instructionMarksApplied": "Marcas de instru\xE7\xE3o aplicadas",
+    "imageInput.editRegionApplied": "Regi\xE3o de edi\xE7\xE3o aplicada"
   };
 
   // codex_image/webui/frontend/src/i18n/ru.ts
@@ -8250,7 +8320,17 @@
     "referenceFiles.historyPathMismatch": "\u042D\u0442\u0438 \u0444\u0430\u0439\u043B\u044B \u0438\u0441\u043F\u043E\u043B\u044C\u0437\u0443\u044E\u0442 \u0440\u0430\u0437\u043D\u044B\u0435 \u043F\u0443\u0442\u0438 Responses",
     "history.referenceFiles": "\u0424\u0430\u0439\u043B\u044B-\u0438\u0441\u0442\u043E\u0447\u043D\u0438\u043A\u0438",
     "history.downloadReferenceFile": "\u0421\u043A\u0430\u0447\u0430\u0442\u044C \u0444\u0430\u0439\u043B",
-    "history.readdReferenceFile": "\u0414\u043E\u0431\u0430\u0432\u0438\u0442\u044C \u0441\u043D\u043E\u0432\u0430"
+    "history.readdReferenceFile": "\u0414\u043E\u0431\u0430\u0432\u0438\u0442\u044C \u0441\u043D\u043E\u0432\u0430",
+    "imageEditor.guidance": "\u0420\u0435\u0436\u0438\u043C \u0440\u0435\u0434\u0430\u043A\u0442\u0438\u0440\u043E\u0432\u0430\u043D\u0438\u044F",
+    "imageEditor.instructionMarksGuidance": "\u041C\u0435\u0442\u043A\u0438-\u0438\u043D\u0441\u0442\u0440\u0443\u043A\u0446\u0438\u0438",
+    "imageEditor.editRegionGuidance": "\u041E\u0431\u043B\u0430\u0441\u0442\u044C \u0440\u0435\u0434\u0430\u043A\u0442\u0438\u0440\u043E\u0432\u0430\u043D\u0438\u044F",
+    "imageEditor.maskTools": "\u0418\u043D\u0441\u0442\u0440\u0443\u043C\u0435\u043D\u0442 \u043C\u0430\u0441\u043A\u0438",
+    "imageEditor.maskPaint": "\u0420\u0438\u0441\u043E\u0432\u0430\u0442\u044C",
+    "imageEditor.maskErase": "\u0421\u0442\u0435\u0440\u0435\u0442\u044C",
+    "imageEditor.maskClear": "\u041E\u0447\u0438\u0441\u0442\u0438\u0442\u044C",
+    "imageEditor.emptyEditRegion": "\u041D\u0430\u0440\u0438\u0441\u0443\u0439\u0442\u0435 \u043E\u0431\u043B\u0430\u0441\u0442\u044C \u0440\u0435\u0434\u0430\u043A\u0442\u0438\u0440\u043E\u0432\u0430\u043D\u0438\u044F \u043F\u0435\u0440\u0435\u0434 \u0441\u043E\u0445\u0440\u0430\u043D\u0435\u043D\u0438\u0435\u043C.",
+    "imageInput.instructionMarksApplied": "\u041C\u0435\u0442\u043A\u0438-\u0438\u043D\u0441\u0442\u0440\u0443\u043A\u0446\u0438\u0438 \u043F\u0440\u0438\u043C\u0435\u043D\u0435\u043D\u044B",
+    "imageInput.editRegionApplied": "\u041E\u0431\u043B\u0430\u0441\u0442\u044C \u0440\u0435\u0434\u0430\u043A\u0442\u0438\u0440\u043E\u0432\u0430\u043D\u0438\u044F \u043F\u0440\u0438\u043C\u0435\u043D\u0435\u043D\u0430"
   };
 
   // codex_image/webui/frontend/src/i18n/it.ts
@@ -9221,7 +9301,17 @@
     "referenceFiles.historyPathMismatch": "Questi file usano percorsi Responses diversi",
     "history.referenceFiles": "File di riferimento",
     "history.downloadReferenceFile": "Scarica file",
-    "history.readdReferenceFile": "Aggiungi di nuovo"
+    "history.readdReferenceFile": "Aggiungi di nuovo",
+    "imageEditor.guidance": "Guida modifica",
+    "imageEditor.instructionMarksGuidance": "Segni di istruzione",
+    "imageEditor.editRegionGuidance": "Area di modifica",
+    "imageEditor.maskTools": "Strumento maschera",
+    "imageEditor.maskPaint": "Disegna",
+    "imageEditor.maskErase": "Cancella",
+    "imageEditor.maskClear": "Pulisci",
+    "imageEditor.emptyEditRegion": "Disegna un\u2019area di modifica prima di salvare.",
+    "imageInput.instructionMarksApplied": "Segni di istruzione applicati",
+    "imageInput.editRegionApplied": "Area di modifica applicata"
   };
 
   // codex_image/webui/frontend/src/i18n/hi.ts
@@ -10192,7 +10282,17 @@
     "referenceFiles.historyPathMismatch": "\u0907\u0928 \u092B\u093C\u093E\u0907\u0932\u094B\u0902 \u0915\u0947 Responses \u092A\u0925 \u0905\u0932\u0917 \u0939\u0948\u0902",
     "history.referenceFiles": "\u0938\u0902\u0926\u0930\u094D\u092D \u092B\u093C\u093E\u0907\u0932\u0947\u0902",
     "history.downloadReferenceFile": "\u092B\u093C\u093E\u0907\u0932 \u0921\u093E\u0909\u0928\u0932\u094B\u0921 \u0915\u0930\u0947\u0902",
-    "history.readdReferenceFile": "\u092B\u093F\u0930 \u091C\u094B\u0921\u093C\u0947\u0902"
+    "history.readdReferenceFile": "\u092B\u093F\u0930 \u091C\u094B\u0921\u093C\u0947\u0902",
+    "imageEditor.guidance": "\u0938\u0902\u092A\u093E\u0926\u0928 \u092E\u093E\u0930\u094D\u0917\u0926\u0930\u094D\u0936\u0928",
+    "imageEditor.instructionMarksGuidance": "\u0928\u093F\u0930\u094D\u0926\u0947\u0936 \u091A\u093F\u0939\u094D\u0928",
+    "imageEditor.editRegionGuidance": "\u0938\u0902\u092A\u093E\u0926\u0928 \u0915\u094D\u0937\u0947\u0924\u094D\u0930",
+    "imageEditor.maskTools": "\u092E\u093E\u0938\u094D\u0915 \u091F\u0942\u0932",
+    "imageEditor.maskPaint": "\u092A\u0947\u0902\u091F",
+    "imageEditor.maskErase": "\u092E\u093F\u091F\u093E\u090F\u0901",
+    "imageEditor.maskClear": "\u0938\u093E\u092B\u093C \u0915\u0930\u0947\u0902",
+    "imageEditor.emptyEditRegion": "\u0938\u0939\u0947\u091C\u0928\u0947 \u0938\u0947 \u092A\u0939\u0932\u0947 \u0938\u0902\u092A\u093E\u0926\u0928 \u0915\u094D\u0937\u0947\u0924\u094D\u0930 \u092C\u0928\u093E\u090F\u0901\u0964",
+    "imageInput.instructionMarksApplied": "\u0928\u093F\u0930\u094D\u0926\u0947\u0936 \u091A\u093F\u0939\u094D\u0928 \u0932\u093E\u0917\u0942",
+    "imageInput.editRegionApplied": "\u0938\u0902\u092A\u093E\u0926\u0928 \u0915\u094D\u0937\u0947\u0924\u094D\u0930 \u0932\u093E\u0917\u0942"
   };
 
   // codex_image/webui/frontend/src/i18n/zh-cn.ts
@@ -11173,7 +11273,17 @@
     "referenceFiles.historyPathMismatch": "\u8FD9\u4E9B\u53C2\u8003\u6587\u4EF6\u4F7F\u7528\u4E86\u4E0D\u540C\u7684 Responses \u8DEF\u5F84",
     "history.referenceFiles": "\u53C2\u8003\u6587\u4EF6",
     "history.downloadReferenceFile": "\u4E0B\u8F7D\u6587\u4EF6",
-    "history.readdReferenceFile": "\u91CD\u65B0\u52A0\u5165"
+    "history.readdReferenceFile": "\u91CD\u65B0\u52A0\u5165",
+    "imageEditor.guidance": "\u7F16\u8F91\u6307\u5BFC",
+    "imageEditor.instructionMarksGuidance": "\u6307\u4EE4\u6807\u8BB0",
+    "imageEditor.editRegionGuidance": "\u7F16\u8F91\u533A\u57DF",
+    "imageEditor.maskTools": "\u906E\u7F69\u5DE5\u5177",
+    "imageEditor.maskPaint": "\u7ED8\u5236",
+    "imageEditor.maskErase": "\u64E6\u9664",
+    "imageEditor.maskClear": "\u6E05\u7A7A",
+    "imageEditor.emptyEditRegion": "\u8BF7\u5148\u7ED8\u5236\u975E\u7A7A\u7F16\u8F91\u533A\u57DF\u518D\u4FDD\u5B58\u3002",
+    "imageInput.instructionMarksApplied": "\u6307\u4EE4\u6807\u8BB0\u5DF2\u5E94\u7528",
+    "imageInput.editRegionApplied": "\u7F16\u8F91\u533A\u57DF\u5DF2\u5E94\u7528"
   };
 
   // codex_image/webui/frontend/src/i18n/zh-hk.ts
@@ -12154,7 +12264,17 @@
     "referenceFiles.historyPathMismatch": "\u9019\u4E9B\u53C3\u8003\u6A94\u6848\u4F7F\u7528\u4E0D\u540C\u7684 Responses \u8DEF\u5F91",
     "history.referenceFiles": "\u53C3\u8003\u6A94\u6848",
     "history.downloadReferenceFile": "\u4E0B\u8F09\u6A94\u6848",
-    "history.readdReferenceFile": "\u91CD\u65B0\u52A0\u5165"
+    "history.readdReferenceFile": "\u91CD\u65B0\u52A0\u5165",
+    "imageEditor.guidance": "\u7DE8\u8F2F\u6307\u5F15",
+    "imageEditor.instructionMarksGuidance": "\u6307\u4EE4\u6A19\u8A18",
+    "imageEditor.editRegionGuidance": "\u7DE8\u8F2F\u5340\u57DF",
+    "imageEditor.maskTools": "\u906E\u7F69\u5DE5\u5177",
+    "imageEditor.maskPaint": "\u7E6A\u756B",
+    "imageEditor.maskErase": "\u64E6\u9664",
+    "imageEditor.maskClear": "\u6E05\u9664",
+    "imageEditor.emptyEditRegion": "\u8ACB\u5148\u7E6A\u756B\u975E\u7A7A\u7DE8\u8F2F\u5340\u57DF\u518D\u5132\u5B58\u3002",
+    "imageInput.instructionMarksApplied": "\u6307\u4EE4\u6A19\u8A18\u5DF2\u5957\u7528",
+    "imageInput.editRegionApplied": "\u7DE8\u8F2F\u5340\u57DF\u5DF2\u5957\u7528"
   };
 
   // codex_image/webui/frontend/src/i18n/zh-tw.ts
@@ -13135,7 +13255,17 @@
     "referenceFiles.historyPathMismatch": "\u9019\u4E9B\u53C3\u8003\u6A94\u6848\u4F7F\u7528\u4E0D\u540C\u7684 Responses \u8DEF\u5F91",
     "history.referenceFiles": "\u53C3\u8003\u6A94\u6848",
     "history.downloadReferenceFile": "\u4E0B\u8F09\u6A94\u6848",
-    "history.readdReferenceFile": "\u91CD\u65B0\u52A0\u5165"
+    "history.readdReferenceFile": "\u91CD\u65B0\u52A0\u5165",
+    "imageEditor.guidance": "\u7DE8\u8F2F\u6307\u5F15",
+    "imageEditor.instructionMarksGuidance": "\u6307\u4EE4\u6A19\u8A18",
+    "imageEditor.editRegionGuidance": "\u7DE8\u8F2F\u5340\u57DF",
+    "imageEditor.maskTools": "\u906E\u7F69\u5DE5\u5177",
+    "imageEditor.maskPaint": "\u7E6A\u88FD",
+    "imageEditor.maskErase": "\u64E6\u9664",
+    "imageEditor.maskClear": "\u6E05\u9664",
+    "imageEditor.emptyEditRegion": "\u8ACB\u5148\u7E6A\u88FD\u975E\u7A7A\u7DE8\u8F2F\u5340\u57DF\u518D\u5132\u5B58\u3002",
+    "imageInput.instructionMarksApplied": "\u6307\u4EE4\u6A19\u8A18\u5DF2\u5957\u7528",
+    "imageInput.editRegionApplied": "\u7DE8\u8F2F\u5340\u57DF\u5DF2\u5957\u7528"
   };
 
   // codex_image/webui/frontend/src/i18n/dictionaries.ts
@@ -26450,6 +26580,57 @@ js: import "konva/skia-backend";
   // node_modules/konva/lib/index.js
   var lib_default = Konva3;
 
+  // codex_image/webui/frontend/src/edit-region-materialization.ts
+  function finalCropRect(crop, canvasWidth, canvasHeight) {
+    const left = Math.max(0, Math.floor(crop.left));
+    const top = Math.max(0, Math.floor(crop.top));
+    const right = Math.min(canvasWidth, Math.ceil(crop.left + crop.width));
+    const bottom = Math.min(canvasHeight, Math.ceil(crop.top + crop.height));
+    return {
+      left,
+      top,
+      width: Math.max(1, right - left),
+      height: Math.max(1, bottom - top)
+    };
+  }
+  function materializeEditMaskPixels(width, height, editRegionPixels) {
+    const pixelCount = width * height;
+    if (width < 1 || height < 1 || editRegionPixels.length !== pixelCount * 4) {
+      throw new Error("Edit Region dimensions must match the final Primary Edit Image.");
+    }
+    const mask = new Uint8ClampedArray(pixelCount * 4);
+    for (let pixel = 0; pixel < pixelCount; pixel += 1) {
+      const offset = pixel * 4;
+      mask[offset] = 0;
+      mask[offset + 1] = 0;
+      mask[offset + 2] = 0;
+      mask[offset + 3] = (editRegionPixels[offset + 3] ?? 0) > 0 ? 0 : 255;
+    }
+    return mask;
+  }
+  function editRegionHasPixels(editRegionPixels) {
+    for (let offset = 3; offset < editRegionPixels.length; offset += 4) {
+      if ((editRegionPixels[offset] ?? 0) > 0) return true;
+    }
+    return false;
+  }
+  function editMaskForSubmission(mode, sources) {
+    if (mode !== "edit") return null;
+    const primary = sources[0];
+    if (primary?.activeGuidance !== "edit-region") return null;
+    if (!primary.editMaskFile) {
+      throw new Error("An active Edit Region requires a materialized Edit Mask.");
+    }
+    return primary.editMaskFile;
+  }
+  function imageFilesForSubmission(mode, sources) {
+    const useCleanImages = Boolean(editMaskForSubmission(mode, sources));
+    return sources.flatMap((source) => {
+      const file = useCleanImages ? source.baseFile || source.originalFile || source.file : source.file;
+      return file ? [file] : [];
+    });
+  }
+
   // codex_image/webui/frontend/src/image-editor.ts
   var IMAGE_EDITOR_PROMPT_HINT_LEGACY = "\u56FE\u4E2D\u7684\u624B\u7ED8\u7BAD\u5934\u548C\u6807\u8BB0\u4EC5\u7528\u4E8E\u6307\u793A\u7F16\u8F91\u8981\u6C42\uFF0C\u4E0D\u8981\u4FDD\u7559\u5728\u6700\u7EC8\u753B\u9762\u4E2D\u3002";
   var IMAGE_EDITOR_MAX_EXPORT_EDGE = 4096;
@@ -26466,11 +26647,13 @@ js: import "konva/skia-backend";
     workCanvas: null,
     brushBoundaryCanvas: null,
     brushOverlayCanvas: null,
+    editRegionCanvas: null,
     konvaStage: null,
     konvaLayer: null,
     konvaTransformer: null,
     markNode: null,
     previewNode: null,
+    editRegionNode: null,
     layers: [],
     selectedLayerId: null,
     displayScale: 1,
@@ -26480,6 +26663,8 @@ js: import "konva/skia-backend";
     crop: null,
     canvasScope: "base",
     hasInstructionMarks: false,
+    activeGuidance: "instruction-marks",
+    canUseEditRegion: false,
     history: [],
     historyIndex: -1,
     drawing: null
@@ -26518,8 +26703,21 @@ js: import "konva/skia-backend";
     });
   }
   async function imageEditorSourceFile(source) {
-    if (source.kind === "upload") return source.originalFile || source.file;
+    if (source.kind === "upload") return source.baseFile || source.originalFile || source.file;
     return remoteImageSourceFile(source);
+  }
+  async function restoreImageEditorDraft(file, canvas) {
+    if (!file || !canvas) return;
+    const image = await loadImageEditorImage(file);
+    const ctx = canvas.getContext("2d", { willReadFrequently: true });
+    if (!ctx) return;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+  }
+  async function restoreImageEditorGuidanceDrafts(source) {
+    await restoreImageEditorDraft(source.instructionMarksFile, imageEditorState.workCanvas);
+    await restoreImageEditorDraft(source.editRegionFile, imageEditorState.editRegionCanvas);
+    imageEditorState.hasInstructionMarks = Boolean(source.instructionMarksFile);
   }
   function setImageEditorStatus(message, type = "") {
     const els43 = getEls();
@@ -26539,6 +26737,9 @@ js: import "konva/skia-backend";
   }
   function imageEditorBrushOverlayContext() {
     return imageEditorState.brushOverlayCanvas?.getContext("2d", { willReadFrequently: true }) || null;
+  }
+  function imageEditorEditRegionContext() {
+    return imageEditorState.editRegionCanvas?.getContext("2d", { willReadFrequently: true }) || null;
   }
   function imageEditorCanvasSnapshot(canvas) {
     if (!canvas) return null;
@@ -26576,10 +26777,12 @@ js: import "konva/skia-backend";
       workCanvas: imageEditorCanvasSnapshot(imageEditorState.workCanvas) || imageEditorState.workCanvas,
       brushBoundaryCanvas: imageEditorCanvasSnapshot(imageEditorState.brushBoundaryCanvas),
       brushOverlayCanvas: imageEditorCanvasSnapshot(imageEditorState.brushOverlayCanvas),
+      editRegionCanvas: imageEditorCanvasSnapshot(imageEditorState.editRegionCanvas),
       canvasScope: imageEditorState.canvasScope,
       crop: imageEditorState.crop ? { ...imageEditorState.crop } : null,
       selectedLayerId: imageEditorState.selectedLayerId,
-      hasInstructionMarks: imageEditorState.hasInstructionMarks
+      hasInstructionMarks: imageEditorState.hasInstructionMarks,
+      activeGuidance: imageEditorState.activeGuidance
     };
   }
   function restoreImageEditorCanvas(canvas, snapshot) {
@@ -26618,6 +26821,7 @@ js: import "konva/skia-backend";
     rebuildImageEditorLayers(snapshot.layers);
     restoreImageEditorCanvas(imageEditorState.workCanvas, snapshot.workCanvas);
     imageEditorState.hasInstructionMarks = Boolean(snapshot.hasInstructionMarks);
+    imageEditorState.activeGuidance = snapshot.activeGuidance || "instruction-marks";
     imageEditorState.crop = snapshot.crop ? { ...snapshot.crop } : null;
     imageEditorState.selectedLayerId = snapshot.selectedLayerId;
     if (imageEditorState.brushBoundaryCanvas) {
@@ -26637,6 +26841,9 @@ js: import "konva/skia-backend";
         const overlayCtx = imageEditorBrushOverlayContext();
         overlayCtx?.clearRect(0, 0, imageEditorState.brushOverlayCanvas.width, imageEditorState.brushOverlayCanvas.height);
       }
+    }
+    if (imageEditorState.editRegionCanvas && snapshot.editRegionCanvas) {
+      restoreImageEditorCanvas(imageEditorState.editRegionCanvas, snapshot.editRegionCanvas);
     }
     selectImageEditorLayer(snapshot.selectedLayerId, { updateTool: false });
     renderImageEditor();
@@ -26711,6 +26918,7 @@ js: import "konva/skia-backend";
     resizeImageEditorBackingCanvas(imageEditorState.workCanvas, dimensions.width, dimensions.height, offsetX, offsetY);
     resizeImageEditorBackingCanvas(imageEditorState.brushBoundaryCanvas, dimensions.width, dimensions.height, offsetX, offsetY);
     resizeImageEditorBackingCanvas(imageEditorState.brushOverlayCanvas, dimensions.width, dimensions.height, offsetX, offsetY);
+    resizeImageEditorBackingCanvas(imageEditorState.editRegionCanvas, dimensions.width, dimensions.height, offsetX, offsetY);
     imageEditorState.layers.forEach((layer) => {
       layer.node?.x?.((layer.node.x?.() || 0) + offsetX);
       layer.node?.y?.((layer.node.y?.() || 0) + offsetY);
@@ -26728,6 +26936,13 @@ js: import "konva/skia-backend";
       imageEditorState.markNode.y(0);
       imageEditorState.markNode.width(dimensions.width);
       imageEditorState.markNode.height(dimensions.height);
+    }
+    if (imageEditorState.editRegionNode) {
+      imageEditorState.editRegionNode.image(imageEditorState.editRegionCanvas);
+      imageEditorState.editRegionNode.x(0);
+      imageEditorState.editRegionNode.y(0);
+      imageEditorState.editRegionNode.width(dimensions.width);
+      imageEditorState.editRegionNode.height(dimensions.height);
     }
     updateImageEditorDisplayScale();
     imageEditorState.konvaLayer?.batchDraw?.();
@@ -26887,6 +27102,7 @@ js: import "konva/skia-backend";
       layer.node?.zIndex?.(index);
     });
     imageEditorState.markNode?.moveToTop?.();
+    imageEditorState.editRegionNode?.moveToTop?.();
     imageEditorState.previewNode?.moveToTop?.();
     imageEditorState.konvaTransformer?.moveToTop?.();
     imageEditorState.konvaLayer?.batchDraw?.();
@@ -26905,6 +27121,20 @@ js: import "konva/skia-backend";
     imageEditorState.konvaLayer?.add(markNode);
     return markNode;
   }
+  function createImageEditorEditRegionNode() {
+    if (!imageEditorState.editRegionCanvas) return null;
+    const editRegionNode = new lib_default.Image({
+      image: imageEditorState.editRegionCanvas,
+      x: 0,
+      y: 0,
+      width: imageEditorState.editRegionCanvas.width,
+      height: imageEditorState.editRegionCanvas.height,
+      listening: false,
+      name: "image-editor-edit-region-layer"
+    });
+    imageEditorState.konvaLayer?.add(editRegionNode);
+    return editRegionNode;
+  }
   function destroyImageEditorKonva() {
     clearImageEditorPreview();
     imageEditorState.konvaTransformer?.destroy?.();
@@ -26915,6 +27145,7 @@ js: import "konva/skia-backend";
     imageEditorState.konvaStage = null;
     imageEditorState.markNode = null;
     imageEditorState.previewNode = null;
+    imageEditorState.editRegionNode = null;
   }
   function initializeImageEditorKonva(width, height) {
     const els43 = getEls();
@@ -26961,16 +27192,20 @@ js: import "konva/skia-backend";
     const workCanvas = document.createElement("canvas");
     const brushBoundaryCanvas = document.createElement("canvas");
     const brushOverlayCanvas = document.createElement("canvas");
+    const editRegionCanvas = document.createElement("canvas");
     workCanvas.width = dimensions.width;
     workCanvas.height = dimensions.height;
     brushBoundaryCanvas.width = dimensions.width;
     brushBoundaryCanvas.height = dimensions.height;
     brushOverlayCanvas.width = dimensions.width;
     brushOverlayCanvas.height = dimensions.height;
+    editRegionCanvas.width = dimensions.width;
+    editRegionCanvas.height = dimensions.height;
     imageEditorState.baseCanvas = baseCanvas;
     imageEditorState.workCanvas = workCanvas;
     imageEditorState.brushBoundaryCanvas = brushBoundaryCanvas;
     imageEditorState.brushOverlayCanvas = brushOverlayCanvas;
+    imageEditorState.editRegionCanvas = editRegionCanvas;
     imageEditorState.crop = null;
     imageEditorState.canvasScope = "base";
     imageEditorState.hasInstructionMarks = false;
@@ -26988,6 +27223,7 @@ js: import "konva/skia-backend";
     });
     imageEditorState.layers.push(baseLayer);
     imageEditorState.markNode = createImageEditorMarkNode();
+    imageEditorState.editRegionNode = createImageEditorEditRegionNode();
     orderImageEditorKonvaNodes();
     selectImageEditorLayer(baseLayer.id, { updateTool: false });
     renderImageEditorInsertList();
@@ -27008,6 +27244,13 @@ js: import "konva/skia-backend";
       imageEditorState.markNode.width(work.width);
       imageEditorState.markNode.height(work.height);
     }
+    if (imageEditorState.editRegionNode && imageEditorState.editRegionCanvas) {
+      imageEditorState.editRegionNode.image(imageEditorState.editRegionCanvas);
+      imageEditorState.editRegionNode.width(imageEditorState.editRegionCanvas.width);
+      imageEditorState.editRegionNode.height(imageEditorState.editRegionCanvas.height);
+      imageEditorState.editRegionNode.visible(imageEditorState.activeGuidance === "edit-region");
+    }
+    imageEditorState.markNode?.visible?.(imageEditorState.activeGuidance === "instruction-marks");
     updateImageEditorDisplayScale();
     updateImageEditorCropBox();
     updateImageEditorControls();
@@ -27052,6 +27295,18 @@ js: import "konva/skia-backend";
     if (els43.imageEditorStrokeValue) els43.imageEditorStrokeValue.textContent = `${imageEditorState.strokeWidth}px`;
     document.querySelectorAll("[data-image-editor-tool]").forEach((button) => {
       button.classList.toggle("active", button.dataset.imageEditorTool === imageEditorState.tool);
+    });
+    document.querySelectorAll("[data-image-editor-guidance]").forEach((button) => {
+      const guidance = button.dataset.imageEditorGuidance;
+      const active = guidance === imageEditorState.activeGuidance;
+      button.classList.toggle("active", active);
+      button.setAttribute("aria-checked", String(active));
+      if (guidance === "edit-region") {
+        button.toggleAttribute("hidden", !imageEditorState.canUseEditRegion);
+      }
+    });
+    document.querySelectorAll("[data-image-editor-guidance-tools]").forEach((group) => {
+      group.classList.toggle("hidden", group.dataset.imageEditorGuidanceTools !== imageEditorState.activeGuidance);
     });
     document.querySelectorAll("[data-image-editor-color]").forEach((button) => {
       button.classList.toggle("active", button.dataset.imageEditorColor?.toLowerCase() === imageEditorState.color.toLowerCase());
@@ -27298,6 +27553,42 @@ js: import "konva/skia-backend";
     drawEditorBrushBoundarySegment(from, to);
     drawEditorBrushOverlaySegment(from, to);
   }
+  function drawEditRegionSegment(from, to, erase = false) {
+    const ctx = imageEditorEditRegionContext();
+    if (!ctx) return;
+    ctx.save();
+    ctx.globalCompositeOperation = erase ? "destination-out" : "source-over";
+    ctx.strokeStyle = "rgba(255, 59, 48, 0.48)";
+    ctx.fillStyle = "rgba(255, 59, 48, 0.48)";
+    ctx.lineWidth = imageEditorState.strokeWidth;
+    ctx.lineCap = "round";
+    ctx.lineJoin = "round";
+    ctx.beginPath();
+    ctx.moveTo(from.x, from.y);
+    ctx.lineTo(to.x, to.y);
+    ctx.stroke();
+    if (imageEditorPointDistance(from, to) === 0) {
+      ctx.beginPath();
+      ctx.arc(from.x, from.y, imageEditorState.strokeWidth / 2, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.restore();
+  }
+  function clearEditRegion() {
+    const canvas = imageEditorState.editRegionCanvas;
+    const ctx = imageEditorEditRegionContext();
+    if (!canvas || !ctx) return;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    pushImageEditorHistory();
+    setImageEditorStatus("");
+    renderImageEditor();
+  }
+  function isEditRegionTool(tool = imageEditorState.tool) {
+    return tool === "mask-paint" || tool === "mask-erase";
+  }
+  function isEditRegionEraseTool(tool = imageEditorState.tool) {
+    return tool === "mask-erase";
+  }
   function imageEditorArrowGeometry(start, end) {
     const strokeWidth = Math.max(1, Number(imageEditorState.strokeWidth) || 1);
     const dx = end.x - start.x;
@@ -27443,6 +27734,19 @@ js: import "konva/skia-backend";
     if (imageEditorState.tool === "select") return;
     event.preventDefault?.();
     const point = imageEditorPoint(event);
+    if (isEditRegionTool()) {
+      const captureTarget2 = captureImageEditorPointer(event);
+      drawEditRegionSegment(point, point, isEditRegionEraseTool());
+      imageEditorState.drawing = {
+        pointerId: event.pointerId,
+        captureTarget: captureTarget2,
+        start: point,
+        last: point,
+        points: [point]
+      };
+      renderImageEditor();
+      return;
+    }
     if (imageEditorState.tool === "fill") {
       if (paintBucketFillRegion(point)) {
         imageEditorState.hasInstructionMarks = true;
@@ -27492,6 +27796,12 @@ js: import "konva/skia-backend";
     if (drawing.pointerId !== void 0 && event.pointerId !== void 0 && drawing.pointerId !== event.pointerId) return;
     event.preventDefault?.();
     const point = imageEditorPoint(event);
+    if (isEditRegionTool()) {
+      drawEditRegionSegment(drawing.last, point, isEditRegionEraseTool());
+      drawing.last = point;
+      renderImageEditor();
+      return;
+    }
     if (imageEditorState.tool === "eraser") {
       const layer = selectedImageEditorLayer();
       if (layer && layer.id === drawing.layerId) {
@@ -27526,7 +27836,11 @@ js: import "konva/skia-backend";
     event.preventDefault?.();
     const point = imageEditorPoint(event);
     releaseImageEditorPointer(event, drawing.captureTarget);
-    if (imageEditorState.tool === "eraser") {
+    if (isEditRegionTool()) {
+      drawEditRegionSegment(drawing.last, point, isEditRegionEraseTool());
+      pushImageEditorHistory();
+      setImageEditorStatus("");
+    } else if (imageEditorState.tool === "eraser") {
       drawing.points.push(point);
       const layer = selectedImageEditorLayer();
       if (layer && layer.id === drawing.layerId && imageEditorPointDistance(drawing.last, point) > 0) {
@@ -27557,7 +27871,9 @@ js: import "konva/skia-backend";
     if (!drawing) return;
     if (drawing.pointerId !== void 0 && event.pointerId !== void 0 && drawing.pointerId !== event.pointerId) return;
     releaseImageEditorPointer(event, drawing.captureTarget);
-    if (imageEditorState.tool === "brush") {
+    if (isEditRegionTool()) {
+      pushImageEditorHistory();
+    } else if (imageEditorState.tool === "brush") {
       pushImageEditorHistory();
     } else if (imageEditorState.tool === "eraser") {
       if (drawing.changed) pushImageEditorHistory();
@@ -27586,22 +27902,28 @@ js: import "konva/skia-backend";
     } catch {
     }
   }
-  function imageEditorCompositeCanvas() {
+  function imageEditorCompositeCanvas(options = {}) {
     const stage = imageEditorState.konvaStage;
     if (!stage) return null;
-    const crop = imageEditorState.crop;
+    const crop = imageEditorState.crop ? finalCropRect(imageEditorState.crop, stage.width(), stage.height()) : null;
     const wasTransformerVisible = imageEditorState.konvaTransformer?.visible?.();
+    const wasMarkVisible = imageEditorState.markNode?.visible?.();
+    const wasEditRegionVisible = imageEditorState.editRegionNode?.visible?.();
     imageEditorState.konvaTransformer?.visible?.(false);
+    imageEditorState.markNode?.visible?.(Boolean(options.instructionMarks));
+    imageEditorState.editRegionNode?.visible?.(Boolean(options.editRegion));
     imageEditorState.konvaLayer?.batchDraw?.();
     const config = crop ? {
       x: crop.left,
       y: crop.top,
-      width: Math.max(1, Math.round(crop.width)),
-      height: Math.max(1, Math.round(crop.height)),
+      width: crop.width,
+      height: crop.height,
       pixelRatio: 1
     } : { pixelRatio: 1 };
     const canvas = stage.toCanvas(config);
     imageEditorState.konvaTransformer?.visible?.(wasTransformerVisible !== false);
+    imageEditorState.markNode?.visible?.(wasMarkVisible !== false);
+    imageEditorState.editRegionNode?.visible?.(wasEditRegionVisible !== false);
     imageEditorState.konvaLayer?.batchDraw?.();
     return canvas;
   }
@@ -27609,7 +27931,54 @@ js: import "konva/skia-backend";
     if (imageEditorState.canvasScope === "fit") {
       fitImageEditorCanvasToLayers({ preserveCurrent: true });
     }
-    return imageEditorCompositeCanvas();
+    return imageEditorCompositeCanvas({
+      instructionMarks: imageEditorState.activeGuidance === "instruction-marks"
+    });
+  }
+  function imageEditorDraftCanvasForSave(sourceCanvas) {
+    if (!sourceCanvas) return null;
+    const crop = imageEditorState.crop ? finalCropRect(imageEditorState.crop, sourceCanvas.width, sourceCanvas.height) : null;
+    if (!crop) return imageEditorCanvasSnapshot(sourceCanvas);
+    const canvas = document.createElement("canvas");
+    canvas.width = crop.width;
+    canvas.height = crop.height;
+    const ctx = canvas.getContext("2d", { willReadFrequently: true });
+    if (!ctx) return null;
+    ctx.drawImage(
+      sourceCanvas,
+      crop.left,
+      crop.top,
+      crop.width,
+      crop.height,
+      0,
+      0,
+      canvas.width,
+      canvas.height
+    );
+    return canvas;
+  }
+  function imageEditorEditMaskCanvas() {
+    const region = imageEditorDraftCanvasForSave(imageEditorState.editRegionCanvas);
+    if (!region) return null;
+    const regionContext = region.getContext("2d", { willReadFrequently: true });
+    if (!regionContext) return null;
+    const regionImage = regionContext.getImageData(0, 0, region.width, region.height);
+    if (!editRegionHasPixels(regionImage.data)) return null;
+    const maskCanvas = document.createElement("canvas");
+    maskCanvas.width = region.width;
+    maskCanvas.height = region.height;
+    const maskContext = maskCanvas.getContext("2d");
+    if (!maskContext) return null;
+    const pixels = materializeEditMaskPixels(region.width, region.height, regionImage.data);
+    const maskImage = maskContext.createImageData(region.width, region.height);
+    maskImage.data.set(pixels);
+    maskContext.putImageData(maskImage, 0, 0);
+    return maskCanvas;
+  }
+  function imageEditorCanvasHasPixels(canvas) {
+    const ctx = canvas?.getContext("2d", { willReadFrequently: true });
+    if (!canvas || !ctx) return false;
+    return editRegionHasPixels(ctx.getImageData(0, 0, canvas.width, canvas.height).data);
   }
   function imageEditorExportBlob(canvas) {
     return new Promise((resolve, reject) => {
@@ -27631,40 +28000,73 @@ ${hint}` : hint;
     legacyMethod4("setPromptText", next);
     legacyMethod4("updatePromptCount");
   }
+  function removeImageEditorPromptHint() {
+    const current = String(legacyMethod4("getPromptText") || "");
+    const hints = [translate("imageEditor.promptHint"), IMAGE_EDITOR_PROMPT_HINT_LEGACY];
+    const next = current.split("\n").filter((line) => !hints.includes(line.trim())).join("\n").trim();
+    if (next === current) return;
+    legacyMethod4("setPromptText", next);
+    legacyMethod4("updatePromptCount");
+  }
   async function saveImageEdit() {
     const state32 = getState();
     const els43 = getEls();
     const sessionId = imageEditorState.sessionId;
     const source = imageEditorState.source;
     const saveCanvas = imageEditorCanvasForSave();
-    if (!source || !isEditableImageSource(source) || !saveCanvas || !state32.images.includes(source)) {
+    const cleanCanvas = imageEditorCompositeCanvas();
+    const editMaskCanvas = imageEditorState.activeGuidance === "edit-region" ? imageEditorEditMaskCanvas() : null;
+    if (imageEditorState.activeGuidance === "edit-region" && !editMaskCanvas) {
+      setImageEditorStatus(translate("imageEditor.emptyEditRegion"), "error");
+      return;
+    }
+    if (!source || !isEditableImageSource(source) || !saveCanvas || !cleanCanvas || !state32.images.includes(source)) {
       setImageEditorStatus(translate("imageEditor.saveFailed"), "error");
       return;
     }
     if (els43.imageEditorSave) els43.imageEditorSave.disabled = true;
     try {
-      const blob = await imageEditorExportBlob(saveCanvas);
+      const instructionMarksCanvas = imageEditorState.hasInstructionMarks ? imageEditorDraftCanvasForSave(imageEditorState.workCanvas) : null;
+      const editRegionDraftCanvas = imageEditorDraftCanvasForSave(imageEditorState.editRegionCanvas);
+      const editRegionCanvas = imageEditorCanvasHasPixels(editRegionDraftCanvas) ? editRegionDraftCanvas : null;
+      const [submissionBlob, cleanBlob, instructionMarksBlob, editRegionBlob, editMaskBlob] = await Promise.all([
+        imageEditorExportBlob(saveCanvas),
+        imageEditorExportBlob(cleanCanvas),
+        instructionMarksCanvas ? imageEditorExportBlob(instructionMarksCanvas) : Promise.resolve(null),
+        editRegionCanvas ? imageEditorExportBlob(editRegionCanvas) : Promise.resolve(null),
+        editMaskCanvas ? imageEditorExportBlob(editMaskCanvas) : Promise.resolve(null)
+      ]);
       const sourceIndex = state32.images.indexOf(source);
       if (sessionId !== imageEditorState.sessionId || imageEditorState.source !== source || sourceIndex < 0) {
         return;
       }
       const filename = editedUploadFilename(source.originalFile?.name || source.name || source.file?.name);
-      const file = new File([blob], filename, {
+      const file = new File([submissionBlob], filename, {
         type: "image/png",
         lastModified: Date.now()
       });
+      const cleanFile = new File([cleanBlob], `base-${filename}`, { type: "image/png", lastModified: Date.now() });
       const nextSource = {
         kind: "upload",
         file,
-        originalFile: file,
+        originalFile: cleanFile,
+        baseFile: cleanFile,
         name: filename,
         previewUrl: URL.createObjectURL(file),
-        edited: true
+        edited: true,
+        activeGuidance: imageEditorState.activeGuidance,
+        instructionMarksFile: instructionMarksBlob ? new File([instructionMarksBlob], "instruction-marks.png", { type: "image/png" }) : null,
+        editRegionFile: editRegionBlob ? new File([editRegionBlob], "edit-region.png", { type: "image/png" }) : null,
+        editMaskFile: editMaskBlob ? new File([editMaskBlob], "edit-mask.png", { type: "image/png" }) : null
       };
       state32.images[sourceIndex] = nextSource;
       legacyMethod4("revokeUploadPreviewUrl", source);
       legacyMethod4("syncPromptGalleryMentionsFromInputs");
-      if (imageEditorState.hasInstructionMarks) ensureImageEditorPromptHint();
+      if (imageEditorState.activeGuidance === "instruction-marks" && imageEditorState.hasInstructionMarks) {
+        ensureImageEditorPromptHint();
+      } else {
+        removeImageEditorPromptHint();
+      }
       legacyMethod4("renderImageStrip");
       legacyMethod4("updateRequestPreview");
       closeImageEditor();
@@ -27862,7 +28264,9 @@ ${hint}` : hint;
     imageEditorState.sourceIndex = index;
     imageEditorState.source = source;
     imageEditorState.originalFile = null;
-    imageEditorState.tool = "crop";
+    imageEditorState.canUseEditRegion = state32.mode === "edit" && index === 0;
+    imageEditorState.activeGuidance = imageEditorState.canUseEditRegion && source.activeGuidance === "edit-region" ? "edit-region" : "instruction-marks";
+    imageEditorState.tool = imageEditorState.activeGuidance === "edit-region" ? "mask-paint" : "crop";
     imageEditorState.color = els43.imageEditorColor?.value || "#ff3b30";
     imageEditorState.strokeWidth = Number(els43.imageEditorStroke?.value || 8);
     imageEditorState.hasInstructionMarks = false;
@@ -27881,6 +28285,11 @@ ${hint}` : hint;
       if (sessionId !== imageEditorState.sessionId || imageEditorState.source !== source) return;
       imageEditorState.image = image;
       initializeImageEditorCanvases(image);
+      await restoreImageEditorGuidanceDrafts(source);
+      if (sessionId !== imageEditorState.sessionId || imageEditorState.source !== source) return;
+      imageEditorState.history = [];
+      imageEditorState.historyIndex = -1;
+      pushImageEditorHistory();
       renderImageEditor();
     } catch {
       if (sessionId !== imageEditorState.sessionId || imageEditorState.source !== source) return;
@@ -27901,10 +28310,13 @@ ${hint}` : hint;
     imageEditorState.workCanvas = null;
     imageEditorState.brushBoundaryCanvas = null;
     imageEditorState.brushOverlayCanvas = null;
+    imageEditorState.editRegionCanvas = null;
     imageEditorState.layers = [];
     imageEditorState.selectedLayerId = null;
     imageEditorState.crop = null;
     imageEditorState.hasInstructionMarks = false;
+    imageEditorState.activeGuidance = "instruction-marks";
+    imageEditorState.canUseEditRegion = false;
     imageEditorState.history = [];
     imageEditorState.historyIndex = -1;
     imageEditorState.drawing = null;
@@ -27915,12 +28327,22 @@ ${hint}` : hint;
     updateImageEditorControls();
   }
   function setImageEditorTool(tool) {
-    if (!["select", "brush", "arrow", "crop", "fill", "eraser"].includes(tool)) return;
+    if (!["select", "brush", "arrow", "crop", "fill", "eraser", "mask-paint", "mask-erase"].includes(tool)) return;
     imageEditorState.tool = tool;
     imageEditorState.drawing = null;
     clearImageEditorPreview();
     updateImageEditorControls();
     imageEditorState.konvaLayer?.batchDraw?.();
+  }
+  function setImageEditorGuidance(guidance) {
+    if (guidance !== "instruction-marks" && guidance !== "edit-region") return;
+    if (guidance === "edit-region" && !imageEditorState.canUseEditRegion) return;
+    imageEditorState.activeGuidance = guidance;
+    imageEditorState.tool = guidance === "edit-region" ? "mask-paint" : "brush";
+    imageEditorState.drawing = null;
+    clearImageEditorPreview();
+    setImageEditorStatus("");
+    renderImageEditor();
   }
   function setImageEditorCanvasScope(scope) {
     if (!["base", "fit"].includes(scope)) return;
@@ -28008,6 +28430,10 @@ ${hint}` : hint;
     document.querySelectorAll("[data-image-editor-tool]").forEach((button) => {
       button.addEventListener("click", () => setImageEditorTool(button.dataset.imageEditorTool));
     });
+    document.querySelectorAll("[data-image-editor-guidance]").forEach((button) => {
+      button.addEventListener("click", () => setImageEditorGuidance(button.dataset.imageEditorGuidance));
+    });
+    document.querySelector("#imageEditorMaskClear")?.addEventListener("click", clearEditRegion);
     document.querySelectorAll("[data-image-editor-color]").forEach((button) => {
       button.addEventListener("click", () => {
         imageEditorState.color = button.dataset.imageEditorColor || imageEditorState.color;
@@ -28206,7 +28632,7 @@ ${hint}` : hint;
       if (source.edited) {
         const editedBadge = document.createElement("span");
         editedBadge.className = "thumb-edited-badge";
-        editedBadge.textContent = translate("imageInput.editedBadge");
+        editedBadge.textContent = source.activeGuidance === "edit-region" ? translate("imageInput.editRegionApplied") : translate("imageInput.instructionMarksApplied");
         wrapper.append(editedBadge);
       }
       thumbItems.append(wrapper);
@@ -39657,6 +40083,15 @@ ${galleryText}`;
       setStatus17(customSizeError, "error");
       return;
     }
+    let editMask = null;
+    let editImageFiles = [];
+    try {
+      editMask = editMaskForSubmission(state24.mode, state24.images);
+      editImageFiles = imageFilesForSubmission(state24.mode, uploads);
+    } catch {
+      setStatus17(translate("imageEditor.emptyEditRegion"), "error");
+      return;
+    }
     const form = new FormData();
     form.append("prompt", prompt);
     form.append("prompt_for_model", promptForModel);
@@ -39689,7 +40124,8 @@ ${galleryText}`;
     if (state24.mode === "generate") {
       uploads.forEach((source) => form.append("reference_images", source.file));
     } else {
-      uploads.forEach((source) => form.append("images", source.file));
+      editImageFiles.forEach((file) => form.append("images", file));
+      if (editMask) form.append("mask", editMask);
     }
     const pendingTask = createPendingTask();
     addPendingTask2(pendingTask);

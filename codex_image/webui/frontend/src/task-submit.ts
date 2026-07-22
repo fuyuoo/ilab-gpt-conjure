@@ -1,5 +1,6 @@
 import { getLegacyBridge } from "./state";
 import { translate } from "./i18n";
+import { editMaskForSubmission, imageFilesForSubmission } from "./edit-region-materialization";
 
 const bridge = getLegacyBridge();
 const state = bridge.state;
@@ -340,6 +341,16 @@ async function runTask() {
     return;
   }
 
+  let editMask: File | null = null;
+  let editImageFiles: File[] = [];
+  try {
+    editMask = editMaskForSubmission(state.mode, state.images);
+    editImageFiles = imageFilesForSubmission(state.mode, uploads);
+  } catch {
+    setStatus(translate("imageEditor.emptyEditRegion"), "error");
+    return;
+  }
+
   const form = new FormData();
   form.append("prompt", prompt);
   form.append("prompt_for_model", promptForModel);
@@ -373,7 +384,8 @@ async function runTask() {
   if (state.mode === "generate") {
     uploads.forEach((source: any) => form.append("reference_images", source.file));
   } else {
-    uploads.forEach((source: any) => form.append("images", source.file));
+    editImageFiles.forEach((file) => form.append("images", file));
+    if (editMask) form.append("mask", editMask);
   }
 
   const pendingTask = createPendingTask();

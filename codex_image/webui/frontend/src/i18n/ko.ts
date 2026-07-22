@@ -968,4 +968,5 @@ export const KO_DICTIONARY: TranslationDictionary = {
     "history.referenceFiles": "참조 파일",
     "history.downloadReferenceFile": "파일 다운로드",
     "history.readdReferenceFile": "다시 추가",
+    "imageEditor.guidance": "편집 안내", "imageEditor.instructionMarksGuidance": "지시 표시", "imageEditor.editRegionGuidance": "편집 영역", "imageEditor.maskTools": "마스크 도구", "imageEditor.maskPaint": "그리기", "imageEditor.maskErase": "지우기", "imageEditor.maskClear": "모두 지우기", "imageEditor.emptyEditRegion": "저장하기 전에 편집 영역을 그리세요.", "imageInput.instructionMarksApplied": "지시 표시 적용됨", "imageInput.editRegionApplied": "편집 영역 적용됨"
 };

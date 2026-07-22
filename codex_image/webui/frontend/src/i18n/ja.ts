@@ -968,4 +968,5 @@ export const JA_DICTIONARY: TranslationDictionary = {
     "history.referenceFiles": "参照ファイル",
     "history.downloadReferenceFile": "ファイルをダウンロード",
     "history.readdReferenceFile": "再追加",
+    "imageEditor.guidance": "編集ガイダンス", "imageEditor.instructionMarksGuidance": "指示マーク", "imageEditor.editRegionGuidance": "編集領域", "imageEditor.maskTools": "マスクツール", "imageEditor.maskPaint": "描画", "imageEditor.maskErase": "消去", "imageEditor.maskClear": "クリア", "imageEditor.emptyEditRegion": "保存する前に編集領域を描画してください。", "imageInput.instructionMarksApplied": "指示マークを適用済み", "imageInput.editRegionApplied": "編集領域を適用済み"
 };

@@ -215,6 +215,21 @@
   margin-bottom: 0;
 }
 
+.image-editor-guidance-switch {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  padding: 4px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--surface-soft);
+}
+
+.image-editor-guidance-switch .active {
+  color: var(--primary-foreground);
+  background: var(--primary);
+}
+
 .image-editor-toolbar {
   display: flex;
   flex-wrap: wrap;

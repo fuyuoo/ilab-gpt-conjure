@@ -967,5 +967,6 @@ export const HI_DICTIONARY: TranslationDictionary = {
     "referenceFiles.historyPathMismatch": "इन फ़ाइलों के Responses पथ अलग हैं",
     "history.referenceFiles": "संदर्भ फ़ाइलें",
     "history.downloadReferenceFile": "फ़ाइल डाउनलोड करें",
-    "history.readdReferenceFile": "फिर जोड़ें"
+    "history.readdReferenceFile": "फिर जोड़ें",
+    "imageEditor.guidance": "संपादन मार्गदर्शन", "imageEditor.instructionMarksGuidance": "निर्देश चिह्न", "imageEditor.editRegionGuidance": "संपादन क्षेत्र", "imageEditor.maskTools": "मास्क टूल", "imageEditor.maskPaint": "पेंट", "imageEditor.maskErase": "मिटाएँ", "imageEditor.maskClear": "साफ़ करें", "imageEditor.emptyEditRegion": "सहेजने से पहले संपादन क्षेत्र बनाएँ।", "imageInput.instructionMarksApplied": "निर्देश चिह्न लागू", "imageInput.editRegionApplied": "संपादन क्षेत्र लागू"
 };

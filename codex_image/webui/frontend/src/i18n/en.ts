@@ -977,5 +977,6 @@ export const EN_DICTIONARY: TranslationDictionary = {
     "referenceFiles.historyPathMismatch": "These reference files use different Responses paths",
     "history.referenceFiles": "Reference files",
     "history.downloadReferenceFile": "Download file",
-    "history.readdReferenceFile": "Add again"
+    "history.readdReferenceFile": "Add again",
+    "imageEditor.guidance": "Editing Guidance", "imageEditor.instructionMarksGuidance": "Instruction Marks", "imageEditor.editRegionGuidance": "Edit Region", "imageEditor.maskTools": "Mask Tool", "imageEditor.maskPaint": "Paint", "imageEditor.maskErase": "Erase", "imageEditor.maskClear": "Clear", "imageEditor.emptyEditRegion": "Paint an Edit Region before saving.", "imageInput.instructionMarksApplied": "Instruction Marks applied", "imageInput.editRegionApplied": "Edit Region applied"
 };

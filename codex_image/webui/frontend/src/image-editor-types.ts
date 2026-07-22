@@ -22,10 +22,12 @@ export interface ImageEditorSnapshot {
   workCanvas: HTMLCanvasElement;
   brushBoundaryCanvas: HTMLCanvasElement | null;
   brushOverlayCanvas: HTMLCanvasElement | null;
+  editRegionCanvas: HTMLCanvasElement | null;
   canvasScope: "base" | "fit";
   crop: any;
   selectedLayerId: string | null;
   hasInstructionMarks: boolean;
+  activeGuidance: EditingGuidanceType;
 }
 
 export interface ImageEditorState {
@@ -38,11 +40,13 @@ export interface ImageEditorState {
   workCanvas: HTMLCanvasElement | null;
   brushBoundaryCanvas: HTMLCanvasElement | null;
   brushOverlayCanvas: HTMLCanvasElement | null;
+  editRegionCanvas: HTMLCanvasElement | null;
   konvaStage: any;
   konvaLayer: any;
   konvaTransformer: any;
   markNode: any;
   previewNode: any;
+  editRegionNode: any;
   layers: ImageEditorLayer[];
   selectedLayerId: string | null;
   displayScale: number;
@@ -52,7 +56,10 @@ export interface ImageEditorState {
   crop: any;
   canvasScope: "base" | "fit";
   hasInstructionMarks: boolean;
+  activeGuidance: EditingGuidanceType;
+  canUseEditRegion: boolean;
   history: ImageEditorSnapshot[];
   historyIndex: number;
   drawing: any;
 }
+import type { EditingGuidanceType } from "./editing-guidance-state";

@@ -977,7 +977,17 @@
     "referenceFiles.historyPathMismatch": "These reference files use different Responses paths",
     "history.referenceFiles": "Reference files",
     "history.downloadReferenceFile": "Download file",
-    "history.readdReferenceFile": "Add again"
+    "history.readdReferenceFile": "Add again",
+    "imageEditor.guidance": "Editing Guidance",
+    "imageEditor.instructionMarksGuidance": "Instruction Marks",
+    "imageEditor.editRegionGuidance": "Edit Region",
+    "imageEditor.maskTools": "Mask Tool",
+    "imageEditor.maskPaint": "Paint",
+    "imageEditor.maskErase": "Erase",
+    "imageEditor.maskClear": "Clear",
+    "imageEditor.emptyEditRegion": "Paint an Edit Region before saving.",
+    "imageInput.instructionMarksApplied": "Instruction Marks applied",
+    "imageInput.editRegionApplied": "Edit Region applied"
   };
 
   // codex_image/webui/frontend/src/i18n/de.ts
@@ -1948,7 +1958,17 @@
     "referenceFiles.historyPathMismatch": "Diese Dateien verwenden unterschiedliche Responses-Pfade",
     "history.referenceFiles": "Referenzdateien",
     "history.downloadReferenceFile": "Datei herunterladen",
-    "history.readdReferenceFile": "Erneut hinzuf\xFCgen"
+    "history.readdReferenceFile": "Erneut hinzuf\xFCgen",
+    "imageEditor.guidance": "Bearbeitungshinweise",
+    "imageEditor.instructionMarksGuidance": "Anweisungsmarkierungen",
+    "imageEditor.editRegionGuidance": "Bearbeitungsbereich",
+    "imageEditor.maskTools": "Maskenwerkzeug",
+    "imageEditor.maskPaint": "Malen",
+    "imageEditor.maskErase": "Radieren",
+    "imageEditor.maskClear": "Leeren",
+    "imageEditor.emptyEditRegion": "Zeichnen Sie vor dem Speichern einen Bearbeitungsbereich.",
+    "imageInput.instructionMarksApplied": "Anweisungsmarkierungen angewendet",
+    "imageInput.editRegionApplied": "Bearbeitungsbereich angewendet"
   };
 
   // codex_image/webui/frontend/src/i18n/es.ts
@@ -2919,7 +2939,17 @@
     "referenceFiles.historyPathMismatch": "Estos archivos usan rutas de Responses distintas",
     "history.referenceFiles": "Archivos de referencia",
     "history.downloadReferenceFile": "Descargar archivo",
-    "history.readdReferenceFile": "A\xF1adir de nuevo"
+    "history.readdReferenceFile": "A\xF1adir de nuevo",
+    "imageEditor.guidance": "Gu\xEDa de edici\xF3n",
+    "imageEditor.instructionMarksGuidance": "Marcas de instrucci\xF3n",
+    "imageEditor.editRegionGuidance": "Regi\xF3n de edici\xF3n",
+    "imageEditor.maskTools": "Herramienta de m\xE1scara",
+    "imageEditor.maskPaint": "Pintar",
+    "imageEditor.maskErase": "Borrar",
+    "imageEditor.maskClear": "Limpiar",
+    "imageEditor.emptyEditRegion": "Pinta una regi\xF3n de edici\xF3n antes de guardar.",
+    "imageInput.instructionMarksApplied": "Marcas de instrucci\xF3n aplicadas",
+    "imageInput.editRegionApplied": "Regi\xF3n de edici\xF3n aplicada"
   };
 
   // codex_image/webui/frontend/src/i18n/fr.ts
@@ -3890,7 +3920,17 @@
     "referenceFiles.historyPathMismatch": "Ces fichiers utilisent des chemins Responses diff\xE9rents",
     "history.referenceFiles": "Fichiers de r\xE9f\xE9rence",
     "history.downloadReferenceFile": "T\xE9l\xE9charger le fichier",
-    "history.readdReferenceFile": "Ajouter \xE0 nouveau"
+    "history.readdReferenceFile": "Ajouter \xE0 nouveau",
+    "imageEditor.guidance": "Guide d\u2019\xE9dition",
+    "imageEditor.instructionMarksGuidance": "Marques d\u2019instruction",
+    "imageEditor.editRegionGuidance": "Zone d\u2019\xE9dition",
+    "imageEditor.maskTools": "Outil de masque",
+    "imageEditor.maskPaint": "Peindre",
+    "imageEditor.maskErase": "Effacer",
+    "imageEditor.maskClear": "Vider",
+    "imageEditor.emptyEditRegion": "Peignez une zone d\u2019\xE9dition avant d\u2019enregistrer.",
+    "imageInput.instructionMarksApplied": "Marques d\u2019instruction appliqu\xE9es",
+    "imageInput.editRegionApplied": "Zone d\u2019\xE9dition appliqu\xE9e"
   };
 
   // codex_image/webui/frontend/src/i18n/ja.ts
@@ -4861,7 +4901,17 @@
     "referenceFiles.historyPathMismatch": "\u53C2\u7167\u30D5\u30A1\u30A4\u30EB\u306E Responses \u30D1\u30B9\u304C\u7570\u306A\u308A\u307E\u3059",
     "history.referenceFiles": "\u53C2\u7167\u30D5\u30A1\u30A4\u30EB",
     "history.downloadReferenceFile": "\u30D5\u30A1\u30A4\u30EB\u3092\u30C0\u30A6\u30F3\u30ED\u30FC\u30C9",
-    "history.readdReferenceFile": "\u518D\u8FFD\u52A0"
+    "history.readdReferenceFile": "\u518D\u8FFD\u52A0",
+    "imageEditor.guidance": "\u7DE8\u96C6\u30AC\u30A4\u30C0\u30F3\u30B9",
+    "imageEditor.instructionMarksGuidance": "\u6307\u793A\u30DE\u30FC\u30AF",
+    "imageEditor.editRegionGuidance": "\u7DE8\u96C6\u9818\u57DF",
+    "imageEditor.maskTools": "\u30DE\u30B9\u30AF\u30C4\u30FC\u30EB",
+    "imageEditor.maskPaint": "\u63CF\u753B",
+    "imageEditor.maskErase": "\u6D88\u53BB",
+    "imageEditor.maskClear": "\u30AF\u30EA\u30A2",
+    "imageEditor.emptyEditRegion": "\u4FDD\u5B58\u3059\u308B\u524D\u306B\u7DE8\u96C6\u9818\u57DF\u3092\u63CF\u753B\u3057\u3066\u304F\u3060\u3055\u3044\u3002",
+    "imageInput.instructionMarksApplied": "\u6307\u793A\u30DE\u30FC\u30AF\u3092\u9069\u7528\u6E08\u307F",
+    "imageInput.editRegionApplied": "\u7DE8\u96C6\u9818\u57DF\u3092\u9069\u7528\u6E08\u307F"
   };
 
   // codex_image/webui/frontend/src/i18n/ko.ts
@@ -5832,7 +5882,17 @@
     "referenceFiles.historyPathMismatch": "\uCC38\uC870 \uD30C\uC77C\uC758 Responses \uACBD\uB85C\uAC00 \uC11C\uB85C \uB2E4\uB985\uB2C8\uB2E4",
     "history.referenceFiles": "\uCC38\uC870 \uD30C\uC77C",
     "history.downloadReferenceFile": "\uD30C\uC77C \uB2E4\uC6B4\uB85C\uB4DC",
-    "history.readdReferenceFile": "\uB2E4\uC2DC \uCD94\uAC00"
+    "history.readdReferenceFile": "\uB2E4\uC2DC \uCD94\uAC00",
+    "imageEditor.guidance": "\uD3B8\uC9D1 \uC548\uB0B4",
+    "imageEditor.instructionMarksGuidance": "\uC9C0\uC2DC \uD45C\uC2DC",
+    "imageEditor.editRegionGuidance": "\uD3B8\uC9D1 \uC601\uC5ED",
+    "imageEditor.maskTools": "\uB9C8\uC2A4\uD06C \uB3C4\uAD6C",
+    "imageEditor.maskPaint": "\uADF8\uB9AC\uAE30",
+    "imageEditor.maskErase": "\uC9C0\uC6B0\uAE30",
+    "imageEditor.maskClear": "\uBAA8\uB450 \uC9C0\uC6B0\uAE30",
+    "imageEditor.emptyEditRegion": "\uC800\uC7A5\uD558\uAE30 \uC804\uC5D0 \uD3B8\uC9D1 \uC601\uC5ED\uC744 \uADF8\uB9AC\uC138\uC694.",
+    "imageInput.instructionMarksApplied": "\uC9C0\uC2DC \uD45C\uC2DC \uC801\uC6A9\uB428",
+    "imageInput.editRegionApplied": "\uD3B8\uC9D1 \uC601\uC5ED \uC801\uC6A9\uB428"
   };
 
   // codex_image/webui/frontend/src/i18n/pt.ts
@@ -6803,7 +6863,17 @@
     "referenceFiles.historyPathMismatch": "Estes arquivos usam caminhos Responses diferentes",
     "history.referenceFiles": "Arquivos de refer\xEAncia",
     "history.downloadReferenceFile": "Baixar arquivo",
-    "history.readdReferenceFile": "Adicionar novamente"
+    "history.readdReferenceFile": "Adicionar novamente",
+    "imageEditor.guidance": "Orienta\xE7\xE3o de edi\xE7\xE3o",
+    "imageEditor.instructionMarksGuidance": "Marcas de instru\xE7\xE3o",
+    "imageEditor.editRegionGuidance": "Regi\xE3o de edi\xE7\xE3o",
+    "imageEditor.maskTools": "Ferramenta de m\xE1scara",
+    "imageEditor.maskPaint": "Pintar",
+    "imageEditor.maskErase": "Apagar",
+    "imageEditor.maskClear": "Limpar",
+    "imageEditor.emptyEditRegion": "Pinte uma regi\xE3o de edi\xE7\xE3o antes de salvar.",
+    "imageInput.instructionMarksApplied": "Marcas de instru\xE7\xE3o aplicadas",
+    "imageInput.editRegionApplied": "Regi\xE3o de edi\xE7\xE3o aplicada"
   };
 
   // codex_image/webui/frontend/src/i18n/ru.ts
@@ -7774,7 +7844,17 @@
     "referenceFiles.historyPathMismatch": "\u042D\u0442\u0438 \u0444\u0430\u0439\u043B\u044B \u0438\u0441\u043F\u043E\u043B\u044C\u0437\u0443\u044E\u0442 \u0440\u0430\u0437\u043D\u044B\u0435 \u043F\u0443\u0442\u0438 Responses",
     "history.referenceFiles": "\u0424\u0430\u0439\u043B\u044B-\u0438\u0441\u0442\u043E\u0447\u043D\u0438\u043A\u0438",
     "history.downloadReferenceFile": "\u0421\u043A\u0430\u0447\u0430\u0442\u044C \u0444\u0430\u0439\u043B",
-    "history.readdReferenceFile": "\u0414\u043E\u0431\u0430\u0432\u0438\u0442\u044C \u0441\u043D\u043E\u0432\u0430"
+    "history.readdReferenceFile": "\u0414\u043E\u0431\u0430\u0432\u0438\u0442\u044C \u0441\u043D\u043E\u0432\u0430",
+    "imageEditor.guidance": "\u0420\u0435\u0436\u0438\u043C \u0440\u0435\u0434\u0430\u043A\u0442\u0438\u0440\u043E\u0432\u0430\u043D\u0438\u044F",
+    "imageEditor.instructionMarksGuidance": "\u041C\u0435\u0442\u043A\u0438-\u0438\u043D\u0441\u0442\u0440\u0443\u043A\u0446\u0438\u0438",
+    "imageEditor.editRegionGuidance": "\u041E\u0431\u043B\u0430\u0441\u0442\u044C \u0440\u0435\u0434\u0430\u043A\u0442\u0438\u0440\u043E\u0432\u0430\u043D\u0438\u044F",
+    "imageEditor.maskTools": "\u0418\u043D\u0441\u0442\u0440\u0443\u043C\u0435\u043D\u0442 \u043C\u0430\u0441\u043A\u0438",
+    "imageEditor.maskPaint": "\u0420\u0438\u0441\u043E\u0432\u0430\u0442\u044C",
+    "imageEditor.maskErase": "\u0421\u0442\u0435\u0440\u0435\u0442\u044C",
+    "imageEditor.maskClear": "\u041E\u0447\u0438\u0441\u0442\u0438\u0442\u044C",
+    "imageEditor.emptyEditRegion": "\u041D\u0430\u0440\u0438\u0441\u0443\u0439\u0442\u0435 \u043E\u0431\u043B\u0430\u0441\u0442\u044C \u0440\u0435\u0434\u0430\u043A\u0442\u0438\u0440\u043E\u0432\u0430\u043D\u0438\u044F \u043F\u0435\u0440\u0435\u0434 \u0441\u043E\u0445\u0440\u0430\u043D\u0435\u043D\u0438\u0435\u043C.",
+    "imageInput.instructionMarksApplied": "\u041C\u0435\u0442\u043A\u0438-\u0438\u043D\u0441\u0442\u0440\u0443\u043A\u0446\u0438\u0438 \u043F\u0440\u0438\u043C\u0435\u043D\u0435\u043D\u044B",
+    "imageInput.editRegionApplied": "\u041E\u0431\u043B\u0430\u0441\u0442\u044C \u0440\u0435\u0434\u0430\u043A\u0442\u0438\u0440\u043E\u0432\u0430\u043D\u0438\u044F \u043F\u0440\u0438\u043C\u0435\u043D\u0435\u043D\u0430"
   };
 
   // codex_image/webui/frontend/src/i18n/it.ts
@@ -8745,7 +8825,17 @@
     "referenceFiles.historyPathMismatch": "Questi file usano percorsi Responses diversi",
     "history.referenceFiles": "File di riferimento",
     "history.downloadReferenceFile": "Scarica file",
-    "history.readdReferenceFile": "Aggiungi di nuovo"
+    "history.readdReferenceFile": "Aggiungi di nuovo",
+    "imageEditor.guidance": "Guida modifica",
+    "imageEditor.instructionMarksGuidance": "Segni di istruzione",
+    "imageEditor.editRegionGuidance": "Area di modifica",
+    "imageEditor.maskTools": "Strumento maschera",
+    "imageEditor.maskPaint": "Disegna",
+    "imageEditor.maskErase": "Cancella",
+    "imageEditor.maskClear": "Pulisci",
+    "imageEditor.emptyEditRegion": "Disegna un\u2019area di modifica prima di salvare.",
+    "imageInput.instructionMarksApplied": "Segni di istruzione applicati",
+    "imageInput.editRegionApplied": "Area di modifica applicata"
   };
 
   // codex_image/webui/frontend/src/i18n/hi.ts
@@ -9716,7 +9806,17 @@
     "referenceFiles.historyPathMismatch": "\u0907\u0928 \u092B\u093C\u093E\u0907\u0932\u094B\u0902 \u0915\u0947 Responses \u092A\u0925 \u0905\u0932\u0917 \u0939\u0948\u0902",
     "history.referenceFiles": "\u0938\u0902\u0926\u0930\u094D\u092D \u092B\u093C\u093E\u0907\u0932\u0947\u0902",
     "history.downloadReferenceFile": "\u092B\u093C\u093E\u0907\u0932 \u0921\u093E\u0909\u0928\u0932\u094B\u0921 \u0915\u0930\u0947\u0902",
-    "history.readdReferenceFile": "\u092B\u093F\u0930 \u091C\u094B\u0921\u093C\u0947\u0902"
+    "history.readdReferenceFile": "\u092B\u093F\u0930 \u091C\u094B\u0921\u093C\u0947\u0902",
+    "imageEditor.guidance": "\u0938\u0902\u092A\u093E\u0926\u0928 \u092E\u093E\u0930\u094D\u0917\u0926\u0930\u094D\u0936\u0928",
+    "imageEditor.instructionMarksGuidance": "\u0928\u093F\u0930\u094D\u0926\u0947\u0936 \u091A\u093F\u0939\u094D\u0928",
+    "imageEditor.editRegionGuidance": "\u0938\u0902\u092A\u093E\u0926\u0928 \u0915\u094D\u0937\u0947\u0924\u094D\u0930",
+    "imageEditor.maskTools": "\u092E\u093E\u0938\u094D\u0915 \u091F\u0942\u0932",
+    "imageEditor.maskPaint": "\u092A\u0947\u0902\u091F",
+    "imageEditor.maskErase": "\u092E\u093F\u091F\u093E\u090F\u0901",
+    "imageEditor.maskClear": "\u0938\u093E\u092B\u093C \u0915\u0930\u0947\u0902",
+    "imageEditor.emptyEditRegion": "\u0938\u0939\u0947\u091C\u0928\u0947 \u0938\u0947 \u092A\u0939\u0932\u0947 \u0938\u0902\u092A\u093E\u0926\u0928 \u0915\u094D\u0937\u0947\u0924\u094D\u0930 \u092C\u0928\u093E\u090F\u0901\u0964",
+    "imageInput.instructionMarksApplied": "\u0928\u093F\u0930\u094D\u0926\u0947\u0936 \u091A\u093F\u0939\u094D\u0928 \u0932\u093E\u0917\u0942",
+    "imageInput.editRegionApplied": "\u0938\u0902\u092A\u093E\u0926\u0928 \u0915\u094D\u0937\u0947\u0924\u094D\u0930 \u0932\u093E\u0917\u0942"
   };
 
   // codex_image/webui/frontend/src/i18n/zh-cn.ts
@@ -10697,7 +10797,17 @@
     "referenceFiles.historyPathMismatch": "\u8FD9\u4E9B\u53C2\u8003\u6587\u4EF6\u4F7F\u7528\u4E86\u4E0D\u540C\u7684 Responses \u8DEF\u5F84",
     "history.referenceFiles": "\u53C2\u8003\u6587\u4EF6",
     "history.downloadReferenceFile": "\u4E0B\u8F7D\u6587\u4EF6",
-    "history.readdReferenceFile": "\u91CD\u65B0\u52A0\u5165"
+    "history.readdReferenceFile": "\u91CD\u65B0\u52A0\u5165",
+    "imageEditor.guidance": "\u7F16\u8F91\u6307\u5BFC",
+    "imageEditor.instructionMarksGuidance": "\u6307\u4EE4\u6807\u8BB0",
+    "imageEditor.editRegionGuidance": "\u7F16\u8F91\u533A\u57DF",
+    "imageEditor.maskTools": "\u906E\u7F69\u5DE5\u5177",
+    "imageEditor.maskPaint": "\u7ED8\u5236",
+    "imageEditor.maskErase": "\u64E6\u9664",
+    "imageEditor.maskClear": "\u6E05\u7A7A",
+    "imageEditor.emptyEditRegion": "\u8BF7\u5148\u7ED8\u5236\u975E\u7A7A\u7F16\u8F91\u533A\u57DF\u518D\u4FDD\u5B58\u3002",
+    "imageInput.instructionMarksApplied": "\u6307\u4EE4\u6807\u8BB0\u5DF2\u5E94\u7528",
+    "imageInput.editRegionApplied": "\u7F16\u8F91\u533A\u57DF\u5DF2\u5E94\u7528"
   };
 
   // codex_image/webui/frontend/src/i18n/zh-hk.ts
@@ -11678,7 +11788,17 @@
     "referenceFiles.historyPathMismatch": "\u9019\u4E9B\u53C3\u8003\u6A94\u6848\u4F7F\u7528\u4E0D\u540C\u7684 Responses \u8DEF\u5F91",
     "history.referenceFiles": "\u53C3\u8003\u6A94\u6848",
     "history.downloadReferenceFile": "\u4E0B\u8F09\u6A94\u6848",
-    "history.readdReferenceFile": "\u91CD\u65B0\u52A0\u5165"
+    "history.readdReferenceFile": "\u91CD\u65B0\u52A0\u5165",
+    "imageEditor.guidance": "\u7DE8\u8F2F\u6307\u5F15",
+    "imageEditor.instructionMarksGuidance": "\u6307\u4EE4\u6A19\u8A18",
+    "imageEditor.editRegionGuidance": "\u7DE8\u8F2F\u5340\u57DF",
+    "imageEditor.maskTools": "\u906E\u7F69\u5DE5\u5177",
+    "imageEditor.maskPaint": "\u7E6A\u756B",
+    "imageEditor.maskErase": "\u64E6\u9664",
+    "imageEditor.maskClear": "\u6E05\u9664",
+    "imageEditor.emptyEditRegion": "\u8ACB\u5148\u7E6A\u756B\u975E\u7A7A\u7DE8\u8F2F\u5340\u57DF\u518D\u5132\u5B58\u3002",
+    "imageInput.instructionMarksApplied": "\u6307\u4EE4\u6A19\u8A18\u5DF2\u5957\u7528",
+    "imageInput.editRegionApplied": "\u7DE8\u8F2F\u5340\u57DF\u5DF2\u5957\u7528"
   };
 
   // codex_image/webui/frontend/src/i18n/zh-tw.ts
@@ -12659,7 +12779,17 @@
     "referenceFiles.historyPathMismatch": "\u9019\u4E9B\u53C3\u8003\u6A94\u6848\u4F7F\u7528\u4E0D\u540C\u7684 Responses \u8DEF\u5F91",
     "history.referenceFiles": "\u53C3\u8003\u6A94\u6848",
     "history.downloadReferenceFile": "\u4E0B\u8F09\u6A94\u6848",
-    "history.readdReferenceFile": "\u91CD\u65B0\u52A0\u5165"
+    "history.readdReferenceFile": "\u91CD\u65B0\u52A0\u5165",
+    "imageEditor.guidance": "\u7DE8\u8F2F\u6307\u5F15",
+    "imageEditor.instructionMarksGuidance": "\u6307\u4EE4\u6A19\u8A18",
+    "imageEditor.editRegionGuidance": "\u7DE8\u8F2F\u5340\u57DF",
+    "imageEditor.maskTools": "\u906E\u7F69\u5DE5\u5177",
+    "imageEditor.maskPaint": "\u7E6A\u88FD",
+    "imageEditor.maskErase": "\u64E6\u9664",
+    "imageEditor.maskClear": "\u6E05\u9664",
+    "imageEditor.emptyEditRegion": "\u8ACB\u5148\u7E6A\u88FD\u975E\u7A7A\u7DE8\u8F2F\u5340\u57DF\u518D\u5132\u5B58\u3002",
+    "imageInput.instructionMarksApplied": "\u6307\u4EE4\u6A19\u8A18\u5DF2\u5957\u7528",
+    "imageInput.editRegionApplied": "\u7DE8\u8F2F\u5340\u57DF\u5DF2\u5957\u7528"
   };
 
   // codex_image/webui/frontend/src/i18n/dictionaries.ts

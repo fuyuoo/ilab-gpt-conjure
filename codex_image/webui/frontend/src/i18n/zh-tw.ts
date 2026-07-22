@@ -978,4 +978,5 @@ export const ZH_TW_DICTIONARY: TranslationDictionary = {
     "history.referenceFiles": "參考檔案",
     "history.downloadReferenceFile": "下載檔案",
     "history.readdReferenceFile": "重新加入",
+    "imageEditor.guidance": "編輯指引", "imageEditor.instructionMarksGuidance": "指令標記", "imageEditor.editRegionGuidance": "編輯區域", "imageEditor.maskTools": "遮罩工具", "imageEditor.maskPaint": "繪製", "imageEditor.maskErase": "擦除", "imageEditor.maskClear": "清除", "imageEditor.emptyEditRegion": "請先繪製非空編輯區域再儲存。", "imageInput.instructionMarksApplied": "指令標記已套用", "imageInput.editRegionApplied": "編輯區域已套用"
 };

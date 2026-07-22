@@ -967,5 +967,6 @@ export const RU_DICTIONARY: TranslationDictionary = {
     "referenceFiles.historyPathMismatch": "Эти файлы используют разные пути Responses",
     "history.referenceFiles": "Файлы-источники",
     "history.downloadReferenceFile": "Скачать файл",
-    "history.readdReferenceFile": "Добавить снова"
+    "history.readdReferenceFile": "Добавить снова",
+    "imageEditor.guidance": "Режим редактирования", "imageEditor.instructionMarksGuidance": "Метки-инструкции", "imageEditor.editRegionGuidance": "Область редактирования", "imageEditor.maskTools": "Инструмент маски", "imageEditor.maskPaint": "Рисовать", "imageEditor.maskErase": "Стереть", "imageEditor.maskClear": "Очистить", "imageEditor.emptyEditRegion": "Нарисуйте область редактирования перед сохранением.", "imageInput.instructionMarksApplied": "Метки-инструкции применены", "imageInput.editRegionApplied": "Область редактирования применена"
 };

@@ -173,7 +173,9 @@ function renderImageStrip() {
     if (source.edited) {
       const editedBadge = document.createElement("span");
       editedBadge.className = "thumb-edited-badge";
-      editedBadge.textContent = translate("imageInput.editedBadge");
+      editedBadge.textContent = source.activeGuidance === "edit-region"
+        ? translate("imageInput.editRegionApplied")
+        : translate("imageInput.instructionMarksApplied");
       wrapper.append(editedBadge);
     }
     thumbItems.append(wrapper);

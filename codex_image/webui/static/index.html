@@ -1243,8 +1243,12 @@
             </svg>
           </button>
         </div>
+        <div class="image-editor-guidance-switch" role="radiogroup" aria-label="编辑指导" data-i18n-attr="aria-label:imageEditor.guidance">
+          <button class="ghost-button text-sm active" type="button" role="radio" aria-checked="true" data-image-editor-guidance="instruction-marks" data-i18n="imageEditor.instructionMarksGuidance">标注</button>
+          <button class="ghost-button text-sm" type="button" role="radio" aria-checked="false" data-image-editor-guidance="edit-region" data-i18n="imageEditor.editRegionGuidance">遮罩</button>
+        </div>
         <div class="image-editor-toolbar" aria-label="图片编辑工具栏" data-i18n-attr="aria-label:imageEditor.toolbar">
-          <div class="image-editor-tool-group" aria-label="工具" data-i18n-attr="aria-label:imageEditor.tools">
+          <div class="image-editor-tool-group" data-image-editor-guidance-tools="instruction-marks" aria-label="工具" data-i18n-attr="aria-label:imageEditor.tools">
             <button id="imageEditorToolSelect" class="ghost-button text-sm image-editor-tool" type="button" data-image-editor-tool="select">
               <span class="image-editor-tool-icon" data-tool-icon="select" aria-hidden="true">
                 <svg viewBox="0 0 24 24" fill="none" focusable="false" xmlns="http://www.w3.org/2000/svg">
@@ -1295,7 +1299,12 @@
               </span><span data-i18n="imageEditor.eraser">擦除</span>
             </button>
           </div>
-          <div class="image-editor-tool-group" aria-label="颜色" data-i18n-attr="aria-label:imageEditor.colors">
+          <div class="image-editor-tool-group hidden" data-image-editor-guidance-tools="edit-region" aria-label="遮罩工具" data-i18n-attr="aria-label:imageEditor.maskTools">
+            <button id="imageEditorMaskPaint" class="ghost-button text-sm image-editor-tool" type="button" data-image-editor-tool="mask-paint" data-i18n="imageEditor.maskPaint">绘制</button>
+            <button id="imageEditorMaskErase" class="ghost-button text-sm image-editor-tool" type="button" data-image-editor-tool="mask-erase" data-i18n="imageEditor.maskErase">擦除</button>
+            <button id="imageEditorMaskClear" class="ghost-button text-sm" type="button" data-i18n="imageEditor.maskClear">清空</button>
+          </div>
+          <div class="image-editor-tool-group" data-image-editor-guidance-tools="instruction-marks" aria-label="颜色" data-i18n-attr="aria-label:imageEditor.colors">
             <button class="image-editor-swatch active" type="button" data-image-editor-color="#ff3b30" aria-label="红色" data-i18n-attr="aria-label:imageEditor.red"></button>
             <button class="image-editor-swatch" type="button" data-image-editor-color="#2f6fe4" aria-label="蓝色" data-i18n-attr="aria-label:imageEditor.blue"></button>
             <button class="image-editor-swatch" type="button" data-image-editor-color="#457b66" aria-label="绿色" data-i18n-attr="aria-label:imageEditor.green"></button>

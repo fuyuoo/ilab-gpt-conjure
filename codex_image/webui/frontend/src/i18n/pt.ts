@@ -968,4 +968,5 @@ export const PT_DICTIONARY: TranslationDictionary = {
     "history.referenceFiles": "Arquivos de referência",
     "history.downloadReferenceFile": "Baixar arquivo",
     "history.readdReferenceFile": "Adicionar novamente",
+    "imageEditor.guidance": "Orientação de edição", "imageEditor.instructionMarksGuidance": "Marcas de instrução", "imageEditor.editRegionGuidance": "Região de edição", "imageEditor.maskTools": "Ferramenta de máscara", "imageEditor.maskPaint": "Pintar", "imageEditor.maskErase": "Apagar", "imageEditor.maskClear": "Limpar", "imageEditor.emptyEditRegion": "Pinte uma região de edição antes de salvar.", "imageInput.instructionMarksApplied": "Marcas de instrução aplicadas", "imageInput.editRegionApplied": "Região de edição aplicada"
 };

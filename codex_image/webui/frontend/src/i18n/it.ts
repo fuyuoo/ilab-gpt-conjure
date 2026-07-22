@@ -967,5 +967,6 @@ export const IT_DICTIONARY: TranslationDictionary = {
     "referenceFiles.historyPathMismatch": "Questi file usano percorsi Responses diversi",
     "history.referenceFiles": "File di riferimento",
     "history.downloadReferenceFile": "Scarica file",
-    "history.readdReferenceFile": "Aggiungi di nuovo"
+    "history.readdReferenceFile": "Aggiungi di nuovo",
+    "imageEditor.guidance": "Guida modifica", "imageEditor.instructionMarksGuidance": "Segni di istruzione", "imageEditor.editRegionGuidance": "Area di modifica", "imageEditor.maskTools": "Strumento maschera", "imageEditor.maskPaint": "Disegna", "imageEditor.maskErase": "Cancella", "imageEditor.maskClear": "Pulisci", "imageEditor.emptyEditRegion": "Disegna un’area di modifica prima di salvare.", "imageInput.instructionMarksApplied": "Segni di istruzione applicati", "imageInput.editRegionApplied": "Area di modifica applicata"
 };
