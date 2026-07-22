@@ -7,6 +7,14 @@ from tests.webui_helpers import WebUIStaticTestCase
 
 
 class WebUIStaticI18nTests(WebUIStaticTestCase):
+    def test_simplified_chinese_uses_user_facing_guidance_labels(self) -> None:
+        source = Path("codex_image/webui/frontend/src/i18n/zh-cn.ts").read_text(
+            encoding="utf-8"
+        )
+
+        self.assertIn('"imageEditor.instructionMarksGuidance": "标注"', source)
+        self.assertIn('"imageEditor.editRegionGuidance": "遮罩"', source)
+
     def test_edit_region_workflow_copy_exists_in_every_locale(self) -> None:
         required_keys = (
             "imageEditor.guidance",

@@ -978,5 +978,5 @@ export const ZH_CN_DICTIONARY: TranslationDictionary = {
     "history.referenceFiles": "参考文件",
     "history.downloadReferenceFile": "下载文件",
     "history.readdReferenceFile": "重新加入",
-    "imageEditor.guidance": "编辑指导", "imageEditor.instructionMarksGuidance": "指令标记", "imageEditor.editRegionGuidance": "编辑区域", "imageEditor.maskTools": "遮罩工具", "imageEditor.maskPaint": "绘制", "imageEditor.maskErase": "擦除", "imageEditor.maskClear": "清空", "imageEditor.emptyEditRegion": "请先绘制非空编辑区域再保存。", "imageInput.instructionMarksApplied": "指令标记已应用", "imageInput.editRegionApplied": "编辑区域已应用"
+    "imageEditor.guidance": "编辑指导", "imageEditor.instructionMarksGuidance": "标注", "imageEditor.editRegionGuidance": "遮罩", "imageEditor.maskTools": "遮罩工具", "imageEditor.maskPaint": "绘制", "imageEditor.maskErase": "擦除", "imageEditor.maskClear": "清空", "imageEditor.emptyEditRegion": "请先绘制非空编辑区域再保存。", "imageInput.instructionMarksApplied": "指令标记已应用", "imageInput.editRegionApplied": "编辑区域已应用"
 };
