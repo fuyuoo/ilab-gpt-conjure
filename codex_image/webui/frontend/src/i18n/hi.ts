@@ -1,6 +1,17 @@
 import type { TranslationDictionary } from "./types";
 
 export const HI_DICTIONARY: TranslationDictionary = {
+    "editPreflight.title": "सबमिट करने से पहले जाँच",
+    "editPreflight.primary": "मास्क केवल पहली मुख्य संपादन छवि पर लागू होता है: {name}",
+    "editPreflight.responsesResize": "Responses सबमिट करने से पहले {width}×{height} को {targetWidth}×{targetHeight} में बदलेगा",
+    "editPreflight.editArea": "पारदर्शी संपादन क्षेत्र: {percent}%",
+    "editPreflight.editAreaSmall": "संपादन क्षेत्र बहुत छोटा है, इसलिए मॉडल स्पष्ट बदलाव नहीं कर सकता",
+    "editPreflight.editAreaLarge": "अधिकांश छवि संपादन योग्य है; परिणाम पूरी छवि को फिर से बनाने जैसा हो सकता है",
+    "editPreflight.aspectMismatch": "स्रोत अनुपात लगभग {sourceRatio} है और आउटपुट {outputRatio}; क्रॉपिंग या व्यापक पुनर्निर्माण हो सकता है",
+    "editPreflight.maskDimensionsMismatch": "मास्क आकार {maskWidth}×{maskHeight}, छवि आकार {width}×{height} से मेल नहीं खाता; एडिटर फिर खोलकर मास्क सहेजें",
+    "editPreflight.emptyEditArea": "मास्क में कोई पारदर्शी संपादन क्षेत्र नहीं है; पहले वह क्षेत्र मिटाएँ जिसे बदलना है",
+    "editPreflight.inspectionFailed": "मास्क की पूर्व-जाँच जानकारी पढ़ी नहीं जा सकी; सबमिट करते समय सर्वर फिर भी जाँच करेगा",
+    "editPreflight.blocked": "आगे बढ़ने से पहले पूर्व-जाँच की त्रुटियाँ ठीक करें",
     "app.newTask": "नया",
     "app.newTaskAria": "नई चैट",
     "sidebar.searchPlaceholder": "प्रॉम्प्ट या कार्य ID खोजें",

@@ -1,6 +1,17 @@
 (() => {
   // codex_image/webui/frontend/src/i18n/en.ts
   var EN_DICTIONARY = {
+    "editPreflight.title": "Pre-submit check",
+    "editPreflight.primary": "The mask applies only to the first Primary Edit Image: {name}",
+    "editPreflight.responsesResize": "Responses will resize {width}\xD7{height} to {targetWidth}\xD7{targetHeight} before submission",
+    "editPreflight.editArea": "Transparent edit area: {percent}%",
+    "editPreflight.editAreaSmall": "The edit area is very small, so the model may not make a visible change",
+    "editPreflight.editAreaLarge": "Most of the image is editable; the result may resemble a full-image redraw",
+    "editPreflight.aspectMismatch": "The source ratio is about {sourceRatio}, while output is {outputRatio}; cropping or broader reconstruction may occur",
+    "editPreflight.maskDimensionsMismatch": "Mask size {maskWidth}\xD7{maskHeight} does not match image size {width}\xD7{height}; reopen the editor and save the mask again",
+    "editPreflight.emptyEditArea": "The mask has no transparent edit area; erase the area you want to change first",
+    "editPreflight.inspectionFailed": "Mask preflight details could not be read; the server will still validate on submission",
+    "editPreflight.blocked": "Resolve the pre-submit errors before continuing",
     "app.newTask": "New",
     "app.newTaskAria": "New chat",
     "sidebar.searchPlaceholder": "Search prompts or task ID",
@@ -996,6 +1007,17 @@
 
   // codex_image/webui/frontend/src/i18n/de.ts
   var DE_DICTIONARY = {
+    "editPreflight.title": "Pr\xFCfung vor dem Senden",
+    "editPreflight.primary": "Die Maske gilt nur f\xFCr das erste prim\xE4re Bearbeitungsbild: {name}",
+    "editPreflight.responsesResize": "Responses skaliert {width}\xD7{height} vor dem Senden auf {targetWidth}\xD7{targetHeight}",
+    "editPreflight.editArea": "Transparenter Bearbeitungsbereich: {percent}%",
+    "editPreflight.editAreaSmall": "Der Bearbeitungsbereich ist sehr klein; m\xF6glicherweise entsteht keine sichtbare \xC4nderung",
+    "editPreflight.editAreaLarge": "Fast das gesamte Bild ist bearbeitbar; das Ergebnis kann einer vollst\xE4ndigen Neuzeichnung \xE4hneln",
+    "editPreflight.aspectMismatch": "Das Quellformat ist etwa {sourceRatio}, die Ausgabe {outputRatio}; es kann zu Beschnitt oder umfassender Rekonstruktion kommen",
+    "editPreflight.maskDimensionsMismatch": "Die Maskengr\xF6\xDFe {maskWidth}\xD7{maskHeight} entspricht nicht der Bildgr\xF6\xDFe {width}\xD7{height}; \xF6ffnen Sie den Editor erneut und speichern Sie die Maske",
+    "editPreflight.emptyEditArea": "Die Maske enth\xE4lt keinen transparenten Bearbeitungsbereich; l\xF6schen Sie zuerst den zu \xE4ndernden Bereich",
+    "editPreflight.inspectionFailed": "Die Maskendaten konnten nicht vorab gepr\xFCft werden; der Server pr\xFCft sie beim Senden weiterhin",
+    "editPreflight.blocked": "Beheben Sie vor dem Fortfahren die Fehler der Vorabpr\xFCfung",
     "app.newTask": "Neu",
     "app.newTaskAria": "Neuer Chat",
     "sidebar.searchPlaceholder": "Suchaufforderungen oder Aufgabe ID",
@@ -1981,6 +2003,17 @@
 
   // codex_image/webui/frontend/src/i18n/es.ts
   var ES_DICTIONARY = {
+    "editPreflight.title": "Comprobaci\xF3n previa al env\xEDo",
+    "editPreflight.primary": "La m\xE1scara solo se aplica a la primera imagen de edici\xF3n principal: {name}",
+    "editPreflight.responsesResize": "Responses redimensionar\xE1 {width}\xD7{height} a {targetWidth}\xD7{targetHeight} antes del env\xEDo",
+    "editPreflight.editArea": "\xC1rea de edici\xF3n transparente: {percent}%",
+    "editPreflight.editAreaSmall": "El \xE1rea de edici\xF3n es muy peque\xF1a; puede que el modelo no produzca un cambio visible",
+    "editPreflight.editAreaLarge": "Casi toda la imagen es editable; el resultado puede parecer un redibujado completo",
+    "editPreflight.aspectMismatch": "La proporci\xF3n original es aproximadamente {sourceRatio} y la salida es {outputRatio}; puede haber recorte o reconstrucci\xF3n general",
+    "editPreflight.maskDimensionsMismatch": "El tama\xF1o de la m\xE1scara {maskWidth}\xD7{maskHeight} no coincide con la imagen {width}\xD7{height}; vuelve a abrir el editor y guarda la m\xE1scara",
+    "editPreflight.emptyEditArea": "La m\xE1scara no tiene un \xE1rea transparente de edici\xF3n; borra primero la zona que quieras cambiar",
+    "editPreflight.inspectionFailed": "No se pudo leer la comprobaci\xF3n de la m\xE1scara; el servidor la validar\xE1 al enviarla",
+    "editPreflight.blocked": "Resuelve los errores de la comprobaci\xF3n previa antes de continuar",
     "app.newTask": "Nuevo",
     "app.newTaskAria": "Nuevo chat",
     "sidebar.searchPlaceholder": "Mensajes de b\xFAsqueda o tarea ID",
@@ -2966,6 +2999,17 @@
 
   // codex_image/webui/frontend/src/i18n/fr.ts
   var FR_DICTIONARY = {
+    "editPreflight.title": "V\xE9rification avant envoi",
+    "editPreflight.primary": "Le masque s\u2019applique uniquement \xE0 la premi\xE8re image principale \xE0 modifier : {name}",
+    "editPreflight.responsesResize": "Responses redimensionnera {width}\xD7{height} en {targetWidth}\xD7{targetHeight} avant l\u2019envoi",
+    "editPreflight.editArea": "Zone de modification transparente : {percent}%",
+    "editPreflight.editAreaSmall": "La zone de modification est tr\xE8s petite ; le mod\xE8le risque de ne produire aucun changement visible",
+    "editPreflight.editAreaLarge": "La majeure partie de l\u2019image est modifiable ; le r\xE9sultat peut ressembler \xE0 une recr\xE9ation compl\xE8te",
+    "editPreflight.aspectMismatch": "Le ratio source est d\u2019environ {sourceRatio}, tandis que la sortie est en {outputRatio} ; un recadrage ou une reconstruction globale peut se produire",
+    "editPreflight.maskDimensionsMismatch": "La taille du masque {maskWidth}\xD7{maskHeight} ne correspond pas \xE0 l\u2019image {width}\xD7{height} ; rouvrez l\u2019\xE9diteur et enregistrez le masque",
+    "editPreflight.emptyEditArea": "Le masque ne contient aucune zone transparente \xE0 modifier ; effacez d\u2019abord la zone \xE0 changer",
+    "editPreflight.inspectionFailed": "Les informations de pr\xE9validation du masque sont illisibles ; le serveur validera tout de m\xEAme lors de l\u2019envoi",
+    "editPreflight.blocked": "Corrigez les erreurs de v\xE9rification avant de continuer",
     "app.newTask": "Nouveau",
     "app.newTaskAria": "Nouvelle discussion",
     "sidebar.searchPlaceholder": "Rechercher des invites ou une t\xE2che ID",
@@ -3951,6 +3995,17 @@
 
   // codex_image/webui/frontend/src/i18n/ja.ts
   var JA_DICTIONARY = {
+    "editPreflight.title": "\u9001\u4FE1\u524D\u30C1\u30A7\u30C3\u30AF",
+    "editPreflight.primary": "\u30DE\u30B9\u30AF\u306F\u6700\u521D\u306E\u30E1\u30A4\u30F3\u7DE8\u96C6\u753B\u50CF\u306B\u306E\u307F\u9069\u7528\u3055\u308C\u307E\u3059\uFF1A{name}",
+    "editPreflight.responsesResize": "Responses \u306F\u9001\u4FE1\u524D\u306B {width}\xD7{height} \u3092 {targetWidth}\xD7{targetHeight} \u306B\u7E2E\u5C0F\u3057\u307E\u3059",
+    "editPreflight.editArea": "\u900F\u660E\u306A\u7DE8\u96C6\u9818\u57DF\uFF1A{percent}%",
+    "editPreflight.editAreaSmall": "\u7DE8\u96C6\u9818\u57DF\u304C\u975E\u5E38\u306B\u5C0F\u3055\u3044\u305F\u3081\u3001\u76EE\u306B\u898B\u3048\u308B\u5909\u66F4\u304C\u884C\u308F\u308C\u306A\u3044\u53EF\u80FD\u6027\u304C\u3042\u308A\u307E\u3059",
+    "editPreflight.editAreaLarge": "\u753B\u50CF\u306E\u5927\u90E8\u5206\u304C\u7DE8\u96C6\u53EF\u80FD\u306A\u305F\u3081\u3001\u5168\u4F53\u3092\u63CF\u304D\u76F4\u3057\u305F\u3088\u3046\u306A\u7D50\u679C\u306B\u306A\u308B\u53EF\u80FD\u6027\u304C\u3042\u308A\u307E\u3059",
+    "editPreflight.aspectMismatch": "\u5143\u753B\u50CF\u306E\u6BD4\u7387\u306F\u7D04 {sourceRatio}\u3001\u51FA\u529B\u306F {outputRatio} \u3067\u3059\u3002\u5207\u308A\u629C\u304D\u3084\u5168\u4F53\u7684\u306A\u518D\u69CB\u6210\u304C\u767A\u751F\u3059\u308B\u53EF\u80FD\u6027\u304C\u3042\u308A\u307E\u3059",
+    "editPreflight.maskDimensionsMismatch": "\u30DE\u30B9\u30AF\u30B5\u30A4\u30BA {maskWidth}\xD7{maskHeight} \u304C\u753B\u50CF\u30B5\u30A4\u30BA {width}\xD7{height} \u3068\u4E00\u81F4\u3057\u307E\u305B\u3093\u3002\u30A8\u30C7\u30A3\u30BF\u30FC\u3092\u958B\u304D\u76F4\u3057\u3066\u4FDD\u5B58\u3057\u3066\u304F\u3060\u3055\u3044",
+    "editPreflight.emptyEditArea": "\u30DE\u30B9\u30AF\u306B\u900F\u660E\u306A\u7DE8\u96C6\u9818\u57DF\u304C\u3042\u308A\u307E\u305B\u3093\u3002\u5909\u66F4\u3059\u308B\u9818\u57DF\u3092\u5148\u306B\u6D88\u53BB\u3057\u3066\u304F\u3060\u3055\u3044",
+    "editPreflight.inspectionFailed": "\u30DE\u30B9\u30AF\u306E\u4E8B\u524D\u30C1\u30A7\u30C3\u30AF\u60C5\u5831\u3092\u8AAD\u307F\u53D6\u308C\u307E\u305B\u3093\u3067\u3057\u305F\u3002\u9001\u4FE1\u6642\u306B\u30B5\u30FC\u30D0\u30FC\u3067\u691C\u8A3C\u3055\u308C\u307E\u3059",
+    "editPreflight.blocked": "\u7D9A\u884C\u3059\u308B\u524D\u306B\u9001\u4FE1\u524D\u30C1\u30A7\u30C3\u30AF\u306E\u30A8\u30E9\u30FC\u3092\u89E3\u6C7A\u3057\u3066\u304F\u3060\u3055\u3044",
     "app.newTask": "\u65B0\u898F",
     "app.newTaskAria": "\u65B0\u898F\u30C1\u30E3\u30C3\u30C8",
     "sidebar.searchPlaceholder": "\u30D7\u30ED\u30F3\u30D7\u30C8\u307E\u305F\u306F\u30BF\u30B9\u30AF ID \u3092\u691C\u7D22",
@@ -4936,6 +4991,17 @@
 
   // codex_image/webui/frontend/src/i18n/ko.ts
   var KO_DICTIONARY = {
+    "editPreflight.title": "\uC81C\uCD9C \uC804 \uD655\uC778",
+    "editPreflight.primary": "\uB9C8\uC2A4\uD06C\uB294 \uCCAB \uBC88\uC9F8 \uAE30\uBCF8 \uD3B8\uC9D1 \uC774\uBBF8\uC9C0\uC5D0\uB9CC \uC801\uC6A9\uB429\uB2C8\uB2E4: {name}",
+    "editPreflight.responsesResize": "Responses\uB294 \uC81C\uCD9C \uC804\uC5D0 {width}\xD7{height}\uB97C {targetWidth}\xD7{targetHeight}\uB85C \uCD95\uC18C\uD569\uB2C8\uB2E4",
+    "editPreflight.editArea": "\uD22C\uBA85 \uD3B8\uC9D1 \uC601\uC5ED: {percent}%",
+    "editPreflight.editAreaSmall": "\uD3B8\uC9D1 \uC601\uC5ED\uC774 \uB9E4\uC6B0 \uC791\uC544 \uB208\uC5D0 \uB744\uB294 \uBCC0\uACBD\uC774 \uC5C6\uC744 \uC218 \uC788\uC2B5\uB2C8\uB2E4",
+    "editPreflight.editAreaLarge": "\uC774\uBBF8\uC9C0 \uB300\uBD80\uBD84\uC744 \uD3B8\uC9D1\uD560 \uC218 \uC788\uC5B4 \uC804\uCCB4 \uC774\uBBF8\uC9C0\uB97C \uB2E4\uC2DC \uADF8\uB9B0 \uACB0\uACFC\uC640 \uBE44\uC2B7\uD560 \uC218 \uC788\uC2B5\uB2C8\uB2E4",
+    "editPreflight.aspectMismatch": "\uC6D0\uBCF8 \uBE44\uC728\uC740 \uC57D {sourceRatio}, \uCD9C\uB825\uC740 {outputRatio}\uC774\uBBC0\uB85C \uC790\uB974\uAE30\uB098 \uC804\uCCB4 \uC7AC\uAD6C\uC131\uC774 \uBC1C\uC0DD\uD560 \uC218 \uC788\uC2B5\uB2C8\uB2E4",
+    "editPreflight.maskDimensionsMismatch": "\uB9C8\uC2A4\uD06C \uD06C\uAE30 {maskWidth}\xD7{maskHeight}\uAC00 \uC774\uBBF8\uC9C0 \uD06C\uAE30 {width}\xD7{height}\uC640 \uB2E4\uB985\uB2C8\uB2E4. \uD3B8\uC9D1\uAE30\uB97C \uB2E4\uC2DC \uC5F4\uC5B4 \uB9C8\uC2A4\uD06C\uB97C \uC800\uC7A5\uD558\uC138\uC694",
+    "editPreflight.emptyEditArea": "\uB9C8\uC2A4\uD06C\uC5D0 \uD22C\uBA85\uD55C \uD3B8\uC9D1 \uC601\uC5ED\uC774 \uC5C6\uC2B5\uB2C8\uB2E4. \uBA3C\uC800 \uBCC0\uACBD\uD560 \uC601\uC5ED\uC744 \uC9C0\uC6B0\uC138\uC694",
+    "editPreflight.inspectionFailed": "\uB9C8\uC2A4\uD06C \uC0AC\uC804 \uAC80\uC0AC \uC815\uBCF4\uB97C \uC77D\uC744 \uC218 \uC5C6\uC2B5\uB2C8\uB2E4. \uC81C\uCD9C \uC2DC \uC11C\uBC84\uC5D0\uC11C \uB2E4\uC2DC \uAC80\uC99D\uD569\uB2C8\uB2E4",
+    "editPreflight.blocked": "\uACC4\uC18D\uD558\uAE30 \uC804\uC5D0 \uC81C\uCD9C \uC804 \uAC80\uC0AC \uC624\uB958\uB97C \uD574\uACB0\uD558\uC138\uC694",
     "app.newTask": "\uC0C8\uB85C \uB9CC\uB4E4\uAE30",
     "app.newTaskAria": "\uC0C8 \uCC44\uD305 \uB9CC\uB4E4\uAE30",
     "sidebar.searchPlaceholder": "\uD504\uB86C\uD504\uD2B8 \uB610\uB294 \uC791\uC5C5 ID \uAC80\uC0C9",
@@ -5921,6 +5987,17 @@
 
   // codex_image/webui/frontend/src/i18n/pt.ts
   var PT_DICTIONARY = {
+    "editPreflight.title": "Verifica\xE7\xE3o antes do envio",
+    "editPreflight.primary": "A m\xE1scara se aplica apenas \xE0 primeira imagem principal de edi\xE7\xE3o: {name}",
+    "editPreflight.responsesResize": "O Responses redimensionar\xE1 {width}\xD7{height} para {targetWidth}\xD7{targetHeight} antes do envio",
+    "editPreflight.editArea": "\xC1rea transparente de edi\xE7\xE3o: {percent}%",
+    "editPreflight.editAreaSmall": "A \xE1rea de edi\xE7\xE3o \xE9 muito pequena; o modelo pode n\xE3o produzir uma altera\xE7\xE3o vis\xEDvel",
+    "editPreflight.editAreaLarge": "Quase toda a imagem pode ser editada; o resultado pode parecer um redesenho completo",
+    "editPreflight.aspectMismatch": "A propor\xE7\xE3o original \xE9 cerca de {sourceRatio} e a sa\xEDda \xE9 {outputRatio}; pode ocorrer corte ou reconstru\xE7\xE3o geral",
+    "editPreflight.maskDimensionsMismatch": "O tamanho da m\xE1scara {maskWidth}\xD7{maskHeight} n\xE3o corresponde \xE0 imagem {width}\xD7{height}; reabra o editor e salve a m\xE1scara",
+    "editPreflight.emptyEditArea": "A m\xE1scara n\xE3o tem uma \xE1rea transparente de edi\xE7\xE3o; apague primeiro a \xE1rea que deseja alterar",
+    "editPreflight.inspectionFailed": "N\xE3o foi poss\xEDvel ler a verifica\xE7\xE3o da m\xE1scara; o servidor ainda far\xE1 a valida\xE7\xE3o no envio",
+    "editPreflight.blocked": "Resolva os erros da verifica\xE7\xE3o antes de continuar",
     "app.newTask": "Novo",
     "app.newTaskAria": "Novo bate-papo",
     "sidebar.searchPlaceholder": "Solicita\xE7\xF5es de pesquisa ou tarefa ID",
@@ -6906,6 +6983,17 @@
 
   // codex_image/webui/frontend/src/i18n/ru.ts
   var RU_DICTIONARY = {
+    "editPreflight.title": "\u041F\u0440\u043E\u0432\u0435\u0440\u043A\u0430 \u043F\u0435\u0440\u0435\u0434 \u043E\u0442\u043F\u0440\u0430\u0432\u043A\u043E\u0439",
+    "editPreflight.primary": "\u041C\u0430\u0441\u043A\u0430 \u043F\u0440\u0438\u043C\u0435\u043D\u044F\u0435\u0442\u0441\u044F \u0442\u043E\u043B\u044C\u043A\u043E \u043A \u043F\u0435\u0440\u0432\u043E\u043C\u0443 \u043E\u0441\u043D\u043E\u0432\u043D\u043E\u043C\u0443 \u0438\u0437\u043E\u0431\u0440\u0430\u0436\u0435\u043D\u0438\u044E \u0434\u043B\u044F \u0440\u0435\u0434\u0430\u043A\u0442\u0438\u0440\u043E\u0432\u0430\u043D\u0438\u044F: {name}",
+    "editPreflight.responsesResize": "\u041F\u0435\u0440\u0435\u0434 \u043E\u0442\u043F\u0440\u0430\u0432\u043A\u043E\u0439 Responses \u0438\u0437\u043C\u0435\u043D\u0438\u0442 \u0440\u0430\u0437\u043C\u0435\u0440 {width}\xD7{height} \u043D\u0430 {targetWidth}\xD7{targetHeight}",
+    "editPreflight.editArea": "\u041F\u0440\u043E\u0437\u0440\u0430\u0447\u043D\u0430\u044F \u043E\u0431\u043B\u0430\u0441\u0442\u044C \u0440\u0435\u0434\u0430\u043A\u0442\u0438\u0440\u043E\u0432\u0430\u043D\u0438\u044F: {percent}%",
+    "editPreflight.editAreaSmall": "\u041E\u0431\u043B\u0430\u0441\u0442\u044C \u0440\u0435\u0434\u0430\u043A\u0442\u0438\u0440\u043E\u0432\u0430\u043D\u0438\u044F \u043E\u0447\u0435\u043D\u044C \u043C\u0430\u043B\u0430, \u043F\u043E\u044D\u0442\u043E\u043C\u0443 \u0437\u0430\u043C\u0435\u0442\u043D\u044B\u0445 \u0438\u0437\u043C\u0435\u043D\u0435\u043D\u0438\u0439 \u043C\u043E\u0436\u0435\u0442 \u043D\u0435 \u0431\u044B\u0442\u044C",
+    "editPreflight.editAreaLarge": "\u041F\u043E\u0447\u0442\u0438 \u0432\u0441\u0451 \u0438\u0437\u043E\u0431\u0440\u0430\u0436\u0435\u043D\u0438\u0435 \u0434\u043E\u0441\u0442\u0443\u043F\u043D\u043E \u0434\u043B\u044F \u0440\u0435\u0434\u0430\u043A\u0442\u0438\u0440\u043E\u0432\u0430\u043D\u0438\u044F; \u0440\u0435\u0437\u0443\u043B\u044C\u0442\u0430\u0442 \u043C\u043E\u0436\u0435\u0442 \u0431\u044B\u0442\u044C \u043F\u043E\u0445\u043E\u0436 \u043D\u0430 \u043F\u043E\u043B\u043D\u0443\u044E \u043F\u0435\u0440\u0435\u0440\u0438\u0441\u043E\u0432\u043A\u0443",
+    "editPreflight.aspectMismatch": "\u0421\u043E\u043E\u0442\u043D\u043E\u0448\u0435\u043D\u0438\u0435 \u0441\u0442\u043E\u0440\u043E\u043D \u0438\u0441\u0445\u043E\u0434\u043D\u0438\u043A\u0430 \u043E\u043A\u043E\u043B\u043E {sourceRatio}, \u0430 \u0440\u0435\u0437\u0443\u043B\u044C\u0442\u0430\u0442\u0430 \u2014 {outputRatio}; \u0432\u043E\u0437\u043C\u043E\u0436\u043D\u044B \u043E\u0431\u0440\u0435\u0437\u043A\u0430 \u0438\u043B\u0438 \u043E\u0431\u0449\u0430\u044F \u043F\u0435\u0440\u0435\u0441\u0442\u0440\u043E\u0439\u043A\u0430",
+    "editPreflight.maskDimensionsMismatch": "\u0420\u0430\u0437\u043C\u0435\u0440 \u043C\u0430\u0441\u043A\u0438 {maskWidth}\xD7{maskHeight} \u043D\u0435 \u0441\u043E\u0432\u043F\u0430\u0434\u0430\u0435\u0442 \u0441 \u0440\u0430\u0437\u043C\u0435\u0440\u043E\u043C \u0438\u0437\u043E\u0431\u0440\u0430\u0436\u0435\u043D\u0438\u044F {width}\xD7{height}; \u0441\u043D\u043E\u0432\u0430 \u043E\u0442\u043A\u0440\u043E\u0439\u0442\u0435 \u0440\u0435\u0434\u0430\u043A\u0442\u043E\u0440 \u0438 \u0441\u043E\u0445\u0440\u0430\u043D\u0438\u0442\u0435 \u043C\u0430\u0441\u043A\u0443",
+    "editPreflight.emptyEditArea": "\u0412 \u043C\u0430\u0441\u043A\u0435 \u043D\u0435\u0442 \u043F\u0440\u043E\u0437\u0440\u0430\u0447\u043D\u043E\u0439 \u043E\u0431\u043B\u0430\u0441\u0442\u0438 \u0440\u0435\u0434\u0430\u043A\u0442\u0438\u0440\u043E\u0432\u0430\u043D\u0438\u044F; \u0441\u043D\u0430\u0447\u0430\u043B\u0430 \u0441\u043E\u0442\u0440\u0438\u0442\u0435 \u043E\u0431\u043B\u0430\u0441\u0442\u044C, \u043A\u043E\u0442\u043E\u0440\u0443\u044E \u043D\u0443\u0436\u043D\u043E \u0438\u0437\u043C\u0435\u043D\u0438\u0442\u044C",
+    "editPreflight.inspectionFailed": "\u041D\u0435 \u0443\u0434\u0430\u043B\u043E\u0441\u044C \u043F\u0440\u043E\u0447\u0438\u0442\u0430\u0442\u044C \u0434\u0430\u043D\u043D\u044B\u0435 \u043F\u0440\u0435\u0434\u0432\u0430\u0440\u0438\u0442\u0435\u043B\u044C\u043D\u043E\u0439 \u043F\u0440\u043E\u0432\u0435\u0440\u043A\u0438 \u043C\u0430\u0441\u043A\u0438; \u0441\u0435\u0440\u0432\u0435\u0440 \u0432\u0441\u0451 \u0440\u0430\u0432\u043D\u043E \u043F\u0440\u043E\u0432\u0435\u0440\u0438\u0442 \u0435\u0451 \u043F\u0440\u0438 \u043E\u0442\u043F\u0440\u0430\u0432\u043A\u0435",
+    "editPreflight.blocked": "\u0423\u0441\u0442\u0440\u0430\u043D\u0438\u0442\u0435 \u043E\u0448\u0438\u0431\u043A\u0438 \u043F\u0440\u0435\u0434\u0432\u0430\u0440\u0438\u0442\u0435\u043B\u044C\u043D\u043E\u0439 \u043F\u0440\u043E\u0432\u0435\u0440\u043A\u0438, \u043F\u0440\u0435\u0436\u0434\u0435 \u0447\u0435\u043C \u043F\u0440\u043E\u0434\u043E\u043B\u0436\u0438\u0442\u044C",
     "app.newTask": "\u041D\u043E\u0432\u044B\u0439",
     "app.newTaskAria": "\u041D\u043E\u0432\u044B\u0439 \u0447\u0430\u0442",
     "sidebar.searchPlaceholder": "\u041F\u043E\u0438\u0441\u043A\u043E\u0432\u044B\u0435 \u0437\u0430\u043F\u0440\u043E\u0441\u044B \u0438\u043B\u0438 \u0437\u0430\u0434\u0430\u0447\u0430 ID",
@@ -7891,6 +7979,17 @@
 
   // codex_image/webui/frontend/src/i18n/it.ts
   var IT_DICTIONARY = {
+    "editPreflight.title": "Controllo prima dell\u2019invio",
+    "editPreflight.primary": "La maschera si applica solo alla prima immagine principale da modificare: {name}",
+    "editPreflight.responsesResize": "Responses ridimensioner\xE0 {width}\xD7{height} a {targetWidth}\xD7{targetHeight} prima dell\u2019invio",
+    "editPreflight.editArea": "Area di modifica trasparente: {percent}%",
+    "editPreflight.editAreaSmall": "L\u2019area di modifica \xE8 molto piccola; il modello potrebbe non produrre cambiamenti visibili",
+    "editPreflight.editAreaLarge": "Quasi tutta l\u2019immagine \xE8 modificabile; il risultato potrebbe sembrare un ridisegno completo",
+    "editPreflight.aspectMismatch": "Le proporzioni originali sono circa {sourceRatio}, mentre l\u2019output \xE8 {outputRatio}; potrebbero verificarsi ritagli o ricostruzioni generali",
+    "editPreflight.maskDimensionsMismatch": "La maschera {maskWidth}\xD7{maskHeight} non corrisponde all\u2019immagine {width}\xD7{height}; riapri l\u2019editor e salva la maschera",
+    "editPreflight.emptyEditArea": "La maschera non contiene aree trasparenti da modificare; cancella prima l\u2019area che vuoi cambiare",
+    "editPreflight.inspectionFailed": "Impossibile leggere i dettagli del controllo della maschera; il server la convalider\xE0 comunque all\u2019invio",
+    "editPreflight.blocked": "Risolvi gli errori del controllo prima di continuare",
     "app.newTask": "Nuovo",
     "app.newTaskAria": "Nuova chat",
     "sidebar.searchPlaceholder": "Richieste di ricerca o attivit\xE0 ID",
@@ -8876,6 +8975,17 @@
 
   // codex_image/webui/frontend/src/i18n/hi.ts
   var HI_DICTIONARY = {
+    "editPreflight.title": "\u0938\u092C\u092E\u093F\u091F \u0915\u0930\u0928\u0947 \u0938\u0947 \u092A\u0939\u0932\u0947 \u091C\u093E\u0901\u091A",
+    "editPreflight.primary": "\u092E\u093E\u0938\u094D\u0915 \u0915\u0947\u0935\u0932 \u092A\u0939\u0932\u0940 \u092E\u0941\u0916\u094D\u092F \u0938\u0902\u092A\u093E\u0926\u0928 \u091B\u0935\u093F \u092A\u0930 \u0932\u093E\u0917\u0942 \u0939\u094B\u0924\u093E \u0939\u0948: {name}",
+    "editPreflight.responsesResize": "Responses \u0938\u092C\u092E\u093F\u091F \u0915\u0930\u0928\u0947 \u0938\u0947 \u092A\u0939\u0932\u0947 {width}\xD7{height} \u0915\u094B {targetWidth}\xD7{targetHeight} \u092E\u0947\u0902 \u092C\u0926\u0932\u0947\u0917\u093E",
+    "editPreflight.editArea": "\u092A\u093E\u0930\u0926\u0930\u094D\u0936\u0940 \u0938\u0902\u092A\u093E\u0926\u0928 \u0915\u094D\u0937\u0947\u0924\u094D\u0930: {percent}%",
+    "editPreflight.editAreaSmall": "\u0938\u0902\u092A\u093E\u0926\u0928 \u0915\u094D\u0937\u0947\u0924\u094D\u0930 \u092C\u0939\u0941\u0924 \u091B\u094B\u091F\u093E \u0939\u0948, \u0907\u0938\u0932\u093F\u090F \u092E\u0949\u0921\u0932 \u0938\u094D\u092A\u0937\u094D\u091F \u092C\u0926\u0932\u093E\u0935 \u0928\u0939\u0940\u0902 \u0915\u0930 \u0938\u0915\u0924\u093E",
+    "editPreflight.editAreaLarge": "\u0905\u0927\u093F\u0915\u093E\u0902\u0936 \u091B\u0935\u093F \u0938\u0902\u092A\u093E\u0926\u0928 \u092F\u094B\u0917\u094D\u092F \u0939\u0948; \u092A\u0930\u093F\u0923\u093E\u092E \u092A\u0942\u0930\u0940 \u091B\u0935\u093F \u0915\u094B \u092B\u093F\u0930 \u0938\u0947 \u092C\u0928\u093E\u0928\u0947 \u091C\u0948\u0938\u093E \u0939\u094B \u0938\u0915\u0924\u093E \u0939\u0948",
+    "editPreflight.aspectMismatch": "\u0938\u094D\u0930\u094B\u0924 \u0905\u0928\u0941\u092A\u093E\u0924 \u0932\u0917\u092D\u0917 {sourceRatio} \u0939\u0948 \u0914\u0930 \u0906\u0909\u091F\u092A\u0941\u091F {outputRatio}; \u0915\u094D\u0930\u0949\u092A\u093F\u0902\u0917 \u092F\u093E \u0935\u094D\u092F\u093E\u092A\u0915 \u092A\u0941\u0928\u0930\u094D\u0928\u093F\u0930\u094D\u092E\u093E\u0923 \u0939\u094B \u0938\u0915\u0924\u093E \u0939\u0948",
+    "editPreflight.maskDimensionsMismatch": "\u092E\u093E\u0938\u094D\u0915 \u0906\u0915\u093E\u0930 {maskWidth}\xD7{maskHeight}, \u091B\u0935\u093F \u0906\u0915\u093E\u0930 {width}\xD7{height} \u0938\u0947 \u092E\u0947\u0932 \u0928\u0939\u0940\u0902 \u0916\u093E\u0924\u093E; \u090F\u0921\u093F\u091F\u0930 \u092B\u093F\u0930 \u0916\u094B\u0932\u0915\u0930 \u092E\u093E\u0938\u094D\u0915 \u0938\u0939\u0947\u091C\u0947\u0902",
+    "editPreflight.emptyEditArea": "\u092E\u093E\u0938\u094D\u0915 \u092E\u0947\u0902 \u0915\u094B\u0908 \u092A\u093E\u0930\u0926\u0930\u094D\u0936\u0940 \u0938\u0902\u092A\u093E\u0926\u0928 \u0915\u094D\u0937\u0947\u0924\u094D\u0930 \u0928\u0939\u0940\u0902 \u0939\u0948; \u092A\u0939\u0932\u0947 \u0935\u0939 \u0915\u094D\u0937\u0947\u0924\u094D\u0930 \u092E\u093F\u091F\u093E\u090F\u0901 \u091C\u093F\u0938\u0947 \u092C\u0926\u0932\u0928\u093E \u0939\u0948",
+    "editPreflight.inspectionFailed": "\u092E\u093E\u0938\u094D\u0915 \u0915\u0940 \u092A\u0942\u0930\u094D\u0935-\u091C\u093E\u0901\u091A \u091C\u093E\u0928\u0915\u093E\u0930\u0940 \u092A\u0922\u093C\u0940 \u0928\u0939\u0940\u0902 \u091C\u093E \u0938\u0915\u0940; \u0938\u092C\u092E\u093F\u091F \u0915\u0930\u0924\u0947 \u0938\u092E\u092F \u0938\u0930\u094D\u0935\u0930 \u092B\u093F\u0930 \u092D\u0940 \u091C\u093E\u0901\u091A \u0915\u0930\u0947\u0917\u093E",
+    "editPreflight.blocked": "\u0906\u0917\u0947 \u092C\u0922\u093C\u0928\u0947 \u0938\u0947 \u092A\u0939\u0932\u0947 \u092A\u0942\u0930\u094D\u0935-\u091C\u093E\u0901\u091A \u0915\u0940 \u0924\u094D\u0930\u0941\u091F\u093F\u092F\u093E\u0901 \u0920\u0940\u0915 \u0915\u0930\u0947\u0902",
     "app.newTask": "\u0928\u092F\u093E",
     "app.newTaskAria": "\u0928\u0908 \u091A\u0948\u091F",
     "sidebar.searchPlaceholder": "\u092A\u094D\u0930\u0949\u092E\u094D\u092A\u094D\u091F \u092F\u093E \u0915\u093E\u0930\u094D\u092F ID \u0916\u094B\u091C\u0947\u0902",
@@ -9861,6 +9971,17 @@
 
   // codex_image/webui/frontend/src/i18n/zh-cn.ts
   var ZH_CN_DICTIONARY = {
+    "editPreflight.title": "\u63D0\u4EA4\u524D\u68C0\u67E5",
+    "editPreflight.primary": "\u906E\u7F69\u53EA\u4F5C\u7528\u4E8E\u7B2C\u4E00\u5F20\u4E3B\u7F16\u8F91\u56FE\uFF1A{name}",
+    "editPreflight.responsesResize": "Responses \u63D0\u4EA4\u65F6\u4F1A\u5C06 {width}\xD7{height} \u7F29\u653E\u4E3A {targetWidth}\xD7{targetHeight}",
+    "editPreflight.editArea": "\u900F\u660E\u7F16\u8F91\u533A\u57DF\u5360 {percent}%",
+    "editPreflight.editAreaSmall": "\u7F16\u8F91\u533A\u57DF\u5F88\u5C0F\uFF0C\u6A21\u578B\u53EF\u80FD\u65E0\u6CD5\u660E\u663E\u4FEE\u6539",
+    "editPreflight.editAreaLarge": "\u5927\u90E8\u5206\u753B\u9762\u90FD\u53EF\u7F16\u8F91\uFF0C\u7ED3\u679C\u53EF\u80FD\u63A5\u8FD1\u5168\u56FE\u91CD\u7ED8",
+    "editPreflight.aspectMismatch": "\u539F\u56FE\u6BD4\u4F8B\u7EA6\u4E3A {sourceRatio}\uFF0C\u8F93\u51FA\u4E3A {outputRatio}\uFF0C\u53EF\u80FD\u53D1\u751F\u88C1\u5207\u6216\u6574\u4F53\u91CD\u6784",
+    "editPreflight.maskDimensionsMismatch": "\u906E\u7F69\u5C3A\u5BF8 {maskWidth}\xD7{maskHeight} \u4E0E\u539F\u56FE {width}\xD7{height} \u4E0D\u4E00\u81F4\uFF0C\u8BF7\u91CD\u65B0\u6253\u5F00\u7F16\u8F91\u5668\u5E76\u4FDD\u5B58\u906E\u7F69",
+    "editPreflight.emptyEditArea": "\u906E\u7F69\u6CA1\u6709\u900F\u660E\u7F16\u8F91\u533A\u57DF\uFF0C\u8BF7\u5148\u64E6\u51FA\u9700\u8981\u4FEE\u6539\u7684\u533A\u57DF",
+    "editPreflight.inspectionFailed": "\u65E0\u6CD5\u8BFB\u53D6\u906E\u7F69\u9884\u68C0\u4FE1\u606F\uFF1B\u63D0\u4EA4\u65F6\u4ECD\u4F1A\u7531\u670D\u52A1\u7AEF\u6821\u9A8C",
+    "editPreflight.blocked": "\u8BF7\u5148\u5904\u7406\u63D0\u4EA4\u524D\u68C0\u67E5\u4E2D\u7684\u9519\u8BEF",
     "app.newTask": "\u65B0\u5EFA",
     "app.newTaskAria": "\u65B0\u5EFA\u5BF9\u8BDD",
     "sidebar.searchPlaceholder": "\u641C\u7D22\u63D0\u793A\u8BCD\u6216\u4EFB\u52A1 ID",
@@ -10856,6 +10977,17 @@
 
   // codex_image/webui/frontend/src/i18n/zh-hk.ts
   var ZH_HK_DICTIONARY = {
+    "editPreflight.title": "\u63D0\u4EA4\u524D\u6AA2\u67E5",
+    "editPreflight.primary": "\u906E\u7F69\u53EA\u6703\u5957\u7528\u5230\u7B2C\u4E00\u5F35\u4E3B\u8981\u7DE8\u8F2F\u5716\u7247\uFF1A{name}",
+    "editPreflight.responsesResize": "Responses \u63D0\u4EA4\u6642\u6703\u5C07 {width}\xD7{height} \u7E2E\u653E\u70BA {targetWidth}\xD7{targetHeight}",
+    "editPreflight.editArea": "\u900F\u660E\u7DE8\u8F2F\u5340\u57DF\u4F54 {percent}%",
+    "editPreflight.editAreaSmall": "\u7DE8\u8F2F\u5340\u57DF\u5F88\u5C0F\uFF0C\u6A21\u578B\u53EF\u80FD\u7121\u6CD5\u7522\u751F\u660E\u986F\u4FEE\u6539",
+    "editPreflight.editAreaLarge": "\u5927\u90E8\u5206\u756B\u9762\u90FD\u53EF\u7DE8\u8F2F\uFF0C\u7D50\u679C\u53EF\u80FD\u63A5\u8FD1\u6574\u5F35\u91CD\u7E6A",
+    "editPreflight.aspectMismatch": "\u539F\u5716\u6BD4\u4F8B\u7D04\u70BA {sourceRatio}\uFF0C\u8F38\u51FA\u70BA {outputRatio}\uFF0C\u53EF\u80FD\u51FA\u73FE\u88C1\u5207\u6216\u6574\u9AD4\u91CD\u69CB",
+    "editPreflight.maskDimensionsMismatch": "\u906E\u7F69\u5C3A\u5BF8 {maskWidth}\xD7{maskHeight} \u8207\u539F\u5716 {width}\xD7{height} \u4E0D\u4E00\u81F4\uFF0C\u8ACB\u91CD\u65B0\u958B\u555F\u7DE8\u8F2F\u5668\u4E26\u5132\u5B58\u906E\u7F69",
+    "editPreflight.emptyEditArea": "\u906E\u7F69\u6C92\u6709\u900F\u660E\u7DE8\u8F2F\u5340\u57DF\uFF0C\u8ACB\u5148\u64E6\u51FA\u8981\u4FEE\u6539\u7684\u5340\u57DF",
+    "editPreflight.inspectionFailed": "\u7121\u6CD5\u8B80\u53D6\u906E\u7F69\u9810\u6AA2\u8CC7\u6599\uFF1B\u63D0\u4EA4\u6642\u4ECD\u6703\u7531\u4F3A\u670D\u5668\u9A57\u8B49",
+    "editPreflight.blocked": "\u8ACB\u5148\u8655\u7406\u63D0\u4EA4\u524D\u6AA2\u67E5\u4E2D\u7684\u932F\u8AA4",
     "app.newTask": "\u65B0\u589E",
     "app.newTaskAria": "\u65B0\u5EFA\u5C0D\u8A71",
     "sidebar.searchPlaceholder": "\u641C\u5C0B\u63D0\u793A\u8A5E\u6216\u4EFB\u52D9ID",
@@ -11851,6 +11983,17 @@
 
   // codex_image/webui/frontend/src/i18n/zh-tw.ts
   var ZH_TW_DICTIONARY = {
+    "editPreflight.title": "\u9001\u51FA\u524D\u6AA2\u67E5",
+    "editPreflight.primary": "\u906E\u7F69\u53EA\u6703\u5957\u7528\u5230\u7B2C\u4E00\u5F35\u4E3B\u8981\u7DE8\u8F2F\u5716\u7247\uFF1A{name}",
+    "editPreflight.responsesResize": "Responses \u9001\u51FA\u6642\u6703\u5C07 {width}\xD7{height} \u7E2E\u653E\u70BA {targetWidth}\xD7{targetHeight}",
+    "editPreflight.editArea": "\u900F\u660E\u7DE8\u8F2F\u5340\u57DF\u5360 {percent}%",
+    "editPreflight.editAreaSmall": "\u7DE8\u8F2F\u5340\u57DF\u5F88\u5C0F\uFF0C\u6A21\u578B\u53EF\u80FD\u7121\u6CD5\u7522\u751F\u660E\u986F\u8B8A\u66F4",
+    "editPreflight.editAreaLarge": "\u5927\u90E8\u5206\u756B\u9762\u90FD\u53EF\u7DE8\u8F2F\uFF0C\u7D50\u679C\u53EF\u80FD\u63A5\u8FD1\u6574\u5F35\u91CD\u7E6A",
+    "editPreflight.aspectMismatch": "\u539F\u5716\u6BD4\u4F8B\u7D04\u70BA {sourceRatio}\uFF0C\u8F38\u51FA\u70BA {outputRatio}\uFF0C\u53EF\u80FD\u767C\u751F\u88C1\u5207\u6216\u6574\u9AD4\u91CD\u69CB",
+    "editPreflight.maskDimensionsMismatch": "\u906E\u7F69\u5C3A\u5BF8 {maskWidth}\xD7{maskHeight} \u8207\u539F\u5716 {width}\xD7{height} \u4E0D\u4E00\u81F4\uFF0C\u8ACB\u91CD\u65B0\u958B\u555F\u7DE8\u8F2F\u5668\u4E26\u5132\u5B58\u906E\u7F69",
+    "editPreflight.emptyEditArea": "\u906E\u7F69\u6C92\u6709\u900F\u660E\u7DE8\u8F2F\u5340\u57DF\uFF0C\u8ACB\u5148\u64E6\u51FA\u8981\u4FEE\u6539\u7684\u5340\u57DF",
+    "editPreflight.inspectionFailed": "\u7121\u6CD5\u8B80\u53D6\u906E\u7F69\u9810\u6AA2\u8CC7\u8A0A\uFF1B\u9001\u51FA\u6642\u4ECD\u6703\u7531\u4F3A\u670D\u5668\u9A57\u8B49",
+    "editPreflight.blocked": "\u8ACB\u5148\u8655\u7406\u9001\u51FA\u524D\u6AA2\u67E5\u4E2D\u7684\u932F\u8AA4",
     "app.newTask": "\u65B0\u589E",
     "app.newTaskAria": "\u65B0\u5EFA\u5C0D\u8A71",
     "sidebar.searchPlaceholder": "\u641C\u5C0B\u63D0\u793A\u8A5E\u6216\u4EFB\u52D9ID",

@@ -1,6 +1,17 @@
 import type { TranslationDictionary } from "./types";
 
 export const EN_DICTIONARY: TranslationDictionary = {
+    "editPreflight.title": "Pre-submit check",
+    "editPreflight.primary": "The mask applies only to the first Primary Edit Image: {name}",
+    "editPreflight.responsesResize": "Responses will resize {width}×{height} to {targetWidth}×{targetHeight} before submission",
+    "editPreflight.editArea": "Transparent edit area: {percent}%",
+    "editPreflight.editAreaSmall": "The edit area is very small, so the model may not make a visible change",
+    "editPreflight.editAreaLarge": "Most of the image is editable; the result may resemble a full-image redraw",
+    "editPreflight.aspectMismatch": "The source ratio is about {sourceRatio}, while output is {outputRatio}; cropping or broader reconstruction may occur",
+    "editPreflight.maskDimensionsMismatch": "Mask size {maskWidth}×{maskHeight} does not match image size {width}×{height}; reopen the editor and save the mask again",
+    "editPreflight.emptyEditArea": "The mask has no transparent edit area; erase the area you want to change first",
+    "editPreflight.inspectionFailed": "Mask preflight details could not be read; the server will still validate on submission",
+    "editPreflight.blocked": "Resolve the pre-submit errors before continuing",
     "app.newTask": "New",
     "app.newTaskAria": "New chat",
     "sidebar.searchPlaceholder": "Search prompts or task ID",

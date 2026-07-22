@@ -1,6 +1,17 @@
 import type { TranslationDictionary } from "./types";
 
 export const KO_DICTIONARY: TranslationDictionary = {
+    "editPreflight.title": "제출 전 확인",
+    "editPreflight.primary": "마스크는 첫 번째 기본 편집 이미지에만 적용됩니다: {name}",
+    "editPreflight.responsesResize": "Responses는 제출 전에 {width}×{height}를 {targetWidth}×{targetHeight}로 축소합니다",
+    "editPreflight.editArea": "투명 편집 영역: {percent}%",
+    "editPreflight.editAreaSmall": "편집 영역이 매우 작아 눈에 띄는 변경이 없을 수 있습니다",
+    "editPreflight.editAreaLarge": "이미지 대부분을 편집할 수 있어 전체 이미지를 다시 그린 결과와 비슷할 수 있습니다",
+    "editPreflight.aspectMismatch": "원본 비율은 약 {sourceRatio}, 출력은 {outputRatio}이므로 자르기나 전체 재구성이 발생할 수 있습니다",
+    "editPreflight.maskDimensionsMismatch": "마스크 크기 {maskWidth}×{maskHeight}가 이미지 크기 {width}×{height}와 다릅니다. 편집기를 다시 열어 마스크를 저장하세요",
+    "editPreflight.emptyEditArea": "마스크에 투명한 편집 영역이 없습니다. 먼저 변경할 영역을 지우세요",
+    "editPreflight.inspectionFailed": "마스크 사전 검사 정보를 읽을 수 없습니다. 제출 시 서버에서 다시 검증합니다",
+    "editPreflight.blocked": "계속하기 전에 제출 전 검사 오류를 해결하세요",
     "app.newTask": "새로 만들기",
     "app.newTaskAria": "새 채팅 만들기",
     "sidebar.searchPlaceholder": "프롬프트 또는 작업 ID 검색",

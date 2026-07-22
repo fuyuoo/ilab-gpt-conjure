@@ -38,6 +38,28 @@ class WebUIStaticI18nTests(WebUIStaticTestCase):
             for key in required_keys:
                 self.assertIn(f'"{key}"', source, f"{key} missing from {path.name}")
 
+    def test_edit_request_preflight_copy_exists_in_every_locale(self) -> None:
+        required_keys = (
+            "editPreflight.title",
+            "editPreflight.primary",
+            "editPreflight.responsesResize",
+            "editPreflight.editArea",
+            "editPreflight.editAreaSmall",
+            "editPreflight.editAreaLarge",
+            "editPreflight.aspectMismatch",
+            "editPreflight.maskDimensionsMismatch",
+            "editPreflight.emptyEditArea",
+            "editPreflight.inspectionFailed",
+            "editPreflight.blocked",
+        )
+        locale_paths = sorted(Path("codex_image/webui/frontend/src/i18n").glob("*.ts"))
+        locale_paths = [path for path in locale_paths if path.name not in {"types.ts", "dictionaries.ts"}]
+        self.assertEqual(13, len(locale_paths))
+        for path in locale_paths:
+            source = path.read_text(encoding="utf-8")
+            for key in required_keys:
+                self.assertIn(f'"{key}"', source, f"{key} missing from {path.name}")
+
     def test_mixed_upload_copy_is_localized_in_every_locale(self) -> None:
         expected = {
             "zh-cn.ts": ("点击、拖入或粘贴图片与文件", "点击、拖入或粘贴图片与文件", "添加输入", "支持图片与 Responses 参考文件"),

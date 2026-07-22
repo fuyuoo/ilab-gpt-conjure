@@ -73,6 +73,7 @@ export function syncRadioButtons(...selects: any[]): void {
 }
 
 export function updateRequestPreview(): void {
-  if (!els.requestJson) return;
-  els.requestJson.textContent = JSON.stringify(buildPreviewRequest(), null, 2);
+  const request = buildPreviewRequest();
+  if (els.requestJson) els.requestJson.textContent = JSON.stringify(request, null, 2);
+  void legacyMethod("updateEditRequestPreflight", request);
 }

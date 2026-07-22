@@ -1,6 +1,17 @@
 import type { TranslationDictionary } from "./types";
 
 export const PT_DICTIONARY: TranslationDictionary = {
+    "editPreflight.title": "Verificação antes do envio",
+    "editPreflight.primary": "A máscara se aplica apenas à primeira imagem principal de edição: {name}",
+    "editPreflight.responsesResize": "O Responses redimensionará {width}×{height} para {targetWidth}×{targetHeight} antes do envio",
+    "editPreflight.editArea": "Área transparente de edição: {percent}%",
+    "editPreflight.editAreaSmall": "A área de edição é muito pequena; o modelo pode não produzir uma alteração visível",
+    "editPreflight.editAreaLarge": "Quase toda a imagem pode ser editada; o resultado pode parecer um redesenho completo",
+    "editPreflight.aspectMismatch": "A proporção original é cerca de {sourceRatio} e a saída é {outputRatio}; pode ocorrer corte ou reconstrução geral",
+    "editPreflight.maskDimensionsMismatch": "O tamanho da máscara {maskWidth}×{maskHeight} não corresponde à imagem {width}×{height}; reabra o editor e salve a máscara",
+    "editPreflight.emptyEditArea": "A máscara não tem uma área transparente de edição; apague primeiro a área que deseja alterar",
+    "editPreflight.inspectionFailed": "Não foi possível ler a verificação da máscara; o servidor ainda fará a validação no envio",
+    "editPreflight.blocked": "Resolva os erros da verificação antes de continuar",
     "app.newTask": "Novo",
     "app.newTaskAria": "Novo bate-papo",
     "sidebar.searchPlaceholder": "Solicitações de pesquisa ou tarefa ID",

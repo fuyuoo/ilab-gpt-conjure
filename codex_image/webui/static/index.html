@@ -113,7 +113,7 @@
         });
       })();
     </script>
-    <link rel="stylesheet" href="/static/styles.css?v=runtime-569" />
+    <link rel="stylesheet" href="/static/styles.css?v=runtime-570" />
   </head>
   <body>
     <div class="layout-container">
@@ -438,6 +438,10 @@
                   <h2 data-i18n="prompt.title">提示词</h2>
                   <span id="charCount" class="prompt-count">0 / 4000</span>
                 </div>
+              </div>
+              <div id="editPreflight" class="edit-preflight hidden" aria-live="polite">
+                <div class="edit-preflight-title" data-i18n="editPreflight.title">提交前检查</div>
+                <div id="editPreflightList" class="edit-preflight-list"></div>
               </div>
               <div class="prompt-compose">
                 <div class="prompt-editor-wrap">
@@ -1447,7 +1451,7 @@
     </div>
 
     <div id="taskNotificationToastRegion" class="task-notification-toast-region" aria-live="polite"></div>
-  <script src="/static/app.js?v=runtime-569"></script>
+  <script src="/static/app.js?v=runtime-570"></script>
     <script>
       (() => {
         document.querySelectorAll(".radio-group").forEach((group) => {

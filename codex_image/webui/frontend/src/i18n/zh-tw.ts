@@ -1,6 +1,17 @@
 import type { TranslationDictionary } from "./types";
 
 export const ZH_TW_DICTIONARY: TranslationDictionary = {
+    "editPreflight.title": "送出前檢查",
+    "editPreflight.primary": "遮罩只會套用到第一張主要編輯圖片：{name}",
+    "editPreflight.responsesResize": "Responses 送出時會將 {width}×{height} 縮放為 {targetWidth}×{targetHeight}",
+    "editPreflight.editArea": "透明編輯區域占 {percent}%",
+    "editPreflight.editAreaSmall": "編輯區域很小，模型可能無法產生明顯變更",
+    "editPreflight.editAreaLarge": "大部分畫面都可編輯，結果可能接近整張重繪",
+    "editPreflight.aspectMismatch": "原圖比例約為 {sourceRatio}，輸出為 {outputRatio}，可能發生裁切或整體重構",
+    "editPreflight.maskDimensionsMismatch": "遮罩尺寸 {maskWidth}×{maskHeight} 與原圖 {width}×{height} 不一致，請重新開啟編輯器並儲存遮罩",
+    "editPreflight.emptyEditArea": "遮罩沒有透明編輯區域，請先擦出要修改的區域",
+    "editPreflight.inspectionFailed": "無法讀取遮罩預檢資訊；送出時仍會由伺服器驗證",
+    "editPreflight.blocked": "請先處理送出前檢查中的錯誤",
     "app.newTask": "新增",
     "app.newTaskAria": "新建對話",
     "sidebar.searchPlaceholder": "搜尋提示詞或任務ID",

@@ -195,6 +195,7 @@ const bridgeMethods: LegacyMethods = {
   updatePromptCount,
   updateQuantity: proxy("updateQuantity"),
   updateRequestPreview: proxy("updateRequestPreview"),
+  updateEditRequestPreflight: proxy("updateEditRequestPreflight"),
   updateSizeFromPreset: proxy("updateSizeFromPreset"),
   updateTaskElapsedDisplays,
   updateTaskInState,

@@ -78,6 +78,98 @@ class EditingGuidanceStateTests(unittest.TestCase):
         )
         self.assertEqual(result["recovery"]["version"], 1)
 
+    def test_edit_request_preflight_reports_resize_area_primary_and_aspect_before_submit(self) -> None:
+        result = self._run_module_probe(
+            """
+            const { evaluateEditRequestPreflight } = require(process.argv[1]);
+            const result = evaluateEditRequestPreflight({
+              mode: "edit",
+              hasMask: true,
+              usesResponses: true,
+              primaryName: "poster.png",
+              primaryWidth: 1080,
+              primaryHeight: 2100,
+              outputSize: "1024x1024",
+              editablePixels: 41176,
+              totalPixels: 2268000,
+            });
+            process.stdout.write(JSON.stringify(result));
+            """,
+            module="codex_image/webui/frontend/src/edit-request-preflight.ts",
+        )
+
+        self.assertEqual(
+            [issue["code"] for issue in result["issues"]],
+            ["primary", "responses_resize", "edit_area", "aspect_mismatch"],
+        )
+        self.assertEqual(result["issues"][0]["values"]["name"], "poster.png")
+        self.assertEqual(
+            result["issues"][1]["values"],
+            {"width": 1080, "height": 2100, "targetWidth": 1053, "targetHeight": 2048},
+        )
+        self.assertEqual(result["issues"][2]["values"]["percent"], "1.82")
+        self.assertEqual(
+            result["issues"][3]["values"],
+            {"sourceRatio": "18:35", "outputRatio": "1:1"},
+        )
+
+    def test_edit_request_preflight_classifies_small_and_large_edit_regions_as_warnings(self) -> None:
+        result = self._run_module_probe(
+            """
+            const { evaluateEditRequestPreflight } = require(process.argv[1]);
+            const base = {
+              mode: "edit",
+              hasMask: true,
+              usesResponses: false,
+              primaryName: "input.png",
+              primaryWidth: 100,
+              primaryHeight: 100,
+              outputSize: "1024x1024",
+              totalPixels: 10000,
+            };
+            process.stdout.write(JSON.stringify({
+              small: evaluateEditRequestPreflight({ ...base, editablePixels: 20 }),
+              large: evaluateEditRequestPreflight({ ...base, editablePixels: 9500 }),
+              inactive: evaluateEditRequestPreflight({ ...base, mode: "generate" }),
+            }));
+            """,
+            module="codex_image/webui/frontend/src/edit-request-preflight.ts",
+        )
+
+        self.assertIn("edit_area_small", [issue["code"] for issue in result["small"]["issues"]])
+        self.assertIn("edit_area_large", [issue["code"] for issue in result["large"]["issues"]])
+        self.assertEqual(result["inactive"]["issues"], [])
+
+    def test_edit_request_preflight_blocks_invalid_or_empty_masks_locally(self) -> None:
+        result = self._run_module_probe(
+            """
+            const { evaluateEditRequestPreflight } = require(process.argv[1]);
+            const base = {
+              mode: "edit",
+              hasMask: true,
+              usesResponses: false,
+              primaryName: "input.png",
+              primaryWidth: 100,
+              primaryHeight: 100,
+              maskWidth: 100,
+              maskHeight: 100,
+              outputSize: "1024x1024",
+              editablePixels: 100,
+              totalPixels: 10000,
+            };
+            process.stdout.write(JSON.stringify({
+              mismatched: evaluateEditRequestPreflight({ ...base, maskHeight: 99 }),
+              empty: evaluateEditRequestPreflight({ ...base, editablePixels: 0 }),
+            }));
+            """,
+            module="codex_image/webui/frontend/src/edit-request-preflight.ts",
+        )
+
+        self.assertEqual(result["mismatched"]["issues"][0]["code"], "mask_dimensions_mismatch")
+        self.assertEqual(result["mismatched"]["issues"][0]["level"], "error")
+        self.assertEqual(result["empty"]["issues"][0]["code"], "empty_edit_area")
+        self.assertEqual(result["empty"]["issues"][0]["level"], "error")
+
     def test_edit_region_submission_round_trips_versioned_recovery_state(self) -> None:
         result = self._run_module_probe(
             """

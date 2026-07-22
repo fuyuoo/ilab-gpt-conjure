@@ -1,6 +1,17 @@
 import type { TranslationDictionary } from "./types";
 
 export const JA_DICTIONARY: TranslationDictionary = {
+    "editPreflight.title": "送信前チェック",
+    "editPreflight.primary": "マスクは最初のメイン編集画像にのみ適用されます：{name}",
+    "editPreflight.responsesResize": "Responses は送信前に {width}×{height} を {targetWidth}×{targetHeight} に縮小します",
+    "editPreflight.editArea": "透明な編集領域：{percent}%",
+    "editPreflight.editAreaSmall": "編集領域が非常に小さいため、目に見える変更が行われない可能性があります",
+    "editPreflight.editAreaLarge": "画像の大部分が編集可能なため、全体を描き直したような結果になる可能性があります",
+    "editPreflight.aspectMismatch": "元画像の比率は約 {sourceRatio}、出力は {outputRatio} です。切り抜きや全体的な再構成が発生する可能性があります",
+    "editPreflight.maskDimensionsMismatch": "マスクサイズ {maskWidth}×{maskHeight} が画像サイズ {width}×{height} と一致しません。エディターを開き直して保存してください",
+    "editPreflight.emptyEditArea": "マスクに透明な編集領域がありません。変更する領域を先に消去してください",
+    "editPreflight.inspectionFailed": "マスクの事前チェック情報を読み取れませんでした。送信時にサーバーで検証されます",
+    "editPreflight.blocked": "続行する前に送信前チェックのエラーを解決してください",
     "app.newTask": "新規",
     "app.newTaskAria": "新規チャット",
     "sidebar.searchPlaceholder": "プロンプトまたはタスク ID を検索",

@@ -70,6 +70,7 @@ export interface LegacyMethods {
   updatePromptCount(): void;
   renderImageStrip(): void;
   updateRequestPreview(): void;
+  updateEditRequestPreflight(request: any): Promise<any> | void;
 }
 
 export interface WebUIBridge {

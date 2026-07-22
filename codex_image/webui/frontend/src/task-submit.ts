@@ -36,6 +36,7 @@ function syncRadioButtons(...args: any[]) { return legacyMethod("syncRadioButton
 function updateCompression(...args: any[]) { return legacyMethod("updateCompression", ...args); }
 function updateCustomSize(...args: any[]) { return legacyMethod("updateCustomSize", ...args); }
 function updateRequestPreview(...args: any[]) { return legacyMethod("updateRequestPreview", ...args); }
+function updateEditRequestPreflight(...args: any[]) { return legacyMethod("updateEditRequestPreflight", ...args); }
 function currentTaskParams(...args: any[]) { return legacyMethod("currentTaskParams", ...args); }
 function uploadInputs(...args: any[]) { return legacyMethod("uploadInputs", ...args); }
 function galleryInputs(...args: any[]) { return legacyMethod("galleryInputs", ...args); }
@@ -349,6 +350,11 @@ async function runTask() {
     editImageFiles = imageFilesForSubmission(state.mode, uploads);
   } catch {
     setStatus(translate("imageEditor.emptyEditRegion"), "error");
+    return;
+  }
+  const preflight = await updateEditRequestPreflight(buildPreviewRequest());
+  if (preflight?.issues?.some((issue: any) => issue.level === "error")) {
+    setStatus(translate("editPreflight.blocked"), "error");
     return;
   }
 

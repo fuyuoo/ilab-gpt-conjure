@@ -42,6 +42,8 @@ export function createWebUIElements(): WebUIElements {
   taskNotificationToastRegion: document.querySelector("#taskNotificationToastRegion"),
   taskNotificationInApp: document.querySelector("#taskNotificationInApp"),
   taskNotificationSystem: document.querySelector("#taskNotificationSystem"),
+  editPreflight: document.querySelector("#editPreflight"),
+  editPreflightList: document.querySelector("#editPreflightList"),
   taskHistoryShell: document.querySelector(".task-history-shell"),
   sidebarContent: document.querySelector(".sidebar-content"),
   taskActiveList: document.querySelector("#taskActiveList"),

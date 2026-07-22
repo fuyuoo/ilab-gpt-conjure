@@ -1501,3 +1501,66 @@
   text-align: center;
   justify-content: center;
 }
+
+.edit-preflight {
+  display: grid;
+  gap: 6px;
+  margin: 0 0 10px;
+  padding: 10px 12px;
+  border: 1px solid color-mix(in srgb, var(--status-blue) 24%, var(--line));
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--status-blue) 5%, var(--surface-soft));
+}
+
+.edit-preflight.hidden {
+  display: none;
+}
+
+.edit-preflight-title {
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.edit-preflight-list {
+  display: grid;
+  gap: 5px;
+}
+
+.edit-preflight-item {
+  display: grid;
+  grid-template-columns: 18px minmax(0, 1fr);
+  gap: 6px;
+  align-items: start;
+  color: var(--text-secondary);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.edit-preflight-icon {
+  display: inline-grid;
+  place-items: center;
+  width: 16px;
+  height: 16px;
+  margin-top: 1px;
+  border-radius: 50%;
+  color: var(--status-blue);
+  background: color-mix(in srgb, var(--status-blue) 14%, transparent);
+  font-size: 10px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.edit-preflight-item.warning .edit-preflight-icon {
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 16%, transparent);
+}
+
+.edit-preflight-item.error {
+  color: var(--danger);
+}
+
+.edit-preflight-item.error .edit-preflight-icon {
+  color: var(--danger);
+  background: color-mix(in srgb, var(--danger) 14%, transparent);
+}

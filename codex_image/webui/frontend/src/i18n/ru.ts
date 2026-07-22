@@ -1,6 +1,17 @@
 import type { TranslationDictionary } from "./types";
 
 export const RU_DICTIONARY: TranslationDictionary = {
+    "editPreflight.title": "Проверка перед отправкой",
+    "editPreflight.primary": "Маска применяется только к первому основному изображению для редактирования: {name}",
+    "editPreflight.responsesResize": "Перед отправкой Responses изменит размер {width}×{height} на {targetWidth}×{targetHeight}",
+    "editPreflight.editArea": "Прозрачная область редактирования: {percent}%",
+    "editPreflight.editAreaSmall": "Область редактирования очень мала, поэтому заметных изменений может не быть",
+    "editPreflight.editAreaLarge": "Почти всё изображение доступно для редактирования; результат может быть похож на полную перерисовку",
+    "editPreflight.aspectMismatch": "Соотношение сторон исходника около {sourceRatio}, а результата — {outputRatio}; возможны обрезка или общая перестройка",
+    "editPreflight.maskDimensionsMismatch": "Размер маски {maskWidth}×{maskHeight} не совпадает с размером изображения {width}×{height}; снова откройте редактор и сохраните маску",
+    "editPreflight.emptyEditArea": "В маске нет прозрачной области редактирования; сначала сотрите область, которую нужно изменить",
+    "editPreflight.inspectionFailed": "Не удалось прочитать данные предварительной проверки маски; сервер всё равно проверит её при отправке",
+    "editPreflight.blocked": "Устраните ошибки предварительной проверки, прежде чем продолжить",
     "app.newTask": "Новый",
     "app.newTaskAria": "Новый чат",
     "sidebar.searchPlaceholder": "Поисковые запросы или задача ID",
