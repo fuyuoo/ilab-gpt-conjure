@@ -86,7 +86,7 @@ class WebUIPWATests(unittest.TestCase):
         self.assertTrue(worker_path.exists())
         source = worker_path.read_text(encoding="utf-8")
 
-        self.assertIn('const CACHE_NAME = "ilab-gpt-conjure-shell-v52";', source)
+        self.assertIn('const CACHE_NAME = "ilab-gpt-conjure-shell-v53";', source)
         self.assertIn('"/"', source)
         self.assertIn('"/history"', source)
         self.assertIn('"/manifest.webmanifest"', source)
@@ -94,12 +94,30 @@ class WebUIPWATests(unittest.TestCase):
         self.assertIn('"/static/history.js"', source)
         self.assertIn('"/static/styles.css"', source)
         self.assertIn("request.mode === \"navigate\"", source)
-        self.assertIn("caches.match(request).then", source)
+        self.assertIn("fetch(request).then", source)
         self.assertIn("catch(() => caches.match(request, { ignoreSearch: true }))", source)
         self.assertNotIn('"/api/', source)
         self.assertNotIn('"/events', source)
         self.assertNotIn('"/inputs', source)
         self.assertNotIn('"/outputs', source)
+
+    def test_shell_assets_refresh_before_cache_fallback_and_use_mask_release_versions(self) -> None:
+        index_html = Path("codex_image/webui/static/index.html").read_text(encoding="utf-8")
+        history_html = Path("codex_image/webui/static/history.html").read_text(encoding="utf-8")
+        worker = Path("codex_image/webui/static/service-worker.js").read_text(encoding="utf-8")
+
+        self.assertIn('/static/styles.css?v=runtime-569', index_html)
+        self.assertIn('/static/app.js?v=runtime-569', index_html)
+        self.assertIn('/static/styles.css?v=runtime-569', history_html)
+        self.assertIn('/static/history.js?v=history-70', history_html)
+        self.assertIn('ilab-gpt-conjure-shell-v53', worker)
+
+        shell_fetch = worker[worker.index('if (!APP_SHELL_PATHS.has(requestUrl.pathname)) return;'):]
+        self.assertLess(
+            shell_fetch.index('fetch(request)'),
+            shell_fetch.index('caches.match(request,'),
+            'online shell requests must fetch the matching bundle before falling back to cache',
+        )
 
     def test_pwa_root_assets_are_served_from_webui_app(self) -> None:
         from codex_image.webui.app import create_app

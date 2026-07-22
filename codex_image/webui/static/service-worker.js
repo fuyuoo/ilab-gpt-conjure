@@ -1,4 +1,4 @@
-const CACHE_NAME = "ilab-gpt-conjure-shell-v52";
+const CACHE_NAME = "ilab-gpt-conjure-shell-v53";
 const APP_SHELL_URLS = [
   "/",
   "/history",
@@ -46,12 +46,11 @@ self.addEventListener("fetch", (event) => {
   if (!APP_SHELL_PATHS.has(requestUrl.pathname)) return;
 
   event.respondWith(
-    caches.match(request).then((cached) => (
-      cached || fetch(request).then((response) => {
-        const copy = response.clone();
-        caches.open(CACHE_NAME).then((cache) => cache.put(request, copy));
-        return response;
-      }).catch(() => caches.match(request, { ignoreSearch: true }))
-    ))
+    fetch(request).then((response) => {
+      if (!response.ok) throw new Error(`Shell asset request failed: ${response.status}`);
+      const copy = response.clone();
+      caches.open(CACHE_NAME).then((cache) => cache.put(request, copy));
+      return response;
+    }).catch(() => caches.match(request, { ignoreSearch: true }))
   );
 });
