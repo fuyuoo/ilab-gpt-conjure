@@ -1,0 +1,4 @@
+interface:
+  display_name: "功能落位门禁"
+  short_description: "先规划功能代码落位，再实施并审计项目分层、所有权与依赖边界"
+  default_prompt: "使用 $place-game-feature 为这个功能生成落位清单，确认后实现并完成落位审计。"

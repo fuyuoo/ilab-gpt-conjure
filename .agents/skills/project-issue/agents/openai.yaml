@@ -1,0 +1,7 @@
+interface:
+  display_name: "Project Issue Runner"
+  short_description: "从动态 Parent 交付或恢复一张 Issue"
+  default_prompt: "使用 $project-issue。CONFIG=.agents/project-issue.json MODE=dry-run PARENT=<number>。"
+
+policy:
+  allow_implicit_invocation: false

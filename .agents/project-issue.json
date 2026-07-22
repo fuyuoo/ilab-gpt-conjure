@@ -1,0 +1,8 @@
+{
+  "labels": {
+    "ready": "ready-for-agent",
+    "human": "ready-for-human",
+    "claim": "agent-in-progress",
+    "manual": "manual-verification-pending"
+  }
+}
