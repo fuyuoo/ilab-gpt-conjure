@@ -527,6 +527,16 @@ class EditingGuidanceStateTests(unittest.TestCase):
         result = self._run_module_probe(
             """
             const { finalCropRect } = require(process.argv[1]);
+            let outsideError = null;
+            try {
+              finalCropRect(
+                { left: 12.4, top: 15.8, width: 3, height: 4 },
+                10,
+                10,
+              );
+            } catch (cause) {
+              outsideError = cause.message;
+            }
             process.stdout.write(JSON.stringify({
               fractional: finalCropRect(
                 { left: 1.2, top: 2.7, width: 4.4, height: 3.2 },
@@ -538,6 +548,7 @@ class EditingGuidanceStateTests(unittest.TestCase):
                 10,
                 10,
               ),
+              outsideError,
             }));
             """,
             "codex_image/webui/frontend/src/edit-region-materialization.ts",
@@ -548,6 +559,42 @@ class EditingGuidanceStateTests(unittest.TestCase):
             {
                 "fractional": {"left": 1, "top": 2, "width": 5, "height": 4},
                 "bounded": {"left": 0, "top": 8, "width": 10, "height": 2},
+                "outsideError": "The crop must overlap the final Primary Edit Image.",
+            },
+        )
+
+    def test_cropped_edit_region_pixels_keep_mask_coordinates_aligned(self) -> None:
+        result = self._run_module_probe(
+            """
+            const { finalCropRect, materializeEditMaskPixels } = require(process.argv[1]);
+            const width = 3;
+            const height = 2;
+            const source = new Uint8ClampedArray([
+              255, 59, 48, 0,   255, 59, 48, 255, 255, 59, 48, 0,
+              255, 59, 48, 255, 255, 59, 48, 0,   255, 59, 48, 255,
+            ]);
+            const crop = finalCropRect({ left: 0.4, top: 0.2, width: 1.2, height: 1.1 }, width, height);
+            const cropped = new Uint8ClampedArray(crop.width * crop.height * 4);
+            for (let y = 0; y < crop.height; y += 1) {
+              for (let x = 0; x < crop.width; x += 1) {
+                const sourceOffset = ((crop.top + y) * width + crop.left + x) * 4;
+                cropped.set(source.slice(sourceOffset, sourceOffset + 4), (y * crop.width + x) * 4);
+              }
+            }
+            process.stdout.write(JSON.stringify({
+              crop,
+              alpha: Array.from(materializeEditMaskPixels(crop.width, crop.height, cropped))
+                .filter((_, index) => index % 4 === 3),
+            }));
+            """,
+            "codex_image/webui/frontend/src/edit-region-materialization.ts",
+        )
+
+        self.assertEqual(
+            result,
+            {
+                "crop": {"left": 0, "top": 0, "width": 2, "height": 2},
+                "alpha": [255, 0, 0, 255],
             },
         )
 

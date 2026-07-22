@@ -26589,11 +26589,14 @@ js: import "konva/skia-backend";
     const top = Math.max(0, Math.floor(crop.top));
     const right = Math.min(canvasWidth, Math.ceil(crop.left + crop.width));
     const bottom = Math.min(canvasHeight, Math.ceil(crop.top + crop.height));
+    if (left >= canvasWidth || top >= canvasHeight || right <= left || bottom <= top) {
+      throw new Error("The crop must overlap the final Primary Edit Image.");
+    }
     return {
       left,
       top,
-      width: Math.max(1, right - left),
-      height: Math.max(1, bottom - top)
+      width: right - left,
+      height: bottom - top
     };
   }
   function materializeEditMaskPixels(width, height, editRegionPixels) {
