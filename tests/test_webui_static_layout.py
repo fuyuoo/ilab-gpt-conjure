@@ -199,8 +199,8 @@ class WebUIStaticLayoutTests(WebUIStaticTestCase):
         script = self._frontend_script_source()
         styles = Path("codex_image/webui/static/styles.css").read_text(encoding="utf-8")
 
-        self.assertIn('/static/app.js?v=runtime-571', html)
-        self.assertIn('/static/styles.css?v=runtime-571', html)
+        self.assertIn('/static/app.js?v=runtime-572', html)
+        self.assertIn('/static/styles.css?v=runtime-572', html)
         self.assertIn('id="recentAssetDock"', html)
         self.assertRegex(html, r'class="image-input-footer"[\s\S]*id="recentAssetDock"[\s\S]*id="recentAssetList"')
         self.assertRegex(html, r'id="recentAssetDock"[\s\S]*id="quickGalleryDock"[\s\S]*id="galleryManagePanel"')
@@ -1119,7 +1119,10 @@ class WebUIStaticLayoutTests(WebUIStaticTestCase):
         self.assertIn('id="editPreflight"', prompt_heading)
         self.assertIn('id="editPreflightToggle"', prompt_heading)
         self.assertIn('id="editPreflightSummary"', prompt_heading)
-        self.assertRegex(styles, r"\.edit-preflight\s*\{[^}]*position:\s*absolute;")
+        self.assertRegex(
+            styles,
+            r"\.edit-preflight\s*\{[^}]*position:\s*absolute;[^}]*z-index:\s*[1-9]\d*;",
+        )
         self.assertRegex(styles, r"\.edit-preflight-list\s*\{[^}]*position:\s*absolute;")
         self.assertIn("editRegionCanvas: null", image_editor_source)
         self.assertIn("editRegionPreviewCanvas: null", image_editor_source)
@@ -3174,8 +3177,8 @@ class WebUIStaticLayoutTests(WebUIStaticTestCase):
         script = self._frontend_script_source()
         styles = Path("codex_image/webui/static/styles.css").read_text(encoding="utf-8")
 
-        self.assertIn('/static/app.js?v=runtime-571', html)
-        self.assertIn('/static/styles.css?v=runtime-571', html)
+        self.assertIn('/static/app.js?v=runtime-572', html)
+        self.assertIn('/static/styles.css?v=runtime-572', html)
         self.assertIn('id="pasteClipboardButton"', html)
         self.assertIn('id="statusText"', html)
         self.assertRegex(
@@ -3623,8 +3626,8 @@ class WebUIStaticLayoutTests(WebUIStaticTestCase):
         script = self._frontend_script_source()
         styles = Path("codex_image/webui/static/styles.css").read_text(encoding="utf-8")
 
-        self.assertIn("/static/app.js?v=runtime-571", html)
-        self.assertIn("/static/styles.css?v=runtime-571", html)
+        self.assertIn("/static/app.js?v=runtime-572", html)
+        self.assertIn("/static/styles.css?v=runtime-572", html)
         self.assertIn('const THEME_STORAGE_KEY = "codex-image-theme-preference";', script)
         self.assertIn('themePreference: "system"', script)
         self.assertIn('call(methods, "restoreThemePreference")', script)

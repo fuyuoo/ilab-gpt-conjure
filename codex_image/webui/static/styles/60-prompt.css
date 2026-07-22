@@ -1507,6 +1507,7 @@
   position: absolute;
   top: 50%;
   right: 0;
+  z-index: 40;
   width: var(--prompt-action-column-width);
   min-width: 0;
   transform: translateY(-50%);
