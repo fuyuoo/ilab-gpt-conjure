@@ -56,6 +56,10 @@ export function materializeEditMaskPixels(
   return mask;
 }
 
+export function editMaskPreviewAlpha(editRegionAlpha: number): number {
+  return editRegionAlpha > 0 ? 0 : 122;
+}
+
 export function editRegionHasPixels(editRegionPixels: Uint8ClampedArray): boolean {
   for (let offset = 3; offset < editRegionPixels.length; offset += 4) {
     if ((editRegionPixels[offset] ?? 0) > 0) return true;

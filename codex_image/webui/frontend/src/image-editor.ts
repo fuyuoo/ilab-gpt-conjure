@@ -5,6 +5,7 @@ import { getLegacyBridge, getState } from "./state";
 import { translate } from "./i18n";
 import {
   editRegionHasPixels,
+  editMaskPreviewAlpha,
   finalCropRect,
   materializeEditMaskPixels,
 } from "./edit-region-materialization";
@@ -31,6 +32,7 @@ const imageEditorState = {
   brushBoundaryCanvas: null,
   brushOverlayCanvas: null,
   editRegionCanvas: null,
+  editRegionPreviewCanvas: null,
   konvaStage: null,
   konvaLayer: null,
   konvaTransformer: null,
@@ -109,6 +111,7 @@ async function restoreImageEditorDraft(file: File | null | undefined, canvas: HT
 async function restoreImageEditorGuidanceDrafts(source: any) {
   await restoreImageEditorDraft(source.instructionMarksFile, imageEditorState.workCanvas);
   await restoreImageEditorDraft(source.editRegionFile, imageEditorState.editRegionCanvas);
+  normalizeImageEditorEditRegion();
   imageEditorState.hasInstructionMarks = Boolean(source.instructionMarksFile);
 }
 
@@ -138,6 +141,33 @@ function imageEditorBrushOverlayContext() {
 
 function imageEditorEditRegionContext() {
   return imageEditorState.editRegionCanvas?.getContext("2d", { willReadFrequently: true }) || null;
+}
+
+function refreshImageEditorEditRegionPreview() {
+  const regionCanvas = imageEditorState.editRegionCanvas;
+  const previewCanvas = imageEditorState.editRegionPreviewCanvas;
+  if (!regionCanvas || !previewCanvas) return;
+  if (previewCanvas.width !== regionCanvas.width) previewCanvas.width = regionCanvas.width;
+  if (previewCanvas.height !== regionCanvas.height) previewCanvas.height = regionCanvas.height;
+  const previewContext = previewCanvas.getContext("2d");
+  if (!previewContext) return;
+  previewContext.clearRect(0, 0, previewCanvas.width, previewCanvas.height);
+  previewContext.fillStyle = `rgba(47, 111, 228, ${editMaskPreviewAlpha(0) / 255})`;
+  previewContext.fillRect(0, 0, previewCanvas.width, previewCanvas.height);
+  previewContext.globalCompositeOperation = "destination-out";
+  previewContext.drawImage(regionCanvas, 0, 0);
+  previewContext.globalCompositeOperation = "source-over";
+}
+
+function normalizeImageEditorEditRegion() {
+  const canvas = imageEditorState.editRegionCanvas;
+  const ctx = imageEditorEditRegionContext();
+  if (!canvas || !ctx) return;
+  const image = ctx.getImageData(0, 0, canvas.width, canvas.height);
+  for (let offset = 3; offset < image.data.length; offset += 4) {
+    image.data[offset] = (image.data[offset] ?? 0) > 0 ? 255 : 0;
+  }
+  ctx.putImageData(image, 0, 0);
 }
 
 function imageEditorVisibleContext() {
@@ -354,7 +384,8 @@ function resizeImageEditorCanvas(width: number, height: number, offsetX = 0, off
     imageEditorState.markNode.height(dimensions.height);
   }
   if (imageEditorState.editRegionNode) {
-    imageEditorState.editRegionNode.image(imageEditorState.editRegionCanvas);
+    refreshImageEditorEditRegionPreview();
+    imageEditorState.editRegionNode.image(imageEditorState.editRegionPreviewCanvas);
     imageEditorState.editRegionNode.x(0);
     imageEditorState.editRegionNode.y(0);
     imageEditorState.editRegionNode.width(dimensions.width);
@@ -567,13 +598,13 @@ function createImageEditorMarkNode() {
 }
 
 function createImageEditorEditRegionNode() {
-  if (!imageEditorState.editRegionCanvas) return null;
+  if (!imageEditorState.editRegionPreviewCanvas) return null;
   const editRegionNode = new Konva.Image({
-    image: imageEditorState.editRegionCanvas,
+    image: imageEditorState.editRegionPreviewCanvas,
     x: 0,
     y: 0,
-    width: imageEditorState.editRegionCanvas.width,
-    height: imageEditorState.editRegionCanvas.height,
+    width: imageEditorState.editRegionPreviewCanvas.width,
+    height: imageEditorState.editRegionPreviewCanvas.height,
     listening: false,
     name: "image-editor-edit-region-layer",
   });
@@ -641,6 +672,7 @@ function initializeImageEditorCanvases(image: any) {
   const brushBoundaryCanvas = document.createElement("canvas");
   const brushOverlayCanvas = document.createElement("canvas");
   const editRegionCanvas = document.createElement("canvas");
+  const editRegionPreviewCanvas = document.createElement("canvas");
   workCanvas.width = dimensions.width;
   workCanvas.height = dimensions.height;
   brushBoundaryCanvas.width = dimensions.width;
@@ -649,12 +681,15 @@ function initializeImageEditorCanvases(image: any) {
   brushOverlayCanvas.height = dimensions.height;
   editRegionCanvas.width = dimensions.width;
   editRegionCanvas.height = dimensions.height;
+  editRegionPreviewCanvas.width = dimensions.width;
+  editRegionPreviewCanvas.height = dimensions.height;
 
   imageEditorState.baseCanvas = baseCanvas;
   imageEditorState.workCanvas = workCanvas;
   imageEditorState.brushBoundaryCanvas = brushBoundaryCanvas;
   imageEditorState.brushOverlayCanvas = brushOverlayCanvas;
   imageEditorState.editRegionCanvas = editRegionCanvas;
+  imageEditorState.editRegionPreviewCanvas = editRegionPreviewCanvas;
   imageEditorState.crop = null;
   imageEditorState.canvasScope = "base";
   imageEditorState.hasInstructionMarks = false;
@@ -672,6 +707,7 @@ function initializeImageEditorCanvases(image: any) {
   });
   imageEditorState.layers.push(baseLayer);
   imageEditorState.markNode = createImageEditorMarkNode();
+  refreshImageEditorEditRegionPreview();
   imageEditorState.editRegionNode = createImageEditorEditRegionNode();
   orderImageEditorKonvaNodes();
   selectImageEditorLayer(baseLayer.id, { updateTool: false });
@@ -695,7 +731,8 @@ function renderImageEditor() {
     imageEditorState.markNode.height(work.height);
   }
   if (imageEditorState.editRegionNode && imageEditorState.editRegionCanvas) {
-    imageEditorState.editRegionNode.image(imageEditorState.editRegionCanvas);
+    refreshImageEditorEditRegionPreview();
+    imageEditorState.editRegionNode.image(imageEditorState.editRegionPreviewCanvas);
     imageEditorState.editRegionNode.width(imageEditorState.editRegionCanvas.width);
     imageEditorState.editRegionNode.height(imageEditorState.editRegionCanvas.height);
     imageEditorState.editRegionNode.visible(imageEditorState.activeGuidance === "edit-region");
@@ -761,6 +798,9 @@ function updateImageEditorControls() {
   });
   document.querySelectorAll<HTMLElement>("[data-image-editor-guidance-tools]").forEach((group) => {
     group.classList.toggle("hidden", group.dataset.imageEditorGuidanceTools !== imageEditorState.activeGuidance);
+  });
+  document.querySelectorAll<HTMLElement>("[data-image-editor-guidance-help]").forEach((help) => {
+    help.classList.toggle("hidden", help.dataset.imageEditorGuidanceHelp !== imageEditorState.activeGuidance);
   });
   document.querySelectorAll<HTMLElement>("[data-image-editor-color]").forEach((button) => {
     button.classList.toggle("active", button.dataset.imageEditorColor?.toLowerCase() === imageEditorState.color.toLowerCase());
@@ -1040,8 +1080,8 @@ function drawEditRegionSegment(from: any, to: any, erase = false) {
   if (!ctx) return;
   ctx.save();
   ctx.globalCompositeOperation = erase ? "destination-out" : "source-over";
-  ctx.strokeStyle = "rgba(255, 59, 48, 0.48)";
-  ctx.fillStyle = "rgba(255, 59, 48, 0.48)";
+  ctx.strokeStyle = "rgba(255, 59, 48, 1)";
+  ctx.fillStyle = "rgba(255, 59, 48, 1)";
   ctx.lineWidth = imageEditorState.strokeWidth;
   ctx.lineCap = "round";
   ctx.lineJoin = "round";
@@ -1057,6 +1097,65 @@ function drawEditRegionSegment(from: any, to: any, erase = false) {
   ctx.restore();
 }
 
+function drawEditRegionShape(start: any, end: any, shape: "rectangle" | "ellipse") {
+  const ctx = imageEditorEditRegionContext();
+  if (!ctx) return false;
+  const rect = normalizedRect(start, end);
+  if (!rect) return false;
+  ctx.save();
+  ctx.globalCompositeOperation = "source-over";
+  ctx.fillStyle = "rgba(255, 59, 48, 1)";
+  ctx.beginPath();
+  if (shape === "ellipse") {
+    ctx.ellipse(
+      rect.left + rect.width / 2,
+      rect.top + rect.height / 2,
+      rect.width / 2,
+      rect.height / 2,
+      0,
+      0,
+      Math.PI * 2,
+    );
+  } else {
+    ctx.rect(rect.left, rect.top, rect.width, rect.height);
+  }
+  ctx.fill();
+  ctx.restore();
+  return true;
+}
+
+function previewEditRegionShape(start: any, end: any, shape: "rectangle" | "ellipse") {
+  const layer = imageEditorState.konvaLayer;
+  if (!layer) return;
+  const rect = normalizedRect(start, end);
+  clearImageEditorPreview();
+  if (!rect) return;
+  const attrs = {
+    x: rect.left,
+    y: rect.top,
+    width: rect.width,
+    height: rect.height,
+    fill: "rgba(255, 255, 255, 0.18)",
+    stroke: "rgba(255, 255, 255, 0.96)",
+    strokeWidth: Math.max(2, 2 / Math.max(0.1, imageEditorState.displayScale)),
+    dash: [10, 7],
+    listening: false,
+    name: "image-editor-mask-shape-preview",
+  };
+  imageEditorState.previewNode = shape === "ellipse"
+    ? new Konva.Ellipse({
+      ...attrs,
+      x: rect.left + rect.width / 2,
+      y: rect.top + rect.height / 2,
+      radiusX: rect.width / 2,
+      radiusY: rect.height / 2,
+    })
+    : new Konva.Rect(attrs);
+  layer.add(imageEditorState.previewNode);
+  imageEditorState.previewNode.moveToTop?.();
+  layer.batchDraw?.();
+}
+
 function clearEditRegion() {
   const canvas = imageEditorState.editRegionCanvas;
   const ctx = imageEditorEditRegionContext();
@@ -1067,12 +1166,16 @@ function clearEditRegion() {
   renderImageEditor();
 }
 
-function isEditRegionTool(tool = imageEditorState.tool) {
-  return tool === "mask-paint" || tool === "mask-erase";
+function isEditRegionBrushTool(tool = imageEditorState.tool) {
+  return tool === "mask-erase" || tool === "mask-restore";
 }
 
-function isEditRegionEraseTool(tool = imageEditorState.tool) {
-  return tool === "mask-erase";
+function isEditRegionRestoreTool(tool = imageEditorState.tool) {
+  return tool === "mask-restore";
+}
+
+function isEditRegionShapeTool(tool = imageEditorState.tool) {
+  return tool === "mask-rectangle" || tool === "mask-ellipse";
 }
 
 function imageEditorArrowGeometry(start: any, end: any) {
@@ -1239,9 +1342,9 @@ function handleImageEditorPointerDown(event: any) {
   if (imageEditorState.tool === "select") return;
   event.preventDefault?.();
   const point = imageEditorPoint(event);
-  if (isEditRegionTool()) {
+  if (isEditRegionBrushTool()) {
     const captureTarget = captureImageEditorPointer(event);
-    drawEditRegionSegment(point, point, isEditRegionEraseTool());
+    drawEditRegionSegment(point, point, isEditRegionRestoreTool());
     imageEditorState.drawing = {
       pointerId: event.pointerId,
       captureTarget,
@@ -1250,6 +1353,22 @@ function handleImageEditorPointerDown(event: any) {
       points: [point],
     };
     renderImageEditor();
+    return;
+  }
+  if (isEditRegionShapeTool()) {
+    const captureTarget = captureImageEditorPointer(event);
+    imageEditorState.drawing = {
+      pointerId: event.pointerId,
+      captureTarget,
+      start: point,
+      last: point,
+      points: [point],
+    };
+    previewEditRegionShape(
+      point,
+      point,
+      imageEditorState.tool === "mask-ellipse" ? "ellipse" : "rectangle",
+    );
     return;
   }
   if (imageEditorState.tool === "fill") {
@@ -1302,10 +1421,19 @@ function handleImageEditorPointerMove(event: any) {
   if (drawing.pointerId !== undefined && event.pointerId !== undefined && drawing.pointerId !== event.pointerId) return;
   event.preventDefault?.();
   const point = imageEditorPoint(event);
-  if (isEditRegionTool()) {
-    drawEditRegionSegment(drawing.last, point, isEditRegionEraseTool());
+  if (isEditRegionBrushTool()) {
+    drawEditRegionSegment(drawing.last, point, isEditRegionRestoreTool());
     drawing.last = point;
     renderImageEditor();
+    return;
+  }
+  if (isEditRegionShapeTool()) {
+    previewEditRegionShape(
+      drawing.start,
+      point,
+      imageEditorState.tool === "mask-ellipse" ? "ellipse" : "rectangle",
+    );
+    drawing.last = point;
     return;
   }
   if (imageEditorState.tool === "eraser") {
@@ -1343,10 +1471,21 @@ function handleImageEditorPointerUp(event: any) {
   event.preventDefault?.();
   const point = imageEditorPoint(event);
   releaseImageEditorPointer(event, drawing.captureTarget);
-  if (isEditRegionTool()) {
-    drawEditRegionSegment(drawing.last, point, isEditRegionEraseTool());
+  if (isEditRegionBrushTool()) {
+    drawEditRegionSegment(drawing.last, point, isEditRegionRestoreTool());
     pushImageEditorHistory();
     setImageEditorStatus("");
+  } else if (isEditRegionShapeTool()) {
+    const changed = drawEditRegionShape(
+      drawing.start,
+      point,
+      imageEditorState.tool === "mask-ellipse" ? "ellipse" : "rectangle",
+    );
+    clearImageEditorPreview();
+    if (changed) {
+      pushImageEditorHistory();
+      setImageEditorStatus("");
+    }
   } else if (imageEditorState.tool === "eraser") {
     drawing.points.push(point);
     const layer = selectedImageEditorLayer();
@@ -1383,8 +1522,10 @@ function handleImageEditorPointerCancel(event: any) {
   if (!drawing) return;
   if (drawing.pointerId !== undefined && event.pointerId !== undefined && drawing.pointerId !== event.pointerId) return;
   releaseImageEditorPointer(event, drawing.captureTarget);
-  if (isEditRegionTool()) {
+  if (isEditRegionBrushTool()) {
     pushImageEditorHistory();
+  } else if (isEditRegionShapeTool()) {
+    clearImageEditorPreview();
   } else if (imageEditorState.tool === "brush") {
     pushImageEditorHistory();
   } else if (imageEditorState.tool === "eraser") {
@@ -1798,7 +1939,7 @@ async function openImageEditor(index: any) {
   imageEditorState.activeGuidance = imageEditorState.canUseEditRegion && source.activeGuidance === "edit-region"
     ? "edit-region"
     : "instruction-marks";
-  imageEditorState.tool = imageEditorState.activeGuidance === "edit-region" ? "mask-paint" : "crop";
+  imageEditorState.tool = imageEditorState.activeGuidance === "edit-region" ? "mask-erase" : "crop";
   imageEditorState.color = els.imageEditorColor?.value || "#ff3b30";
   imageEditorState.strokeWidth = Number(els.imageEditorStroke?.value || 8);
   imageEditorState.hasInstructionMarks = false;
@@ -1845,6 +1986,7 @@ function closeImageEditor() {
   imageEditorState.brushBoundaryCanvas = null;
   imageEditorState.brushOverlayCanvas = null;
   imageEditorState.editRegionCanvas = null;
+  imageEditorState.editRegionPreviewCanvas = null;
   imageEditorState.layers = [];
   imageEditorState.selectedLayerId = null;
   imageEditorState.crop = null;
@@ -1862,7 +2004,7 @@ function closeImageEditor() {
 }
 
 function setImageEditorTool(tool: any) {
-  if (!["select", "brush", "arrow", "crop", "fill", "eraser", "mask-paint", "mask-erase"].includes(tool)) return;
+  if (!["select", "brush", "arrow", "crop", "fill", "eraser", "mask-erase", "mask-restore", "mask-rectangle", "mask-ellipse"].includes(tool)) return;
   imageEditorState.tool = tool;
   imageEditorState.drawing = null;
   clearImageEditorPreview();
@@ -1874,7 +2016,7 @@ function setImageEditorGuidance(guidance: any) {
   if (guidance !== "instruction-marks" && guidance !== "edit-region") return;
   if (guidance === "edit-region" && !imageEditorState.canUseEditRegion) return;
   imageEditorState.activeGuidance = guidance;
-  imageEditorState.tool = guidance === "edit-region" ? "mask-paint" : "brush";
+  imageEditorState.tool = guidance === "edit-region" ? "mask-erase" : "brush";
   imageEditorState.drawing = null;
   clearImageEditorPreview();
   setImageEditorStatus("");
@@ -1907,7 +2049,7 @@ async function resetImageEdit() {
       || imageEditorState.originalFile !== file
     ) return;
     imageEditorState.image = image;
-    imageEditorState.tool = "crop";
+    imageEditorState.tool = imageEditorState.activeGuidance === "edit-region" ? "mask-erase" : "crop";
     initializeImageEditorCanvases(image);
     renderImageEditor();
     setImageEditorStatus(translate("imageEditor.resetDone"));

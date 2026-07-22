@@ -968,5 +968,5 @@ export const KO_DICTIONARY: TranslationDictionary = {
     "history.referenceFiles": "참조 파일",
     "history.downloadReferenceFile": "파일 다운로드",
     "history.readdReferenceFile": "다시 추가",
-    "imageEditor.guidance": "편집 안내", "imageEditor.instructionMarksGuidance": "지시 표시", "imageEditor.editRegionGuidance": "편집 영역", "imageEditor.maskTools": "마스크 도구", "imageEditor.maskPaint": "그리기", "imageEditor.maskErase": "지우기", "imageEditor.maskClear": "모두 지우기", "imageEditor.emptyEditRegion": "저장하기 전에 편집 영역을 그리세요.", "imageInput.instructionMarksApplied": "지시 표시 적용됨", "imageInput.editRegionApplied": "편집 영역 적용됨"
+    "imageEditor.guidance": "편집 안내", "imageEditor.instructionMarksGuidance": "지시 표시", "imageEditor.editRegionGuidance": "마스크", "imageEditor.maskTools": "마스크 도구", "imageEditor.maskPaint": "그리기", "imageEditor.maskErase": "지우개 브러시", "imageEditor.maskRectangle": "사각형", "imageEditor.maskEllipse": "원형", "imageEditor.maskRestore": "마스크 복원", "imageEditor.maskClear": "마스크 재설정", "imageEditor.maskHelp": "파란 마스크 영역은 유지됩니다. 브러시, 사각형 또는 원형으로 지운 투명 영역이 편집됩니다.", "imageEditor.emptyEditRegion": "저장하기 전에 마스크에서 투명한 편집 영역을 지우세요.", "imageInput.instructionMarksApplied": "지시 표시 적용됨", "imageInput.editRegionApplied": "편집 영역 적용됨"
 };

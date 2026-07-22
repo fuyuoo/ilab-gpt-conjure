@@ -598,6 +598,34 @@ class EditingGuidanceStateTests(unittest.TestCase):
             },
         )
 
+    def test_mask_preview_covers_preserved_pixels_and_reveals_edit_region(self) -> None:
+        result = self._run_module_probe(
+            """
+            const {
+              editMaskPreviewAlpha,
+              materializeEditMaskPixels,
+            } = require(process.argv[1]);
+            const editRegion = new Uint8ClampedArray([
+              255, 59, 48, 0,
+              255, 59, 48, 255,
+            ]);
+            process.stdout.write(JSON.stringify({
+              previewAlpha: [editMaskPreviewAlpha(0), editMaskPreviewAlpha(255)],
+              submittedMaskAlpha: Array.from(materializeEditMaskPixels(2, 1, editRegion))
+                .filter((_, index) => index % 4 === 3),
+            }));
+            """,
+            "codex_image/webui/frontend/src/edit-region-materialization.ts",
+        )
+
+        self.assertEqual(
+            result,
+            {
+                "previewAlpha": [122, 0],
+                "submittedMaskAlpha": [255, 0],
+            },
+        )
+
 
 if __name__ == "__main__":
     unittest.main()

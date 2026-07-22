@@ -41,6 +41,7 @@ export interface ImageEditorState {
   brushBoundaryCanvas: HTMLCanvasElement | null;
   brushOverlayCanvas: HTMLCanvasElement | null;
   editRegionCanvas: HTMLCanvasElement | null;
+  editRegionPreviewCanvas: HTMLCanvasElement | null;
   konvaStage: any;
   konvaLayer: any;
   konvaTransformer: any;

@@ -978,5 +978,5 @@ export const ZH_HK_DICTIONARY: TranslationDictionary = {
     "history.referenceFiles": "參考檔案",
     "history.downloadReferenceFile": "下載檔案",
     "history.readdReferenceFile": "重新加入",
-    "imageEditor.guidance": "編輯指引", "imageEditor.instructionMarksGuidance": "指令標記", "imageEditor.editRegionGuidance": "編輯區域", "imageEditor.maskTools": "遮罩工具", "imageEditor.maskPaint": "繪畫", "imageEditor.maskErase": "擦除", "imageEditor.maskClear": "清除", "imageEditor.emptyEditRegion": "請先繪畫非空編輯區域再儲存。", "imageInput.instructionMarksApplied": "指令標記已套用", "imageInput.editRegionApplied": "編輯區域已套用"
+    "imageEditor.guidance": "編輯指引", "imageEditor.instructionMarksGuidance": "指令標記", "imageEditor.editRegionGuidance": "遮罩", "imageEditor.maskTools": "遮罩工具", "imageEditor.maskPaint": "繪畫", "imageEditor.maskErase": "擦除畫筆", "imageEditor.maskRectangle": "矩形", "imageEditor.maskEllipse": "圓形", "imageEditor.maskRestore": "恢復遮罩", "imageEditor.maskClear": "重設遮罩", "imageEditor.maskHelp": "藍色遮罩覆蓋的區域會保留；用擦除畫筆、矩形或圓形挖出的透明區域會被修改。", "imageEditor.emptyEditRegion": "請先從遮罩中擦出一個需要修改的透明區域。", "imageInput.instructionMarksApplied": "指令標記已套用", "imageInput.editRegionApplied": "編輯區域已套用"
 };

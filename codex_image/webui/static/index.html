@@ -1247,6 +1247,7 @@
           <button class="ghost-button text-sm active" type="button" role="radio" aria-checked="true" data-image-editor-guidance="instruction-marks" data-i18n="imageEditor.instructionMarksGuidance">标注</button>
           <button class="ghost-button text-sm" type="button" role="radio" aria-checked="false" data-image-editor-guidance="edit-region" data-i18n="imageEditor.editRegionGuidance">遮罩</button>
         </div>
+        <p class="image-editor-guidance-help hidden" data-image-editor-guidance-help="edit-region" data-i18n="imageEditor.maskHelp">蓝色遮罩覆盖的区域会保留；用擦除画笔、矩形或圆形挖出的透明区域会被修改。</p>
         <div class="image-editor-toolbar" aria-label="图片编辑工具栏" data-i18n-attr="aria-label:imageEditor.toolbar">
           <div class="image-editor-tool-group" data-image-editor-guidance-tools="instruction-marks" aria-label="工具" data-i18n-attr="aria-label:imageEditor.tools">
             <button id="imageEditorToolSelect" class="ghost-button text-sm image-editor-tool" type="button" data-image-editor-tool="select">
@@ -1300,9 +1301,11 @@
             </button>
           </div>
           <div class="image-editor-tool-group hidden" data-image-editor-guidance-tools="edit-region" aria-label="遮罩工具" data-i18n-attr="aria-label:imageEditor.maskTools">
-            <button id="imageEditorMaskPaint" class="ghost-button text-sm image-editor-tool" type="button" data-image-editor-tool="mask-paint" data-i18n="imageEditor.maskPaint">绘制</button>
-            <button id="imageEditorMaskErase" class="ghost-button text-sm image-editor-tool" type="button" data-image-editor-tool="mask-erase" data-i18n="imageEditor.maskErase">擦除</button>
-            <button id="imageEditorMaskClear" class="ghost-button text-sm" type="button" data-i18n="imageEditor.maskClear">清空</button>
+            <button id="imageEditorMaskErase" class="ghost-button text-sm image-editor-tool" type="button" data-image-editor-tool="mask-erase" data-i18n="imageEditor.maskErase">擦除画笔</button>
+            <button id="imageEditorMaskRectangle" class="ghost-button text-sm image-editor-tool" type="button" data-image-editor-tool="mask-rectangle" data-i18n="imageEditor.maskRectangle">矩形</button>
+            <button id="imageEditorMaskEllipse" class="ghost-button text-sm image-editor-tool" type="button" data-image-editor-tool="mask-ellipse" data-i18n="imageEditor.maskEllipse">圆形</button>
+            <button id="imageEditorMaskRestore" class="ghost-button text-sm image-editor-tool" type="button" data-image-editor-tool="mask-restore" data-i18n="imageEditor.maskRestore">恢复遮罩</button>
+            <button id="imageEditorMaskClear" class="ghost-button text-sm" type="button" data-i18n="imageEditor.maskClear">重置遮罩</button>
           </div>
           <div class="image-editor-tool-group" data-image-editor-guidance-tools="instruction-marks" aria-label="颜色" data-i18n-attr="aria-label:imageEditor.colors">
             <button class="image-editor-swatch active" type="button" data-image-editor-color="#ff3b30" aria-label="红色" data-i18n-attr="aria-label:imageEditor.red"></button>

@@ -230,6 +230,17 @@
   background: var(--primary);
 }
 
+.image-editor-guidance-help {
+  margin: -4px 2px 0;
+  padding: 9px 12px;
+  border: 1px solid color-mix(in srgb, #2f6fe4 28%, var(--line));
+  border-radius: 10px;
+  color: var(--text-secondary);
+  background: color-mix(in srgb, #2f6fe4 8%, var(--surface));
+  font-size: 13px;
+  line-height: 1.5;
+}
+
 .image-editor-toolbar {
   display: flex;
   flex-wrap: wrap;
