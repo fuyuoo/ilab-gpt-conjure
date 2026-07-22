@@ -49,6 +49,7 @@ class WebUIStaticI18nTests(WebUIStaticTestCase):
             "editPreflight.aspectMismatch",
             "editPreflight.maskDimensionsMismatch",
             "editPreflight.emptyEditArea",
+            "editPreflight.maskInactive",
             "editPreflight.inspectionFailed",
             "editPreflight.blocked",
         )

@@ -10,6 +10,7 @@ export const HI_DICTIONARY: TranslationDictionary = {
     "editPreflight.aspectMismatch": "स्रोत अनुपात लगभग {sourceRatio} है और आउटपुट {outputRatio}; क्रॉपिंग या व्यापक पुनर्निर्माण हो सकता है",
     "editPreflight.maskDimensionsMismatch": "मास्क आकार {maskWidth}×{maskHeight}, छवि आकार {width}×{height} से मेल नहीं खाता; एडिटर फिर खोलकर मास्क सहेजें",
     "editPreflight.emptyEditArea": "मास्क में कोई पारदर्शी संपादन क्षेत्र नहीं है; पहले वह क्षेत्र मिटाएँ जिसे बदलना है",
+    "editPreflight.maskInactive": "कोई संपादन क्षेत्र सक्रिय नहीं है; मॉडल पूरी मुख्य संपादन छवि बदल सकता है",
     "editPreflight.inspectionFailed": "मास्क की पूर्व-जाँच जानकारी पढ़ी नहीं जा सकी; सबमिट करते समय सर्वर फिर भी जाँच करेगा",
     "editPreflight.blocked": "आगे बढ़ने से पहले पूर्व-जाँच की त्रुटियाँ ठीक करें",
     "app.newTask": "नया",

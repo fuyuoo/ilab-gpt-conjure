@@ -10,6 +10,7 @@ export const EN_DICTIONARY: TranslationDictionary = {
     "editPreflight.aspectMismatch": "The source ratio is about {sourceRatio}, while output is {outputRatio}; cropping or broader reconstruction may occur",
     "editPreflight.maskDimensionsMismatch": "Mask size {maskWidth}×{maskHeight} does not match image size {width}×{height}; reopen the editor and save the mask again",
     "editPreflight.emptyEditArea": "The mask has no transparent edit area; erase the area you want to change first",
+    "editPreflight.maskInactive": "No edit region is active; the model may modify the entire Primary Edit Image",
     "editPreflight.inspectionFailed": "Mask preflight details could not be read; the server will still validate on submission",
     "editPreflight.blocked": "Resolve the pre-submit errors before continuing",
     "app.newTask": "New",

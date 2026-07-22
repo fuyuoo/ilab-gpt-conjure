@@ -43,6 +43,7 @@ let lastRenderedResult: EditRequestPreflightResult = { issues: [] };
 const ISSUE_TRANSLATION_KEYS: Record<string, string> = {
   mask_dimensions_mismatch: "editPreflight.maskDimensionsMismatch",
   empty_edit_area: "editPreflight.emptyEditArea",
+  mask_inactive: "editPreflight.maskInactive",
   primary: "editPreflight.primary",
   responses_resize: "editPreflight.responsesResize",
   edit_area: "editPreflight.editArea",
@@ -91,7 +92,8 @@ function formattedPercentage(editablePixels: number, totalPixels: number): strin
 }
 
 export function evaluateEditRequestPreflight(input: EditRequestPreflightInput): EditRequestPreflightResult {
-  if (input.mode !== "edit" || !input.hasMask) return { issues: [] };
+  if (input.mode !== "edit") return { issues: [] };
+  if (!input.hasMask) return { issues: [{ code: "mask_inactive", level: "info" }] };
   const width = positiveInteger(input.primaryWidth);
   const height = positiveInteger(input.primaryHeight);
   const totalPixels = positiveInteger(input.totalPixels);
@@ -189,8 +191,24 @@ async function inspectCurrentEditRequest(request: any): Promise<EditRequestPrefl
   const primary: any = state.images[0];
   const maskFile = primary?.activeGuidance === "edit-region" ? primary.editMaskFile : null;
   const primaryFile = primary?.baseFile || primary?.originalFile || primary?.file;
-  if (state.mode !== "edit" || !(maskFile instanceof File) || !(primaryFile instanceof File)) {
+  if (state.mode !== "edit" || !primary) {
     return { issues: [] };
+  }
+  if (!(maskFile instanceof File)) {
+    return evaluateEditRequestPreflight({
+      mode: state.mode,
+      hasMask: false,
+      usesResponses: requestUsesResponses(request),
+      primaryName: primary.name || primaryFile?.name || "",
+      primaryWidth: 0,
+      primaryHeight: 0,
+      outputSize: String(request?.size || ""),
+      editablePixels: 0,
+      totalPixels: 0,
+    });
+  }
+  if (!(primaryFile instanceof File)) {
+    return { issues: [{ code: "inspection_failed", level: "warning" }] };
   }
   try {
     const [primaryMetrics, editMaskMetrics] = await Promise.all([
@@ -219,6 +237,7 @@ function setEditRequestPreflightOpen(open: boolean): void {
   const { els } = getLegacyBridge();
   els.editPreflightList?.classList.toggle("hidden", !open);
   els.editPreflightToggle?.setAttribute("aria-expanded", String(open));
+  els.editPreflight?.closest(".prompt-panel")?.classList.toggle("edit-preflight-open", open);
 }
 
 function renderEditRequestPreflight(result: EditRequestPreflightResult): void {

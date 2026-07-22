@@ -86,7 +86,7 @@ class WebUIPWATests(unittest.TestCase):
         self.assertTrue(worker_path.exists())
         source = worker_path.read_text(encoding="utf-8")
 
-        self.assertIn('const CACHE_NAME = "ilab-gpt-conjure-shell-v56";', source)
+        self.assertIn('const CACHE_NAME = "ilab-gpt-conjure-shell-v57";', source)
         self.assertIn('"/"', source)
         self.assertIn('"/history"', source)
         self.assertIn('"/manifest.webmanifest"', source)
@@ -106,11 +106,11 @@ class WebUIPWATests(unittest.TestCase):
         history_html = Path("codex_image/webui/static/history.html").read_text(encoding="utf-8")
         worker = Path("codex_image/webui/static/service-worker.js").read_text(encoding="utf-8")
 
-        self.assertIn('/static/styles.css?v=runtime-572', index_html)
-        self.assertIn('/static/app.js?v=runtime-572', index_html)
-        self.assertIn('/static/styles.css?v=runtime-572', history_html)
+        self.assertIn('/static/styles.css?v=runtime-573', index_html)
+        self.assertIn('/static/app.js?v=runtime-573', index_html)
+        self.assertIn('/static/styles.css?v=runtime-573', history_html)
         self.assertIn('/static/history.js?v=history-70', history_html)
-        self.assertIn('ilab-gpt-conjure-shell-v56', worker)
+        self.assertIn('ilab-gpt-conjure-shell-v57', worker)
 
         shell_fetch = worker[worker.index('if (!APP_SHELL_PATHS.has(requestUrl.pathname)) return;'):]
         self.assertLess(

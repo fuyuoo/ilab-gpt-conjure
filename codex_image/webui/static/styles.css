@@ -5681,6 +5681,10 @@ svg.button-icon {
   display: none;
 }
 
+.controls-col .prompt-panel.edit-preflight-open {
+  overflow: visible;
+}
+
 .edit-preflight-item {
   display: grid;
   grid-template-columns: 18px minmax(0, 1fr);

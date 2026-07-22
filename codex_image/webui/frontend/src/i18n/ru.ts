@@ -10,6 +10,7 @@ export const RU_DICTIONARY: TranslationDictionary = {
     "editPreflight.aspectMismatch": "Соотношение сторон исходника около {sourceRatio}, а результата — {outputRatio}; возможны обрезка или общая перестройка",
     "editPreflight.maskDimensionsMismatch": "Размер маски {maskWidth}×{maskHeight} не совпадает с размером изображения {width}×{height}; снова откройте редактор и сохраните маску",
     "editPreflight.emptyEditArea": "В маске нет прозрачной области редактирования; сначала сотрите область, которую нужно изменить",
+    "editPreflight.maskInactive": "Область редактирования не задана; модель может изменить всё основное изображение",
     "editPreflight.inspectionFailed": "Не удалось прочитать данные предварительной проверки маски; сервер всё равно проверит её при отправке",
     "editPreflight.blocked": "Устраните ошибки предварительной проверки, прежде чем продолжить",
     "app.newTask": "Новый",

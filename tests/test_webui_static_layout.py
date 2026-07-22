@@ -199,8 +199,8 @@ class WebUIStaticLayoutTests(WebUIStaticTestCase):
         script = self._frontend_script_source()
         styles = Path("codex_image/webui/static/styles.css").read_text(encoding="utf-8")
 
-        self.assertIn('/static/app.js?v=runtime-572', html)
-        self.assertIn('/static/styles.css?v=runtime-572', html)
+        self.assertIn('/static/app.js?v=runtime-573', html)
+        self.assertIn('/static/styles.css?v=runtime-573', html)
         self.assertIn('id="recentAssetDock"', html)
         self.assertRegex(html, r'class="image-input-footer"[\s\S]*id="recentAssetDock"[\s\S]*id="recentAssetList"')
         self.assertRegex(html, r'id="recentAssetDock"[\s\S]*id="quickGalleryDock"[\s\S]*id="galleryManagePanel"')
@@ -1137,6 +1137,13 @@ class WebUIStaticLayoutTests(WebUIStaticTestCase):
         self.assertIn("evaluateEditRequestPreflight", preflight_source)
         self.assertIn('code: "mask_dimensions_mismatch"', preflight_source)
         self.assertIn('code: "empty_edit_area"', preflight_source)
+        self.assertIn('code: "mask_inactive"', preflight_source)
+        self.assertIn('if (state.mode !== "edit" || !primary)', preflight_source)
+        self.assertIn('classList.toggle("edit-preflight-open", open)', preflight_source)
+        self.assertRegex(
+            styles,
+            r"\.controls-col \.prompt-panel\.edit-preflight-open\s*\{[^}]*overflow:\s*visible;",
+        )
         self.assertIn('legacyMethod("updateEditRequestPreflight", request)', output_controls_source)
         self.assertIn('translate("imageInput.editRegionApplied")', image_strip_source)
         self.assertIn('translate("imageInput.instructionMarksApplied")', image_strip_source)
@@ -3177,8 +3184,8 @@ class WebUIStaticLayoutTests(WebUIStaticTestCase):
         script = self._frontend_script_source()
         styles = Path("codex_image/webui/static/styles.css").read_text(encoding="utf-8")
 
-        self.assertIn('/static/app.js?v=runtime-572', html)
-        self.assertIn('/static/styles.css?v=runtime-572', html)
+        self.assertIn('/static/app.js?v=runtime-573', html)
+        self.assertIn('/static/styles.css?v=runtime-573', html)
         self.assertIn('id="pasteClipboardButton"', html)
         self.assertIn('id="statusText"', html)
         self.assertRegex(
@@ -3626,8 +3633,8 @@ class WebUIStaticLayoutTests(WebUIStaticTestCase):
         script = self._frontend_script_source()
         styles = Path("codex_image/webui/static/styles.css").read_text(encoding="utf-8")
 
-        self.assertIn("/static/app.js?v=runtime-572", html)
-        self.assertIn("/static/styles.css?v=runtime-572", html)
+        self.assertIn("/static/app.js?v=runtime-573", html)
+        self.assertIn("/static/styles.css?v=runtime-573", html)
         self.assertIn('const THEME_STORAGE_KEY = "codex-image-theme-preference";', script)
         self.assertIn('themePreference: "system"', script)
         self.assertIn('call(methods, "restoreThemePreference")', script)

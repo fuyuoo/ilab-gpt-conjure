@@ -10,6 +10,7 @@ export const JA_DICTIONARY: TranslationDictionary = {
     "editPreflight.aspectMismatch": "元画像の比率は約 {sourceRatio}、出力は {outputRatio} です。切り抜きや全体的な再構成が発生する可能性があります",
     "editPreflight.maskDimensionsMismatch": "マスクサイズ {maskWidth}×{maskHeight} が画像サイズ {width}×{height} と一致しません。エディターを開き直して保存してください",
     "editPreflight.emptyEditArea": "マスクに透明な編集領域がありません。変更する領域を先に消去してください",
+    "editPreflight.maskInactive": "編集領域は使用されていません。モデルはメイン編集画像全体を変更できます",
     "editPreflight.inspectionFailed": "マスクの事前チェック情報を読み取れませんでした。送信時にサーバーで検証されます",
     "editPreflight.blocked": "続行する前に送信前チェックのエラーを解決してください",
     "app.newTask": "新規",

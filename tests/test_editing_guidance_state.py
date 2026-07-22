@@ -130,6 +130,7 @@ class EditingGuidanceStateTests(unittest.TestCase):
             process.stdout.write(JSON.stringify({
               small: evaluateEditRequestPreflight({ ...base, editablePixels: 20 }),
               large: evaluateEditRequestPreflight({ ...base, editablePixels: 9500 }),
+              unmasked: evaluateEditRequestPreflight({ ...base, hasMask: false }),
               inactive: evaluateEditRequestPreflight({ ...base, mode: "generate" }),
             }));
             """,
@@ -138,6 +139,7 @@ class EditingGuidanceStateTests(unittest.TestCase):
 
         self.assertIn("edit_area_small", [issue["code"] for issue in result["small"]["issues"]])
         self.assertIn("edit_area_large", [issue["code"] for issue in result["large"]["issues"]])
+        self.assertEqual([issue["code"] for issue in result["unmasked"]["issues"]], ["mask_inactive"])
         self.assertEqual(result["inactive"]["issues"], [])
 
     def test_edit_request_preflight_blocks_invalid_or_empty_masks_locally(self) -> None:

@@ -10,6 +10,7 @@ export const KO_DICTIONARY: TranslationDictionary = {
     "editPreflight.aspectMismatch": "원본 비율은 약 {sourceRatio}, 출력은 {outputRatio}이므로 자르기나 전체 재구성이 발생할 수 있습니다",
     "editPreflight.maskDimensionsMismatch": "마스크 크기 {maskWidth}×{maskHeight}가 이미지 크기 {width}×{height}와 다릅니다. 편집기를 다시 열어 마스크를 저장하세요",
     "editPreflight.emptyEditArea": "마스크에 투명한 편집 영역이 없습니다. 먼저 변경할 영역을 지우세요",
+    "editPreflight.maskInactive": "편집 영역을 사용하지 않습니다. 모델이 기본 편집 이미지 전체를 수정할 수 있습니다",
     "editPreflight.inspectionFailed": "마스크 사전 검사 정보를 읽을 수 없습니다. 제출 시 서버에서 다시 검증합니다",
     "editPreflight.blocked": "계속하기 전에 제출 전 검사 오류를 해결하세요",
     "app.newTask": "새로 만들기",

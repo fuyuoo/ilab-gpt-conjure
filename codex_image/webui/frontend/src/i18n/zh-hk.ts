@@ -10,6 +10,7 @@ export const ZH_HK_DICTIONARY: TranslationDictionary = {
     "editPreflight.aspectMismatch": "原圖比例約為 {sourceRatio}，輸出為 {outputRatio}，可能出現裁切或整體重構",
     "editPreflight.maskDimensionsMismatch": "遮罩尺寸 {maskWidth}×{maskHeight} 與原圖 {width}×{height} 不一致，請重新開啟編輯器並儲存遮罩",
     "editPreflight.emptyEditArea": "遮罩沒有透明編輯區域，請先擦出要修改的區域",
+    "editPreflight.maskInactive": "目前未使用編輯區域，模型可修改整張主要編輯圖片",
     "editPreflight.inspectionFailed": "無法讀取遮罩預檢資料；提交時仍會由伺服器驗證",
     "editPreflight.blocked": "請先處理提交前檢查中的錯誤",
     "app.newTask": "新增",

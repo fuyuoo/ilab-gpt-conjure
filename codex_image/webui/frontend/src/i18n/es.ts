@@ -10,6 +10,7 @@ export const ES_DICTIONARY: TranslationDictionary = {
     "editPreflight.aspectMismatch": "La proporción original es aproximadamente {sourceRatio} y la salida es {outputRatio}; puede haber recorte o reconstrucción general",
     "editPreflight.maskDimensionsMismatch": "El tamaño de la máscara {maskWidth}×{maskHeight} no coincide con la imagen {width}×{height}; vuelve a abrir el editor y guarda la máscara",
     "editPreflight.emptyEditArea": "La máscara no tiene un área transparente de edición; borra primero la zona que quieras cambiar",
+    "editPreflight.maskInactive": "No hay una zona de edición activa; el modelo puede modificar toda la imagen principal",
     "editPreflight.inspectionFailed": "No se pudo leer la comprobación de la máscara; el servidor la validará al enviarla",
     "editPreflight.blocked": "Resuelve los errores de la comprobación previa antes de continuar",
     "app.newTask": "Nuevo",

@@ -10,6 +10,7 @@ export const DE_DICTIONARY: TranslationDictionary = {
     "editPreflight.aspectMismatch": "Das Quellformat ist etwa {sourceRatio}, die Ausgabe {outputRatio}; es kann zu Beschnitt oder umfassender Rekonstruktion kommen",
     "editPreflight.maskDimensionsMismatch": "Die Maskengröße {maskWidth}×{maskHeight} entspricht nicht der Bildgröße {width}×{height}; öffnen Sie den Editor erneut und speichern Sie die Maske",
     "editPreflight.emptyEditArea": "Die Maske enthält keinen transparenten Bearbeitungsbereich; löschen Sie zuerst den zu ändernden Bereich",
+    "editPreflight.maskInactive": "Kein Bearbeitungsbereich ist aktiv; das Modell kann das gesamte primäre Bild ändern",
     "editPreflight.inspectionFailed": "Die Maskendaten konnten nicht vorab geprüft werden; der Server prüft sie beim Senden weiterhin",
     "editPreflight.blocked": "Beheben Sie vor dem Fortfahren die Fehler der Vorabprüfung",
     "app.newTask": "Neu",
