@@ -2,7 +2,7 @@
   // codex_image/webui/frontend/src/i18n/en.ts
   var EN_DICTIONARY = {
     "editPreflight.title": "Pre-submit check",
-    "editPreflight.primary": "The mask applies only to the first Primary Edit Image: {name}",
+    "editPreflight.primary": "The mask applies only to the first Primary Edit Image: {name}; the image, mask, and output are locked to one PNG canvas on submit",
     "editPreflight.responsesResize": "Responses will resize {width}\xD7{height} to {targetWidth}\xD7{targetHeight} before submission",
     "editPreflight.editArea": "Transparent edit area: {percent}%",
     "editPreflight.editAreaSmall": "The edit area is very small, so the model may not make a visible change",
@@ -9982,7 +9982,7 @@
   // codex_image/webui/frontend/src/i18n/zh-cn.ts
   var ZH_CN_DICTIONARY = {
     "editPreflight.title": "\u63D0\u4EA4\u524D\u68C0\u67E5",
-    "editPreflight.primary": "\u906E\u7F69\u53EA\u4F5C\u7528\u4E8E\u7B2C\u4E00\u5F20\u4E3B\u7F16\u8F91\u56FE\uFF1A{name}",
+    "editPreflight.primary": "\u906E\u7F69\u53EA\u4F5C\u7528\u4E8E\u7B2C\u4E00\u5F20\u4E3B\u7F16\u8F91\u56FE\uFF1A{name}\uFF1B\u63D0\u4EA4\u65F6\u539F\u56FE\u3001\u906E\u7F69\u548C\u8F93\u51FA\u4F1A\u9501\u5B9A\u4E3A\u540C\u4E00 PNG \u753B\u5E03",
     "editPreflight.responsesResize": "Responses \u63D0\u4EA4\u65F6\u4F1A\u5C06 {width}\xD7{height} \u7F29\u653E\u4E3A {targetWidth}\xD7{targetHeight}",
     "editPreflight.editArea": "\u900F\u660E\u7F16\u8F91\u533A\u57DF\u5360 {percent}%",
     "editPreflight.editAreaSmall": "\u7F16\u8F91\u533A\u57DF\u5F88\u5C0F\uFF0C\u6A21\u578B\u53EF\u80FD\u65E0\u6CD5\u660E\u663E\u4FEE\u6539",

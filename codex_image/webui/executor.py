@@ -20,9 +20,11 @@ from .executor_inputs import (
     _task_cancel_requested,
 )
 from .edit_mask import (
+    RESPONSES_EDIT_MASK_MAX_EDGE,
     EditMaskContractError,
+    aligned_edit_mask_canvas_size,
     is_explicit_edit_mask_rejection,
-    normalize_responses_edit_mask_data_urls,
+    normalize_edit_mask_data_urls,
     validate_edit_mask_data_urls,
 )
 from .executor_progress import _restore_completed_output_progress
@@ -175,8 +177,19 @@ async def _execute_stored_task(
         if not data_urls:
             raise EditMaskContractError("edit_primary_image_missing", "The Primary Edit Image is no longer available.")
         validate_edit_mask_data_urls(mask_data_url, data_urls[0])
-        if effective_api_mode == "responses":
-            data_urls[0], mask_data_url = normalize_responses_edit_mask_data_urls(data_urls[0], mask_data_url)
+        mask_canvas_size = aligned_edit_mask_canvas_size(
+            data_urls[0],
+            requested_size=str(params.get("size") or ""),
+            model=str(params.get("model") or "gpt-image-2"),
+            max_edge=RESPONSES_EDIT_MASK_MAX_EDGE if effective_api_mode == "responses" else None,
+        )
+        params["size"] = f"{mask_canvas_size[0]}x{mask_canvas_size[1]}"
+        params["edit_mask_canvas_locked"] = True
+        data_urls[0], mask_data_url = normalize_edit_mask_data_urls(
+            data_urls[0],
+            mask_data_url,
+            target_size=mask_canvas_size,
+        )
     count = int(params.get("n") or 1)
     debug_sse_path = _debug_sse_path(storage, task_id)
     image_request_timeout_seconds = _image_request_timeout_seconds()

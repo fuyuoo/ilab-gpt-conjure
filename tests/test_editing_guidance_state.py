@@ -78,7 +78,7 @@ class EditingGuidanceStateTests(unittest.TestCase):
         )
         self.assertEqual(result["recovery"]["version"], 1)
 
-    def test_edit_request_preflight_reports_resize_area_primary_and_aspect_before_submit(self) -> None:
+    def test_edit_request_preflight_reports_locked_primary_and_area_before_submit(self) -> None:
         result = self._run_module_probe(
             """
             const { evaluateEditRequestPreflight } = require(process.argv[1]);
@@ -100,18 +100,10 @@ class EditingGuidanceStateTests(unittest.TestCase):
 
         self.assertEqual(
             [issue["code"] for issue in result["issues"]],
-            ["primary", "responses_resize", "edit_area", "aspect_mismatch"],
+            ["primary", "edit_area"],
         )
         self.assertEqual(result["issues"][0]["values"]["name"], "poster.png")
-        self.assertEqual(
-            result["issues"][1]["values"],
-            {"width": 1080, "height": 2100, "targetWidth": 1053, "targetHeight": 2048},
-        )
-        self.assertEqual(result["issues"][2]["values"]["percent"], "1.82")
-        self.assertEqual(
-            result["issues"][3]["values"],
-            {"sourceRatio": "18:35", "outputRatio": "1:1"},
-        )
+        self.assertEqual(result["issues"][1]["values"]["percent"], "1.82")
 
     def test_edit_request_preflight_classifies_small_and_large_edit_regions_as_warnings(self) -> None:
         result = self._run_module_probe(

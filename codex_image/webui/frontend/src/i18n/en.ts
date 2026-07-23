@@ -2,7 +2,7 @@ import type { TranslationDictionary } from "./types";
 
 export const EN_DICTIONARY: TranslationDictionary = {
     "editPreflight.title": "Pre-submit check",
-    "editPreflight.primary": "The mask applies only to the first Primary Edit Image: {name}",
+    "editPreflight.primary": "The mask applies only to the first Primary Edit Image: {name}; the image, mask, and output are locked to one PNG canvas on submit",
     "editPreflight.responsesResize": "Responses will resize {width}×{height} to {targetWidth}×{targetHeight} before submission",
     "editPreflight.editArea": "Transparent edit area: {percent}%",
     "editPreflight.editAreaSmall": "The edit area is very small, so the model may not make a visible change",

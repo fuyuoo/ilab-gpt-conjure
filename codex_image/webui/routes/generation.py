@@ -8,7 +8,13 @@ from fastapi import FastAPI, File, Form, HTTPException, UploadFile
 
 from codex_image.client import DEFAULT_MAIN_MODEL, image_model_supports_input_fidelity
 from codex_image.webui.context import WebUIContext
-from codex_image.webui.edit_mask import EditMaskContractError, decode_image_data_url, validate_edit_mask
+from codex_image.webui.edit_mask import (
+    RESPONSES_EDIT_MASK_MAX_EDGE,
+    EditMaskContractError,
+    aligned_edit_mask_canvas_size,
+    decode_image_data_url,
+    validate_edit_mask,
+)
 from codex_image.webui.executor import (
     _file_to_data_url,
     _instructions_for_transport,
@@ -409,13 +415,28 @@ def register_generation_routes(app: FastAPI, ctx: WebUIContext) -> None:
             for item in reference_assets
         ]
         all_image_data_urls = image_data_urls + gallery_data_urls
+        mask_canvas_size: tuple[int, int] | None = None
         if mask is not None:
             mask_bytes = await mask.read()
             await mask.seek(0)
             try:
                 validate_edit_mask(mask_bytes, decode_image_data_url(all_image_data_urls[0]))
+                mask_canvas_size = aligned_edit_mask_canvas_size(
+                    all_image_data_urls[0],
+                    requested_size=size,
+                    model=model,
+                    max_edge=RESPONSES_EDIT_MASK_MAX_EDGE if requested_backend.endswith("_responses") else None,
+                )
             except EditMaskContractError as exc:
                 raise HTTPException(status_code=400, detail=exc.detail) from exc
+
+        if mask_canvas_size is not None:
+            size = f"{mask_canvas_size[0]}x{mask_canvas_size[1]}"
+            resolution = None
+            ratio = None
+            orientation = "square" if mask_canvas_size[0] == mask_canvas_size[1] else (
+                "landscape" if mask_canvas_size[0] > mask_canvas_size[1] else "portrait"
+            )
 
         guidance_state: dict[str, Any] | None = None
         if editing_guidance is not None:
@@ -519,6 +540,8 @@ def register_generation_routes(app: FastAPI, ctx: WebUIContext) -> None:
             stored_request_payload["webui_api_images_concurrency"] = effective_api_images_concurrency
         ctx.storage.write_request(task.task_id, stored_request_payload)
         params = _params(main_model, model, size, quality, background, output_format, moderation, compression, n)
+        if mask_canvas_size is not None:
+            params["edit_mask_canvas_locked"] = True
         if resolution:
             params["resolution"] = resolution
         if ratio:

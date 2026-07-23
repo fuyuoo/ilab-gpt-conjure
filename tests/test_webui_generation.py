@@ -490,6 +490,63 @@ class WebUIGenerationTests(unittest.TestCase):
 
         self.assertEqual(task_metadata_files, [])
 
+    def test_edit_route_locks_masked_gpt_image_2_request_to_source_ratio_canvas(self) -> None:
+        from codex_image.webui.app import create_app
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            app = create_app(
+                output_root=root,
+                client_factory=lambda: FakeImageClient(),
+                auth_checker=lambda: True,
+                auto_start_queue=False,
+            )
+            response = TestClient(app).post(
+                "/api/edit",
+                data={
+                    "prompt": "change only the transparent region",
+                    "model": "gpt-image-2",
+                    "size": "1024x1024",
+                    "ratio": "1:1",
+                    "codex_mode": "responses",
+                },
+                files={
+                    "images": ("input.png", self._png_bytes(), "image/png"),
+                    "mask": ("mask.png", self._mask_png_bytes(), "image/png"),
+                },
+            )
+            body = response.json()
+            metadata = json.loads(metadata_path(root, body["task"]["task_id"]).read_text(encoding="utf-8"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(body["request"]["tools"][0]["size"], "800x1280")
+        self.assertEqual(metadata["params"]["size"], "800x1280")
+        self.assertTrue(metadata["params"]["edit_mask_canvas_locked"])
+        self.assertNotIn("ratio", metadata["params"])
+        self.assertEqual(metadata["params"]["orientation"], "portrait")
+
+    def test_edit_route_rejects_mask_canvas_outside_supported_aspect_ratio(self) -> None:
+        from codex_image.webui.app import create_app
+
+        with tempfile.TemporaryDirectory() as tmp:
+            app = create_app(
+                output_root=Path(tmp),
+                client_factory=lambda: FakeImageClient(),
+                auth_checker=lambda: True,
+                auto_start_queue=False,
+            )
+            response = TestClient(app).post(
+                "/api/edit",
+                data={"prompt": "edit an extreme banner", "model": "gpt-image-2", "size": "1024x1024"},
+                files={
+                    "images": ("input.png", self._png_bytes((400, 100)), "image/png"),
+                    "mask": ("mask.png", self._mask_png_bytes((400, 100)), "image/png"),
+                },
+            )
+
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.json()["detail"]["code"], "edit_primary_aspect_ratio_unsupported")
+
     def test_generate_route_enqueues_without_calling_client_inline(self) -> None:
         from codex_image.webui.app import create_app
 

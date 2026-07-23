@@ -668,7 +668,51 @@ class WebUIQueueTests(unittest.TestCase):
         primary = Image.open(BytesIO(decode_image_data_url(fake.edit_calls[0]["images"][0])))
         mask = Image.open(BytesIO(decode_image_data_url(fake.edit_calls[0]["mask_image"])))
         self.assertEqual(primary.size, mask.size)
-        self.assertEqual(max(primary.size), 2048)
+        self.assertLessEqual(max(primary.size), 2048)
+        self.assertEqual(fake.edit_calls[0]["size"], f"{primary.width}x{primary.height}")
+        self.assertEqual(primary.format, "PNG")
+        self.assertEqual(mask.format, "PNG")
+
+    def test_queue_worker_locks_direct_images_edit_to_one_png_canvas(self) -> None:
+        from codex_image.webui.app import create_app
+        from codex_image.webui.edit_mask import decode_image_data_url
+
+        fake = FakeImageClient()
+        with tempfile.TemporaryDirectory() as tmp:
+            app = create_app(
+                output_root=Path(tmp),
+                client_factory=lambda: fake,
+                auth_checker=lambda: True,
+                batch_delay_seconds=0,
+                auto_start_queue=False,
+            )
+            client = TestClient(app)
+            created = client.post(
+                "/api/edit",
+                data={
+                    "prompt": "edit a portrait region",
+                    "model": "gpt-image-2",
+                    "size": "1024x1024",
+                    "codex_mode": "images",
+                },
+                files={
+                    "images": ("primary.png", self._png_bytes((400, 640)), "image/png"),
+                    "mask": ("mask.png", self._png_bytes((400, 640), alpha=0), "image/png"),
+                },
+            )
+
+            asyncio.run(app.state.queue_manager.run_available_once())
+
+        self.assertEqual(created.status_code, 200)
+        self.assertEqual(len(fake.edit_calls), 1)
+        call = fake.edit_calls[0]
+        primary = Image.open(BytesIO(decode_image_data_url(call["images"][0])))
+        mask = Image.open(BytesIO(decode_image_data_url(call["mask_image"])))
+        self.assertEqual(call["size"], "800x1280")
+        self.assertEqual(primary.size, (800, 1280))
+        self.assertEqual(mask.size, primary.size)
+        self.assertEqual(primary.format, "PNG")
+        self.assertEqual(mask.format, "PNG")
 
     def test_queue_worker_fails_if_task_owned_mask_disappears_without_calling_provider(self) -> None:
         from codex_image.webui.app import create_app

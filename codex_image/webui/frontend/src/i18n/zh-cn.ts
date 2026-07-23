@@ -2,7 +2,7 @@ import type { TranslationDictionary } from "./types";
 
 export const ZH_CN_DICTIONARY: TranslationDictionary = {
     "editPreflight.title": "提交前检查",
-    "editPreflight.primary": "遮罩只作用于第一张主编辑图：{name}",
+    "editPreflight.primary": "遮罩只作用于第一张主编辑图：{name}；提交时原图、遮罩和输出会锁定为同一 PNG 画布",
     "editPreflight.responsesResize": "Responses 提交时会将 {width}×{height} 缩放为 {targetWidth}×{targetHeight}",
     "editPreflight.editArea": "透明编辑区域占 {percent}%",
     "editPreflight.editAreaSmall": "编辑区域很小，模型可能无法明显修改",

@@ -1,8 +1,6 @@
 import { formatTranslation, LOCALE_CHANGE_EVENT } from "./i18n";
 import { getLegacyBridge } from "./state";
 
-const RESPONSES_EDIT_MASK_MAX_EDGE = 2048;
-const ASPECT_RATIO_WARNING_FACTOR = 1.25;
 const SMALL_EDIT_AREA_FRACTION = 0.005;
 const LARGE_EDIT_AREA_FRACTION = 0.9;
 
@@ -58,34 +56,6 @@ function positiveInteger(value: unknown): number {
   return Number.isFinite(parsed) && parsed > 0 ? Math.round(parsed) : 0;
 }
 
-function greatestCommonDivisor(left: number, right: number): number {
-  let a = Math.abs(Math.round(left));
-  let b = Math.abs(Math.round(right));
-  while (b) [a, b] = [b, a % b];
-  return a || 1;
-}
-
-function ratioLabel(width: number, height: number): string {
-  const divisor = greatestCommonDivisor(width, height);
-  return `${Math.round(width / divisor)}:${Math.round(height / divisor)}`;
-}
-
-function parsedOutputSize(value: string): ImageDimensions | null {
-  const match = /^(\d+)x(\d+)$/i.exec(String(value || "").trim());
-  if (!match) return null;
-  const width = positiveInteger(match[1]);
-  const height = positiveInteger(match[2]);
-  return width && height ? { width, height } : null;
-}
-
-function resizedDimensions(width: number, height: number): ImageDimensions {
-  const scale = RESPONSES_EDIT_MASK_MAX_EDGE / Math.max(width, height);
-  return {
-    width: Math.max(1, Math.round(width * scale)),
-    height: Math.max(1, Math.round(height * scale)),
-  };
-}
-
 function formattedPercentage(editablePixels: number, totalPixels: number): string {
   const percentage = totalPixels > 0 ? (editablePixels / totalPixels) * 100 : 0;
   return percentage.toFixed(percentage < 10 ? 2 : 1);
@@ -112,14 +82,6 @@ export function evaluateEditRequestPreflight(input: EditRequestPreflightInput): 
   }
   if (editablePixels === 0) issues.push({ code: "empty_edit_area", level: "error" });
   issues.push({ code: "primary", level: "info", values: { name: input.primaryName || "-" } });
-  if (input.usesResponses && Math.max(width, height) > RESPONSES_EDIT_MASK_MAX_EDGE) {
-    const target = resizedDimensions(width, height);
-    issues.push({
-      code: "responses_resize",
-      level: "info",
-      values: { width, height, targetWidth: target.width, targetHeight: target.height },
-    });
-  }
 
   const editableFraction = editablePixels / totalPixels;
   issues.push({ code: "edit_area", level: "info", values: { percent: formattedPercentage(editablePixels, totalPixels) } });
@@ -129,19 +91,6 @@ export function evaluateEditRequestPreflight(input: EditRequestPreflightInput): 
     issues.push({ code: "edit_area_large", level: "warning" });
   }
 
-  const output = parsedOutputSize(input.outputSize);
-  if (output) {
-    const sourceAspect = width / height;
-    const outputAspect = output.width / output.height;
-    const difference = Math.max(sourceAspect / outputAspect, outputAspect / sourceAspect);
-    if (difference >= ASPECT_RATIO_WARNING_FACTOR) {
-      issues.push({
-        code: "aspect_mismatch",
-        level: "warning",
-        values: { sourceRatio: ratioLabel(width, height), outputRatio: ratioLabel(output.width, output.height) },
-      });
-    }
-  }
   return { issues };
 }
 

@@ -482,7 +482,7 @@
   // codex_image/webui/frontend/src/i18n/en.ts
   var EN_DICTIONARY = {
     "editPreflight.title": "Pre-submit check",
-    "editPreflight.primary": "The mask applies only to the first Primary Edit Image: {name}",
+    "editPreflight.primary": "The mask applies only to the first Primary Edit Image: {name}; the image, mask, and output are locked to one PNG canvas on submit",
     "editPreflight.responsesResize": "Responses will resize {width}\xD7{height} to {targetWidth}\xD7{targetHeight} before submission",
     "editPreflight.editArea": "Transparent edit area: {percent}%",
     "editPreflight.editAreaSmall": "The edit area is very small, so the model may not make a visible change",
@@ -10462,7 +10462,7 @@
   // codex_image/webui/frontend/src/i18n/zh-cn.ts
   var ZH_CN_DICTIONARY = {
     "editPreflight.title": "\u63D0\u4EA4\u524D\u68C0\u67E5",
-    "editPreflight.primary": "\u906E\u7F69\u53EA\u4F5C\u7528\u4E8E\u7B2C\u4E00\u5F20\u4E3B\u7F16\u8F91\u56FE\uFF1A{name}",
+    "editPreflight.primary": "\u906E\u7F69\u53EA\u4F5C\u7528\u4E8E\u7B2C\u4E00\u5F20\u4E3B\u7F16\u8F91\u56FE\uFF1A{name}\uFF1B\u63D0\u4EA4\u65F6\u539F\u56FE\u3001\u906E\u7F69\u548C\u8F93\u51FA\u4F1A\u9501\u5B9A\u4E3A\u540C\u4E00 PNG \u753B\u5E03",
     "editPreflight.responsesResize": "Responses \u63D0\u4EA4\u65F6\u4F1A\u5C06 {width}\xD7{height} \u7F29\u653E\u4E3A {targetWidth}\xD7{targetHeight}",
     "editPreflight.editArea": "\u900F\u660E\u7F16\u8F91\u533A\u57DF\u5360 {percent}%",
     "editPreflight.editAreaSmall": "\u7F16\u8F91\u533A\u57DF\u5F88\u5C0F\uFF0C\u6A21\u578B\u53EF\u80FD\u65E0\u6CD5\u660E\u663E\u4FEE\u6539",
@@ -40601,8 +40601,6 @@ ${galleryText}`;
   }
 
   // codex_image/webui/frontend/src/edit-request-preflight.ts
-  var RESPONSES_EDIT_MASK_MAX_EDGE = 2048;
-  var ASPECT_RATIO_WARNING_FACTOR = 1.25;
   var SMALL_EDIT_AREA_FRACTION = 5e-3;
   var LARGE_EDIT_AREA_FRACTION = 0.9;
   var imageDimensionsCache = /* @__PURE__ */ new WeakMap();
@@ -40624,30 +40622,6 @@ ${galleryText}`;
   function positiveInteger(value) {
     const parsed = Number(value);
     return Number.isFinite(parsed) && parsed > 0 ? Math.round(parsed) : 0;
-  }
-  function greatestCommonDivisor2(left, right) {
-    let a = Math.abs(Math.round(left));
-    let b = Math.abs(Math.round(right));
-    while (b) [a, b] = [b, a % b];
-    return a || 1;
-  }
-  function ratioLabel(width, height) {
-    const divisor = greatestCommonDivisor2(width, height);
-    return `${Math.round(width / divisor)}:${Math.round(height / divisor)}`;
-  }
-  function parsedOutputSize(value) {
-    const match = /^(\d+)x(\d+)$/i.exec(String(value || "").trim());
-    if (!match) return null;
-    const width = positiveInteger(match[1]);
-    const height = positiveInteger(match[2]);
-    return width && height ? { width, height } : null;
-  }
-  function resizedDimensions(width, height) {
-    const scale = RESPONSES_EDIT_MASK_MAX_EDGE / Math.max(width, height);
-    return {
-      width: Math.max(1, Math.round(width * scale)),
-      height: Math.max(1, Math.round(height * scale))
-    };
   }
   function formattedPercentage(editablePixels, totalPixels) {
     const percentage = totalPixels > 0 ? editablePixels / totalPixels * 100 : 0;
@@ -40673,33 +40647,12 @@ ${galleryText}`;
     }
     if (editablePixels === 0) issues.push({ code: "empty_edit_area", level: "error" });
     issues.push({ code: "primary", level: "info", values: { name: input.primaryName || "-" } });
-    if (input.usesResponses && Math.max(width, height) > RESPONSES_EDIT_MASK_MAX_EDGE) {
-      const target = resizedDimensions(width, height);
-      issues.push({
-        code: "responses_resize",
-        level: "info",
-        values: { width, height, targetWidth: target.width, targetHeight: target.height }
-      });
-    }
     const editableFraction = editablePixels / totalPixels;
     issues.push({ code: "edit_area", level: "info", values: { percent: formattedPercentage(editablePixels, totalPixels) } });
     if (editableFraction > 0 && editableFraction <= SMALL_EDIT_AREA_FRACTION) {
       issues.push({ code: "edit_area_small", level: "warning" });
     } else if (editableFraction >= LARGE_EDIT_AREA_FRACTION) {
       issues.push({ code: "edit_area_large", level: "warning" });
-    }
-    const output = parsedOutputSize(input.outputSize);
-    if (output) {
-      const sourceAspect = width / height;
-      const outputAspect = output.width / output.height;
-      const difference = Math.max(sourceAspect / outputAspect, outputAspect / sourceAspect);
-      if (difference >= ASPECT_RATIO_WARNING_FACTOR) {
-        issues.push({
-          code: "aspect_mismatch",
-          level: "warning",
-          values: { sourceRatio: ratioLabel(width, height), outputRatio: ratioLabel(output.width, output.height) }
-        });
-      }
     }
     return { issues };
   }
@@ -42549,7 +42502,7 @@ ${galleryText}`;
         if (presetDimensions2[0] === width && presetDimensions2[1] === height) return ratio;
       }
     }
-    const divisor = greatestCommonDivisor3(width, height);
+    const divisor = greatestCommonDivisor2(width, height);
     const normalized = `${Math.round(width / divisor)}:${Math.round(height / divisor)}`;
     if (normalized === "3:7") return "9:21";
     if (normalized === "7:3") return "21:9";
@@ -42598,7 +42551,7 @@ ${galleryText}`;
     if (!width || !height) return null;
     return [width, height];
   }
-  function greatestCommonDivisor3(left, right) {
+  function greatestCommonDivisor2(left, right) {
     let a = Math.abs(left);
     let b = Math.abs(right);
     while (b) {
@@ -43131,7 +43084,7 @@ ${galleryText}`;
       taskPromptFidelity: taskPromptFidelity2,
       taskResolution: taskResolution2,
       taskSizeDimensions,
-      greatestCommonDivisor: greatestCommonDivisor3,
+      greatestCommonDivisor: greatestCommonDivisor2,
       taskInputUrls,
       taskInputThumbnailUrls,
       taskInputThumbnailRoute,
