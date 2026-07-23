@@ -50,6 +50,7 @@ export function galleryReferenceInstruction(source: any, number: any): string {
 }
 
 export function currentPromptForModel(): string {
+  if (!supportsGptPromptProcessing()) return buildPromptForModel();
   const prompt = currentPromptFidelity() === "original"
     ? expandPromptSnippets(getPromptText())
     : buildPromptForModel();
@@ -63,8 +64,14 @@ export function currentPromptForModel(): string {
 }
 
 export function currentPromptFidelity(): string {
+  if (!supportsGptPromptProcessing()) return "off";
   const value = els.promptFidelity?.value || "strict";
   return ["strict", "original", "off"].includes(value) ? value : "strict";
+}
+
+export function supportsGptPromptProcessing(): boolean {
+  const { state } = getLegacyBridge();
+  return !state.generationCatalog || state.selectedModelId === "gpt-image-2";
 }
 
 export function initPromptModelFeature(): void {
@@ -75,5 +82,6 @@ export function initPromptModelFeature(): void {
     galleryReferenceInstruction,
     currentPromptForModel,
     currentPromptFidelity,
+    supportsGptPromptProcessing,
   });
 }

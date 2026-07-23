@@ -37,6 +37,7 @@ class WebUIStaticTaskTests(WebUIStaticTestCase):
               require(name) {{
                 if (name === "./i18n") return {{ formatTranslation: (key) => key, translate: (key) => key }};
                 if (name === "./state") return {{ getLegacyBridge: () => bridge }};
+                if (name === "./task-model-summary") return {{ taskOutputSettingsView: () => "editor" }};
                 if (name === "./edit-region-materialization") return {{ legacyEditMaskPixelsToEditRegion: (pixels) => pixels }};
                 if (name === "./editing-guidance-persistence") return {{
                   loadEditingGuidanceFiles: async () => ({{
@@ -110,6 +111,7 @@ class WebUIStaticTaskTests(WebUIStaticTestCase):
               renderReferenceFiles() {{}}, renderImageStrip() {{}}, updateRequestPreview() {{}},
               updateTaskSelectionVisuals() {{}}, renderPreview() {{}}, taskRequestPreviewPayload() {{ return null; }},
               taskFailureMessage() {{ return ""; }}, revokeUploadPreviewUrls() {{}},
+              clearTaskParameterInspection() {{}}, inspectTaskParameters() {{}},
               uploadSource(file) {{ return {{ kind: "upload", file, name: file.name, previewUrl: `blob:${{file.name}}` }}; }},
               assetSource(item) {{ return {{ kind: "asset", id: item.id, image_url: item.image_url }}; }},
               gallerySource(item) {{ return item; }}, taskInputUrls() {{ return []; }},
@@ -128,6 +130,7 @@ class WebUIStaticTaskTests(WebUIStaticTestCase):
               require(name) {{
                 if (name === "./i18n") return {{ formatTranslation: (key) => key, translate: (key) => key }};
                 if (name === "./state") return {{ getLegacyBridge: () => bridge }};
+                if (name === "./task-model-summary") return {{ taskOutputSettingsView: () => "editor" }};
                 if (name === "./edit-region-materialization") return {{ legacyEditMaskPixelsToEditRegion: (pixels) => pixels }};
                 if (name === "./editing-guidance-persistence") return {{
                   loadEditingGuidanceFiles: async (guidance, loader) => ({{
@@ -204,7 +207,7 @@ class WebUIStaticTaskTests(WebUIStaticTestCase):
         self.assertIn('id="historyMonthList"', history_html)
         self.assertIn('id="historyTaskList"', history_html)
         self.assertIn('id="historyDetail"', history_html)
-        self.assertIn('/static/history.js?v=history-70', history_html)
+        self.assertIn('/static/history.js?v=history-71', history_html)
         self.assertIn('fetch("/api/task-history/summary")', history_source)
         self.assertIn('new URLSearchParams', history_source)
         self.assertIn('/api/task-history/tasks?', history_source)
@@ -749,10 +752,12 @@ class WebUIStaticTaskTests(WebUIStaticTestCase):
         self.assertIn("task.error || task.last_error", script)
         self.assertIn('taskFailureMessage(selected) || translate("preview.taskFailed")', preview_source)
         self.assertIn("const backend = taskCardProviderLabel(task)", meta_details_source)
-        self.assertIn('return [size, backend].filter(Boolean).join(" · ");', meta_details_source)
+        self.assertIn("taskCanvasSummaryParts(task)", meta_details_source)
+        self.assertIn('return [...taskCanvasSummaryParts(task), backend].filter(Boolean).join(" · ");', meta_details_source)
         self.assertIn("function taskMetaDetailsWithCompletionText", script)
         self.assertIn("function taskCardCompletionTimeText", script)
         self.assertIn("const backend = taskCardProviderLabel(task)", meta_text_source)
+        self.assertIn("taskCanvasSummaryParts(task)", meta_text_source)
         self.assertNotIn("taskBackendLabel(task)", meta_details_source)
         self.assertNotIn("taskFailureMessage(task)", meta_details_source)
         self.assertNotIn("taskFailureMessage(task)", meta_text_source)
@@ -890,6 +895,8 @@ class WebUIStaticTaskTests(WebUIStaticTestCase):
         self.assertIn("const detailRightHtml = runningTimerHtml || retryHtml || timeHtml;", render_source)
         self.assertIn('const imageSummaryHtml = imageSummary ? `<span class="task-image-summary">${imageSummary}</span>` : "";', script)
         self.assertIn('${imageBlocks}\n            <span class="task-status-row task-status-inline"', script)
+        self.assertIn("taskModelFamilyIconHtml(task)", script)
+        self.assertIn("task-model-family-icon", styles)
 
         self.assertLess(script.index('class="task-meta-row"'), script.index('class="task-title-row"'))
         self.assertLess(script.index('class="task-title-row"'), script.index('${detailRow}'))
@@ -905,7 +912,7 @@ class WebUIStaticTaskTests(WebUIStaticTestCase):
         self.assertIn('record?.status === "failed"', script)
         self.assertIn('const visibleCount = Math.min(total, 4)', script)
         self.assertNotIn(".task-status-light", styles)
-        self.assertRegex(styles, r"\.task-status-inline\s*\{[^}]*max-width:\s*58px")
+        self.assertRegex(styles, r"\.task-status-inline\s*\{[^}]*max-width:\s*76px")
         self.assertRegex(styles, r"\.task-status-label\s*\{[^}]*max-width:\s*58px")
         self.assertRegex(styles, r"\.task-card\.failed \.task-status-label,\s*\.task-card\.partial_failed \.task-status-label\s*\{[^}]*var\(--danger\)")
         self.assertRegex(styles, r"\.task-meta-row\s*\{[^}]*display:\s*grid")
@@ -1761,6 +1768,7 @@ class WebUIStaticTaskTests(WebUIStaticTestCase):
                 const state = { apiSettings: { providers: [] } };
                 function persistApiSettings() {}
                 function populateApiSettingsForm() {}
+                function taskOutputControlValues(task) { return task.params || {}; }
                 function syncSizeControlsFromSize() {}
                 function updatePromptCount() {}
                 function updateCompression() {}
@@ -1824,6 +1832,7 @@ class WebUIStaticTaskTests(WebUIStaticTestCase):
                 function setMode() {}
                 function setPromptWithGalleryRefs() {}
                 function persistMainModel() {}
+                function taskOutputControlValues(task) { return task.params || {}; }
                 function syncSizeControlsFromSize() {}
                 function updatePromptCount() {}
                 function updateCompression() {}

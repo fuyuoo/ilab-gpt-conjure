@@ -911,7 +911,10 @@ class WebUIQueueTests(unittest.TestCase):
             )
             app.state.queue_manager.max_attempts = 3
             client = TestClient(app)
-            created = client.post("/api/generate", data={"prompt": "bad request", "size": "1024x1024", "quality": "low", "n": "4"})
+            created = client.post(
+                "/api/generate",
+                data={"prompt": "bad request", "size": "1024x1024", "quality": "low", "n": "4", "codex_mode": "responses"},
+            )
             task_id = created.json()["task"]["task_id"]
 
             with self.assertRaisesRegex(RuntimeError, "invalid_request_error"):
@@ -985,7 +988,10 @@ class WebUIQueueTests(unittest.TestCase):
             app.state.queue_manager.channels = [QueueChannel(channel_id="codex:local", auth_source="codex")]
             app.state.queue_manager.max_attempts = 3
             client = TestClient(app)
-            created = client.post("/api/generate", data={"prompt": "many", "size": "1024x1024", "quality": "low", "n": "4"})
+            created = client.post(
+                "/api/generate",
+                data={"prompt": "many", "size": "1024x1024", "quality": "low", "n": "4", "codex_mode": "responses"},
+            )
             task_id = created.json()["task"]["task_id"]
 
             with self.assertRaisesRegex(RuntimeError, "usage limit"):
@@ -1108,7 +1114,7 @@ class WebUIQueueTests(unittest.TestCase):
         self.assertEqual(first_task["generated_count"], 3)
         self.assertEqual(first_task["failed_count"], 1)
         self.assertEqual(first_task["total_count"], 4)
-        self.assertIn("Image request timed out after 0.12s", first_task["last_error"])
+        self.assertIn("timeout limit 0.12s", first_task["last_error"])
         self.assertEqual(
             [(item["index"], item["status"]) for item in first_task["outputs"]],
             [(1, "completed"), (2, "completed"), (3, "completed"), (4, "failed")],
@@ -1144,7 +1150,10 @@ class WebUIQueueTests(unittest.TestCase):
                 auto_start_queue=False,
             )
             client = TestClient(app)
-            created = client.post("/api/generate", data={"prompt": "many", "size": "1024x1024", "quality": "low", "n": "2"})
+            created = client.post(
+                "/api/generate",
+                data={"prompt": "many", "size": "1024x1024", "quality": "low", "n": "2", "codex_mode": "responses"},
+            )
             task_id = created.json()["task"]["task_id"]
 
             worker_error: list[BaseException] = []

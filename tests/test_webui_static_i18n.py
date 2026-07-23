@@ -8,30 +8,18 @@ from tests.webui_helpers import WebUIStaticTestCase
 
 class WebUIStaticI18nTests(WebUIStaticTestCase):
     def test_simplified_chinese_uses_user_facing_guidance_labels(self) -> None:
-        source = Path("codex_image/webui/frontend/src/i18n/zh-cn.ts").read_text(
-            encoding="utf-8"
-        )
-
+        source = Path("codex_image/webui/frontend/src/i18n/zh-cn.ts").read_text(encoding="utf-8")
         self.assertIn('"imageEditor.instructionMarksGuidance": "标注"', source)
         self.assertIn('"imageEditor.editRegionGuidance": "遮罩"', source)
 
     def test_edit_region_workflow_copy_exists_in_every_locale(self) -> None:
         required_keys = (
-            "imageEditor.guidance",
-            "imageEditor.instructionMarksGuidance",
-            "imageEditor.editRegionGuidance",
-            "imageEditor.maskErase",
-            "imageEditor.maskRectangle",
-            "imageEditor.maskEllipse",
-            "imageEditor.maskRestore",
-            "imageEditor.maskClear",
-            "imageEditor.maskHelp",
-            "imageEditor.emptyEditRegion",
-            "imageInput.instructionMarksApplied",
-            "imageInput.editRegionApplied",
+            "imageEditor.guidance", "imageEditor.instructionMarksGuidance", "imageEditor.editRegionGuidance",
+            "imageEditor.maskErase", "imageEditor.maskRectangle", "imageEditor.maskEllipse",
+            "imageEditor.maskRestore", "imageEditor.maskClear", "imageEditor.maskHelp",
+            "imageEditor.emptyEditRegion", "imageInput.instructionMarksApplied", "imageInput.editRegionApplied",
         )
-        locale_paths = sorted(Path("codex_image/webui/frontend/src/i18n").glob("*.ts"))
-        locale_paths = [path for path in locale_paths if path.name not in {"types.ts", "dictionaries.ts"}]
+        locale_paths = [p for p in sorted(Path("codex_image/webui/frontend/src/i18n").glob("*.ts")) if p.name not in {"types.ts", "dictionaries.ts"}]
         self.assertEqual(13, len(locale_paths))
         for path in locale_paths:
             source = path.read_text(encoding="utf-8")
@@ -40,18 +28,38 @@ class WebUIStaticI18nTests(WebUIStaticTestCase):
 
     def test_edit_request_preflight_copy_exists_in_every_locale(self) -> None:
         required_keys = (
-            "editPreflight.title",
-            "editPreflight.primary",
-            "editPreflight.responsesResize",
-            "editPreflight.editArea",
-            "editPreflight.editAreaSmall",
-            "editPreflight.editAreaLarge",
-            "editPreflight.aspectMismatch",
-            "editPreflight.maskDimensionsMismatch",
-            "editPreflight.emptyEditArea",
-            "editPreflight.maskInactive",
-            "editPreflight.inspectionFailed",
-            "editPreflight.blocked",
+            "editPreflight.title", "editPreflight.primary", "editPreflight.responsesResize",
+            "editPreflight.editArea", "editPreflight.editAreaSmall", "editPreflight.editAreaLarge",
+            "editPreflight.aspectMismatch", "editPreflight.maskDimensionsMismatch", "editPreflight.emptyEditArea",
+            "editPreflight.maskInactive", "editPreflight.inspectionFailed", "editPreflight.blocked",
+        )
+        locale_paths = [p for p in sorted(Path("codex_image/webui/frontend/src/i18n").glob("*.ts")) if p.name not in {"types.ts", "dictionaries.ts"}]
+        self.assertEqual(13, len(locale_paths))
+        for path in locale_paths:
+            source = path.read_text(encoding="utf-8")
+            for key in required_keys:
+                self.assertIn(f'"{key}"', source, f"{key} missing from {path.name}")
+
+    def test_history_document_title_uses_multimodel_product_brand_in_every_locale(self) -> None:
+        locale_paths = sorted(Path("codex_image/webui/frontend/src/i18n").glob("*.ts"))
+        locale_paths = [path for path in locale_paths if path.name not in {"types.ts", "dictionaries.ts"}]
+
+        self.assertEqual(13, len(locale_paths))
+        for path in locale_paths:
+            source = path.read_text(encoding="utf-8")
+            self.assertRegex(source, r'"history\.documentTitle": "[^"]*iLab CONJURE"')
+            self.assertNotIn("iLab GPT CONJURE", source)
+            self.assertNotIn("iLabGPTCONJURE", source)
+
+    def test_model_provider_selection_copy_exists_in_every_locale(self) -> None:
+        required_keys = (
+            "modelSelection.family",
+            "modelSelection.concreteModel",
+            "modelSelection.provider",
+            "modelSelection.providerUnavailable",
+            "modelSelection.openSettings",
+            "modelSelection.codexUnavailable",
+            "modelSelection.catalogUnavailable",
         )
         locale_paths = sorted(Path("codex_image/webui/frontend/src/i18n").glob("*.ts"))
         locale_paths = [path for path in locale_paths if path.name not in {"types.ts", "dictionaries.ts"}]
@@ -59,7 +67,44 @@ class WebUIStaticI18nTests(WebUIStaticTestCase):
         for path in locale_paths:
             source = path.read_text(encoding="utf-8")
             for key in required_keys:
-                self.assertIn(f'"{key}"', source, f"{key} missing from {path.name}")
+                self.assertIn(f'"{key}"', source, f"{path.name} is missing {key}")
+
+    def test_api_binding_ratio_prompt_copy_exists_in_every_locale(self) -> None:
+        required_keys = (
+            "apiSettings.appendRatioPrompt",
+            "apiSettings.defaultProviderForModel",
+            "apiSettings.removeBinding",
+            "apiSettings.providerIcon",
+        )
+        locale_paths = sorted(Path("codex_image/webui/frontend/src/i18n").glob("*.ts"))
+        locale_paths = [path for path in locale_paths if path.name not in {"types.ts", "dictionaries.ts"}]
+        self.assertEqual(13, len(locale_paths))
+        for path in locale_paths:
+            source = path.read_text(encoding="utf-8")
+            for key in required_keys:
+                self.assertIn(f'"{key}"', source, f"{path.name} is missing {key}")
+
+        submit_source = Path("codex_image/webui/frontend/src/task-submit.ts").read_text(encoding="utf-8")
+        self.assertIn('form.append("ui_language", currentLocaleCode())', submit_source)
+        simplified_default_labels = {
+            "zh-cn.ts": "设为默认供应商",
+            "zh-tw.ts": "設為預設供應商",
+            "zh-hk.ts": "設為預設供應商",
+            "en.ts": "Default provider",
+        }
+        for filename, label in simplified_default_labels.items():
+            source = (Path("codex_image/webui/frontend/src/i18n") / filename).read_text(encoding="utf-8")
+            self.assertIn(f'"apiSettings.defaultProviderForModel": "{label}"', source)
+
+        provider_icon_labels = {
+            "zh-cn.ts": "Emoji 图标",
+            "zh-tw.ts": "Emoji 圖示",
+            "zh-hk.ts": "Emoji 圖示",
+            "en.ts": "Emoji",
+        }
+        for filename, label in provider_icon_labels.items():
+            source = (Path("codex_image/webui/frontend/src/i18n") / filename).read_text(encoding="utf-8")
+            self.assertIn(f'"apiSettings.providerIcon": "{label}"', source)
 
     def test_mixed_upload_copy_is_localized_in_every_locale(self) -> None:
         expected = {
@@ -340,7 +385,6 @@ class WebUIStaticI18nTests(WebUIStaticTestCase):
             "outputSettings.title",
             "preview.title",
             "systemSettings.title",
-            "systemSettings.codexTab",
             "systemSettings.languageTab",
             "settings.status",
             "settings.language",

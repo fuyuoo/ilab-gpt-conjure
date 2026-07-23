@@ -1018,7 +1018,17 @@ class WebUIStaticTestCase(unittest.TestCase):
             elif char == "}":
                 depth -= 1
                 if depth == 0:
-                    return script[start:index + 1]
+                    source = script[start:index + 1]
+                    source = re.sub(r":\s*any\[\](?=\s*[,)=])", "", source)
+                    source = re.sub(
+                        r":\s*(?:any|unknown|string|number|boolean|void|Event|KeyboardEvent|ClipboardEvent)(?=\s*[,)=])",
+                        "",
+                        source,
+                    )
+                    source = re.sub(r"\)\s*:\s*[^\{\n]+(?=\s*\{)", ")", source)
+                    source = re.sub(r"([A-Za-z_$][\w$]*)\?(?=\s*[,)=])", r"\1", source)
+                    source = re.sub(r"\s+as\s+[A-Za-z_$][\w$]*(?:<[^;\n]+>)?", "", source)
+                    return source
         raise AssertionError(f"Could not extract JavaScript function {function_name}")
 
     def _extract_css_block(self, styles: str, selector: str) -> str:

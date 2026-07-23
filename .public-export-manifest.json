@@ -1,6 +1,6 @@
 {
-  "project": "ilab-gpt-conjure",
-  "repo_slug": "kadevin/ilab-gpt-conjure",
+  "project": "ilab-conjure",
+  "repo_slug": "kadevin/ilab-conjure",
   "allowlist": [
     ".gitignore",
     ".github/workflows/ci.yml",
@@ -22,6 +22,7 @@
     "scripts/build-update-manifest.py",
     "scripts/build-webui-css.mjs",
     "scripts/migrate-webui-source-data.py",
+    "scripts/run-webui-provider-fixture.py",
     "tests",
     "tsconfig.webui.json"
   ],

@@ -1,18 +1,6 @@
 (() => {
   // codex_image/webui/frontend/src/i18n/en.ts
   var EN_DICTIONARY = {
-    "editPreflight.title": "Pre-submit check",
-    "editPreflight.primary": "The mask applies only to the first Primary Edit Image: {name}; the image, mask, and output are locked to one PNG canvas on submit",
-    "editPreflight.responsesResize": "Responses will resize {width}\xD7{height} to {targetWidth}\xD7{targetHeight} before submission",
-    "editPreflight.editArea": "Transparent edit area: {percent}%",
-    "editPreflight.editAreaSmall": "The edit area is very small, so the model may not make a visible change",
-    "editPreflight.editAreaLarge": "Most of the image is editable; the result may resemble a full-image redraw",
-    "editPreflight.aspectMismatch": "The source ratio is about {sourceRatio}, while output is {outputRatio}; cropping or broader reconstruction may occur",
-    "editPreflight.maskDimensionsMismatch": "Mask size {maskWidth}\xD7{maskHeight} does not match image size {width}\xD7{height}; reopen the editor and save the mask again",
-    "editPreflight.emptyEditArea": "The mask has no transparent edit area; erase the area you want to change first",
-    "editPreflight.maskInactive": "No edit region is active; the model may modify the entire Primary Edit Image",
-    "editPreflight.inspectionFailed": "Mask preflight details could not be read; the server will still validate on submission",
-    "editPreflight.blocked": "Resolve the pre-submit errors before continuing",
     "app.newTask": "New",
     "app.newTaskAria": "New chat",
     "sidebar.searchPlaceholder": "Search prompts or task ID",
@@ -136,7 +124,7 @@
     "footer.archiveCount": "Archive {count}",
     "footer.historyLibrary": "History",
     "historyLibrary.openFull": "Open full history library",
-    "history.documentTitle": "History - iLab GPT CONJURE",
+    "history.documentTitle": "History - iLab CONJURE",
     "history.back": "Back to generator",
     "history.title": "History",
     "history.loading": "Loading",
@@ -480,6 +468,7 @@
     "output.lock.lockedHint": "Parameters are fixed. Use the lock icon at the top right to edit.",
     "output.lock.enabled": "On",
     "output.lock.disabled": "Off",
+    "output.lock.custom": "Custom",
     "output.mainModel": "Main model",
     "output.selectMainModel": "Select main model",
     "output.mainModelCustomForInput": "Use a custom model for the current input",
@@ -503,6 +492,7 @@
     "output.promptHelp.images.original": "Adds no app-level prompt rules and submits your original text directly to the image endpoint.",
     "output.promptHelp.images.strict": "Submits fidelity rules together with the original prompt to emphasize every hard constraint.",
     "output.promptHelp.images.automatic": "Uses the image endpoint's default handling; required gallery-reference notes are still included.",
+    "output.size": "Output size",
     "output.sizeMode": "Size mode",
     "output.sizePreset": "Preset",
     "output.sizeCustom": "Custom",
@@ -809,6 +799,20 @@
     "apiSettings.providerCount": "{count} providers",
     "apiSettings.provider": "Provider",
     "apiSettings.providerName": "Provider name",
+    "apiSettings.providerIcon": "Emoji",
+    "apiSettings.providerIconPlaceholder": "Optional, e.g. \u{1FA84}",
+    "apiSettings.connectionScope": "Connection settings",
+    "apiSettings.connectionPreview": "Connection preview",
+    "apiSettings.modelBindings": "Model bindings",
+    "apiSettings.modelBindingsHint": "One provider can bind multiple models and protocols.",
+    "apiSettings.addModelBinding": "Add model binding",
+    "apiSettings.appendRatioPrompt": "Add ratio prompt",
+    "apiSettings.defaultProviderForModel": "Default provider",
+    "apiSettings.removeBinding": "Remove binding",
+    "apiSettings.catalogRequiredForBinding": "The model catalog is unavailable; a binding cannot be added yet.",
+    "apiSettings.keepOneBinding": "Each provider must keep at least one model binding.",
+    "apiSettings.bindingRequiredFields": "Choose a model, enter a remote model name, and select at least one operation for every binding.",
+    "apiSettings.bindingOverlap": "{model} {operation} is handled by more than one binding.",
     "apiSettings.actualRequest": "Actual request",
     "apiSettings.newProviderAction": "New provider",
     "apiSettings.copyProvider": "Copy",
@@ -990,6 +994,40 @@
     "history.referenceFiles": "Reference files",
     "history.downloadReferenceFile": "Download file",
     "history.readdReferenceFile": "Add again",
+    "modelSelection.family": "Model family",
+    "modelSelection.concreteModel": "Model",
+    "modelSelection.provider": "Provider",
+    "modelSelection.providerUnavailable": "No provider is available for this model",
+    "modelSelection.openSettings": "Open provider settings",
+    "modelSelection.codexUnavailable": "Codex sign-in is unavailable",
+    "modelSelection.catalogUnavailable": "Model catalog is unavailable",
+    "output.background": "Background",
+    "canvas.aspectRatio": "Aspect ratio",
+    "canvas.resolution": "Resolution",
+    "gemini.googleSearch": "Google Search",
+    "gemini.googleImageSearch": "Google Image Search",
+    "output.modalities": "Output modalities",
+    "gemini.safetySettings": "Safety settings",
+    "gemini.safety.harassment": "Harassment",
+    "gemini.safety.hateSpeech": "Hate speech",
+    "gemini.safety.sexuallyExplicit": "Sexually explicit",
+    "gemini.safety.dangerousContent": "Dangerous content",
+    "gemini.safety.threshold.unspecified": "Default",
+    "gemini.safety.threshold.off": "Filter off",
+    "gemini.safety.threshold.blockNone": "Block none",
+    "gemini.safety.threshold.blockOnlyHigh": "Block high",
+    "gemini.safety.threshold.blockMediumAndAbove": "Block medium+",
+    "gemini.safety.threshold.blockLowAndAbove": "Block all",
+    "grounding.title": "Google Search sources",
+    "grounding.searchSuggestions": "Google Search suggestions",
+    "grounding.sourceCount": "{count} sources",
+    "grounding.source": "Source {index}",
+    "modelParameters.invalidValue": "Invalid parameter value",
+    "modelParameters.objectRequired": "Enter a JSON object",
+    "modelParameters.invalidJson": "Invalid JSON",
+    "modelParameters.migrated": "Adjusted {count} legacy parameter(s) for the current model",
+    "modelParameters.historyConfiguration": "Historical configuration",
+    "modelParameters.legacyTask": "Legacy task",
     "imageEditor.guidance": "Editing Guidance",
     "imageEditor.instructionMarksGuidance": "Instruction Marks",
     "imageEditor.editRegionGuidance": "Mask",
@@ -1003,23 +1041,23 @@
     "imageEditor.maskHelp": "Blue masked areas are preserved. Transparent areas erased with the brush, rectangle, or circle will be edited.",
     "imageEditor.emptyEditRegion": "Erase a transparent area from the mask before saving.",
     "imageInput.instructionMarksApplied": "Instruction Marks applied",
-    "imageInput.editRegionApplied": "Edit Region applied"
+    "imageInput.editRegionApplied": "Edit Region applied",
+    "editPreflight.title": "Pre-submit check",
+    "editPreflight.primary": "The mask applies only to the first Primary Edit Image: {name}; the image, mask, and output are locked to one PNG canvas on submit",
+    "editPreflight.responsesResize": "Responses will resize {width}\xD7{height} to {targetWidth}\xD7{targetHeight} before submission",
+    "editPreflight.editArea": "Transparent edit area: {percent}%",
+    "editPreflight.editAreaSmall": "The edit area is very small, so the model may not make a visible change",
+    "editPreflight.editAreaLarge": "Most of the image is editable; the result may resemble a full-image redraw",
+    "editPreflight.aspectMismatch": "The source ratio is about {sourceRatio}, while output is {outputRatio}; cropping or broader reconstruction may occur",
+    "editPreflight.maskDimensionsMismatch": "Mask size {maskWidth}\xD7{maskHeight} does not match image size {width}\xD7{height}; reopen the editor and save the mask again",
+    "editPreflight.emptyEditArea": "The mask has no transparent edit area; erase the area you want to change first",
+    "editPreflight.maskInactive": "No edit region is active; the model may modify the entire Primary Edit Image",
+    "editPreflight.inspectionFailed": "Mask preflight details could not be read; the server will still validate on submission",
+    "editPreflight.blocked": "Resolve the pre-submit errors before continuing"
   };
 
   // codex_image/webui/frontend/src/i18n/de.ts
   var DE_DICTIONARY = {
-    "editPreflight.title": "Pr\xFCfung vor dem Senden",
-    "editPreflight.primary": "Die Maske gilt nur f\xFCr das erste prim\xE4re Bearbeitungsbild: {name}",
-    "editPreflight.responsesResize": "Responses skaliert {width}\xD7{height} vor dem Senden auf {targetWidth}\xD7{targetHeight}",
-    "editPreflight.editArea": "Transparenter Bearbeitungsbereich: {percent}%",
-    "editPreflight.editAreaSmall": "Der Bearbeitungsbereich ist sehr klein; m\xF6glicherweise entsteht keine sichtbare \xC4nderung",
-    "editPreflight.editAreaLarge": "Fast das gesamte Bild ist bearbeitbar; das Ergebnis kann einer vollst\xE4ndigen Neuzeichnung \xE4hneln",
-    "editPreflight.aspectMismatch": "Das Quellformat ist etwa {sourceRatio}, die Ausgabe {outputRatio}; es kann zu Beschnitt oder umfassender Rekonstruktion kommen",
-    "editPreflight.maskDimensionsMismatch": "Die Maskengr\xF6\xDFe {maskWidth}\xD7{maskHeight} entspricht nicht der Bildgr\xF6\xDFe {width}\xD7{height}; \xF6ffnen Sie den Editor erneut und speichern Sie die Maske",
-    "editPreflight.emptyEditArea": "Die Maske enth\xE4lt keinen transparenten Bearbeitungsbereich; l\xF6schen Sie zuerst den zu \xE4ndernden Bereich",
-    "editPreflight.maskInactive": "Kein Bearbeitungsbereich ist aktiv; das Modell kann das gesamte prim\xE4re Bild \xE4ndern",
-    "editPreflight.inspectionFailed": "Die Maskendaten konnten nicht vorab gepr\xFCft werden; der Server pr\xFCft sie beim Senden weiterhin",
-    "editPreflight.blocked": "Beheben Sie vor dem Fortfahren die Fehler der Vorabpr\xFCfung",
     "app.newTask": "Neu",
     "app.newTaskAria": "Neuer Chat",
     "sidebar.searchPlaceholder": "Suchaufforderungen oder Aufgabe ID",
@@ -1143,7 +1181,7 @@
     "footer.archiveCount": "Archiv {count}",
     "footer.historyLibrary": "Geschichte",
     "historyLibrary.openFull": "\xD6ffnen Sie die vollst\xE4ndige Geschichtsbibliothek",
-    "history.documentTitle": "Geschichte \u2013 iLab GPT CONJURE",
+    "history.documentTitle": "Geschichte \u2013 iLab CONJURE",
     "history.back": "Zur\xFCck zum Generator",
     "history.title": "Geschichte",
     "history.loading": "Laden",
@@ -1477,6 +1515,7 @@
     "output.lock.lockedHint": "Die Parameter sind fixiert. Zum Bearbeiten das Schloss oben rechts verwenden.",
     "output.lock.enabled": "Ein",
     "output.lock.disabled": "Aus",
+    "output.lock.custom": "Benutzerdefiniert",
     "output.mainModel": "Hauptmodell",
     "output.selectMainModel": "Hauptmodell ausw\xE4hlen",
     "output.mainModelCustomForInput": "Verwenden Sie ein benutzerdefiniertes Modell f\xFCr die aktuelle Eingabe",
@@ -1500,6 +1539,7 @@
     "output.promptHelp.images.original": "F\xFCgt keine App-Regeln hinzu und sendet den Originaltext direkt an die Bild-API.",
     "output.promptHelp.images.strict": "Sendet Treueregeln zusammen mit dem Originalprompt, um alle festen Vorgaben zu erhalten.",
     "output.promptHelp.images.automatic": "Verwendet die Standardverarbeitung der Bild-API; notwendige Galeriehinweise werden weiterhin mitgesendet.",
+    "output.size": "Ausgabegr\xF6\xDFe",
     "output.sizeMode": "Gr\xF6\xDFenmodus",
     "output.sizePreset": "Voreingestellt",
     "output.sizeCustom": "Benutzerdefiniert",
@@ -1806,6 +1846,20 @@
     "apiSettings.providerCount": "{count} Anbieter",
     "apiSettings.provider": "Anbieter",
     "apiSettings.providerName": "Anbietername",
+    "apiSettings.providerIcon": "Emoji",
+    "apiSettings.providerIconPlaceholder": "Optional, z. B. \u{1FA84}",
+    "apiSettings.connectionScope": "Connection settings",
+    "apiSettings.connectionPreview": "Verbindungsvorschau",
+    "apiSettings.modelBindings": "Model bindings",
+    "apiSettings.modelBindingsHint": "One provider can bind multiple models and protocols.",
+    "apiSettings.addModelBinding": "Add model binding",
+    "apiSettings.appendRatioPrompt": "Seitenverh\xE4ltnis erg\xE4nzen",
+    "apiSettings.defaultProviderForModel": "Standardanbieter",
+    "apiSettings.removeBinding": "Bindung entfernen",
+    "apiSettings.catalogRequiredForBinding": "The model catalog is unavailable; a binding cannot be added yet.",
+    "apiSettings.keepOneBinding": "Each provider must keep at least one model binding.",
+    "apiSettings.bindingRequiredFields": "Choose a model, enter a remote model name, and select at least one operation for every binding.",
+    "apiSettings.bindingOverlap": "{model} {operation} is handled by more than one binding.",
     "apiSettings.actualRequest": "Tats\xE4chliche Anfrage",
     "apiSettings.newProviderAction": "Neuer Anbieter",
     "apiSettings.copyProvider": "Kopieren",
@@ -1987,6 +2041,40 @@
     "history.referenceFiles": "Referenzdateien",
     "history.downloadReferenceFile": "Datei herunterladen",
     "history.readdReferenceFile": "Erneut hinzuf\xFCgen",
+    "modelSelection.family": "Modellfamilie",
+    "modelSelection.concreteModel": "Modell",
+    "modelSelection.provider": "Anbieter",
+    "modelSelection.providerUnavailable": "F\xFCr dieses Modell ist kein Anbieter verf\xFCgbar",
+    "modelSelection.openSettings": "Anbietereinstellungen \xF6ffnen",
+    "modelSelection.codexUnavailable": "Die Codex-Anmeldung ist nicht verf\xFCgbar",
+    "modelSelection.catalogUnavailable": "Der Modellkatalog ist nicht verf\xFCgbar",
+    "output.background": "Hintergrund",
+    "canvas.aspectRatio": "Seitenverh\xE4ltnis",
+    "canvas.resolution": "Aufl\xF6sung",
+    "gemini.googleSearch": "Google-Suche",
+    "gemini.googleImageSearch": "Google-Bildersuche",
+    "output.modalities": "Ausgabemodalit\xE4ten",
+    "gemini.safetySettings": "Sicherheitseinstellungen",
+    "gemini.safety.harassment": "Bel\xE4stigung",
+    "gemini.safety.hateSpeech": "Hassrede",
+    "gemini.safety.sexuallyExplicit": "Sexuell explizit",
+    "gemini.safety.dangerousContent": "Gef\xE4hrliche Inhalte",
+    "gemini.safety.threshold.unspecified": "Standard",
+    "gemini.safety.threshold.off": "Filter aus",
+    "gemini.safety.threshold.blockNone": "Nichts blockieren",
+    "gemini.safety.threshold.blockOnlyHigh": "Hohes Risiko",
+    "gemini.safety.threshold.blockMediumAndAbove": "Mittleres+ Risiko",
+    "gemini.safety.threshold.blockLowAndAbove": "Alles blockieren",
+    "grounding.title": "Google-Suchquellen",
+    "grounding.searchSuggestions": "Google-Suchvorschl\xE4ge",
+    "grounding.sourceCount": "{count} Quellen",
+    "grounding.source": "Quelle {index}",
+    "modelParameters.invalidValue": "Ung\xFCltiger Parameterwert",
+    "modelParameters.objectRequired": "JSON-Objekt eingeben",
+    "modelParameters.invalidJson": "Ung\xFCltiges JSON",
+    "modelParameters.migrated": "{count} \xE4ltere Parameter wurden an das aktuelle Modell angepasst",
+    "modelParameters.historyConfiguration": "Historische Konfiguration",
+    "modelParameters.legacyTask": "Alte Aufgabe",
     "imageEditor.guidance": "Bearbeitungshinweise",
     "imageEditor.instructionMarksGuidance": "Anweisungsmarkierungen",
     "imageEditor.editRegionGuidance": "Maske",
@@ -2000,23 +2088,23 @@
     "imageEditor.maskHelp": "Blau maskierte Bereiche bleiben erhalten. Transparente Bereiche, die mit Pinsel, Rechteck oder Kreis entfernt werden, werden bearbeitet.",
     "imageEditor.emptyEditRegion": "Entfernen Sie vor dem Speichern einen transparenten Bereich aus der Maske.",
     "imageInput.instructionMarksApplied": "Anweisungsmarkierungen angewendet",
-    "imageInput.editRegionApplied": "Bearbeitungsbereich angewendet"
+    "imageInput.editRegionApplied": "Bearbeitungsbereich angewendet",
+    "editPreflight.title": "Pr\xFCfung vor dem Senden",
+    "editPreflight.primary": "Die Maske gilt nur f\xFCr das erste prim\xE4re Bearbeitungsbild: {name}",
+    "editPreflight.responsesResize": "Responses skaliert {width}\xD7{height} vor dem Senden auf {targetWidth}\xD7{targetHeight}",
+    "editPreflight.editArea": "Transparenter Bearbeitungsbereich: {percent}%",
+    "editPreflight.editAreaSmall": "Der Bearbeitungsbereich ist sehr klein; m\xF6glicherweise entsteht keine sichtbare \xC4nderung",
+    "editPreflight.editAreaLarge": "Fast das gesamte Bild ist bearbeitbar; das Ergebnis kann einer vollst\xE4ndigen Neuzeichnung \xE4hneln",
+    "editPreflight.aspectMismatch": "Das Quellformat ist etwa {sourceRatio}, die Ausgabe {outputRatio}; es kann zu Beschnitt oder umfassender Rekonstruktion kommen",
+    "editPreflight.maskDimensionsMismatch": "Die Maskengr\xF6\xDFe {maskWidth}\xD7{maskHeight} entspricht nicht der Bildgr\xF6\xDFe {width}\xD7{height}; \xF6ffnen Sie den Editor erneut und speichern Sie die Maske",
+    "editPreflight.emptyEditArea": "Die Maske enth\xE4lt keinen transparenten Bearbeitungsbereich; l\xF6schen Sie zuerst den zu \xE4ndernden Bereich",
+    "editPreflight.maskInactive": "Kein Bearbeitungsbereich ist aktiv; das Modell kann das gesamte prim\xE4re Bild \xE4ndern",
+    "editPreflight.inspectionFailed": "Die Maskendaten konnten nicht vorab gepr\xFCft werden; der Server pr\xFCft sie beim Senden weiterhin",
+    "editPreflight.blocked": "Beheben Sie vor dem Fortfahren die Fehler der Vorabpr\xFCfung"
   };
 
   // codex_image/webui/frontend/src/i18n/es.ts
   var ES_DICTIONARY = {
-    "editPreflight.title": "Comprobaci\xF3n previa al env\xEDo",
-    "editPreflight.primary": "La m\xE1scara solo se aplica a la primera imagen de edici\xF3n principal: {name}",
-    "editPreflight.responsesResize": "Responses redimensionar\xE1 {width}\xD7{height} a {targetWidth}\xD7{targetHeight} antes del env\xEDo",
-    "editPreflight.editArea": "\xC1rea de edici\xF3n transparente: {percent}%",
-    "editPreflight.editAreaSmall": "El \xE1rea de edici\xF3n es muy peque\xF1a; puede que el modelo no produzca un cambio visible",
-    "editPreflight.editAreaLarge": "Casi toda la imagen es editable; el resultado puede parecer un redibujado completo",
-    "editPreflight.aspectMismatch": "La proporci\xF3n original es aproximadamente {sourceRatio} y la salida es {outputRatio}; puede haber recorte o reconstrucci\xF3n general",
-    "editPreflight.maskDimensionsMismatch": "El tama\xF1o de la m\xE1scara {maskWidth}\xD7{maskHeight} no coincide con la imagen {width}\xD7{height}; vuelve a abrir el editor y guarda la m\xE1scara",
-    "editPreflight.emptyEditArea": "La m\xE1scara no tiene un \xE1rea transparente de edici\xF3n; borra primero la zona que quieras cambiar",
-    "editPreflight.maskInactive": "No hay una zona de edici\xF3n activa; el modelo puede modificar toda la imagen principal",
-    "editPreflight.inspectionFailed": "No se pudo leer la comprobaci\xF3n de la m\xE1scara; el servidor la validar\xE1 al enviarla",
-    "editPreflight.blocked": "Resuelve los errores de la comprobaci\xF3n previa antes de continuar",
     "app.newTask": "Nuevo",
     "app.newTaskAria": "Nuevo chat",
     "sidebar.searchPlaceholder": "Mensajes de b\xFAsqueda o tarea ID",
@@ -2140,7 +2228,7 @@
     "footer.archiveCount": "Archivo {count}",
     "footer.historyLibrary": "Historia",
     "historyLibrary.openFull": "Abrir biblioteca de historia completa",
-    "history.documentTitle": "Historia - iLab GPT CONJURE",
+    "history.documentTitle": "Historia - iLab CONJURE",
     "history.back": "Volver al generador",
     "history.title": "Historia",
     "history.loading": "Cargando",
@@ -2474,6 +2562,7 @@
     "output.lock.lockedHint": "Los par\xE1metros est\xE1n fijados. Usa el candado superior para editar.",
     "output.lock.enabled": "Activada",
     "output.lock.disabled": "Desactivada",
+    "output.lock.custom": "Personalizado",
     "output.mainModel": "modelo principal",
     "output.selectMainModel": "Seleccionar modelo principal",
     "output.mainModelCustomForInput": "Utilice un modelo personalizado para la entrada actual",
@@ -2497,6 +2586,7 @@
     "output.promptHelp.images.original": "No a\xF1ade reglas de la aplicaci\xF3n y env\xEDa el texto original directamente a la API de im\xE1genes.",
     "output.promptHelp.images.strict": "Env\xEDa reglas de fidelidad junto al prompt original para preservar todas las restricciones.",
     "output.promptHelp.images.automatic": "Usa el tratamiento predeterminado de la API de im\xE1genes e incluye las notas necesarias de referencias de la galer\xEDa.",
+    "output.size": "Tama\xF1o de salida",
     "output.sizeMode": "Modo de tama\xF1o",
     "output.sizePreset": "Preestablecido",
     "output.sizeCustom": "personalizado",
@@ -2803,6 +2893,20 @@
     "apiSettings.providerCount": "{count} proveedores",
     "apiSettings.provider": "Proveedor",
     "apiSettings.providerName": "Nombre del proveedor",
+    "apiSettings.providerIcon": "Emoji",
+    "apiSettings.providerIconPlaceholder": "Opcional, p. ej. \u{1FA84}",
+    "apiSettings.connectionScope": "Connection settings",
+    "apiSettings.connectionPreview": "Vista previa de conexi\xF3n",
+    "apiSettings.modelBindings": "Model bindings",
+    "apiSettings.modelBindingsHint": "One provider can bind multiple models and protocols.",
+    "apiSettings.addModelBinding": "Add model binding",
+    "apiSettings.appendRatioPrompt": "A\xF1adir instrucci\xF3n de proporci\xF3n",
+    "apiSettings.defaultProviderForModel": "Proveedor predeterminado",
+    "apiSettings.removeBinding": "Eliminar v\xEDnculo",
+    "apiSettings.catalogRequiredForBinding": "The model catalog is unavailable; a binding cannot be added yet.",
+    "apiSettings.keepOneBinding": "Each provider must keep at least one model binding.",
+    "apiSettings.bindingRequiredFields": "Choose a model, enter a remote model name, and select at least one operation for every binding.",
+    "apiSettings.bindingOverlap": "{model} {operation} is handled by more than one binding.",
     "apiSettings.actualRequest": "Solicitud real",
     "apiSettings.newProviderAction": "Nuevo proveedor",
     "apiSettings.copyProvider": "Copiar",
@@ -2984,6 +3088,40 @@
     "history.referenceFiles": "Archivos de referencia",
     "history.downloadReferenceFile": "Descargar archivo",
     "history.readdReferenceFile": "A\xF1adir de nuevo",
+    "modelSelection.family": "Familia de modelos",
+    "modelSelection.concreteModel": "Modelo",
+    "modelSelection.provider": "Proveedor",
+    "modelSelection.providerUnavailable": "No hay un proveedor disponible para este modelo",
+    "modelSelection.openSettings": "Abrir ajustes de proveedores",
+    "modelSelection.codexUnavailable": "El inicio de sesi\xF3n de Codex no est\xE1 disponible",
+    "modelSelection.catalogUnavailable": "El cat\xE1logo de modelos no est\xE1 disponible",
+    "output.background": "Fondo",
+    "canvas.aspectRatio": "Relaci\xF3n de aspecto",
+    "canvas.resolution": "Resoluci\xF3n",
+    "gemini.googleSearch": "B\xFAsqueda de Google",
+    "gemini.googleImageSearch": "B\xFAsqueda de im\xE1genes de Google",
+    "output.modalities": "Modalidades de salida",
+    "gemini.safetySettings": "Ajustes de seguridad",
+    "gemini.safety.harassment": "Acoso",
+    "gemini.safety.hateSpeech": "Discurso de odio",
+    "gemini.safety.sexuallyExplicit": "Contenido sexual expl\xEDcito",
+    "gemini.safety.dangerousContent": "Contenido peligroso",
+    "gemini.safety.threshold.unspecified": "Predeterminado",
+    "gemini.safety.threshold.off": "Filtro desactivado",
+    "gemini.safety.threshold.blockNone": "No bloquear",
+    "gemini.safety.threshold.blockOnlyHigh": "Bloquear alto",
+    "gemini.safety.threshold.blockMediumAndAbove": "Bloquear medio+",
+    "gemini.safety.threshold.blockLowAndAbove": "Bloquear todo",
+    "grounding.title": "Fuentes de Google Search",
+    "grounding.searchSuggestions": "Sugerencias de Google Search",
+    "grounding.sourceCount": "{count} fuentes",
+    "grounding.source": "Fuente {index}",
+    "modelParameters.invalidValue": "Valor de par\xE1metro no v\xE1lido",
+    "modelParameters.objectRequired": "Introduce un objeto JSON",
+    "modelParameters.invalidJson": "JSON no v\xE1lido",
+    "modelParameters.migrated": "Se ajustaron {count} par\xE1metros anteriores al modelo actual",
+    "modelParameters.historyConfiguration": "Configuraci\xF3n hist\xF3rica",
+    "modelParameters.legacyTask": "Tarea antigua",
     "imageEditor.guidance": "Gu\xEDa de edici\xF3n",
     "imageEditor.instructionMarksGuidance": "Marcas de instrucci\xF3n",
     "imageEditor.editRegionGuidance": "M\xE1scara",
@@ -2997,23 +3135,23 @@
     "imageEditor.maskHelp": "Las \xE1reas azules de la m\xE1scara se conservan. Las \xE1reas transparentes borradas con el pincel, rect\xE1ngulo o c\xEDrculo se editar\xE1n.",
     "imageEditor.emptyEditRegion": "Borra un \xE1rea transparente de la m\xE1scara antes de guardar.",
     "imageInput.instructionMarksApplied": "Marcas de instrucci\xF3n aplicadas",
-    "imageInput.editRegionApplied": "Regi\xF3n de edici\xF3n aplicada"
+    "imageInput.editRegionApplied": "Regi\xF3n de edici\xF3n aplicada",
+    "editPreflight.title": "Comprobaci\xF3n previa al env\xEDo",
+    "editPreflight.primary": "La m\xE1scara solo se aplica a la primera imagen de edici\xF3n principal: {name}",
+    "editPreflight.responsesResize": "Responses redimensionar\xE1 {width}\xD7{height} a {targetWidth}\xD7{targetHeight} antes del env\xEDo",
+    "editPreflight.editArea": "\xC1rea de edici\xF3n transparente: {percent}%",
+    "editPreflight.editAreaSmall": "El \xE1rea de edici\xF3n es muy peque\xF1a; puede que el modelo no produzca un cambio visible",
+    "editPreflight.editAreaLarge": "Casi toda la imagen es editable; el resultado puede parecer un redibujado completo",
+    "editPreflight.aspectMismatch": "La proporci\xF3n original es aproximadamente {sourceRatio} y la salida es {outputRatio}; puede haber recorte o reconstrucci\xF3n general",
+    "editPreflight.maskDimensionsMismatch": "El tama\xF1o de la m\xE1scara {maskWidth}\xD7{maskHeight} no coincide con la imagen {width}\xD7{height}; vuelve a abrir el editor y guarda la m\xE1scara",
+    "editPreflight.emptyEditArea": "La m\xE1scara no tiene un \xE1rea transparente de edici\xF3n; borra primero la zona que quieras cambiar",
+    "editPreflight.maskInactive": "No hay una zona de edici\xF3n activa; el modelo puede modificar toda la imagen principal",
+    "editPreflight.inspectionFailed": "No se pudo leer la comprobaci\xF3n de la m\xE1scara; el servidor la validar\xE1 al enviarla",
+    "editPreflight.blocked": "Resuelve los errores de la comprobaci\xF3n previa antes de continuar"
   };
 
   // codex_image/webui/frontend/src/i18n/fr.ts
   var FR_DICTIONARY = {
-    "editPreflight.title": "V\xE9rification avant envoi",
-    "editPreflight.primary": "Le masque s\u2019applique uniquement \xE0 la premi\xE8re image principale \xE0 modifier : {name}",
-    "editPreflight.responsesResize": "Responses redimensionnera {width}\xD7{height} en {targetWidth}\xD7{targetHeight} avant l\u2019envoi",
-    "editPreflight.editArea": "Zone de modification transparente : {percent}%",
-    "editPreflight.editAreaSmall": "La zone de modification est tr\xE8s petite ; le mod\xE8le risque de ne produire aucun changement visible",
-    "editPreflight.editAreaLarge": "La majeure partie de l\u2019image est modifiable ; le r\xE9sultat peut ressembler \xE0 une recr\xE9ation compl\xE8te",
-    "editPreflight.aspectMismatch": "Le ratio source est d\u2019environ {sourceRatio}, tandis que la sortie est en {outputRatio} ; un recadrage ou une reconstruction globale peut se produire",
-    "editPreflight.maskDimensionsMismatch": "La taille du masque {maskWidth}\xD7{maskHeight} ne correspond pas \xE0 l\u2019image {width}\xD7{height} ; rouvrez l\u2019\xE9diteur et enregistrez le masque",
-    "editPreflight.emptyEditArea": "Le masque ne contient aucune zone transparente \xE0 modifier ; effacez d\u2019abord la zone \xE0 changer",
-    "editPreflight.maskInactive": "Aucune zone de modification n\u2019est active ; le mod\xE8le peut modifier toute l\u2019image principale",
-    "editPreflight.inspectionFailed": "Les informations de pr\xE9validation du masque sont illisibles ; le serveur validera tout de m\xEAme lors de l\u2019envoi",
-    "editPreflight.blocked": "Corrigez les erreurs de v\xE9rification avant de continuer",
     "app.newTask": "Nouveau",
     "app.newTaskAria": "Nouvelle discussion",
     "sidebar.searchPlaceholder": "Rechercher des invites ou une t\xE2che ID",
@@ -3137,7 +3275,7 @@
     "footer.archiveCount": "Archiver {count}",
     "footer.historyLibrary": "Histoire",
     "historyLibrary.openFull": "Ouvrir la biblioth\xE8que d'historique compl\xE8te",
-    "history.documentTitle": "Histoire - iLab GPT CONJURE",
+    "history.documentTitle": "Histoire - iLab CONJURE",
     "history.back": "Retour au g\xE9n\xE9rateur",
     "history.title": "Histoire",
     "history.loading": "Chargement",
@@ -3471,6 +3609,7 @@
     "output.lock.lockedHint": "Les param\xE8tres sont fix\xE9s. Utilisez le cadenas en haut \xE0 droite pour les modifier.",
     "output.lock.enabled": "Activ\xE9e",
     "output.lock.disabled": "D\xE9sactiv\xE9e",
+    "output.lock.custom": "Personnalis\xE9",
     "output.mainModel": "Mod\xE8le principal",
     "output.selectMainModel": "S\xE9lectionnez le mod\xE8le principal",
     "output.mainModelCustomForInput": "Utiliser un mod\xE8le personnalis\xE9 pour l'entr\xE9e actuelle",
@@ -3494,6 +3633,7 @@
     "output.promptHelp.images.original": "N\u2019ajoute aucune r\xE8gle applicative et envoie le texte original directement \xE0 l\u2019API d\u2019images.",
     "output.promptHelp.images.strict": "Envoie les r\xE8gles de fid\xE9lit\xE9 avec le prompt original afin de pr\xE9server toutes les contraintes.",
     "output.promptHelp.images.automatic": "Utilise le traitement par d\xE9faut de l\u2019API d\u2019images et conserve les notes n\xE9cessaires pour les r\xE9f\xE9rences de galerie.",
+    "output.size": "Taille de sortie",
     "output.sizeMode": "Mode taille",
     "output.sizePreset": "Pr\xE9r\xE9glage",
     "output.sizeCustom": "Personnalis\xE9",
@@ -3800,6 +3940,20 @@
     "apiSettings.providerCount": "Fournisseurs {count}",
     "apiSettings.provider": "Fournisseur",
     "apiSettings.providerName": "Nom du fournisseur",
+    "apiSettings.providerIcon": "Emoji",
+    "apiSettings.providerIconPlaceholder": "Facultatif, ex. \u{1FA84}",
+    "apiSettings.connectionScope": "Connection settings",
+    "apiSettings.connectionPreview": "Aper\xE7u de la connexion",
+    "apiSettings.modelBindings": "Model bindings",
+    "apiSettings.modelBindingsHint": "One provider can bind multiple models and protocols.",
+    "apiSettings.addModelBinding": "Add model binding",
+    "apiSettings.appendRatioPrompt": "Ajouter l\u2019instruction de format",
+    "apiSettings.defaultProviderForModel": "Fournisseur par d\xE9faut",
+    "apiSettings.removeBinding": "Supprimer la liaison",
+    "apiSettings.catalogRequiredForBinding": "The model catalog is unavailable; a binding cannot be added yet.",
+    "apiSettings.keepOneBinding": "Each provider must keep at least one model binding.",
+    "apiSettings.bindingRequiredFields": "Choose a model, enter a remote model name, and select at least one operation for every binding.",
+    "apiSettings.bindingOverlap": "{model} {operation} is handled by more than one binding.",
     "apiSettings.actualRequest": "Requ\xEAte effective",
     "apiSettings.newProviderAction": "Nouveau fournisseur",
     "apiSettings.copyProvider": "Copier",
@@ -3981,6 +4135,40 @@
     "history.referenceFiles": "Fichiers de r\xE9f\xE9rence",
     "history.downloadReferenceFile": "T\xE9l\xE9charger le fichier",
     "history.readdReferenceFile": "Ajouter \xE0 nouveau",
+    "modelSelection.family": "Famille de mod\xE8les",
+    "modelSelection.concreteModel": "Mod\xE8le",
+    "modelSelection.provider": "Fournisseur",
+    "modelSelection.providerUnavailable": "Aucun fournisseur n\u2019est disponible pour ce mod\xE8le",
+    "modelSelection.openSettings": "Ouvrir les r\xE9glages des fournisseurs",
+    "modelSelection.codexUnavailable": "La connexion Codex n\u2019est pas disponible",
+    "modelSelection.catalogUnavailable": "Le catalogue de mod\xE8les n\u2019est pas disponible",
+    "output.background": "Arri\xE8re-plan",
+    "canvas.aspectRatio": "Format d\u2019image",
+    "canvas.resolution": "R\xE9solution",
+    "gemini.googleSearch": "Recherche Google",
+    "gemini.googleImageSearch": "Recherche d\u2019images Google",
+    "output.modalities": "Modalit\xE9s de sortie",
+    "gemini.safetySettings": "Param\xE8tres de s\xE9curit\xE9",
+    "gemini.safety.harassment": "Harc\xE8lement",
+    "gemini.safety.hateSpeech": "Discours haineux",
+    "gemini.safety.sexuallyExplicit": "Contenu sexuellement explicite",
+    "gemini.safety.dangerousContent": "Contenu dangereux",
+    "gemini.safety.threshold.unspecified": "Par d\xE9faut",
+    "gemini.safety.threshold.off": "Filtre d\xE9sactiv\xE9",
+    "gemini.safety.threshold.blockNone": "Ne rien bloquer",
+    "gemini.safety.threshold.blockOnlyHigh": "Bloquer \xE9lev\xE9",
+    "gemini.safety.threshold.blockMediumAndAbove": "Bloquer moyen+",
+    "gemini.safety.threshold.blockLowAndAbove": "Tout bloquer",
+    "grounding.title": "Sources de recherche Google",
+    "grounding.searchSuggestions": "Suggestions de recherche Google",
+    "grounding.sourceCount": "{count} sources",
+    "grounding.source": "Source {index}",
+    "modelParameters.invalidValue": "Valeur de param\xE8tre invalide",
+    "modelParameters.objectRequired": "Saisissez un objet JSON",
+    "modelParameters.invalidJson": "JSON invalide",
+    "modelParameters.migrated": "{count} anciens param\xE8tres ont \xE9t\xE9 adapt\xE9s au mod\xE8le actuel",
+    "modelParameters.historyConfiguration": "Configuration historique",
+    "modelParameters.legacyTask": "Ancienne t\xE2che",
     "imageEditor.guidance": "Guide d\u2019\xE9dition",
     "imageEditor.instructionMarksGuidance": "Marques d\u2019instruction",
     "imageEditor.editRegionGuidance": "Masque",
@@ -3994,23 +4182,23 @@
     "imageEditor.maskHelp": "Les zones bleues du masque sont conserv\xE9es. Les zones transparentes effac\xE9es au pinceau, au rectangle ou au cercle seront modifi\xE9es.",
     "imageEditor.emptyEditRegion": "Effacez une zone transparente du masque avant d\u2019enregistrer.",
     "imageInput.instructionMarksApplied": "Marques d\u2019instruction appliqu\xE9es",
-    "imageInput.editRegionApplied": "Zone d\u2019\xE9dition appliqu\xE9e"
+    "imageInput.editRegionApplied": "Zone d\u2019\xE9dition appliqu\xE9e",
+    "editPreflight.title": "V\xE9rification avant envoi",
+    "editPreflight.primary": "Le masque s\u2019applique uniquement \xE0 la premi\xE8re image principale \xE0 modifier : {name}",
+    "editPreflight.responsesResize": "Responses redimensionnera {width}\xD7{height} en {targetWidth}\xD7{targetHeight} avant l\u2019envoi",
+    "editPreflight.editArea": "Zone de modification transparente : {percent}%",
+    "editPreflight.editAreaSmall": "La zone de modification est tr\xE8s petite ; le mod\xE8le risque de ne produire aucun changement visible",
+    "editPreflight.editAreaLarge": "La majeure partie de l\u2019image est modifiable ; le r\xE9sultat peut ressembler \xE0 une recr\xE9ation compl\xE8te",
+    "editPreflight.aspectMismatch": "Le ratio source est d\u2019environ {sourceRatio}, tandis que la sortie est en {outputRatio} ; un recadrage ou une reconstruction globale peut se produire",
+    "editPreflight.maskDimensionsMismatch": "La taille du masque {maskWidth}\xD7{maskHeight} ne correspond pas \xE0 l\u2019image {width}\xD7{height} ; rouvrez l\u2019\xE9diteur et enregistrez le masque",
+    "editPreflight.emptyEditArea": "Le masque ne contient aucune zone transparente \xE0 modifier ; effacez d\u2019abord la zone \xE0 changer",
+    "editPreflight.maskInactive": "Aucune zone de modification n\u2019est active ; le mod\xE8le peut modifier toute l\u2019image principale",
+    "editPreflight.inspectionFailed": "Les informations de pr\xE9validation du masque sont illisibles ; le serveur validera tout de m\xEAme lors de l\u2019envoi",
+    "editPreflight.blocked": "Corrigez les erreurs de v\xE9rification avant de continuer"
   };
 
   // codex_image/webui/frontend/src/i18n/ja.ts
   var JA_DICTIONARY = {
-    "editPreflight.title": "\u9001\u4FE1\u524D\u30C1\u30A7\u30C3\u30AF",
-    "editPreflight.primary": "\u30DE\u30B9\u30AF\u306F\u6700\u521D\u306E\u30E1\u30A4\u30F3\u7DE8\u96C6\u753B\u50CF\u306B\u306E\u307F\u9069\u7528\u3055\u308C\u307E\u3059\uFF1A{name}",
-    "editPreflight.responsesResize": "Responses \u306F\u9001\u4FE1\u524D\u306B {width}\xD7{height} \u3092 {targetWidth}\xD7{targetHeight} \u306B\u7E2E\u5C0F\u3057\u307E\u3059",
-    "editPreflight.editArea": "\u900F\u660E\u306A\u7DE8\u96C6\u9818\u57DF\uFF1A{percent}%",
-    "editPreflight.editAreaSmall": "\u7DE8\u96C6\u9818\u57DF\u304C\u975E\u5E38\u306B\u5C0F\u3055\u3044\u305F\u3081\u3001\u76EE\u306B\u898B\u3048\u308B\u5909\u66F4\u304C\u884C\u308F\u308C\u306A\u3044\u53EF\u80FD\u6027\u304C\u3042\u308A\u307E\u3059",
-    "editPreflight.editAreaLarge": "\u753B\u50CF\u306E\u5927\u90E8\u5206\u304C\u7DE8\u96C6\u53EF\u80FD\u306A\u305F\u3081\u3001\u5168\u4F53\u3092\u63CF\u304D\u76F4\u3057\u305F\u3088\u3046\u306A\u7D50\u679C\u306B\u306A\u308B\u53EF\u80FD\u6027\u304C\u3042\u308A\u307E\u3059",
-    "editPreflight.aspectMismatch": "\u5143\u753B\u50CF\u306E\u6BD4\u7387\u306F\u7D04 {sourceRatio}\u3001\u51FA\u529B\u306F {outputRatio} \u3067\u3059\u3002\u5207\u308A\u629C\u304D\u3084\u5168\u4F53\u7684\u306A\u518D\u69CB\u6210\u304C\u767A\u751F\u3059\u308B\u53EF\u80FD\u6027\u304C\u3042\u308A\u307E\u3059",
-    "editPreflight.maskDimensionsMismatch": "\u30DE\u30B9\u30AF\u30B5\u30A4\u30BA {maskWidth}\xD7{maskHeight} \u304C\u753B\u50CF\u30B5\u30A4\u30BA {width}\xD7{height} \u3068\u4E00\u81F4\u3057\u307E\u305B\u3093\u3002\u30A8\u30C7\u30A3\u30BF\u30FC\u3092\u958B\u304D\u76F4\u3057\u3066\u4FDD\u5B58\u3057\u3066\u304F\u3060\u3055\u3044",
-    "editPreflight.emptyEditArea": "\u30DE\u30B9\u30AF\u306B\u900F\u660E\u306A\u7DE8\u96C6\u9818\u57DF\u304C\u3042\u308A\u307E\u305B\u3093\u3002\u5909\u66F4\u3059\u308B\u9818\u57DF\u3092\u5148\u306B\u6D88\u53BB\u3057\u3066\u304F\u3060\u3055\u3044",
-    "editPreflight.maskInactive": "\u7DE8\u96C6\u9818\u57DF\u306F\u4F7F\u7528\u3055\u308C\u3066\u3044\u307E\u305B\u3093\u3002\u30E2\u30C7\u30EB\u306F\u30E1\u30A4\u30F3\u7DE8\u96C6\u753B\u50CF\u5168\u4F53\u3092\u5909\u66F4\u3067\u304D\u307E\u3059",
-    "editPreflight.inspectionFailed": "\u30DE\u30B9\u30AF\u306E\u4E8B\u524D\u30C1\u30A7\u30C3\u30AF\u60C5\u5831\u3092\u8AAD\u307F\u53D6\u308C\u307E\u305B\u3093\u3067\u3057\u305F\u3002\u9001\u4FE1\u6642\u306B\u30B5\u30FC\u30D0\u30FC\u3067\u691C\u8A3C\u3055\u308C\u307E\u3059",
-    "editPreflight.blocked": "\u7D9A\u884C\u3059\u308B\u524D\u306B\u9001\u4FE1\u524D\u30C1\u30A7\u30C3\u30AF\u306E\u30A8\u30E9\u30FC\u3092\u89E3\u6C7A\u3057\u3066\u304F\u3060\u3055\u3044",
     "app.newTask": "\u65B0\u898F",
     "app.newTaskAria": "\u65B0\u898F\u30C1\u30E3\u30C3\u30C8",
     "sidebar.searchPlaceholder": "\u30D7\u30ED\u30F3\u30D7\u30C8\u307E\u305F\u306F\u30BF\u30B9\u30AF ID \u3092\u691C\u7D22",
@@ -4134,7 +4322,7 @@
     "footer.archiveCount": "\u30A2\u30FC\u30AB\u30A4\u30D6 {count}",
     "footer.historyLibrary": "\u5C65\u6B74",
     "historyLibrary.openFull": "\u5C65\u6B74\u30E9\u30A4\u30D6\u30E9\u30EA\u5168\u4F53\u3092\u958B\u304F",
-    "history.documentTitle": "\u5C65\u6B74 - iLab GPT CONJURE",
+    "history.documentTitle": "\u5C65\u6B74 - iLab CONJURE",
     "history.back": "\u30B8\u30A7\u30CD\u30EC\u30FC\u30BF\u30FC\u306B\u623B\u308B",
     "history.title": "\u5C65\u6B74",
     "history.loading": "\u8AAD\u307F\u8FBC\u307F\u4E2D",
@@ -4468,6 +4656,7 @@
     "output.lock.lockedHint": "\u8A2D\u5B9A\u306F\u56FA\u5B9A\u3055\u308C\u3066\u3044\u307E\u3059\u3002\u53F3\u4E0A\u306E\u9375\u30A2\u30A4\u30B3\u30F3\u3067\u7DE8\u96C6\u306B\u623B\u308C\u307E\u3059\u3002",
     "output.lock.enabled": "\u30AA\u30F3",
     "output.lock.disabled": "\u30AA\u30D5",
+    "output.lock.custom": "\u30AB\u30B9\u30BF\u30E0",
     "output.mainModel": "\u30E1\u30A4\u30F3\u30E2\u30C7\u30EB",
     "output.selectMainModel": "\u30E1\u30A4\u30F3\u30E2\u30C7\u30EB\u3092\u9078\u629E",
     "output.mainModelCustomForInput": "\u73FE\u5728\u306E\u5165\u529B\u306B\u30AB\u30B9\u30BF\u30E0 \u30E2\u30C7\u30EB\u3092\u4F7F\u7528\u3057\u307E\u3059",
@@ -4491,6 +4680,7 @@
     "output.promptHelp.images.original": "\u30A2\u30D7\u30EA\u5074\u306E\u30EB\u30FC\u30EB\u3092\u8FFD\u52A0\u305B\u305A\u3001\u539F\u6587\u3092\u753B\u50CF API \u306B\u76F4\u63A5\u9001\u4FE1\u3057\u307E\u3059\u3002",
     "output.promptHelp.images.strict": "\u539F\u6587\u3068\u4FDD\u771F\u30EB\u30FC\u30EB\u3092\u4E00\u7DD2\u306B\u9001\u4FE1\u3057\u3001\u3059\u3079\u3066\u306E\u5FC5\u9808\u6761\u4EF6\u306E\u4FDD\u6301\u3092\u5F37\u8ABF\u3057\u307E\u3059\u3002",
     "output.promptHelp.images.automatic": "\u753B\u50CF API \u306E\u65E2\u5B9A\u51E6\u7406\u3067\u9001\u4FE1\u3057\u3001\u30AE\u30E3\u30E9\u30EA\u30FC\u53C2\u7167\u306A\u3069\u5FC5\u8981\u306A\u8AAC\u660E\u306F\u542B\u3081\u307E\u3059\u3002",
+    "output.size": "\u51FA\u529B\u30B5\u30A4\u30BA",
     "output.sizeMode": "\u30B5\u30A4\u30BA\u30E2\u30FC\u30C9",
     "output.sizePreset": "\u30D7\u30EA\u30BB\u30C3\u30C8",
     "output.sizeCustom": "\u30AB\u30B9\u30BF\u30E0",
@@ -4797,6 +4987,20 @@
     "apiSettings.providerCount": "\u30D7\u30ED\u30D0\u30A4\u30C0\u30FC {count} \u4EF6",
     "apiSettings.provider": "\u30D7\u30ED\u30D0\u30A4\u30C0\u30FC",
     "apiSettings.providerName": "\u30D7\u30ED\u30D0\u30A4\u30C0\u30FC\u540D",
+    "apiSettings.providerIcon": "\u7D75\u6587\u5B57\u30A2\u30A4\u30B3\u30F3",
+    "apiSettings.providerIconPlaceholder": "\u4EFB\u610F\uFF08\u4F8B: \u{1FA84}\uFF09",
+    "apiSettings.connectionScope": "Connection settings",
+    "apiSettings.connectionPreview": "\u63A5\u7D9A\u30D7\u30EC\u30D3\u30E5\u30FC",
+    "apiSettings.modelBindings": "Model bindings",
+    "apiSettings.modelBindingsHint": "One provider can bind multiple models and protocols.",
+    "apiSettings.addModelBinding": "Add model binding",
+    "apiSettings.appendRatioPrompt": "\u6BD4\u7387\u306E\u6307\u793A\u3092\u8FFD\u52A0",
+    "apiSettings.defaultProviderForModel": "\u65E2\u5B9A\u30D7\u30ED\u30D0\u30A4\u30C0\u30FC",
+    "apiSettings.removeBinding": "\u30D0\u30A4\u30F3\u30C9\u3092\u524A\u9664",
+    "apiSettings.catalogRequiredForBinding": "The model catalog is unavailable; a binding cannot be added yet.",
+    "apiSettings.keepOneBinding": "Each provider must keep at least one model binding.",
+    "apiSettings.bindingRequiredFields": "Choose a model, enter a remote model name, and select at least one operation for every binding.",
+    "apiSettings.bindingOverlap": "{model} {operation} is handled by more than one binding.",
     "apiSettings.actualRequest": "\u5B9F\u969B\u306E\u30EA\u30AF\u30A8\u30B9\u30C8",
     "apiSettings.newProviderAction": "\u30D7\u30ED\u30D0\u30A4\u30C0\u30FC\u3092\u65B0\u898F\u4F5C\u6210",
     "apiSettings.copyProvider": "\u30B3\u30D4\u30FC",
@@ -4978,6 +5182,40 @@
     "history.referenceFiles": "\u53C2\u7167\u30D5\u30A1\u30A4\u30EB",
     "history.downloadReferenceFile": "\u30D5\u30A1\u30A4\u30EB\u3092\u30C0\u30A6\u30F3\u30ED\u30FC\u30C9",
     "history.readdReferenceFile": "\u518D\u8FFD\u52A0",
+    "modelSelection.family": "\u30E2\u30C7\u30EB\u7CFB\u5217",
+    "modelSelection.concreteModel": "\u30E2\u30C7\u30EB",
+    "modelSelection.provider": "\u30D7\u30ED\u30D0\u30A4\u30C0\u30FC",
+    "modelSelection.providerUnavailable": "\u3053\u306E\u30E2\u30C7\u30EB\u3067\u5229\u7528\u3067\u304D\u308B\u30D7\u30ED\u30D0\u30A4\u30C0\u30FC\u304C\u3042\u308A\u307E\u305B\u3093",
+    "modelSelection.openSettings": "\u30D7\u30ED\u30D0\u30A4\u30C0\u30FC\u8A2D\u5B9A\u3092\u958B\u304F",
+    "modelSelection.codexUnavailable": "Codex \u30ED\u30B0\u30A4\u30F3\u3092\u5229\u7528\u3067\u304D\u307E\u305B\u3093",
+    "modelSelection.catalogUnavailable": "\u30E2\u30C7\u30EB\u30AB\u30BF\u30ED\u30B0\u3092\u5229\u7528\u3067\u304D\u307E\u305B\u3093",
+    "output.background": "\u80CC\u666F",
+    "canvas.aspectRatio": "\u30A2\u30B9\u30DA\u30AF\u30C8\u6BD4",
+    "canvas.resolution": "\u89E3\u50CF\u5EA6",
+    "gemini.googleSearch": "Google \u691C\u7D22",
+    "gemini.googleImageSearch": "Google \u753B\u50CF\u691C\u7D22",
+    "output.modalities": "\u51FA\u529B\u30E2\u30C0\u30EA\u30C6\u30A3",
+    "gemini.safetySettings": "\u5B89\u5168\u8A2D\u5B9A",
+    "gemini.safety.harassment": "\u30CF\u30E9\u30B9\u30E1\u30F3\u30C8",
+    "gemini.safety.hateSpeech": "\u30D8\u30A4\u30C8\u30B9\u30D4\u30FC\u30C1",
+    "gemini.safety.sexuallyExplicit": "\u6027\u7684\u306B\u9732\u9AA8\u306A\u5185\u5BB9",
+    "gemini.safety.dangerousContent": "\u5371\u967A\u306A\u30B3\u30F3\u30C6\u30F3\u30C4",
+    "gemini.safety.threshold.unspecified": "\u30C7\u30D5\u30A9\u30EB\u30C8",
+    "gemini.safety.threshold.off": "\u30D5\u30A3\u30EB\u30BF\u7121\u52B9",
+    "gemini.safety.threshold.blockNone": "\u30D6\u30ED\u30C3\u30AF\u3057\u306A\u3044",
+    "gemini.safety.threshold.blockOnlyHigh": "\u9AD8\u30EA\u30B9\u30AF\u3092\u30D6\u30ED\u30C3\u30AF",
+    "gemini.safety.threshold.blockMediumAndAbove": "\u4E2D\u4EE5\u4E0A\u3092\u30D6\u30ED\u30C3\u30AF",
+    "gemini.safety.threshold.blockLowAndAbove": "\u3059\u3079\u3066\u30D6\u30ED\u30C3\u30AF",
+    "grounding.title": "Google \u691C\u7D22\u306E\u51FA\u5178",
+    "grounding.searchSuggestions": "Google \u691C\u7D22\u5019\u88DC",
+    "grounding.sourceCount": "\u51FA\u5178 {count} \u4EF6",
+    "grounding.source": "\u51FA\u5178 {index}",
+    "modelParameters.invalidValue": "\u30D1\u30E9\u30E1\u30FC\u30BF\u5024\u304C\u7121\u52B9\u3067\u3059",
+    "modelParameters.objectRequired": "JSON \u30AA\u30D6\u30B8\u30A7\u30AF\u30C8\u3092\u5165\u529B\u3057\u3066\u304F\u3060\u3055\u3044",
+    "modelParameters.invalidJson": "JSON \u304C\u7121\u52B9\u3067\u3059",
+    "modelParameters.migrated": "\u73FE\u5728\u306E\u30E2\u30C7\u30EB\u306B\u5408\u308F\u305B\u3066\u65E7\u30D1\u30E9\u30E1\u30FC\u30BF\u3092 {count} \u4EF6\u8ABF\u6574\u3057\u307E\u3057\u305F",
+    "modelParameters.historyConfiguration": "\u5C65\u6B74\u8A2D\u5B9A",
+    "modelParameters.legacyTask": "\u65E7\u5F62\u5F0F\u30BF\u30B9\u30AF",
     "imageEditor.guidance": "\u7DE8\u96C6\u30AC\u30A4\u30C0\u30F3\u30B9",
     "imageEditor.instructionMarksGuidance": "\u6307\u793A\u30DE\u30FC\u30AF",
     "imageEditor.editRegionGuidance": "\u30DE\u30B9\u30AF",
@@ -4991,23 +5229,23 @@
     "imageEditor.maskHelp": "\u9752\u3044\u30DE\u30B9\u30AF\u90E8\u5206\u306F\u4FDD\u6301\u3055\u308C\u307E\u3059\u3002\u30D6\u30E9\u30B7\u3001\u9577\u65B9\u5F62\u3001\u5186\u5F62\u3067\u6D88\u3057\u305F\u900F\u660E\u90E8\u5206\u304C\u7DE8\u96C6\u3055\u308C\u307E\u3059\u3002",
     "imageEditor.emptyEditRegion": "\u4FDD\u5B58\u3059\u308B\u524D\u306B\u30DE\u30B9\u30AF\u304B\u3089\u900F\u660E\u306A\u7DE8\u96C6\u9818\u57DF\u3092\u6D88\u53BB\u3057\u3066\u304F\u3060\u3055\u3044\u3002",
     "imageInput.instructionMarksApplied": "\u6307\u793A\u30DE\u30FC\u30AF\u3092\u9069\u7528\u6E08\u307F",
-    "imageInput.editRegionApplied": "\u7DE8\u96C6\u9818\u57DF\u3092\u9069\u7528\u6E08\u307F"
+    "imageInput.editRegionApplied": "\u7DE8\u96C6\u9818\u57DF\u3092\u9069\u7528\u6E08\u307F",
+    "editPreflight.title": "\u9001\u4FE1\u524D\u30C1\u30A7\u30C3\u30AF",
+    "editPreflight.primary": "\u30DE\u30B9\u30AF\u306F\u6700\u521D\u306E\u30E1\u30A4\u30F3\u7DE8\u96C6\u753B\u50CF\u306B\u306E\u307F\u9069\u7528\u3055\u308C\u307E\u3059\uFF1A{name}",
+    "editPreflight.responsesResize": "Responses \u306F\u9001\u4FE1\u524D\u306B {width}\xD7{height} \u3092 {targetWidth}\xD7{targetHeight} \u306B\u7E2E\u5C0F\u3057\u307E\u3059",
+    "editPreflight.editArea": "\u900F\u660E\u306A\u7DE8\u96C6\u9818\u57DF\uFF1A{percent}%",
+    "editPreflight.editAreaSmall": "\u7DE8\u96C6\u9818\u57DF\u304C\u975E\u5E38\u306B\u5C0F\u3055\u3044\u305F\u3081\u3001\u76EE\u306B\u898B\u3048\u308B\u5909\u66F4\u304C\u884C\u308F\u308C\u306A\u3044\u53EF\u80FD\u6027\u304C\u3042\u308A\u307E\u3059",
+    "editPreflight.editAreaLarge": "\u753B\u50CF\u306E\u5927\u90E8\u5206\u304C\u7DE8\u96C6\u53EF\u80FD\u306A\u305F\u3081\u3001\u5168\u4F53\u3092\u63CF\u304D\u76F4\u3057\u305F\u3088\u3046\u306A\u7D50\u679C\u306B\u306A\u308B\u53EF\u80FD\u6027\u304C\u3042\u308A\u307E\u3059",
+    "editPreflight.aspectMismatch": "\u5143\u753B\u50CF\u306E\u6BD4\u7387\u306F\u7D04 {sourceRatio}\u3001\u51FA\u529B\u306F {outputRatio} \u3067\u3059\u3002\u5207\u308A\u629C\u304D\u3084\u5168\u4F53\u7684\u306A\u518D\u69CB\u6210\u304C\u767A\u751F\u3059\u308B\u53EF\u80FD\u6027\u304C\u3042\u308A\u307E\u3059",
+    "editPreflight.maskDimensionsMismatch": "\u30DE\u30B9\u30AF\u30B5\u30A4\u30BA {maskWidth}\xD7{maskHeight} \u304C\u753B\u50CF\u30B5\u30A4\u30BA {width}\xD7{height} \u3068\u4E00\u81F4\u3057\u307E\u305B\u3093\u3002\u30A8\u30C7\u30A3\u30BF\u30FC\u3092\u958B\u304D\u76F4\u3057\u3066\u4FDD\u5B58\u3057\u3066\u304F\u3060\u3055\u3044",
+    "editPreflight.emptyEditArea": "\u30DE\u30B9\u30AF\u306B\u900F\u660E\u306A\u7DE8\u96C6\u9818\u57DF\u304C\u3042\u308A\u307E\u305B\u3093\u3002\u5909\u66F4\u3059\u308B\u9818\u57DF\u3092\u5148\u306B\u6D88\u53BB\u3057\u3066\u304F\u3060\u3055\u3044",
+    "editPreflight.maskInactive": "\u7DE8\u96C6\u9818\u57DF\u306F\u4F7F\u7528\u3055\u308C\u3066\u3044\u307E\u305B\u3093\u3002\u30E2\u30C7\u30EB\u306F\u30E1\u30A4\u30F3\u7DE8\u96C6\u753B\u50CF\u5168\u4F53\u3092\u5909\u66F4\u3067\u304D\u307E\u3059",
+    "editPreflight.inspectionFailed": "\u30DE\u30B9\u30AF\u306E\u4E8B\u524D\u30C1\u30A7\u30C3\u30AF\u60C5\u5831\u3092\u8AAD\u307F\u53D6\u308C\u307E\u305B\u3093\u3067\u3057\u305F\u3002\u9001\u4FE1\u6642\u306B\u30B5\u30FC\u30D0\u30FC\u3067\u691C\u8A3C\u3055\u308C\u307E\u3059",
+    "editPreflight.blocked": "\u7D9A\u884C\u3059\u308B\u524D\u306B\u9001\u4FE1\u524D\u30C1\u30A7\u30C3\u30AF\u306E\u30A8\u30E9\u30FC\u3092\u89E3\u6C7A\u3057\u3066\u304F\u3060\u3055\u3044"
   };
 
   // codex_image/webui/frontend/src/i18n/ko.ts
   var KO_DICTIONARY = {
-    "editPreflight.title": "\uC81C\uCD9C \uC804 \uD655\uC778",
-    "editPreflight.primary": "\uB9C8\uC2A4\uD06C\uB294 \uCCAB \uBC88\uC9F8 \uAE30\uBCF8 \uD3B8\uC9D1 \uC774\uBBF8\uC9C0\uC5D0\uB9CC \uC801\uC6A9\uB429\uB2C8\uB2E4: {name}",
-    "editPreflight.responsesResize": "Responses\uB294 \uC81C\uCD9C \uC804\uC5D0 {width}\xD7{height}\uB97C {targetWidth}\xD7{targetHeight}\uB85C \uCD95\uC18C\uD569\uB2C8\uB2E4",
-    "editPreflight.editArea": "\uD22C\uBA85 \uD3B8\uC9D1 \uC601\uC5ED: {percent}%",
-    "editPreflight.editAreaSmall": "\uD3B8\uC9D1 \uC601\uC5ED\uC774 \uB9E4\uC6B0 \uC791\uC544 \uB208\uC5D0 \uB744\uB294 \uBCC0\uACBD\uC774 \uC5C6\uC744 \uC218 \uC788\uC2B5\uB2C8\uB2E4",
-    "editPreflight.editAreaLarge": "\uC774\uBBF8\uC9C0 \uB300\uBD80\uBD84\uC744 \uD3B8\uC9D1\uD560 \uC218 \uC788\uC5B4 \uC804\uCCB4 \uC774\uBBF8\uC9C0\uB97C \uB2E4\uC2DC \uADF8\uB9B0 \uACB0\uACFC\uC640 \uBE44\uC2B7\uD560 \uC218 \uC788\uC2B5\uB2C8\uB2E4",
-    "editPreflight.aspectMismatch": "\uC6D0\uBCF8 \uBE44\uC728\uC740 \uC57D {sourceRatio}, \uCD9C\uB825\uC740 {outputRatio}\uC774\uBBC0\uB85C \uC790\uB974\uAE30\uB098 \uC804\uCCB4 \uC7AC\uAD6C\uC131\uC774 \uBC1C\uC0DD\uD560 \uC218 \uC788\uC2B5\uB2C8\uB2E4",
-    "editPreflight.maskDimensionsMismatch": "\uB9C8\uC2A4\uD06C \uD06C\uAE30 {maskWidth}\xD7{maskHeight}\uAC00 \uC774\uBBF8\uC9C0 \uD06C\uAE30 {width}\xD7{height}\uC640 \uB2E4\uB985\uB2C8\uB2E4. \uD3B8\uC9D1\uAE30\uB97C \uB2E4\uC2DC \uC5F4\uC5B4 \uB9C8\uC2A4\uD06C\uB97C \uC800\uC7A5\uD558\uC138\uC694",
-    "editPreflight.emptyEditArea": "\uB9C8\uC2A4\uD06C\uC5D0 \uD22C\uBA85\uD55C \uD3B8\uC9D1 \uC601\uC5ED\uC774 \uC5C6\uC2B5\uB2C8\uB2E4. \uBA3C\uC800 \uBCC0\uACBD\uD560 \uC601\uC5ED\uC744 \uC9C0\uC6B0\uC138\uC694",
-    "editPreflight.maskInactive": "\uD3B8\uC9D1 \uC601\uC5ED\uC744 \uC0AC\uC6A9\uD558\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4. \uBAA8\uB378\uC774 \uAE30\uBCF8 \uD3B8\uC9D1 \uC774\uBBF8\uC9C0 \uC804\uCCB4\uB97C \uC218\uC815\uD560 \uC218 \uC788\uC2B5\uB2C8\uB2E4",
-    "editPreflight.inspectionFailed": "\uB9C8\uC2A4\uD06C \uC0AC\uC804 \uAC80\uC0AC \uC815\uBCF4\uB97C \uC77D\uC744 \uC218 \uC5C6\uC2B5\uB2C8\uB2E4. \uC81C\uCD9C \uC2DC \uC11C\uBC84\uC5D0\uC11C \uB2E4\uC2DC \uAC80\uC99D\uD569\uB2C8\uB2E4",
-    "editPreflight.blocked": "\uACC4\uC18D\uD558\uAE30 \uC804\uC5D0 \uC81C\uCD9C \uC804 \uAC80\uC0AC \uC624\uB958\uB97C \uD574\uACB0\uD558\uC138\uC694",
     "app.newTask": "\uC0C8\uB85C \uB9CC\uB4E4\uAE30",
     "app.newTaskAria": "\uC0C8 \uCC44\uD305 \uB9CC\uB4E4\uAE30",
     "sidebar.searchPlaceholder": "\uD504\uB86C\uD504\uD2B8 \uB610\uB294 \uC791\uC5C5 ID \uAC80\uC0C9",
@@ -5131,7 +5369,7 @@
     "footer.archiveCount": "\uBCF4\uAD00\uD568 {count}",
     "footer.historyLibrary": "\uAE30\uB85D",
     "historyLibrary.openFull": "\uC804\uCCB4 \uAE30\uB85D \uB77C\uC774\uBE0C\uB7EC\uB9AC \uC5F4\uAE30",
-    "history.documentTitle": "\uAE30\uB85D - iLab GPT CONJURE",
+    "history.documentTitle": "\uAE30\uB85D - iLab CONJURE",
     "history.back": "\uC0DD\uC131\uAE30\uB85C \uB3CC\uC544\uAC00\uAE30",
     "history.title": "\uAE30\uB85D",
     "history.loading": "\uB85C\uB4DC \uC911",
@@ -5465,6 +5703,7 @@
     "output.lock.lockedHint": "\uB9E4\uAC1C\uBCC0\uC218\uAC00 \uACE0\uC815\uB418\uC5C8\uC2B5\uB2C8\uB2E4. \uC624\uB978\uCABD \uC704 \uC7A0\uAE08 \uC544\uC774\uCF58\uC73C\uB85C \uD3B8\uC9D1\uD558\uC138\uC694.",
     "output.lock.enabled": "\uCF1C\uC9D0",
     "output.lock.disabled": "\uAEBC\uC9D0",
+    "output.lock.custom": "\uC0AC\uC6A9\uC790 \uC9C0\uC815",
     "output.mainModel": "\uBA54\uC778 \uBAA8\uB378",
     "output.selectMainModel": "\uBA54\uC778 \uBAA8\uB378 \uC120\uD0DD",
     "output.mainModelCustomForInput": "\uD604\uC7AC \uC785\uB825\uC5D0 \uC0AC\uC6A9\uC790 \uC815\uC758 \uBAA8\uB378\uC744 \uC0AC\uC6A9\uD569\uB2C8\uB2E4.",
@@ -5488,6 +5727,7 @@
     "output.promptHelp.images.original": "\uC571 \uC218\uC900\uC758 \uADDC\uCE59\uC744 \uCD94\uAC00\uD558\uC9C0 \uC54A\uACE0 \uC6D0\uBB38\uC744 \uC774\uBBF8\uC9C0 API\uC5D0 \uC9C1\uC811 \uC81C\uCD9C\uD569\uB2C8\uB2E4.",
     "output.promptHelp.images.strict": "\uC6D0\uBB38\uACFC \uCDA9\uC2E4\uB3C4 \uADDC\uCE59\uC744 \uD568\uAED8 \uC81C\uCD9C\uD574 \uBAA8\uB4E0 \uD544\uC218 \uC870\uAC74\uC758 \uC720\uC9C0\uB97C \uAC15\uC870\uD569\uB2C8\uB2E4.",
     "output.promptHelp.images.automatic": "\uC774\uBBF8\uC9C0 API\uC758 \uAE30\uBCF8 \uBC29\uC2DD\uC73C\uB85C \uC81C\uCD9C\uD558\uBA70 \uAC24\uB7EC\uB9AC \uCC38\uC870 \uAC19\uC740 \uD544\uC218 \uC124\uBA85\uC740 \uD3EC\uD568\uD569\uB2C8\uB2E4.",
+    "output.size": "\uCD9C\uB825 \uD06C\uAE30",
     "output.sizeMode": "\uD06C\uAE30 \uBAA8\uB4DC",
     "output.sizePreset": "\uC0AC\uC804 \uC124\uC815",
     "output.sizeCustom": "\uC0AC\uC6A9\uC790 \uC815\uC758",
@@ -5794,6 +6034,20 @@
     "apiSettings.providerCount": "\uACF5\uAE09\uC790 {count}\uAC1C",
     "apiSettings.provider": "\uACF5\uAE09\uC790",
     "apiSettings.providerName": "\uACF5\uAE09\uC790 \uC774\uB984",
+    "apiSettings.providerIcon": "\uC774\uBAA8\uC9C0 \uC544\uC774\uCF58",
+    "apiSettings.providerIconPlaceholder": "\uC120\uD0DD \uC0AC\uD56D, \uC608: \u{1FA84}",
+    "apiSettings.connectionScope": "Connection settings",
+    "apiSettings.connectionPreview": "\uC5F0\uACB0 \uBBF8\uB9AC\uBCF4\uAE30",
+    "apiSettings.modelBindings": "Model bindings",
+    "apiSettings.modelBindingsHint": "One provider can bind multiple models and protocols.",
+    "apiSettings.addModelBinding": "Add model binding",
+    "apiSettings.appendRatioPrompt": "\uBE44\uC728 \uC9C0\uC2DC \uCD94\uAC00",
+    "apiSettings.defaultProviderForModel": "\uAE30\uBCF8 \uACF5\uAE09\uC790",
+    "apiSettings.removeBinding": "\uBC14\uC778\uB529 \uC0AD\uC81C",
+    "apiSettings.catalogRequiredForBinding": "The model catalog is unavailable; a binding cannot be added yet.",
+    "apiSettings.keepOneBinding": "Each provider must keep at least one model binding.",
+    "apiSettings.bindingRequiredFields": "Choose a model, enter a remote model name, and select at least one operation for every binding.",
+    "apiSettings.bindingOverlap": "{model} {operation} is handled by more than one binding.",
     "apiSettings.actualRequest": "\uC2E4\uC81C \uC694\uCCAD",
     "apiSettings.newProviderAction": "\uACF5\uAE09\uC790 \uC0C8\uB85C \uB9CC\uB4E4\uAE30",
     "apiSettings.copyProvider": "\uBCF5\uC0AC",
@@ -5975,6 +6229,40 @@
     "history.referenceFiles": "\uCC38\uC870 \uD30C\uC77C",
     "history.downloadReferenceFile": "\uD30C\uC77C \uB2E4\uC6B4\uB85C\uB4DC",
     "history.readdReferenceFile": "\uB2E4\uC2DC \uCD94\uAC00",
+    "modelSelection.family": "\uBAA8\uB378 \uC81C\uD488\uAD70",
+    "modelSelection.concreteModel": "\uBAA8\uB378",
+    "modelSelection.provider": "\uACF5\uAE09\uC790",
+    "modelSelection.providerUnavailable": "\uC774 \uBAA8\uB378\uC5D0 \uC0AC\uC6A9 \uAC00\uB2A5\uD55C \uACF5\uAE09\uC790\uAC00 \uC5C6\uC2B5\uB2C8\uB2E4",
+    "modelSelection.openSettings": "\uACF5\uAE09\uC790 \uC124\uC815 \uC5F4\uAE30",
+    "modelSelection.codexUnavailable": "Codex \uB85C\uADF8\uC778\uC744 \uC0AC\uC6A9\uD560 \uC218 \uC5C6\uC2B5\uB2C8\uB2E4",
+    "modelSelection.catalogUnavailable": "\uBAA8\uB378 \uCE74\uD0C8\uB85C\uADF8\uB97C \uC0AC\uC6A9\uD560 \uC218 \uC5C6\uC2B5\uB2C8\uB2E4",
+    "output.background": "\uBC30\uACBD",
+    "canvas.aspectRatio": "\uD654\uBA74 \uBE44\uC728",
+    "canvas.resolution": "\uD574\uC0C1\uB3C4",
+    "gemini.googleSearch": "Google \uAC80\uC0C9",
+    "gemini.googleImageSearch": "Google \uC774\uBBF8\uC9C0 \uAC80\uC0C9",
+    "output.modalities": "\uCD9C\uB825 \uBAA8\uB2EC\uB9AC\uD2F0",
+    "gemini.safetySettings": "\uC548\uC804 \uC124\uC815",
+    "gemini.safety.harassment": "\uAD34\uB86D\uD798",
+    "gemini.safety.hateSpeech": "\uD610\uC624 \uBC1C\uC5B8",
+    "gemini.safety.sexuallyExplicit": "\uC131\uC801\uC73C\uB85C \uB178\uACE8\uC801\uC778 \uCF58\uD150\uCE20",
+    "gemini.safety.dangerousContent": "\uC704\uD5D8\uD55C \uCF58\uD150\uCE20",
+    "gemini.safety.threshold.unspecified": "\uAE30\uBCF8\uAC12",
+    "gemini.safety.threshold.off": "\uD544\uD130 \uB044\uAE30",
+    "gemini.safety.threshold.blockNone": "\uCC28\uB2E8 \uC548 \uD568",
+    "gemini.safety.threshold.blockOnlyHigh": "\uB192\uC74C \uCC28\uB2E8",
+    "gemini.safety.threshold.blockMediumAndAbove": "\uC911\uAC04 \uC774\uC0C1 \uCC28\uB2E8",
+    "gemini.safety.threshold.blockLowAndAbove": "\uBAA8\uB450 \uCC28\uB2E8",
+    "grounding.title": "Google \uAC80\uC0C9 \uCD9C\uCC98",
+    "grounding.searchSuggestions": "Google \uAC80\uC0C9 \uC81C\uC548",
+    "grounding.sourceCount": "\uCD9C\uCC98 {count}\uAC1C",
+    "grounding.source": "\uCD9C\uCC98 {index}",
+    "modelParameters.invalidValue": "\uB9E4\uAC1C\uBCC0\uC218 \uAC12\uC774 \uC798\uBABB\uB418\uC5C8\uC2B5\uB2C8\uB2E4",
+    "modelParameters.objectRequired": "JSON \uAC1D\uCCB4\uB97C \uC785\uB825\uD558\uC138\uC694",
+    "modelParameters.invalidJson": "\uC798\uBABB\uB41C JSON\uC785\uB2C8\uB2E4",
+    "modelParameters.migrated": "\uD604\uC7AC \uBAA8\uB378\uC5D0 \uB9DE\uAC8C \uAE30\uC874 \uB9E4\uAC1C\uBCC0\uC218 {count}\uAC1C\uB97C \uC870\uC815\uD588\uC2B5\uB2C8\uB2E4",
+    "modelParameters.historyConfiguration": "\uAE30\uB85D \uC124\uC815",
+    "modelParameters.legacyTask": "\uB808\uAC70\uC2DC \uC791\uC5C5",
     "imageEditor.guidance": "\uD3B8\uC9D1 \uC548\uB0B4",
     "imageEditor.instructionMarksGuidance": "\uC9C0\uC2DC \uD45C\uC2DC",
     "imageEditor.editRegionGuidance": "\uB9C8\uC2A4\uD06C",
@@ -5988,23 +6276,23 @@
     "imageEditor.maskHelp": "\uD30C\uB780 \uB9C8\uC2A4\uD06C \uC601\uC5ED\uC740 \uC720\uC9C0\uB429\uB2C8\uB2E4. \uBE0C\uB7EC\uC2DC, \uC0AC\uAC01\uD615 \uB610\uB294 \uC6D0\uD615\uC73C\uB85C \uC9C0\uC6B4 \uD22C\uBA85 \uC601\uC5ED\uC774 \uD3B8\uC9D1\uB429\uB2C8\uB2E4.",
     "imageEditor.emptyEditRegion": "\uC800\uC7A5\uD558\uAE30 \uC804\uC5D0 \uB9C8\uC2A4\uD06C\uC5D0\uC11C \uD22C\uBA85\uD55C \uD3B8\uC9D1 \uC601\uC5ED\uC744 \uC9C0\uC6B0\uC138\uC694.",
     "imageInput.instructionMarksApplied": "\uC9C0\uC2DC \uD45C\uC2DC \uC801\uC6A9\uB428",
-    "imageInput.editRegionApplied": "\uD3B8\uC9D1 \uC601\uC5ED \uC801\uC6A9\uB428"
+    "imageInput.editRegionApplied": "\uD3B8\uC9D1 \uC601\uC5ED \uC801\uC6A9\uB428",
+    "editPreflight.title": "\uC81C\uCD9C \uC804 \uD655\uC778",
+    "editPreflight.primary": "\uB9C8\uC2A4\uD06C\uB294 \uCCAB \uBC88\uC9F8 \uAE30\uBCF8 \uD3B8\uC9D1 \uC774\uBBF8\uC9C0\uC5D0\uB9CC \uC801\uC6A9\uB429\uB2C8\uB2E4: {name}",
+    "editPreflight.responsesResize": "Responses\uB294 \uC81C\uCD9C \uC804\uC5D0 {width}\xD7{height}\uB97C {targetWidth}\xD7{targetHeight}\uB85C \uCD95\uC18C\uD569\uB2C8\uB2E4",
+    "editPreflight.editArea": "\uD22C\uBA85 \uD3B8\uC9D1 \uC601\uC5ED: {percent}%",
+    "editPreflight.editAreaSmall": "\uD3B8\uC9D1 \uC601\uC5ED\uC774 \uB9E4\uC6B0 \uC791\uC544 \uB208\uC5D0 \uB744\uB294 \uBCC0\uACBD\uC774 \uC5C6\uC744 \uC218 \uC788\uC2B5\uB2C8\uB2E4",
+    "editPreflight.editAreaLarge": "\uC774\uBBF8\uC9C0 \uB300\uBD80\uBD84\uC744 \uD3B8\uC9D1\uD560 \uC218 \uC788\uC5B4 \uC804\uCCB4 \uC774\uBBF8\uC9C0\uB97C \uB2E4\uC2DC \uADF8\uB9B0 \uACB0\uACFC\uC640 \uBE44\uC2B7\uD560 \uC218 \uC788\uC2B5\uB2C8\uB2E4",
+    "editPreflight.aspectMismatch": "\uC6D0\uBCF8 \uBE44\uC728\uC740 \uC57D {sourceRatio}, \uCD9C\uB825\uC740 {outputRatio}\uC774\uBBC0\uB85C \uC790\uB974\uAE30\uB098 \uC804\uCCB4 \uC7AC\uAD6C\uC131\uC774 \uBC1C\uC0DD\uD560 \uC218 \uC788\uC2B5\uB2C8\uB2E4",
+    "editPreflight.maskDimensionsMismatch": "\uB9C8\uC2A4\uD06C \uD06C\uAE30 {maskWidth}\xD7{maskHeight}\uAC00 \uC774\uBBF8\uC9C0 \uD06C\uAE30 {width}\xD7{height}\uC640 \uB2E4\uB985\uB2C8\uB2E4. \uD3B8\uC9D1\uAE30\uB97C \uB2E4\uC2DC \uC5F4\uC5B4 \uB9C8\uC2A4\uD06C\uB97C \uC800\uC7A5\uD558\uC138\uC694",
+    "editPreflight.emptyEditArea": "\uB9C8\uC2A4\uD06C\uC5D0 \uD22C\uBA85\uD55C \uD3B8\uC9D1 \uC601\uC5ED\uC774 \uC5C6\uC2B5\uB2C8\uB2E4. \uBA3C\uC800 \uBCC0\uACBD\uD560 \uC601\uC5ED\uC744 \uC9C0\uC6B0\uC138\uC694",
+    "editPreflight.maskInactive": "\uD3B8\uC9D1 \uC601\uC5ED\uC744 \uC0AC\uC6A9\uD558\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4. \uBAA8\uB378\uC774 \uAE30\uBCF8 \uD3B8\uC9D1 \uC774\uBBF8\uC9C0 \uC804\uCCB4\uB97C \uC218\uC815\uD560 \uC218 \uC788\uC2B5\uB2C8\uB2E4",
+    "editPreflight.inspectionFailed": "\uB9C8\uC2A4\uD06C \uC0AC\uC804 \uAC80\uC0AC \uC815\uBCF4\uB97C \uC77D\uC744 \uC218 \uC5C6\uC2B5\uB2C8\uB2E4. \uC81C\uCD9C \uC2DC \uC11C\uBC84\uC5D0\uC11C \uB2E4\uC2DC \uAC80\uC99D\uD569\uB2C8\uB2E4",
+    "editPreflight.blocked": "\uACC4\uC18D\uD558\uAE30 \uC804\uC5D0 \uC81C\uCD9C \uC804 \uAC80\uC0AC \uC624\uB958\uB97C \uD574\uACB0\uD558\uC138\uC694"
   };
 
   // codex_image/webui/frontend/src/i18n/pt.ts
   var PT_DICTIONARY = {
-    "editPreflight.title": "Verifica\xE7\xE3o antes do envio",
-    "editPreflight.primary": "A m\xE1scara se aplica apenas \xE0 primeira imagem principal de edi\xE7\xE3o: {name}",
-    "editPreflight.responsesResize": "O Responses redimensionar\xE1 {width}\xD7{height} para {targetWidth}\xD7{targetHeight} antes do envio",
-    "editPreflight.editArea": "\xC1rea transparente de edi\xE7\xE3o: {percent}%",
-    "editPreflight.editAreaSmall": "A \xE1rea de edi\xE7\xE3o \xE9 muito pequena; o modelo pode n\xE3o produzir uma altera\xE7\xE3o vis\xEDvel",
-    "editPreflight.editAreaLarge": "Quase toda a imagem pode ser editada; o resultado pode parecer um redesenho completo",
-    "editPreflight.aspectMismatch": "A propor\xE7\xE3o original \xE9 cerca de {sourceRatio} e a sa\xEDda \xE9 {outputRatio}; pode ocorrer corte ou reconstru\xE7\xE3o geral",
-    "editPreflight.maskDimensionsMismatch": "O tamanho da m\xE1scara {maskWidth}\xD7{maskHeight} n\xE3o corresponde \xE0 imagem {width}\xD7{height}; reabra o editor e salve a m\xE1scara",
-    "editPreflight.emptyEditArea": "A m\xE1scara n\xE3o tem uma \xE1rea transparente de edi\xE7\xE3o; apague primeiro a \xE1rea que deseja alterar",
-    "editPreflight.maskInactive": "Nenhuma \xE1rea de edi\xE7\xE3o est\xE1 ativa; o modelo pode alterar toda a imagem principal",
-    "editPreflight.inspectionFailed": "N\xE3o foi poss\xEDvel ler a verifica\xE7\xE3o da m\xE1scara; o servidor ainda far\xE1 a valida\xE7\xE3o no envio",
-    "editPreflight.blocked": "Resolva os erros da verifica\xE7\xE3o antes de continuar",
     "app.newTask": "Novo",
     "app.newTaskAria": "Novo bate-papo",
     "sidebar.searchPlaceholder": "Solicita\xE7\xF5es de pesquisa ou tarefa ID",
@@ -6128,7 +6416,7 @@
     "footer.archiveCount": "Arquivo {count}",
     "footer.historyLibrary": "Hist\xF3ria",
     "historyLibrary.openFull": "Abra a biblioteca de hist\xF3rico completa",
-    "history.documentTitle": "Hist\xF3ria - iLab GPT CONJURE",
+    "history.documentTitle": "Hist\xF3ria - iLab CONJURE",
     "history.back": "Voltar ao gerador",
     "history.title": "Hist\xF3ria",
     "history.loading": "Carregando",
@@ -6462,6 +6750,7 @@
     "output.lock.lockedHint": "Os par\xE2metros est\xE3o fixos. Use o cadeado no canto superior para editar.",
     "output.lock.enabled": "Ativada",
     "output.lock.disabled": "Desativada",
+    "output.lock.custom": "Personalizado",
     "output.mainModel": "Modelo principal",
     "output.selectMainModel": "Selecione o modelo principal",
     "output.mainModelCustomForInput": "Use um modelo personalizado para a entrada atual",
@@ -6485,6 +6774,7 @@
     "output.promptHelp.images.original": "N\xE3o adiciona regras do aplicativo e envia o texto original diretamente \xE0 API de imagens.",
     "output.promptHelp.images.strict": "Envia regras de fidelidade junto com o prompt original para preservar todas as restri\xE7\xF5es.",
     "output.promptHelp.images.automatic": "Usa o tratamento padr\xE3o da API de imagens e inclui as notas necess\xE1rias de refer\xEAncias da galeria.",
+    "output.size": "Tamanho da sa\xEDda",
     "output.sizeMode": "Modo de tamanho",
     "output.sizePreset": "Predefinido",
     "output.sizeCustom": "Personalizado",
@@ -6791,6 +7081,20 @@
     "apiSettings.providerCount": "{count} provedores",
     "apiSettings.provider": "Provedor",
     "apiSettings.providerName": "Nome do provedor",
+    "apiSettings.providerIcon": "Emoji",
+    "apiSettings.providerIconPlaceholder": "Opcional, ex.: \u{1FA84}",
+    "apiSettings.connectionScope": "Connection settings",
+    "apiSettings.connectionPreview": "Pr\xE9via da conex\xE3o",
+    "apiSettings.modelBindings": "Model bindings",
+    "apiSettings.modelBindingsHint": "One provider can bind multiple models and protocols.",
+    "apiSettings.addModelBinding": "Add model binding",
+    "apiSettings.appendRatioPrompt": "Adicionar instru\xE7\xE3o de propor\xE7\xE3o",
+    "apiSettings.defaultProviderForModel": "Provedor padr\xE3o",
+    "apiSettings.removeBinding": "Remover v\xEDnculo",
+    "apiSettings.catalogRequiredForBinding": "The model catalog is unavailable; a binding cannot be added yet.",
+    "apiSettings.keepOneBinding": "Each provider must keep at least one model binding.",
+    "apiSettings.bindingRequiredFields": "Choose a model, enter a remote model name, and select at least one operation for every binding.",
+    "apiSettings.bindingOverlap": "{model} {operation} is handled by more than one binding.",
     "apiSettings.actualRequest": "Solicita\xE7\xE3o efetiva",
     "apiSettings.newProviderAction": "Novo provedor",
     "apiSettings.copyProvider": "Copiar",
@@ -6972,6 +7276,40 @@
     "history.referenceFiles": "Arquivos de refer\xEAncia",
     "history.downloadReferenceFile": "Baixar arquivo",
     "history.readdReferenceFile": "Adicionar novamente",
+    "modelSelection.family": "Fam\xEDlia de modelos",
+    "modelSelection.concreteModel": "Modelo",
+    "modelSelection.provider": "Provedor",
+    "modelSelection.providerUnavailable": "Nenhum provedor est\xE1 dispon\xEDvel para este modelo",
+    "modelSelection.openSettings": "Abrir configura\xE7\xF5es de provedores",
+    "modelSelection.codexUnavailable": "O login do Codex n\xE3o est\xE1 dispon\xEDvel",
+    "modelSelection.catalogUnavailable": "O cat\xE1logo de modelos n\xE3o est\xE1 dispon\xEDvel",
+    "output.background": "Fundo",
+    "canvas.aspectRatio": "Propor\xE7\xE3o",
+    "canvas.resolution": "Resolu\xE7\xE3o",
+    "gemini.googleSearch": "Pesquisa Google",
+    "gemini.googleImageSearch": "Pesquisa de imagens Google",
+    "output.modalities": "Modalidades de sa\xEDda",
+    "gemini.safetySettings": "Configura\xE7\xF5es de seguran\xE7a",
+    "gemini.safety.harassment": "Ass\xE9dio",
+    "gemini.safety.hateSpeech": "Discurso de \xF3dio",
+    "gemini.safety.sexuallyExplicit": "Sexualmente expl\xEDcito",
+    "gemini.safety.dangerousContent": "Conte\xFAdo perigoso",
+    "gemini.safety.threshold.unspecified": "Padr\xE3o",
+    "gemini.safety.threshold.off": "Filtro desativado",
+    "gemini.safety.threshold.blockNone": "N\xE3o bloquear",
+    "gemini.safety.threshold.blockOnlyHigh": "Bloquear alto",
+    "gemini.safety.threshold.blockMediumAndAbove": "Bloquear m\xE9dio+",
+    "gemini.safety.threshold.blockLowAndAbove": "Bloquear tudo",
+    "grounding.title": "Fontes da Pesquisa Google",
+    "grounding.searchSuggestions": "Sugest\xF5es da Pesquisa Google",
+    "grounding.sourceCount": "{count} fontes",
+    "grounding.source": "Fonte {index}",
+    "modelParameters.invalidValue": "Valor de par\xE2metro inv\xE1lido",
+    "modelParameters.objectRequired": "Insira um objeto JSON",
+    "modelParameters.invalidJson": "JSON inv\xE1lido",
+    "modelParameters.migrated": "Foram ajustados {count} par\xE2metros antigos ao modelo atual",
+    "modelParameters.historyConfiguration": "Configura\xE7\xE3o hist\xF3rica",
+    "modelParameters.legacyTask": "Tarefa antiga",
     "imageEditor.guidance": "Orienta\xE7\xE3o de edi\xE7\xE3o",
     "imageEditor.instructionMarksGuidance": "Marcas de instru\xE7\xE3o",
     "imageEditor.editRegionGuidance": "M\xE1scara",
@@ -6985,23 +7323,23 @@
     "imageEditor.maskHelp": "As \xE1reas azuis da m\xE1scara s\xE3o preservadas. As \xE1reas transparentes apagadas com pincel, ret\xE2ngulo ou c\xEDrculo ser\xE3o editadas.",
     "imageEditor.emptyEditRegion": "Apague uma \xE1rea transparente da m\xE1scara antes de salvar.",
     "imageInput.instructionMarksApplied": "Marcas de instru\xE7\xE3o aplicadas",
-    "imageInput.editRegionApplied": "Regi\xE3o de edi\xE7\xE3o aplicada"
+    "imageInput.editRegionApplied": "Regi\xE3o de edi\xE7\xE3o aplicada",
+    "editPreflight.title": "Verifica\xE7\xE3o antes do envio",
+    "editPreflight.primary": "A m\xE1scara se aplica apenas \xE0 primeira imagem principal de edi\xE7\xE3o: {name}",
+    "editPreflight.responsesResize": "O Responses redimensionar\xE1 {width}\xD7{height} para {targetWidth}\xD7{targetHeight} antes do envio",
+    "editPreflight.editArea": "\xC1rea transparente de edi\xE7\xE3o: {percent}%",
+    "editPreflight.editAreaSmall": "A \xE1rea de edi\xE7\xE3o \xE9 muito pequena; o modelo pode n\xE3o produzir uma altera\xE7\xE3o vis\xEDvel",
+    "editPreflight.editAreaLarge": "Quase toda a imagem pode ser editada; o resultado pode parecer um redesenho completo",
+    "editPreflight.aspectMismatch": "A propor\xE7\xE3o original \xE9 cerca de {sourceRatio} e a sa\xEDda \xE9 {outputRatio}; pode ocorrer corte ou reconstru\xE7\xE3o geral",
+    "editPreflight.maskDimensionsMismatch": "O tamanho da m\xE1scara {maskWidth}\xD7{maskHeight} n\xE3o corresponde \xE0 imagem {width}\xD7{height}; reabra o editor e salve a m\xE1scara",
+    "editPreflight.emptyEditArea": "A m\xE1scara n\xE3o tem uma \xE1rea transparente de edi\xE7\xE3o; apague primeiro a \xE1rea que deseja alterar",
+    "editPreflight.maskInactive": "Nenhuma \xE1rea de edi\xE7\xE3o est\xE1 ativa; o modelo pode alterar toda a imagem principal",
+    "editPreflight.inspectionFailed": "N\xE3o foi poss\xEDvel ler a verifica\xE7\xE3o da m\xE1scara; o servidor ainda far\xE1 a valida\xE7\xE3o no envio",
+    "editPreflight.blocked": "Resolva os erros da verifica\xE7\xE3o antes de continuar"
   };
 
   // codex_image/webui/frontend/src/i18n/ru.ts
   var RU_DICTIONARY = {
-    "editPreflight.title": "\u041F\u0440\u043E\u0432\u0435\u0440\u043A\u0430 \u043F\u0435\u0440\u0435\u0434 \u043E\u0442\u043F\u0440\u0430\u0432\u043A\u043E\u0439",
-    "editPreflight.primary": "\u041C\u0430\u0441\u043A\u0430 \u043F\u0440\u0438\u043C\u0435\u043D\u044F\u0435\u0442\u0441\u044F \u0442\u043E\u043B\u044C\u043A\u043E \u043A \u043F\u0435\u0440\u0432\u043E\u043C\u0443 \u043E\u0441\u043D\u043E\u0432\u043D\u043E\u043C\u0443 \u0438\u0437\u043E\u0431\u0440\u0430\u0436\u0435\u043D\u0438\u044E \u0434\u043B\u044F \u0440\u0435\u0434\u0430\u043A\u0442\u0438\u0440\u043E\u0432\u0430\u043D\u0438\u044F: {name}",
-    "editPreflight.responsesResize": "\u041F\u0435\u0440\u0435\u0434 \u043E\u0442\u043F\u0440\u0430\u0432\u043A\u043E\u0439 Responses \u0438\u0437\u043C\u0435\u043D\u0438\u0442 \u0440\u0430\u0437\u043C\u0435\u0440 {width}\xD7{height} \u043D\u0430 {targetWidth}\xD7{targetHeight}",
-    "editPreflight.editArea": "\u041F\u0440\u043E\u0437\u0440\u0430\u0447\u043D\u0430\u044F \u043E\u0431\u043B\u0430\u0441\u0442\u044C \u0440\u0435\u0434\u0430\u043A\u0442\u0438\u0440\u043E\u0432\u0430\u043D\u0438\u044F: {percent}%",
-    "editPreflight.editAreaSmall": "\u041E\u0431\u043B\u0430\u0441\u0442\u044C \u0440\u0435\u0434\u0430\u043A\u0442\u0438\u0440\u043E\u0432\u0430\u043D\u0438\u044F \u043E\u0447\u0435\u043D\u044C \u043C\u0430\u043B\u0430, \u043F\u043E\u044D\u0442\u043E\u043C\u0443 \u0437\u0430\u043C\u0435\u0442\u043D\u044B\u0445 \u0438\u0437\u043C\u0435\u043D\u0435\u043D\u0438\u0439 \u043C\u043E\u0436\u0435\u0442 \u043D\u0435 \u0431\u044B\u0442\u044C",
-    "editPreflight.editAreaLarge": "\u041F\u043E\u0447\u0442\u0438 \u0432\u0441\u0451 \u0438\u0437\u043E\u0431\u0440\u0430\u0436\u0435\u043D\u0438\u0435 \u0434\u043E\u0441\u0442\u0443\u043F\u043D\u043E \u0434\u043B\u044F \u0440\u0435\u0434\u0430\u043A\u0442\u0438\u0440\u043E\u0432\u0430\u043D\u0438\u044F; \u0440\u0435\u0437\u0443\u043B\u044C\u0442\u0430\u0442 \u043C\u043E\u0436\u0435\u0442 \u0431\u044B\u0442\u044C \u043F\u043E\u0445\u043E\u0436 \u043D\u0430 \u043F\u043E\u043B\u043D\u0443\u044E \u043F\u0435\u0440\u0435\u0440\u0438\u0441\u043E\u0432\u043A\u0443",
-    "editPreflight.aspectMismatch": "\u0421\u043E\u043E\u0442\u043D\u043E\u0448\u0435\u043D\u0438\u0435 \u0441\u0442\u043E\u0440\u043E\u043D \u0438\u0441\u0445\u043E\u0434\u043D\u0438\u043A\u0430 \u043E\u043A\u043E\u043B\u043E {sourceRatio}, \u0430 \u0440\u0435\u0437\u0443\u043B\u044C\u0442\u0430\u0442\u0430 \u2014 {outputRatio}; \u0432\u043E\u0437\u043C\u043E\u0436\u043D\u044B \u043E\u0431\u0440\u0435\u0437\u043A\u0430 \u0438\u043B\u0438 \u043E\u0431\u0449\u0430\u044F \u043F\u0435\u0440\u0435\u0441\u0442\u0440\u043E\u0439\u043A\u0430",
-    "editPreflight.maskDimensionsMismatch": "\u0420\u0430\u0437\u043C\u0435\u0440 \u043C\u0430\u0441\u043A\u0438 {maskWidth}\xD7{maskHeight} \u043D\u0435 \u0441\u043E\u0432\u043F\u0430\u0434\u0430\u0435\u0442 \u0441 \u0440\u0430\u0437\u043C\u0435\u0440\u043E\u043C \u0438\u0437\u043E\u0431\u0440\u0430\u0436\u0435\u043D\u0438\u044F {width}\xD7{height}; \u0441\u043D\u043E\u0432\u0430 \u043E\u0442\u043A\u0440\u043E\u0439\u0442\u0435 \u0440\u0435\u0434\u0430\u043A\u0442\u043E\u0440 \u0438 \u0441\u043E\u0445\u0440\u0430\u043D\u0438\u0442\u0435 \u043C\u0430\u0441\u043A\u0443",
-    "editPreflight.emptyEditArea": "\u0412 \u043C\u0430\u0441\u043A\u0435 \u043D\u0435\u0442 \u043F\u0440\u043E\u0437\u0440\u0430\u0447\u043D\u043E\u0439 \u043E\u0431\u043B\u0430\u0441\u0442\u0438 \u0440\u0435\u0434\u0430\u043A\u0442\u0438\u0440\u043E\u0432\u0430\u043D\u0438\u044F; \u0441\u043D\u0430\u0447\u0430\u043B\u0430 \u0441\u043E\u0442\u0440\u0438\u0442\u0435 \u043E\u0431\u043B\u0430\u0441\u0442\u044C, \u043A\u043E\u0442\u043E\u0440\u0443\u044E \u043D\u0443\u0436\u043D\u043E \u0438\u0437\u043C\u0435\u043D\u0438\u0442\u044C",
-    "editPreflight.maskInactive": "\u041E\u0431\u043B\u0430\u0441\u0442\u044C \u0440\u0435\u0434\u0430\u043A\u0442\u0438\u0440\u043E\u0432\u0430\u043D\u0438\u044F \u043D\u0435 \u0437\u0430\u0434\u0430\u043D\u0430; \u043C\u043E\u0434\u0435\u043B\u044C \u043C\u043E\u0436\u0435\u0442 \u0438\u0437\u043C\u0435\u043D\u0438\u0442\u044C \u0432\u0441\u0451 \u043E\u0441\u043D\u043E\u0432\u043D\u043E\u0435 \u0438\u0437\u043E\u0431\u0440\u0430\u0436\u0435\u043D\u0438\u0435",
-    "editPreflight.inspectionFailed": "\u041D\u0435 \u0443\u0434\u0430\u043B\u043E\u0441\u044C \u043F\u0440\u043E\u0447\u0438\u0442\u0430\u0442\u044C \u0434\u0430\u043D\u043D\u044B\u0435 \u043F\u0440\u0435\u0434\u0432\u0430\u0440\u0438\u0442\u0435\u043B\u044C\u043D\u043E\u0439 \u043F\u0440\u043E\u0432\u0435\u0440\u043A\u0438 \u043C\u0430\u0441\u043A\u0438; \u0441\u0435\u0440\u0432\u0435\u0440 \u0432\u0441\u0451 \u0440\u0430\u0432\u043D\u043E \u043F\u0440\u043E\u0432\u0435\u0440\u0438\u0442 \u0435\u0451 \u043F\u0440\u0438 \u043E\u0442\u043F\u0440\u0430\u0432\u043A\u0435",
-    "editPreflight.blocked": "\u0423\u0441\u0442\u0440\u0430\u043D\u0438\u0442\u0435 \u043E\u0448\u0438\u0431\u043A\u0438 \u043F\u0440\u0435\u0434\u0432\u0430\u0440\u0438\u0442\u0435\u043B\u044C\u043D\u043E\u0439 \u043F\u0440\u043E\u0432\u0435\u0440\u043A\u0438, \u043F\u0440\u0435\u0436\u0434\u0435 \u0447\u0435\u043C \u043F\u0440\u043E\u0434\u043E\u043B\u0436\u0438\u0442\u044C",
     "app.newTask": "\u041D\u043E\u0432\u044B\u0439",
     "app.newTaskAria": "\u041D\u043E\u0432\u044B\u0439 \u0447\u0430\u0442",
     "sidebar.searchPlaceholder": "\u041F\u043E\u0438\u0441\u043A\u043E\u0432\u044B\u0435 \u0437\u0430\u043F\u0440\u043E\u0441\u044B \u0438\u043B\u0438 \u0437\u0430\u0434\u0430\u0447\u0430 ID",
@@ -7125,7 +7463,7 @@
     "footer.archiveCount": "\u0410\u0440\u0445\u0438\u0432 {count}",
     "footer.historyLibrary": "\u0418\u0441\u0442\u043E\u0440\u0438\u044F",
     "historyLibrary.openFull": "\u041E\u0442\u043A\u0440\u044B\u0442\u044C \u043F\u043E\u043B\u043D\u0443\u044E \u0431\u0438\u0431\u043B\u0438\u043E\u0442\u0435\u043A\u0443 \u0438\u0441\u0442\u043E\u0440\u0438\u0438",
-    "history.documentTitle": "\u0418\u0441\u0442\u043E\u0440\u0438\u044F - iLab GPT CONJURE",
+    "history.documentTitle": "\u0418\u0441\u0442\u043E\u0440\u0438\u044F - iLab CONJURE",
     "history.back": "\u0412\u0435\u0440\u043D\u0443\u0442\u044C\u0441\u044F \u043A \u0433\u0435\u043D\u0435\u0440\u0430\u0442\u043E\u0440\u0443",
     "history.title": "\u0418\u0441\u0442\u043E\u0440\u0438\u044F",
     "history.loading": "\u0417\u0430\u0433\u0440\u0443\u0437\u043A\u0430",
@@ -7459,6 +7797,7 @@
     "output.lock.lockedHint": "\u041F\u0430\u0440\u0430\u043C\u0435\u0442\u0440\u044B \u0437\u0430\u0444\u0438\u043A\u0441\u0438\u0440\u043E\u0432\u0430\u043D\u044B. \u0414\u043B\u044F \u0438\u0437\u043C\u0435\u043D\u0435\u043D\u0438\u044F \u043D\u0430\u0436\u043C\u0438\u0442\u0435 \u0437\u0430\u043C\u043E\u043A \u0441\u043F\u0440\u0430\u0432\u0430 \u0432\u0432\u0435\u0440\u0445\u0443.",
     "output.lock.enabled": "\u0412\u043A\u043B.",
     "output.lock.disabled": "\u0412\u044B\u043A\u043B.",
+    "output.lock.custom": "\u041F\u043E\u043B\u044C\u0437\u043E\u0432\u0430\u0442\u0435\u043B\u044C\u0441\u043A\u0438\u0439",
     "output.mainModel": "\u041E\u0441\u043D\u043E\u0432\u043D\u0430\u044F \u043C\u043E\u0434\u0435\u043B\u044C",
     "output.selectMainModel": "\u0412\u044B\u0431\u0435\u0440\u0438\u0442\u0435 \u043E\u0441\u043D\u043E\u0432\u043D\u0443\u044E \u043C\u043E\u0434\u0435\u043B\u044C",
     "output.mainModelCustomForInput": "\u0418\u0441\u043F\u043E\u043B\u044C\u0437\u043E\u0432\u0430\u0442\u044C \u043F\u043E\u043B\u044C\u0437\u043E\u0432\u0430\u0442\u0435\u043B\u044C\u0441\u043A\u0443\u044E \u043C\u043E\u0434\u0435\u043B\u044C \u0434\u043B\u044F \u0442\u0435\u043A\u0443\u0449\u0435\u0433\u043E \u0432\u0432\u043E\u0434\u0430",
@@ -7482,6 +7821,7 @@
     "output.promptHelp.images.original": "\u041D\u0435 \u0434\u043E\u0431\u0430\u0432\u043B\u044F\u0435\u0442 \u043F\u0440\u0430\u0432\u0438\u043B \u043F\u0440\u0438\u043B\u043E\u0436\u0435\u043D\u0438\u044F \u0438 \u043E\u0442\u043F\u0440\u0430\u0432\u043B\u044F\u0435\u0442 \u0438\u0441\u0445\u043E\u0434\u043D\u044B\u0439 \u0442\u0435\u043A\u0441\u0442 \u043D\u0430\u043F\u0440\u044F\u043C\u0443\u044E \u0432 API \u0438\u0437\u043E\u0431\u0440\u0430\u0436\u0435\u043D\u0438\u0439.",
     "output.promptHelp.images.strict": "\u041E\u0442\u043F\u0440\u0430\u0432\u043B\u044F\u0435\u0442 \u043F\u0440\u0430\u0432\u0438\u043B\u0430 \u0442\u043E\u0447\u043D\u043E\u0441\u0442\u0438 \u0432\u043C\u0435\u0441\u0442\u0435 \u0441 \u0438\u0441\u0445\u043E\u0434\u043D\u044B\u043C \u043F\u0440\u043E\u043C\u043F\u0442\u043E\u043C, \u0447\u0442\u043E\u0431\u044B \u0441\u043E\u0445\u0440\u0430\u043D\u0438\u0442\u044C \u0432\u0441\u0435 \u043E\u0431\u044F\u0437\u0430\u0442\u0435\u043B\u044C\u043D\u044B\u0435 \u0443\u0441\u043B\u043E\u0432\u0438\u044F.",
     "output.promptHelp.images.automatic": "\u0418\u0441\u043F\u043E\u043B\u044C\u0437\u0443\u0435\u0442 \u0441\u0442\u0430\u043D\u0434\u0430\u0440\u0442\u043D\u0443\u044E \u043E\u0431\u0440\u0430\u0431\u043E\u0442\u043A\u0443 API \u0438\u0437\u043E\u0431\u0440\u0430\u0436\u0435\u043D\u0438\u0439 \u0438 \u0432\u043A\u043B\u044E\u0447\u0430\u0435\u0442 \u043D\u0435\u043E\u0431\u0445\u043E\u0434\u0438\u043C\u044B\u0435 \u043F\u043E\u044F\u0441\u043D\u0435\u043D\u0438\u044F \u043A \u0441\u0441\u044B\u043B\u043A\u0430\u043C \u0438\u0437 \u0433\u0430\u043B\u0435\u0440\u0435\u0438.",
+    "output.size": "\u0420\u0430\u0437\u043C\u0435\u0440 \u0432\u044B\u0432\u043E\u0434\u0430",
     "output.sizeMode": "\u0420\u0435\u0436\u0438\u043C \u0440\u0430\u0437\u043C\u0435\u0440\u0430",
     "output.sizePreset": "\u041F\u0440\u0435\u0434\u0443\u0441\u0442\u0430\u043D\u043E\u0432\u043A\u0430",
     "output.sizeCustom": "\u041F\u043E\u043B\u044C\u0437\u043E\u0432\u0430\u0442\u0435\u043B\u044C\u0441\u043A\u0438\u0439",
@@ -7788,6 +8128,20 @@
     "apiSettings.providerCount": "{count} \u043F\u043E\u0441\u0442\u0430\u0432\u0449\u0438\u043A\u043E\u0432",
     "apiSettings.provider": "\u041F\u043E\u0441\u0442\u0430\u0432\u0449\u0438\u043A",
     "apiSettings.providerName": "\u0418\u043C\u044F \u043F\u0440\u043E\u0432\u0430\u0439\u0434\u0435\u0440\u0430",
+    "apiSettings.providerIcon": "\u042D\u043C\u043E\u0434\u0437\u0438",
+    "apiSettings.providerIconPlaceholder": "\u041D\u0435\u043E\u0431\u044F\u0437\u0430\u0442\u0435\u043B\u044C\u043D\u043E, \u043D\u0430\u043F\u0440\u0438\u043C\u0435\u0440 \u{1FA84}",
+    "apiSettings.connectionScope": "Connection settings",
+    "apiSettings.connectionPreview": "\u041F\u0440\u0435\u0434\u043F\u0440\u043E\u0441\u043C\u043E\u0442\u0440 \u043F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u0438\u044F",
+    "apiSettings.modelBindings": "Model bindings",
+    "apiSettings.modelBindingsHint": "One provider can bind multiple models and protocols.",
+    "apiSettings.addModelBinding": "Add model binding",
+    "apiSettings.appendRatioPrompt": "\u0414\u043E\u0431\u0430\u0432\u0438\u0442\u044C \u043F\u0440\u043E\u043F\u043E\u0440\u0446\u0438\u0438",
+    "apiSettings.defaultProviderForModel": "\u041F\u043E\u0441\u0442\u0430\u0432\u0449\u0438\u043A \u043F\u043E \u0443\u043C\u043E\u043B\u0447\u0430\u043D\u0438\u044E",
+    "apiSettings.removeBinding": "\u0423\u0434\u0430\u043B\u0438\u0442\u044C \u043F\u0440\u0438\u0432\u044F\u0437\u043A\u0443",
+    "apiSettings.catalogRequiredForBinding": "The model catalog is unavailable; a binding cannot be added yet.",
+    "apiSettings.keepOneBinding": "Each provider must keep at least one model binding.",
+    "apiSettings.bindingRequiredFields": "Choose a model, enter a remote model name, and select at least one operation for every binding.",
+    "apiSettings.bindingOverlap": "{model} {operation} is handled by more than one binding.",
     "apiSettings.actualRequest": "\u0424\u0430\u043A\u0442\u0438\u0447\u0435\u0441\u043A\u0438\u0439 \u0437\u0430\u043F\u0440\u043E\u0441",
     "apiSettings.newProviderAction": "\u041D\u043E\u0432\u044B\u0439 \u043F\u0440\u043E\u0432\u0430\u0439\u0434\u0435\u0440",
     "apiSettings.copyProvider": "\u041A\u043E\u043F\u0438\u0440\u043E\u0432\u0430\u0442\u044C",
@@ -7969,6 +8323,40 @@
     "history.referenceFiles": "\u0424\u0430\u0439\u043B\u044B-\u0438\u0441\u0442\u043E\u0447\u043D\u0438\u043A\u0438",
     "history.downloadReferenceFile": "\u0421\u043A\u0430\u0447\u0430\u0442\u044C \u0444\u0430\u0439\u043B",
     "history.readdReferenceFile": "\u0414\u043E\u0431\u0430\u0432\u0438\u0442\u044C \u0441\u043D\u043E\u0432\u0430",
+    "modelSelection.family": "\u0421\u0435\u043C\u0435\u0439\u0441\u0442\u0432\u043E \u043C\u043E\u0434\u0435\u043B\u0435\u0439",
+    "modelSelection.concreteModel": "\u041C\u043E\u0434\u0435\u043B\u044C",
+    "modelSelection.provider": "\u041F\u0440\u043E\u0432\u0430\u0439\u0434\u0435\u0440",
+    "modelSelection.providerUnavailable": "\u0414\u043B\u044F \u044D\u0442\u043E\u0439 \u043C\u043E\u0434\u0435\u043B\u0438 \u043D\u0435\u0442 \u0434\u043E\u0441\u0442\u0443\u043F\u043D\u043E\u0433\u043E \u043F\u0440\u043E\u0432\u0430\u0439\u0434\u0435\u0440\u0430",
+    "modelSelection.openSettings": "\u041E\u0442\u043A\u0440\u044B\u0442\u044C \u043D\u0430\u0441\u0442\u0440\u043E\u0439\u043A\u0438 \u043F\u0440\u043E\u0432\u0430\u0439\u0434\u0435\u0440\u043E\u0432",
+    "modelSelection.codexUnavailable": "\u0412\u0445\u043E\u0434 \u0432 Codex \u043D\u0435\u0434\u043E\u0441\u0442\u0443\u043F\u0435\u043D",
+    "modelSelection.catalogUnavailable": "\u041A\u0430\u0442\u0430\u043B\u043E\u0433 \u043C\u043E\u0434\u0435\u043B\u0435\u0439 \u043D\u0435\u0434\u043E\u0441\u0442\u0443\u043F\u0435\u043D",
+    "output.background": "\u0424\u043E\u043D",
+    "canvas.aspectRatio": "\u0421\u043E\u043E\u0442\u043D\u043E\u0448\u0435\u043D\u0438\u0435 \u0441\u0442\u043E\u0440\u043E\u043D",
+    "canvas.resolution": "\u0420\u0430\u0437\u0440\u0435\u0448\u0435\u043D\u0438\u0435",
+    "gemini.googleSearch": "\u041F\u043E\u0438\u0441\u043A Google",
+    "gemini.googleImageSearch": "\u041F\u043E\u0438\u0441\u043A \u0438\u0437\u043E\u0431\u0440\u0430\u0436\u0435\u043D\u0438\u0439 Google",
+    "output.modalities": "\u041C\u043E\u0434\u0430\u043B\u044C\u043D\u043E\u0441\u0442\u0438 \u0432\u044B\u0432\u043E\u0434\u0430",
+    "gemini.safetySettings": "\u041D\u0430\u0441\u0442\u0440\u043E\u0439\u043A\u0438 \u0431\u0435\u0437\u043E\u043F\u0430\u0441\u043D\u043E\u0441\u0442\u0438",
+    "gemini.safety.harassment": "\u0414\u043E\u043C\u043E\u0433\u0430\u0442\u0435\u043B\u044C\u0441\u0442\u0432\u0430",
+    "gemini.safety.hateSpeech": "\u042F\u0437\u044B\u043A \u043D\u0435\u043D\u0430\u0432\u0438\u0441\u0442\u0438",
+    "gemini.safety.sexuallyExplicit": "\u041E\u0442\u043A\u0440\u043E\u0432\u0435\u043D\u043D\u044B\u0439 \u043A\u043E\u043D\u0442\u0435\u043D\u0442",
+    "gemini.safety.dangerousContent": "\u041E\u043F\u0430\u0441\u043D\u044B\u0439 \u043A\u043E\u043D\u0442\u0435\u043D\u0442",
+    "gemini.safety.threshold.unspecified": "\u041F\u043E \u0443\u043C\u043E\u043B\u0447\u0430\u043D\u0438\u044E",
+    "gemini.safety.threshold.off": "\u0424\u0438\u043B\u044C\u0442\u0440 \u0432\u044B\u043A\u043B\u044E\u0447\u0435\u043D",
+    "gemini.safety.threshold.blockNone": "\u041D\u0435 \u0431\u043B\u043E\u043A\u0438\u0440\u043E\u0432\u0430\u0442\u044C",
+    "gemini.safety.threshold.blockOnlyHigh": "\u0411\u043B\u043E\u043A\u0438\u0440\u043E\u0432\u0430\u0442\u044C \u0432\u044B\u0441\u043E\u043A\u0438\u0439",
+    "gemini.safety.threshold.blockMediumAndAbove": "\u0411\u043B\u043E\u043A\u0438\u0440\u043E\u0432\u0430\u0442\u044C \u0441\u0440\u0435\u0434\u043D\u0438\u0439+",
+    "gemini.safety.threshold.blockLowAndAbove": "\u0411\u043B\u043E\u043A\u0438\u0440\u043E\u0432\u0430\u0442\u044C \u0432\u0441\u0451",
+    "grounding.title": "\u0418\u0441\u0442\u043E\u0447\u043D\u0438\u043A\u0438 \u043F\u043E\u0438\u0441\u043A\u0430 Google",
+    "grounding.searchSuggestions": "\u041F\u043E\u0434\u0441\u043A\u0430\u0437\u043A\u0438 \u043F\u043E\u0438\u0441\u043A\u0430 Google",
+    "grounding.sourceCount": "\u0418\u0441\u0442\u043E\u0447\u043D\u0438\u043A\u043E\u0432: {count}",
+    "grounding.source": "\u0418\u0441\u0442\u043E\u0447\u043D\u0438\u043A {index}",
+    "modelParameters.invalidValue": "\u041D\u0435\u0434\u043E\u043F\u0443\u0441\u0442\u0438\u043C\u043E\u0435 \u0437\u043D\u0430\u0447\u0435\u043D\u0438\u0435 \u043F\u0430\u0440\u0430\u043C\u0435\u0442\u0440\u0430",
+    "modelParameters.objectRequired": "\u0412\u0432\u0435\u0434\u0438\u0442\u0435 \u043E\u0431\u044A\u0435\u043A\u0442 JSON",
+    "modelParameters.invalidJson": "\u041D\u0435\u043A\u043E\u0440\u0440\u0435\u043A\u0442\u043D\u044B\u0439 JSON",
+    "modelParameters.migrated": "\u0421\u043A\u043E\u0440\u0440\u0435\u043A\u0442\u0438\u0440\u043E\u0432\u0430\u043D\u043E \u0443\u0441\u0442\u0430\u0440\u0435\u0432\u0448\u0438\u0445 \u043F\u0430\u0440\u0430\u043C\u0435\u0442\u0440\u043E\u0432 \u0434\u043B\u044F \u0442\u0435\u043A\u0443\u0449\u0435\u0439 \u043C\u043E\u0434\u0435\u043B\u0438: {count}",
+    "modelParameters.historyConfiguration": "\u0418\u0441\u0442\u043E\u0440\u0438\u0447\u0435\u0441\u043A\u0430\u044F \u043A\u043E\u043D\u0444\u0438\u0433\u0443\u0440\u0430\u0446\u0438\u044F",
+    "modelParameters.legacyTask": "\u0421\u0442\u0430\u0440\u0430\u044F \u0437\u0430\u0434\u0430\u0447\u0430",
     "imageEditor.guidance": "\u0420\u0435\u0436\u0438\u043C \u0440\u0435\u0434\u0430\u043A\u0442\u0438\u0440\u043E\u0432\u0430\u043D\u0438\u044F",
     "imageEditor.instructionMarksGuidance": "\u041C\u0435\u0442\u043A\u0438-\u0438\u043D\u0441\u0442\u0440\u0443\u043A\u0446\u0438\u0438",
     "imageEditor.editRegionGuidance": "\u041C\u0430\u0441\u043A\u0430",
@@ -7982,23 +8370,23 @@
     "imageEditor.maskHelp": "\u0421\u0438\u043D\u0438\u0435 \u043E\u0431\u043B\u0430\u0441\u0442\u0438 \u043C\u0430\u0441\u043A\u0438 \u0441\u043E\u0445\u0440\u0430\u043D\u044F\u044E\u0442\u0441\u044F. \u041F\u0440\u043E\u0437\u0440\u0430\u0447\u043D\u044B\u0435 \u043E\u0431\u043B\u0430\u0441\u0442\u0438, \u0441\u0442\u0435\u0440\u0442\u044B\u0435 \u043A\u0438\u0441\u0442\u044C\u044E, \u043F\u0440\u044F\u043C\u043E\u0443\u0433\u043E\u043B\u044C\u043D\u0438\u043A\u043E\u043C \u0438\u043B\u0438 \u043A\u0440\u0443\u0433\u043E\u043C, \u0431\u0443\u0434\u0443\u0442 \u0438\u0437\u043C\u0435\u043D\u0435\u043D\u044B.",
     "imageEditor.emptyEditRegion": "\u0421\u043E\u0442\u0440\u0438\u0442\u0435 \u043F\u0440\u043E\u0437\u0440\u0430\u0447\u043D\u0443\u044E \u043E\u0431\u043B\u0430\u0441\u0442\u044C \u043C\u0430\u0441\u043A\u0438 \u043F\u0435\u0440\u0435\u0434 \u0441\u043E\u0445\u0440\u0430\u043D\u0435\u043D\u0438\u0435\u043C.",
     "imageInput.instructionMarksApplied": "\u041C\u0435\u0442\u043A\u0438-\u0438\u043D\u0441\u0442\u0440\u0443\u043A\u0446\u0438\u0438 \u043F\u0440\u0438\u043C\u0435\u043D\u0435\u043D\u044B",
-    "imageInput.editRegionApplied": "\u041E\u0431\u043B\u0430\u0441\u0442\u044C \u0440\u0435\u0434\u0430\u043A\u0442\u0438\u0440\u043E\u0432\u0430\u043D\u0438\u044F \u043F\u0440\u0438\u043C\u0435\u043D\u0435\u043D\u0430"
+    "imageInput.editRegionApplied": "\u041E\u0431\u043B\u0430\u0441\u0442\u044C \u0440\u0435\u0434\u0430\u043A\u0442\u0438\u0440\u043E\u0432\u0430\u043D\u0438\u044F \u043F\u0440\u0438\u043C\u0435\u043D\u0435\u043D\u0430",
+    "editPreflight.title": "\u041F\u0440\u043E\u0432\u0435\u0440\u043A\u0430 \u043F\u0435\u0440\u0435\u0434 \u043E\u0442\u043F\u0440\u0430\u0432\u043A\u043E\u0439",
+    "editPreflight.primary": "\u041C\u0430\u0441\u043A\u0430 \u043F\u0440\u0438\u043C\u0435\u043D\u044F\u0435\u0442\u0441\u044F \u0442\u043E\u043B\u044C\u043A\u043E \u043A \u043F\u0435\u0440\u0432\u043E\u043C\u0443 \u043E\u0441\u043D\u043E\u0432\u043D\u043E\u043C\u0443 \u0438\u0437\u043E\u0431\u0440\u0430\u0436\u0435\u043D\u0438\u044E \u0434\u043B\u044F \u0440\u0435\u0434\u0430\u043A\u0442\u0438\u0440\u043E\u0432\u0430\u043D\u0438\u044F: {name}",
+    "editPreflight.responsesResize": "\u041F\u0435\u0440\u0435\u0434 \u043E\u0442\u043F\u0440\u0430\u0432\u043A\u043E\u0439 Responses \u0438\u0437\u043C\u0435\u043D\u0438\u0442 \u0440\u0430\u0437\u043C\u0435\u0440 {width}\xD7{height} \u043D\u0430 {targetWidth}\xD7{targetHeight}",
+    "editPreflight.editArea": "\u041F\u0440\u043E\u0437\u0440\u0430\u0447\u043D\u0430\u044F \u043E\u0431\u043B\u0430\u0441\u0442\u044C \u0440\u0435\u0434\u0430\u043A\u0442\u0438\u0440\u043E\u0432\u0430\u043D\u0438\u044F: {percent}%",
+    "editPreflight.editAreaSmall": "\u041E\u0431\u043B\u0430\u0441\u0442\u044C \u0440\u0435\u0434\u0430\u043A\u0442\u0438\u0440\u043E\u0432\u0430\u043D\u0438\u044F \u043E\u0447\u0435\u043D\u044C \u043C\u0430\u043B\u0430, \u043F\u043E\u044D\u0442\u043E\u043C\u0443 \u0437\u0430\u043C\u0435\u0442\u043D\u044B\u0445 \u0438\u0437\u043C\u0435\u043D\u0435\u043D\u0438\u0439 \u043C\u043E\u0436\u0435\u0442 \u043D\u0435 \u0431\u044B\u0442\u044C",
+    "editPreflight.editAreaLarge": "\u041F\u043E\u0447\u0442\u0438 \u0432\u0441\u0451 \u0438\u0437\u043E\u0431\u0440\u0430\u0436\u0435\u043D\u0438\u0435 \u0434\u043E\u0441\u0442\u0443\u043F\u043D\u043E \u0434\u043B\u044F \u0440\u0435\u0434\u0430\u043A\u0442\u0438\u0440\u043E\u0432\u0430\u043D\u0438\u044F; \u0440\u0435\u0437\u0443\u043B\u044C\u0442\u0430\u0442 \u043C\u043E\u0436\u0435\u0442 \u0431\u044B\u0442\u044C \u043F\u043E\u0445\u043E\u0436 \u043D\u0430 \u043F\u043E\u043B\u043D\u0443\u044E \u043F\u0435\u0440\u0435\u0440\u0438\u0441\u043E\u0432\u043A\u0443",
+    "editPreflight.aspectMismatch": "\u0421\u043E\u043E\u0442\u043D\u043E\u0448\u0435\u043D\u0438\u0435 \u0441\u0442\u043E\u0440\u043E\u043D \u0438\u0441\u0445\u043E\u0434\u043D\u0438\u043A\u0430 \u043E\u043A\u043E\u043B\u043E {sourceRatio}, \u0430 \u0440\u0435\u0437\u0443\u043B\u044C\u0442\u0430\u0442\u0430 \u2014 {outputRatio}; \u0432\u043E\u0437\u043C\u043E\u0436\u043D\u044B \u043E\u0431\u0440\u0435\u0437\u043A\u0430 \u0438\u043B\u0438 \u043E\u0431\u0449\u0430\u044F \u043F\u0435\u0440\u0435\u0441\u0442\u0440\u043E\u0439\u043A\u0430",
+    "editPreflight.maskDimensionsMismatch": "\u0420\u0430\u0437\u043C\u0435\u0440 \u043C\u0430\u0441\u043A\u0438 {maskWidth}\xD7{maskHeight} \u043D\u0435 \u0441\u043E\u0432\u043F\u0430\u0434\u0430\u0435\u0442 \u0441 \u0440\u0430\u0437\u043C\u0435\u0440\u043E\u043C \u0438\u0437\u043E\u0431\u0440\u0430\u0436\u0435\u043D\u0438\u044F {width}\xD7{height}; \u0441\u043D\u043E\u0432\u0430 \u043E\u0442\u043A\u0440\u043E\u0439\u0442\u0435 \u0440\u0435\u0434\u0430\u043A\u0442\u043E\u0440 \u0438 \u0441\u043E\u0445\u0440\u0430\u043D\u0438\u0442\u0435 \u043C\u0430\u0441\u043A\u0443",
+    "editPreflight.emptyEditArea": "\u0412 \u043C\u0430\u0441\u043A\u0435 \u043D\u0435\u0442 \u043F\u0440\u043E\u0437\u0440\u0430\u0447\u043D\u043E\u0439 \u043E\u0431\u043B\u0430\u0441\u0442\u0438 \u0440\u0435\u0434\u0430\u043A\u0442\u0438\u0440\u043E\u0432\u0430\u043D\u0438\u044F; \u0441\u043D\u0430\u0447\u0430\u043B\u0430 \u0441\u043E\u0442\u0440\u0438\u0442\u0435 \u043E\u0431\u043B\u0430\u0441\u0442\u044C, \u043A\u043E\u0442\u043E\u0440\u0443\u044E \u043D\u0443\u0436\u043D\u043E \u0438\u0437\u043C\u0435\u043D\u0438\u0442\u044C",
+    "editPreflight.maskInactive": "\u041E\u0431\u043B\u0430\u0441\u0442\u044C \u0440\u0435\u0434\u0430\u043A\u0442\u0438\u0440\u043E\u0432\u0430\u043D\u0438\u044F \u043D\u0435 \u0437\u0430\u0434\u0430\u043D\u0430; \u043C\u043E\u0434\u0435\u043B\u044C \u043C\u043E\u0436\u0435\u0442 \u0438\u0437\u043C\u0435\u043D\u0438\u0442\u044C \u0432\u0441\u0451 \u043E\u0441\u043D\u043E\u0432\u043D\u043E\u0435 \u0438\u0437\u043E\u0431\u0440\u0430\u0436\u0435\u043D\u0438\u0435",
+    "editPreflight.inspectionFailed": "\u041D\u0435 \u0443\u0434\u0430\u043B\u043E\u0441\u044C \u043F\u0440\u043E\u0447\u0438\u0442\u0430\u0442\u044C \u0434\u0430\u043D\u043D\u044B\u0435 \u043F\u0440\u0435\u0434\u0432\u0430\u0440\u0438\u0442\u0435\u043B\u044C\u043D\u043E\u0439 \u043F\u0440\u043E\u0432\u0435\u0440\u043A\u0438 \u043C\u0430\u0441\u043A\u0438; \u0441\u0435\u0440\u0432\u0435\u0440 \u0432\u0441\u0451 \u0440\u0430\u0432\u043D\u043E \u043F\u0440\u043E\u0432\u0435\u0440\u0438\u0442 \u0435\u0451 \u043F\u0440\u0438 \u043E\u0442\u043F\u0440\u0430\u0432\u043A\u0435",
+    "editPreflight.blocked": "\u0423\u0441\u0442\u0440\u0430\u043D\u0438\u0442\u0435 \u043E\u0448\u0438\u0431\u043A\u0438 \u043F\u0440\u0435\u0434\u0432\u0430\u0440\u0438\u0442\u0435\u043B\u044C\u043D\u043E\u0439 \u043F\u0440\u043E\u0432\u0435\u0440\u043A\u0438, \u043F\u0440\u0435\u0436\u0434\u0435 \u0447\u0435\u043C \u043F\u0440\u043E\u0434\u043E\u043B\u0436\u0438\u0442\u044C"
   };
 
   // codex_image/webui/frontend/src/i18n/it.ts
   var IT_DICTIONARY = {
-    "editPreflight.title": "Controllo prima dell\u2019invio",
-    "editPreflight.primary": "La maschera si applica solo alla prima immagine principale da modificare: {name}",
-    "editPreflight.responsesResize": "Responses ridimensioner\xE0 {width}\xD7{height} a {targetWidth}\xD7{targetHeight} prima dell\u2019invio",
-    "editPreflight.editArea": "Area di modifica trasparente: {percent}%",
-    "editPreflight.editAreaSmall": "L\u2019area di modifica \xE8 molto piccola; il modello potrebbe non produrre cambiamenti visibili",
-    "editPreflight.editAreaLarge": "Quasi tutta l\u2019immagine \xE8 modificabile; il risultato potrebbe sembrare un ridisegno completo",
-    "editPreflight.aspectMismatch": "Le proporzioni originali sono circa {sourceRatio}, mentre l\u2019output \xE8 {outputRatio}; potrebbero verificarsi ritagli o ricostruzioni generali",
-    "editPreflight.maskDimensionsMismatch": "La maschera {maskWidth}\xD7{maskHeight} non corrisponde all\u2019immagine {width}\xD7{height}; riapri l\u2019editor e salva la maschera",
-    "editPreflight.emptyEditArea": "La maschera non contiene aree trasparenti da modificare; cancella prima l\u2019area che vuoi cambiare",
-    "editPreflight.maskInactive": "Nessuna area di modifica \xE8 attiva; il modello pu\xF2 modificare l\u2019intera immagine principale",
-    "editPreflight.inspectionFailed": "Impossibile leggere i dettagli del controllo della maschera; il server la convalider\xE0 comunque all\u2019invio",
-    "editPreflight.blocked": "Risolvi gli errori del controllo prima di continuare",
     "app.newTask": "Nuovo",
     "app.newTaskAria": "Nuova chat",
     "sidebar.searchPlaceholder": "Richieste di ricerca o attivit\xE0 ID",
@@ -8122,7 +8510,7 @@
     "footer.archiveCount": "Archivio {count}",
     "footer.historyLibrary": "Storia",
     "historyLibrary.openFull": "Apri la libreria della cronologia completa",
-    "history.documentTitle": "Storia - iLab GPT CONJURE",
+    "history.documentTitle": "Storia - iLab CONJURE",
     "history.back": "Torniamo al generatore",
     "history.title": "Storia",
     "history.loading": "Caricamento in corso",
@@ -8456,6 +8844,7 @@
     "output.lock.lockedHint": "I parametri sono fissati. Usa il lucchetto in alto a destra per modificarli.",
     "output.lock.enabled": "Attiva",
     "output.lock.disabled": "Disattiva",
+    "output.lock.custom": "Personalizzato",
     "output.mainModel": "Modello principale",
     "output.selectMainModel": "Seleziona il modello principale",
     "output.mainModelCustomForInput": "Utilizza un modello personalizzato per l'input corrente",
@@ -8479,6 +8868,7 @@
     "output.promptHelp.images.original": "Non aggiunge regole dell\u2019app e invia il testo originale direttamente all\u2019API immagini.",
     "output.promptHelp.images.strict": "Invia le regole di fedelt\xE0 insieme al prompt originale per preservare tutti i vincoli.",
     "output.promptHelp.images.automatic": "Usa la gestione predefinita dell\u2019API immagini e include le note necessarie per i riferimenti della galleria.",
+    "output.size": "Dimensioni di output",
     "output.sizeMode": "Modalit\xE0 dimensione",
     "output.sizePreset": "Preimpostato",
     "output.sizeCustom": "Personalizzato",
@@ -8785,6 +9175,20 @@
     "apiSettings.providerCount": "{count} fornitori",
     "apiSettings.provider": "Fornitore",
     "apiSettings.providerName": "Nome del fornitore",
+    "apiSettings.providerIcon": "Emoji",
+    "apiSettings.providerIconPlaceholder": "Facoltativa, es. \u{1FA84}",
+    "apiSettings.connectionScope": "Connection settings",
+    "apiSettings.connectionPreview": "Anteprima connessione",
+    "apiSettings.modelBindings": "Model bindings",
+    "apiSettings.modelBindingsHint": "One provider can bind multiple models and protocols.",
+    "apiSettings.addModelBinding": "Add model binding",
+    "apiSettings.appendRatioPrompt": "Aggiungi istruzione proporzioni",
+    "apiSettings.defaultProviderForModel": "Fornitore predefinito",
+    "apiSettings.removeBinding": "Rimuovi associazione",
+    "apiSettings.catalogRequiredForBinding": "The model catalog is unavailable; a binding cannot be added yet.",
+    "apiSettings.keepOneBinding": "Each provider must keep at least one model binding.",
+    "apiSettings.bindingRequiredFields": "Choose a model, enter a remote model name, and select at least one operation for every binding.",
+    "apiSettings.bindingOverlap": "{model} {operation} is handled by more than one binding.",
     "apiSettings.actualRequest": "Richiesta effettiva",
     "apiSettings.newProviderAction": "Nuovo fornitore",
     "apiSettings.copyProvider": "Copia",
@@ -8966,6 +9370,40 @@
     "history.referenceFiles": "File di riferimento",
     "history.downloadReferenceFile": "Scarica file",
     "history.readdReferenceFile": "Aggiungi di nuovo",
+    "modelSelection.family": "Famiglia di modelli",
+    "modelSelection.concreteModel": "Modello",
+    "modelSelection.provider": "Fornitore",
+    "modelSelection.providerUnavailable": "Nessun fornitore \xE8 disponibile per questo modello",
+    "modelSelection.openSettings": "Apri impostazioni fornitori",
+    "modelSelection.codexUnavailable": "L\u2019accesso a Codex non \xE8 disponibile",
+    "modelSelection.catalogUnavailable": "Il catalogo dei modelli non \xE8 disponibile",
+    "output.background": "Sfondo",
+    "canvas.aspectRatio": "Proporzioni",
+    "canvas.resolution": "Risoluzione",
+    "gemini.googleSearch": "Ricerca Google",
+    "gemini.googleImageSearch": "Ricerca immagini Google",
+    "output.modalities": "Modalit\xE0 di output",
+    "gemini.safetySettings": "Impostazioni di sicurezza",
+    "gemini.safety.harassment": "Molestie",
+    "gemini.safety.hateSpeech": "Incitamento all\u2019odio",
+    "gemini.safety.sexuallyExplicit": "Sessualmente esplicito",
+    "gemini.safety.dangerousContent": "Contenuti pericolosi",
+    "gemini.safety.threshold.unspecified": "Predefinito",
+    "gemini.safety.threshold.off": "Filtro disattivato",
+    "gemini.safety.threshold.blockNone": "Non bloccare",
+    "gemini.safety.threshold.blockOnlyHigh": "Blocca alto",
+    "gemini.safety.threshold.blockMediumAndAbove": "Blocca medio+",
+    "gemini.safety.threshold.blockLowAndAbove": "Blocca tutto",
+    "grounding.title": "Fonti di ricerca Google",
+    "grounding.searchSuggestions": "Suggerimenti di ricerca Google",
+    "grounding.sourceCount": "{count} fonti",
+    "grounding.source": "Fonte {index}",
+    "modelParameters.invalidValue": "Valore parametro non valido",
+    "modelParameters.objectRequired": "Inserisci un oggetto JSON",
+    "modelParameters.invalidJson": "JSON non valido",
+    "modelParameters.migrated": "Adattati {count} parametri precedenti al modello attuale",
+    "modelParameters.historyConfiguration": "Configurazione storica",
+    "modelParameters.legacyTask": "Attivit\xE0 precedente",
     "imageEditor.guidance": "Guida modifica",
     "imageEditor.instructionMarksGuidance": "Segni di istruzione",
     "imageEditor.editRegionGuidance": "Maschera",
@@ -8979,23 +9417,23 @@
     "imageEditor.maskHelp": "Le aree blu della maschera vengono conservate. Le aree trasparenti cancellate con pennello, rettangolo o cerchio verranno modificate.",
     "imageEditor.emptyEditRegion": "Cancella un\u2019area trasparente dalla maschera prima di salvare.",
     "imageInput.instructionMarksApplied": "Segni di istruzione applicati",
-    "imageInput.editRegionApplied": "Area di modifica applicata"
+    "imageInput.editRegionApplied": "Area di modifica applicata",
+    "editPreflight.title": "Controllo prima dell\u2019invio",
+    "editPreflight.primary": "La maschera si applica solo alla prima immagine principale da modificare: {name}",
+    "editPreflight.responsesResize": "Responses ridimensioner\xE0 {width}\xD7{height} a {targetWidth}\xD7{targetHeight} prima dell\u2019invio",
+    "editPreflight.editArea": "Area di modifica trasparente: {percent}%",
+    "editPreflight.editAreaSmall": "L\u2019area di modifica \xE8 molto piccola; il modello potrebbe non produrre cambiamenti visibili",
+    "editPreflight.editAreaLarge": "Quasi tutta l\u2019immagine \xE8 modificabile; il risultato potrebbe sembrare un ridisegno completo",
+    "editPreflight.aspectMismatch": "Le proporzioni originali sono circa {sourceRatio}, mentre l\u2019output \xE8 {outputRatio}; potrebbero verificarsi ritagli o ricostruzioni generali",
+    "editPreflight.maskDimensionsMismatch": "La maschera {maskWidth}\xD7{maskHeight} non corrisponde all\u2019immagine {width}\xD7{height}; riapri l\u2019editor e salva la maschera",
+    "editPreflight.emptyEditArea": "La maschera non contiene aree trasparenti da modificare; cancella prima l\u2019area che vuoi cambiare",
+    "editPreflight.maskInactive": "Nessuna area di modifica \xE8 attiva; il modello pu\xF2 modificare l\u2019intera immagine principale",
+    "editPreflight.inspectionFailed": "Impossibile leggere i dettagli del controllo della maschera; il server la convalider\xE0 comunque all\u2019invio",
+    "editPreflight.blocked": "Risolvi gli errori del controllo prima di continuare"
   };
 
   // codex_image/webui/frontend/src/i18n/hi.ts
   var HI_DICTIONARY = {
-    "editPreflight.title": "\u0938\u092C\u092E\u093F\u091F \u0915\u0930\u0928\u0947 \u0938\u0947 \u092A\u0939\u0932\u0947 \u091C\u093E\u0901\u091A",
-    "editPreflight.primary": "\u092E\u093E\u0938\u094D\u0915 \u0915\u0947\u0935\u0932 \u092A\u0939\u0932\u0940 \u092E\u0941\u0916\u094D\u092F \u0938\u0902\u092A\u093E\u0926\u0928 \u091B\u0935\u093F \u092A\u0930 \u0932\u093E\u0917\u0942 \u0939\u094B\u0924\u093E \u0939\u0948: {name}",
-    "editPreflight.responsesResize": "Responses \u0938\u092C\u092E\u093F\u091F \u0915\u0930\u0928\u0947 \u0938\u0947 \u092A\u0939\u0932\u0947 {width}\xD7{height} \u0915\u094B {targetWidth}\xD7{targetHeight} \u092E\u0947\u0902 \u092C\u0926\u0932\u0947\u0917\u093E",
-    "editPreflight.editArea": "\u092A\u093E\u0930\u0926\u0930\u094D\u0936\u0940 \u0938\u0902\u092A\u093E\u0926\u0928 \u0915\u094D\u0937\u0947\u0924\u094D\u0930: {percent}%",
-    "editPreflight.editAreaSmall": "\u0938\u0902\u092A\u093E\u0926\u0928 \u0915\u094D\u0937\u0947\u0924\u094D\u0930 \u092C\u0939\u0941\u0924 \u091B\u094B\u091F\u093E \u0939\u0948, \u0907\u0938\u0932\u093F\u090F \u092E\u0949\u0921\u0932 \u0938\u094D\u092A\u0937\u094D\u091F \u092C\u0926\u0932\u093E\u0935 \u0928\u0939\u0940\u0902 \u0915\u0930 \u0938\u0915\u0924\u093E",
-    "editPreflight.editAreaLarge": "\u0905\u0927\u093F\u0915\u093E\u0902\u0936 \u091B\u0935\u093F \u0938\u0902\u092A\u093E\u0926\u0928 \u092F\u094B\u0917\u094D\u092F \u0939\u0948; \u092A\u0930\u093F\u0923\u093E\u092E \u092A\u0942\u0930\u0940 \u091B\u0935\u093F \u0915\u094B \u092B\u093F\u0930 \u0938\u0947 \u092C\u0928\u093E\u0928\u0947 \u091C\u0948\u0938\u093E \u0939\u094B \u0938\u0915\u0924\u093E \u0939\u0948",
-    "editPreflight.aspectMismatch": "\u0938\u094D\u0930\u094B\u0924 \u0905\u0928\u0941\u092A\u093E\u0924 \u0932\u0917\u092D\u0917 {sourceRatio} \u0939\u0948 \u0914\u0930 \u0906\u0909\u091F\u092A\u0941\u091F {outputRatio}; \u0915\u094D\u0930\u0949\u092A\u093F\u0902\u0917 \u092F\u093E \u0935\u094D\u092F\u093E\u092A\u0915 \u092A\u0941\u0928\u0930\u094D\u0928\u093F\u0930\u094D\u092E\u093E\u0923 \u0939\u094B \u0938\u0915\u0924\u093E \u0939\u0948",
-    "editPreflight.maskDimensionsMismatch": "\u092E\u093E\u0938\u094D\u0915 \u0906\u0915\u093E\u0930 {maskWidth}\xD7{maskHeight}, \u091B\u0935\u093F \u0906\u0915\u093E\u0930 {width}\xD7{height} \u0938\u0947 \u092E\u0947\u0932 \u0928\u0939\u0940\u0902 \u0916\u093E\u0924\u093E; \u090F\u0921\u093F\u091F\u0930 \u092B\u093F\u0930 \u0916\u094B\u0932\u0915\u0930 \u092E\u093E\u0938\u094D\u0915 \u0938\u0939\u0947\u091C\u0947\u0902",
-    "editPreflight.emptyEditArea": "\u092E\u093E\u0938\u094D\u0915 \u092E\u0947\u0902 \u0915\u094B\u0908 \u092A\u093E\u0930\u0926\u0930\u094D\u0936\u0940 \u0938\u0902\u092A\u093E\u0926\u0928 \u0915\u094D\u0937\u0947\u0924\u094D\u0930 \u0928\u0939\u0940\u0902 \u0939\u0948; \u092A\u0939\u0932\u0947 \u0935\u0939 \u0915\u094D\u0937\u0947\u0924\u094D\u0930 \u092E\u093F\u091F\u093E\u090F\u0901 \u091C\u093F\u0938\u0947 \u092C\u0926\u0932\u0928\u093E \u0939\u0948",
-    "editPreflight.maskInactive": "\u0915\u094B\u0908 \u0938\u0902\u092A\u093E\u0926\u0928 \u0915\u094D\u0937\u0947\u0924\u094D\u0930 \u0938\u0915\u094D\u0930\u093F\u092F \u0928\u0939\u0940\u0902 \u0939\u0948; \u092E\u0949\u0921\u0932 \u092A\u0942\u0930\u0940 \u092E\u0941\u0916\u094D\u092F \u0938\u0902\u092A\u093E\u0926\u0928 \u091B\u0935\u093F \u092C\u0926\u0932 \u0938\u0915\u0924\u093E \u0939\u0948",
-    "editPreflight.inspectionFailed": "\u092E\u093E\u0938\u094D\u0915 \u0915\u0940 \u092A\u0942\u0930\u094D\u0935-\u091C\u093E\u0901\u091A \u091C\u093E\u0928\u0915\u093E\u0930\u0940 \u092A\u0922\u093C\u0940 \u0928\u0939\u0940\u0902 \u091C\u093E \u0938\u0915\u0940; \u0938\u092C\u092E\u093F\u091F \u0915\u0930\u0924\u0947 \u0938\u092E\u092F \u0938\u0930\u094D\u0935\u0930 \u092B\u093F\u0930 \u092D\u0940 \u091C\u093E\u0901\u091A \u0915\u0930\u0947\u0917\u093E",
-    "editPreflight.blocked": "\u0906\u0917\u0947 \u092C\u0922\u093C\u0928\u0947 \u0938\u0947 \u092A\u0939\u0932\u0947 \u092A\u0942\u0930\u094D\u0935-\u091C\u093E\u0901\u091A \u0915\u0940 \u0924\u094D\u0930\u0941\u091F\u093F\u092F\u093E\u0901 \u0920\u0940\u0915 \u0915\u0930\u0947\u0902",
     "app.newTask": "\u0928\u092F\u093E",
     "app.newTaskAria": "\u0928\u0908 \u091A\u0948\u091F",
     "sidebar.searchPlaceholder": "\u092A\u094D\u0930\u0949\u092E\u094D\u092A\u094D\u091F \u092F\u093E \u0915\u093E\u0930\u094D\u092F ID \u0916\u094B\u091C\u0947\u0902",
@@ -9119,7 +9557,7 @@
     "footer.archiveCount": "\u0938\u0902\u0917\u094D\u0930\u0939 {count}",
     "footer.historyLibrary": "\u0907\u0924\u093F\u0939\u093E\u0938",
     "historyLibrary.openFull": "\u092A\u0942\u0930\u094D\u0923 \u0907\u0924\u093F\u0939\u093E\u0938 \u092A\u0941\u0938\u094D\u0924\u0915\u093E\u0932\u092F \u0916\u094B\u0932\u0947\u0902",
-    "history.documentTitle": "\u0907\u0924\u093F\u0939\u093E\u0938 - \u0906\u0908\u0932\u0948\u092C \u091C\u0940\u092A\u0940\u091F\u0940 \u0915\u0902\u091C\u094D\u092F\u0942\u0930",
+    "history.documentTitle": "\u0907\u0924\u093F\u0939\u093E\u0938 - iLab CONJURE",
     "history.back": "\u091C\u0947\u0928\u0930\u0947\u091F\u0930 \u0915\u094B \u0932\u094C\u091F\u0947\u0902",
     "history.title": "\u0907\u0924\u093F\u0939\u093E\u0938",
     "history.loading": "\u0932\u094B\u0921 \u0939\u094B \u0930\u0939\u093E \u0939\u0948",
@@ -9453,6 +9891,7 @@
     "output.lock.lockedHint": "\u092A\u0948\u0930\u093E\u092E\u0940\u091F\u0930 \u0924\u092F \u0939\u0948\u0902\u0964 \u0938\u0902\u092A\u093E\u0926\u0928 \u0915\u0947 \u0932\u093F\u090F \u090A\u092A\u0930 \u0926\u093E\u0908\u0902 \u0913\u0930 \u0932\u0949\u0915 \u0906\u0907\u0915\u0928 \u0926\u092C\u093E\u090F\u0901\u0964",
     "output.lock.enabled": "\u091A\u093E\u0932\u0942",
     "output.lock.disabled": "\u092C\u0902\u0926",
+    "output.lock.custom": "\u0915\u0938\u094D\u091F\u092E",
     "output.mainModel": "\u092E\u0941\u0916\u094D\u092F \u092E\u0949\u0921\u0932",
     "output.selectMainModel": "\u092E\u0941\u0916\u094D\u092F \u092E\u0949\u0921\u0932 \u0915\u093E \u091A\u092F\u0928 \u0915\u0930\u0947\u0902",
     "output.mainModelCustomForInput": "\u0935\u0930\u094D\u0924\u092E\u093E\u0928 \u0907\u0928\u092A\u0941\u091F \u0915\u0947 \u0932\u093F\u090F \u090F\u0915 \u0915\u0938\u094D\u091F\u092E \u092E\u0949\u0921\u0932 \u0915\u093E \u0909\u092A\u092F\u094B\u0917 \u0915\u0930\u0947\u0902",
@@ -9476,6 +9915,7 @@
     "output.promptHelp.images.original": "\u0910\u092A \u0938\u094D\u0924\u0930 \u0915\u0947 \u0928\u093F\u092F\u092E \u091C\u094B\u0921\u093C\u0947 \u092C\u093F\u0928\u093E \u092E\u0942\u0932 \u092A\u093E\u0920 \u0938\u0940\u0927\u0947 \u0907\u092E\u0947\u091C API \u0915\u094B \u092D\u0947\u091C\u0924\u093E \u0939\u0948\u0964",
     "output.promptHelp.images.strict": "\u0938\u092D\u0940 \u0905\u0928\u093F\u0935\u093E\u0930\u094D\u092F \u0936\u0930\u094D\u0924\u0947\u0902 \u0938\u0941\u0930\u0915\u094D\u0937\u093F\u0924 \u0930\u0916\u0928\u0947 \u0915\u0947 \u0932\u093F\u090F \u092E\u0942\u0932 \u092A\u094D\u0930\u0949\u092E\u094D\u092A\u094D\u091F \u0915\u0947 \u0938\u093E\u0925 \u0935\u093F\u0936\u094D\u0935\u0938\u0928\u0940\u092F\u0924\u093E \u0928\u093F\u092F\u092E \u092D\u0947\u091C\u0924\u093E \u0939\u0948\u0964",
     "output.promptHelp.images.automatic": "\u0907\u092E\u0947\u091C API \u0915\u0940 \u0921\u093F\u092B\u093C\u0949\u0932\u094D\u091F \u092A\u094D\u0930\u094B\u0938\u0947\u0938\u093F\u0902\u0917 \u0915\u093E \u0909\u092A\u092F\u094B\u0917 \u0915\u0930\u0924\u093E \u0939\u0948 \u0914\u0930 \u0917\u0948\u0932\u0930\u0940 \u0938\u0902\u0926\u0930\u094D\u092D \u0915\u0940 \u0906\u0935\u0936\u094D\u092F\u0915 \u091F\u093F\u092A\u094D\u092A\u0923\u093F\u092F\u093E\u0901 \u0936\u093E\u092E\u093F\u0932 \u0930\u0916\u0924\u093E \u0939\u0948\u0964",
+    "output.size": "\u0906\u0909\u091F\u092A\u0941\u091F \u0906\u0915\u093E\u0930",
     "output.sizeMode": "\u0906\u0915\u093E\u0930 \u092E\u094B\u0921",
     "output.sizePreset": "\u092A\u094D\u0930\u0940\u0938\u0947\u091F",
     "output.sizeCustom": "\u0915\u0938\u094D\u091F\u092E",
@@ -9782,6 +10222,20 @@
     "apiSettings.providerCount": "{count} \u092A\u094D\u0930\u0926\u093E\u0924\u093E",
     "apiSettings.provider": "\u092A\u094D\u0930\u0926\u093E\u0924\u093E",
     "apiSettings.providerName": "\u092A\u094D\u0930\u0926\u093E\u0924\u093E \u0915\u093E \u0928\u093E\u092E",
+    "apiSettings.providerIcon": "\u0907\u092E\u094B\u091C\u0940",
+    "apiSettings.providerIconPlaceholder": "\u0935\u0948\u0915\u0932\u094D\u092A\u093F\u0915, \u091C\u0948\u0938\u0947 \u{1FA84}",
+    "apiSettings.connectionScope": "Connection settings",
+    "apiSettings.connectionPreview": "\u0915\u0928\u0947\u0915\u094D\u0936\u0928 \u092A\u0942\u0930\u094D\u0935\u093E\u0935\u0932\u094B\u0915\u0928",
+    "apiSettings.modelBindings": "Model bindings",
+    "apiSettings.modelBindingsHint": "One provider can bind multiple models and protocols.",
+    "apiSettings.addModelBinding": "Add model binding",
+    "apiSettings.appendRatioPrompt": "\u0905\u0928\u0941\u092A\u093E\u0924 \u0928\u093F\u0930\u094D\u0926\u0947\u0936 \u091C\u094B\u0921\u093C\u0947\u0902",
+    "apiSettings.defaultProviderForModel": "\u0921\u093F\u092B\u093C\u0949\u0932\u094D\u091F \u092A\u094D\u0930\u0926\u093E\u0924\u093E",
+    "apiSettings.removeBinding": "\u092C\u093E\u0907\u0902\u0921\u093F\u0902\u0917 \u0939\u091F\u093E\u090F\u0901",
+    "apiSettings.catalogRequiredForBinding": "The model catalog is unavailable; a binding cannot be added yet.",
+    "apiSettings.keepOneBinding": "Each provider must keep at least one model binding.",
+    "apiSettings.bindingRequiredFields": "Choose a model, enter a remote model name, and select at least one operation for every binding.",
+    "apiSettings.bindingOverlap": "{model} {operation} is handled by more than one binding.",
     "apiSettings.actualRequest": "\u0935\u093E\u0938\u094D\u0924\u0935\u093F\u0915 \u0905\u0928\u0941\u0930\u094B\u0927",
     "apiSettings.newProviderAction": "\u0928\u092F\u093E \u092A\u094D\u0930\u0926\u093E\u0924\u093E",
     "apiSettings.copyProvider": "\u0915\u0949\u092A\u0940",
@@ -9963,6 +10417,40 @@
     "history.referenceFiles": "\u0938\u0902\u0926\u0930\u094D\u092D \u092B\u093C\u093E\u0907\u0932\u0947\u0902",
     "history.downloadReferenceFile": "\u092B\u093C\u093E\u0907\u0932 \u0921\u093E\u0909\u0928\u0932\u094B\u0921 \u0915\u0930\u0947\u0902",
     "history.readdReferenceFile": "\u092B\u093F\u0930 \u091C\u094B\u0921\u093C\u0947\u0902",
+    "modelSelection.family": "\u092E\u0949\u0921\u0932 \u092A\u0930\u093F\u0935\u093E\u0930",
+    "modelSelection.concreteModel": "\u092E\u0949\u0921\u0932",
+    "modelSelection.provider": "\u092A\u094D\u0930\u0926\u093E\u0924\u093E",
+    "modelSelection.providerUnavailable": "\u0907\u0938 \u092E\u0949\u0921\u0932 \u0915\u0947 \u0932\u093F\u090F \u0915\u094B\u0908 \u092A\u094D\u0930\u0926\u093E\u0924\u093E \u0909\u092A\u0932\u092C\u094D\u0927 \u0928\u0939\u0940\u0902 \u0939\u0948",
+    "modelSelection.openSettings": "\u092A\u094D\u0930\u0926\u093E\u0924\u093E \u0938\u0947\u091F\u093F\u0902\u0917 \u0916\u094B\u0932\u0947\u0902",
+    "modelSelection.codexUnavailable": "Codex \u0938\u093E\u0907\u0928-\u0907\u0928 \u0909\u092A\u0932\u092C\u094D\u0927 \u0928\u0939\u0940\u0902 \u0939\u0948",
+    "modelSelection.catalogUnavailable": "\u092E\u0949\u0921\u0932 \u0915\u0948\u091F\u0932\u0949\u0917 \u0909\u092A\u0932\u092C\u094D\u0927 \u0928\u0939\u0940\u0902 \u0939\u0948",
+    "output.background": "\u092A\u0943\u0937\u094D\u0920\u092D\u0942\u092E\u093F",
+    "canvas.aspectRatio": "\u092A\u0939\u0932\u0942 \u0905\u0928\u0941\u092A\u093E\u0924",
+    "canvas.resolution": "\u0930\u093F\u091C\u093C\u0949\u0932\u094D\u092F\u0942\u0936\u0928",
+    "gemini.googleSearch": "Google \u0916\u094B\u091C",
+    "gemini.googleImageSearch": "Google \u091B\u0935\u093F \u0916\u094B\u091C",
+    "output.modalities": "\u0906\u0909\u091F\u092A\u0941\u091F \u092E\u094B\u0921\u0948\u0932\u093F\u091F\u0940",
+    "gemini.safetySettings": "\u0938\u0941\u0930\u0915\u094D\u0937\u093E \u0938\u0947\u091F\u093F\u0902\u0917",
+    "gemini.safety.harassment": "\u0909\u0924\u094D\u092A\u0940\u0921\u093C\u0928",
+    "gemini.safety.hateSpeech": "\u0918\u0943\u0923\u093E\u0938\u094D\u092A\u0926 \u092D\u093E\u0937\u0923",
+    "gemini.safety.sexuallyExplicit": "\u092F\u094C\u0928 \u0930\u0942\u092A \u0938\u0947 \u0938\u094D\u092A\u0937\u094D\u091F",
+    "gemini.safety.dangerousContent": "\u0916\u0924\u0930\u0928\u093E\u0915 \u0938\u093E\u092E\u0917\u094D\u0930\u0940",
+    "gemini.safety.threshold.unspecified": "\u0921\u093F\u092B\u093C\u0949\u0932\u094D\u091F",
+    "gemini.safety.threshold.off": "\u092B\u093C\u093F\u0932\u094D\u091F\u0930 \u092C\u0902\u0926",
+    "gemini.safety.threshold.blockNone": "\u0915\u0941\u091B \u0928 \u0930\u094B\u0915\u0947\u0902",
+    "gemini.safety.threshold.blockOnlyHigh": "\u0909\u091A\u094D\u091A \u091C\u094B\u0916\u093F\u092E \u0930\u094B\u0915\u0947\u0902",
+    "gemini.safety.threshold.blockMediumAndAbove": "\u092E\u0927\u094D\u092F\u092E+ \u0930\u094B\u0915\u0947\u0902",
+    "gemini.safety.threshold.blockLowAndAbove": "\u0938\u092D\u0940 \u0930\u094B\u0915\u0947\u0902",
+    "grounding.title": "Google \u0916\u094B\u091C \u0938\u094D\u0930\u094B\u0924",
+    "grounding.searchSuggestions": "Google \u0916\u094B\u091C \u0938\u0941\u091D\u093E\u0935",
+    "grounding.sourceCount": "{count} \u0938\u094D\u0930\u094B\u0924",
+    "grounding.source": "\u0938\u094D\u0930\u094B\u0924 {index}",
+    "modelParameters.invalidValue": "\u092A\u0948\u0930\u093E\u092E\u0940\u091F\u0930 \u092E\u093E\u0928 \u0905\u092E\u093E\u0928\u094D\u092F \u0939\u0948",
+    "modelParameters.objectRequired": "JSON \u0911\u092C\u094D\u091C\u0947\u0915\u094D\u091F \u0926\u0930\u094D\u091C \u0915\u0930\u0947\u0902",
+    "modelParameters.invalidJson": "\u0905\u092E\u093E\u0928\u094D\u092F JSON",
+    "modelParameters.migrated": "\u092E\u094C\u091C\u0942\u0926\u093E \u092E\u0949\u0921\u0932 \u0915\u0947 \u0932\u093F\u090F {count} \u092A\u0941\u0930\u093E\u0928\u0947 \u092A\u0948\u0930\u093E\u092E\u0940\u091F\u0930 \u0938\u092E\u093E\u092F\u094B\u091C\u093F\u0924 \u0915\u093F\u090F \u0917\u090F",
+    "modelParameters.historyConfiguration": "\u0910\u0924\u093F\u0939\u093E\u0938\u093F\u0915 \u0915\u0949\u0928\u094D\u092B\u093C\u093F\u0917\u0930\u0947\u0936\u0928",
+    "modelParameters.legacyTask": "\u092A\u0941\u0930\u093E\u0928\u093E \u0915\u093E\u0930\u094D\u092F",
     "imageEditor.guidance": "\u0938\u0902\u092A\u093E\u0926\u0928 \u092E\u093E\u0930\u094D\u0917\u0926\u0930\u094D\u0936\u0928",
     "imageEditor.instructionMarksGuidance": "\u0928\u093F\u0930\u094D\u0926\u0947\u0936 \u091A\u093F\u0939\u094D\u0928",
     "imageEditor.editRegionGuidance": "\u092E\u093E\u0938\u094D\u0915",
@@ -9976,23 +10464,23 @@
     "imageEditor.maskHelp": "\u0928\u0940\u0932\u0947 \u092E\u093E\u0938\u094D\u0915 \u0935\u093E\u0932\u0947 \u0915\u094D\u0937\u0947\u0924\u094D\u0930 \u0938\u0941\u0930\u0915\u094D\u0937\u093F\u0924 \u0930\u0939\u0924\u0947 \u0939\u0948\u0902\u0964 \u092C\u094D\u0930\u0936, \u0906\u092F\u0924 \u092F\u093E \u0935\u0943\u0924\u094D\u0924 \u0938\u0947 \u092E\u093F\u091F\u093E\u090F \u0917\u090F \u092A\u093E\u0930\u0926\u0930\u094D\u0936\u0940 \u0915\u094D\u0937\u0947\u0924\u094D\u0930 \u0938\u0902\u092A\u093E\u0926\u093F\u0924 \u0939\u094B\u0902\u0917\u0947\u0964",
     "imageEditor.emptyEditRegion": "\u0938\u0939\u0947\u091C\u0928\u0947 \u0938\u0947 \u092A\u0939\u0932\u0947 \u092E\u093E\u0938\u094D\u0915 \u0938\u0947 \u090F\u0915 \u092A\u093E\u0930\u0926\u0930\u094D\u0936\u0940 \u0915\u094D\u0937\u0947\u0924\u094D\u0930 \u092E\u093F\u091F\u093E\u090F\u0901\u0964",
     "imageInput.instructionMarksApplied": "\u0928\u093F\u0930\u094D\u0926\u0947\u0936 \u091A\u093F\u0939\u094D\u0928 \u0932\u093E\u0917\u0942",
-    "imageInput.editRegionApplied": "\u0938\u0902\u092A\u093E\u0926\u0928 \u0915\u094D\u0937\u0947\u0924\u094D\u0930 \u0932\u093E\u0917\u0942"
+    "imageInput.editRegionApplied": "\u0938\u0902\u092A\u093E\u0926\u0928 \u0915\u094D\u0937\u0947\u0924\u094D\u0930 \u0932\u093E\u0917\u0942",
+    "editPreflight.title": "\u0938\u092C\u092E\u093F\u091F \u0915\u0930\u0928\u0947 \u0938\u0947 \u092A\u0939\u0932\u0947 \u091C\u093E\u0901\u091A",
+    "editPreflight.primary": "\u092E\u093E\u0938\u094D\u0915 \u0915\u0947\u0935\u0932 \u092A\u0939\u0932\u0940 \u092E\u0941\u0916\u094D\u092F \u0938\u0902\u092A\u093E\u0926\u0928 \u091B\u0935\u093F \u092A\u0930 \u0932\u093E\u0917\u0942 \u0939\u094B\u0924\u093E \u0939\u0948: {name}",
+    "editPreflight.responsesResize": "Responses \u0938\u092C\u092E\u093F\u091F \u0915\u0930\u0928\u0947 \u0938\u0947 \u092A\u0939\u0932\u0947 {width}\xD7{height} \u0915\u094B {targetWidth}\xD7{targetHeight} \u092E\u0947\u0902 \u092C\u0926\u0932\u0947\u0917\u093E",
+    "editPreflight.editArea": "\u092A\u093E\u0930\u0926\u0930\u094D\u0936\u0940 \u0938\u0902\u092A\u093E\u0926\u0928 \u0915\u094D\u0937\u0947\u0924\u094D\u0930: {percent}%",
+    "editPreflight.editAreaSmall": "\u0938\u0902\u092A\u093E\u0926\u0928 \u0915\u094D\u0937\u0947\u0924\u094D\u0930 \u092C\u0939\u0941\u0924 \u091B\u094B\u091F\u093E \u0939\u0948, \u0907\u0938\u0932\u093F\u090F \u092E\u0949\u0921\u0932 \u0938\u094D\u092A\u0937\u094D\u091F \u092C\u0926\u0932\u093E\u0935 \u0928\u0939\u0940\u0902 \u0915\u0930 \u0938\u0915\u0924\u093E",
+    "editPreflight.editAreaLarge": "\u0905\u0927\u093F\u0915\u093E\u0902\u0936 \u091B\u0935\u093F \u0938\u0902\u092A\u093E\u0926\u0928 \u092F\u094B\u0917\u094D\u092F \u0939\u0948; \u092A\u0930\u093F\u0923\u093E\u092E \u092A\u0942\u0930\u0940 \u091B\u0935\u093F \u0915\u094B \u092B\u093F\u0930 \u0938\u0947 \u092C\u0928\u093E\u0928\u0947 \u091C\u0948\u0938\u093E \u0939\u094B \u0938\u0915\u0924\u093E \u0939\u0948",
+    "editPreflight.aspectMismatch": "\u0938\u094D\u0930\u094B\u0924 \u0905\u0928\u0941\u092A\u093E\u0924 \u0932\u0917\u092D\u0917 {sourceRatio} \u0939\u0948 \u0914\u0930 \u0906\u0909\u091F\u092A\u0941\u091F {outputRatio}; \u0915\u094D\u0930\u0949\u092A\u093F\u0902\u0917 \u092F\u093E \u0935\u094D\u092F\u093E\u092A\u0915 \u092A\u0941\u0928\u0930\u094D\u0928\u093F\u0930\u094D\u092E\u093E\u0923 \u0939\u094B \u0938\u0915\u0924\u093E \u0939\u0948",
+    "editPreflight.maskDimensionsMismatch": "\u092E\u093E\u0938\u094D\u0915 \u0906\u0915\u093E\u0930 {maskWidth}\xD7{maskHeight}, \u091B\u0935\u093F \u0906\u0915\u093E\u0930 {width}\xD7{height} \u0938\u0947 \u092E\u0947\u0932 \u0928\u0939\u0940\u0902 \u0916\u093E\u0924\u093E; \u090F\u0921\u093F\u091F\u0930 \u092B\u093F\u0930 \u0916\u094B\u0932\u0915\u0930 \u092E\u093E\u0938\u094D\u0915 \u0938\u0939\u0947\u091C\u0947\u0902",
+    "editPreflight.emptyEditArea": "\u092E\u093E\u0938\u094D\u0915 \u092E\u0947\u0902 \u0915\u094B\u0908 \u092A\u093E\u0930\u0926\u0930\u094D\u0936\u0940 \u0938\u0902\u092A\u093E\u0926\u0928 \u0915\u094D\u0937\u0947\u0924\u094D\u0930 \u0928\u0939\u0940\u0902 \u0939\u0948; \u092A\u0939\u0932\u0947 \u0935\u0939 \u0915\u094D\u0937\u0947\u0924\u094D\u0930 \u092E\u093F\u091F\u093E\u090F\u0901 \u091C\u093F\u0938\u0947 \u092C\u0926\u0932\u0928\u093E \u0939\u0948",
+    "editPreflight.maskInactive": "\u0915\u094B\u0908 \u0938\u0902\u092A\u093E\u0926\u0928 \u0915\u094D\u0937\u0947\u0924\u094D\u0930 \u0938\u0915\u094D\u0930\u093F\u092F \u0928\u0939\u0940\u0902 \u0939\u0948; \u092E\u0949\u0921\u0932 \u092A\u0942\u0930\u0940 \u092E\u0941\u0916\u094D\u092F \u0938\u0902\u092A\u093E\u0926\u0928 \u091B\u0935\u093F \u092C\u0926\u0932 \u0938\u0915\u0924\u093E \u0939\u0948",
+    "editPreflight.inspectionFailed": "\u092E\u093E\u0938\u094D\u0915 \u0915\u0940 \u092A\u0942\u0930\u094D\u0935-\u091C\u093E\u0901\u091A \u091C\u093E\u0928\u0915\u093E\u0930\u0940 \u092A\u0922\u093C\u0940 \u0928\u0939\u0940\u0902 \u091C\u093E \u0938\u0915\u0940; \u0938\u092C\u092E\u093F\u091F \u0915\u0930\u0924\u0947 \u0938\u092E\u092F \u0938\u0930\u094D\u0935\u0930 \u092B\u093F\u0930 \u092D\u0940 \u091C\u093E\u0901\u091A \u0915\u0930\u0947\u0917\u093E",
+    "editPreflight.blocked": "\u0906\u0917\u0947 \u092C\u0922\u093C\u0928\u0947 \u0938\u0947 \u092A\u0939\u0932\u0947 \u092A\u0942\u0930\u094D\u0935-\u091C\u093E\u0901\u091A \u0915\u0940 \u0924\u094D\u0930\u0941\u091F\u093F\u092F\u093E\u0901 \u0920\u0940\u0915 \u0915\u0930\u0947\u0902"
   };
 
   // codex_image/webui/frontend/src/i18n/zh-cn.ts
   var ZH_CN_DICTIONARY = {
-    "editPreflight.title": "\u63D0\u4EA4\u524D\u68C0\u67E5",
-    "editPreflight.primary": "\u906E\u7F69\u53EA\u4F5C\u7528\u4E8E\u7B2C\u4E00\u5F20\u4E3B\u7F16\u8F91\u56FE\uFF1A{name}\uFF1B\u63D0\u4EA4\u65F6\u539F\u56FE\u3001\u906E\u7F69\u548C\u8F93\u51FA\u4F1A\u9501\u5B9A\u4E3A\u540C\u4E00 PNG \u753B\u5E03",
-    "editPreflight.responsesResize": "Responses \u63D0\u4EA4\u65F6\u4F1A\u5C06 {width}\xD7{height} \u7F29\u653E\u4E3A {targetWidth}\xD7{targetHeight}",
-    "editPreflight.editArea": "\u900F\u660E\u7F16\u8F91\u533A\u57DF\u5360 {percent}%",
-    "editPreflight.editAreaSmall": "\u7F16\u8F91\u533A\u57DF\u5F88\u5C0F\uFF0C\u6A21\u578B\u53EF\u80FD\u65E0\u6CD5\u660E\u663E\u4FEE\u6539",
-    "editPreflight.editAreaLarge": "\u5927\u90E8\u5206\u753B\u9762\u90FD\u53EF\u7F16\u8F91\uFF0C\u7ED3\u679C\u53EF\u80FD\u63A5\u8FD1\u5168\u56FE\u91CD\u7ED8",
-    "editPreflight.aspectMismatch": "\u539F\u56FE\u6BD4\u4F8B\u7EA6\u4E3A {sourceRatio}\uFF0C\u8F93\u51FA\u4E3A {outputRatio}\uFF0C\u53EF\u80FD\u53D1\u751F\u88C1\u5207\u6216\u6574\u4F53\u91CD\u6784",
-    "editPreflight.maskDimensionsMismatch": "\u906E\u7F69\u5C3A\u5BF8 {maskWidth}\xD7{maskHeight} \u4E0E\u539F\u56FE {width}\xD7{height} \u4E0D\u4E00\u81F4\uFF0C\u8BF7\u91CD\u65B0\u6253\u5F00\u7F16\u8F91\u5668\u5E76\u4FDD\u5B58\u906E\u7F69",
-    "editPreflight.emptyEditArea": "\u906E\u7F69\u6CA1\u6709\u900F\u660E\u7F16\u8F91\u533A\u57DF\uFF0C\u8BF7\u5148\u64E6\u51FA\u9700\u8981\u4FEE\u6539\u7684\u533A\u57DF",
-    "editPreflight.maskInactive": "\u5F53\u524D\u672A\u4F7F\u7528\u7F16\u8F91\u533A\u57DF\uFF0C\u6A21\u578B\u53EF\u4FEE\u6539\u6574\u5F20\u4E3B\u7F16\u8F91\u56FE",
-    "editPreflight.inspectionFailed": "\u65E0\u6CD5\u8BFB\u53D6\u906E\u7F69\u9884\u68C0\u4FE1\u606F\uFF1B\u63D0\u4EA4\u65F6\u4ECD\u4F1A\u7531\u670D\u52A1\u7AEF\u6821\u9A8C",
-    "editPreflight.blocked": "\u8BF7\u5148\u5904\u7406\u63D0\u4EA4\u524D\u68C0\u67E5\u4E2D\u7684\u9519\u8BEF",
     "app.newTask": "\u65B0\u5EFA",
     "app.newTaskAria": "\u65B0\u5EFA\u5BF9\u8BDD",
     "sidebar.searchPlaceholder": "\u641C\u7D22\u63D0\u793A\u8BCD\u6216\u4EFB\u52A1 ID",
@@ -10116,7 +10604,7 @@
     "footer.archiveCount": "\u4F1A\u8BDD\u5F52\u6863 {count}",
     "footer.historyLibrary": "\u5386\u53F2\u5E93",
     "historyLibrary.openFull": "\u6253\u5F00\u5B8C\u6574\u5386\u53F2\u5E93",
-    "history.documentTitle": "\u5386\u53F2\u5E93 - iLab GPT CONJURE",
+    "history.documentTitle": "\u5386\u53F2\u5E93 - iLab CONJURE",
     "history.back": "\u8FD4\u56DE\u751F\u6210\u9875",
     "history.title": "\u5386\u53F2\u5E93",
     "history.loading": "\u8F7D\u5165\u4E2D",
@@ -10460,6 +10948,7 @@
     "output.lock.lockedHint": "\u53C2\u6570\u5DF2\u56FA\u5B9A\u3002\u70B9\u51FB\u53F3\u4E0A\u89D2\u9501\u56FE\u6807\u6062\u590D\u7F16\u8F91\u3002",
     "output.lock.enabled": "\u5F00\u542F",
     "output.lock.disabled": "\u5173\u95ED",
+    "output.lock.custom": "\u81EA\u5B9A\u4E49",
     "output.mainModel": "\u4E3B\u6A21\u578B",
     "output.selectMainModel": "\u9009\u62E9\u4E3B\u6A21\u578B",
     "output.mainModelCustomForInput": "\u6309\u5F53\u524D\u8F93\u5165\u4F7F\u7528\u81EA\u5B9A\u4E49\u6A21\u578B",
@@ -10483,6 +10972,7 @@
     "output.promptHelp.images.original": "\u5E94\u7528\u4E0D\u6DFB\u52A0\u63D0\u793A\u8BCD\u89C4\u5219\uFF0C\u6309\u7528\u6237\u539F\u6587\u76F4\u63A5\u63D0\u4EA4\u7ED9\u56FE\u50CF\u63A5\u53E3\u3002",
     "output.promptHelp.images.strict": "\u5E94\u7528\u5C06\u4FDD\u771F\u89C4\u5219\u4E0E\u539F\u63D0\u793A\u8BCD\u4E00\u5E76\u63D0\u4EA4\uFF0C\u5F3A\u8C03\u4FDD\u7559\u6240\u6709\u786C\u6027\u7EA6\u675F\u3002",
     "output.promptHelp.images.automatic": "\u6309\u56FE\u50CF\u63A5\u53E3\u9ED8\u8BA4\u65B9\u5F0F\u63D0\u4EA4\uFF1B\u56FE\u5E93\u5F15\u7528\u7B49\u5FC5\u8981\u8BF4\u660E\u4ECD\u4F1A\u968F\u63D0\u793A\u8BCD\u53D1\u9001\u3002",
+    "output.size": "\u8F93\u51FA\u5C3A\u5BF8",
     "output.sizeMode": "\u5C3A\u5BF8\u6A21\u5F0F",
     "output.sizePreset": "\u9884\u8BBE\u5C3A\u5BF8",
     "output.sizeCustom": "\u81EA\u5B9A\u4E49\u5C3A\u5BF8",
@@ -10789,6 +11279,20 @@
     "apiSettings.providerCount": "{count} \u4E2A\u4F9B\u5E94\u5546",
     "apiSettings.provider": "\u4F9B\u5E94\u5546",
     "apiSettings.providerName": "\u4F9B\u5E94\u5546\u540D\u79F0",
+    "apiSettings.providerIcon": "Emoji \u56FE\u6807",
+    "apiSettings.providerIconPlaceholder": "\u53EF\u9009\uFF0C\u4F8B\u5982 \u{1FA84}",
+    "apiSettings.connectionScope": "\u8FDE\u63A5\u7EA7\u8BBE\u7F6E",
+    "apiSettings.connectionPreview": "\u8FDE\u63A5\u9884\u89C8",
+    "apiSettings.modelBindings": "\u6A21\u578B\u7ED1\u5B9A",
+    "apiSettings.modelBindingsHint": "\u4E00\u4E2A\u4F9B\u5E94\u5546\u53EF\u540C\u65F6\u7ED1\u5B9A\u591A\u4E2A\u578B\u53F7\u548C\u534F\u8BAE\u3002",
+    "apiSettings.addModelBinding": "\u6DFB\u52A0\u6A21\u578B\u7ED1\u5B9A",
+    "apiSettings.appendRatioPrompt": "\u8FFD\u52A0\u6BD4\u4F8B\u63D0\u793A",
+    "apiSettings.defaultProviderForModel": "\u8BBE\u4E3A\u9ED8\u8BA4\u4F9B\u5E94\u5546",
+    "apiSettings.removeBinding": "\u5220\u9664\u7ED1\u5B9A",
+    "apiSettings.catalogRequiredForBinding": "\u6A21\u578B\u76EE\u5F55\u4E0D\u53EF\u7528\uFF0C\u6682\u65F6\u65E0\u6CD5\u6DFB\u52A0\u7ED1\u5B9A",
+    "apiSettings.keepOneBinding": "\u6BCF\u4E2A\u4F9B\u5E94\u5546\u81F3\u5C11\u4FDD\u7559\u4E00\u6761\u6A21\u578B\u7ED1\u5B9A",
+    "apiSettings.bindingRequiredFields": "\u8BF7\u4E3A\u6BCF\u6761\u7ED1\u5B9A\u9009\u62E9\u578B\u53F7\u3001\u586B\u5199\u8FDC\u7AEF\u6A21\u578B\u540D\u5E76\u81F3\u5C11\u9009\u62E9\u4E00\u4E2A\u64CD\u4F5C",
+    "apiSettings.bindingOverlap": "{model} \u7684 {operation} \u64CD\u4F5C\u88AB\u591A\u6761\u7ED1\u5B9A\u91CD\u590D\u5904\u7406",
     "apiSettings.actualRequest": "\u5B9E\u9645\u8BF7\u6C42",
     "apiSettings.newProviderAction": "\u65B0\u5EFA\u4F9B\u5E94\u5546",
     "apiSettings.copyProvider": "\u590D\u5236",
@@ -10970,6 +11474,40 @@
     "history.referenceFiles": "\u53C2\u8003\u6587\u4EF6",
     "history.downloadReferenceFile": "\u4E0B\u8F7D\u6587\u4EF6",
     "history.readdReferenceFile": "\u91CD\u65B0\u52A0\u5165",
+    "modelSelection.family": "\u6A21\u578B\u7CFB\u5217",
+    "modelSelection.concreteModel": "\u5177\u4F53\u578B\u53F7",
+    "modelSelection.provider": "\u4F9B\u5E94\u5546",
+    "modelSelection.providerUnavailable": "\u5F53\u524D\u578B\u53F7\u6CA1\u6709\u53EF\u7528\u4F9B\u5E94\u5546",
+    "modelSelection.openSettings": "\u6253\u5F00\u4F9B\u5E94\u5546\u8BBE\u7F6E",
+    "modelSelection.codexUnavailable": "Codex \u767B\u5F55\u4E0D\u53EF\u7528",
+    "modelSelection.catalogUnavailable": "\u6A21\u578B\u76EE\u5F55\u4E0D\u53EF\u7528",
+    "output.background": "\u80CC\u666F",
+    "canvas.aspectRatio": "\u753B\u9762\u6BD4\u4F8B",
+    "canvas.resolution": "\u5206\u8FA8\u7387",
+    "gemini.googleSearch": "Google \u641C\u7D22",
+    "gemini.googleImageSearch": "Google \u56FE\u7247\u641C\u7D22",
+    "output.modalities": "\u8F93\u51FA\u6A21\u6001",
+    "gemini.safetySettings": "\u5B89\u5168\u8BBE\u7F6E",
+    "gemini.safety.harassment": "\u9A9A\u6270",
+    "gemini.safety.hateSpeech": "\u4EC7\u6068\u8A00\u8BBA",
+    "gemini.safety.sexuallyExplicit": "\u8272\u60C5\u9732\u9AA8\u5185\u5BB9",
+    "gemini.safety.dangerousContent": "\u5371\u9669\u5185\u5BB9",
+    "gemini.safety.threshold.unspecified": "\u9ED8\u8BA4",
+    "gemini.safety.threshold.off": "\u5173\u95ED\u8FC7\u6EE4",
+    "gemini.safety.threshold.blockNone": "\u4E0D\u62E6\u622A",
+    "gemini.safety.threshold.blockOnlyHigh": "\u62E6\u622A\u9AD8\u5371",
+    "gemini.safety.threshold.blockMediumAndAbove": "\u62E6\u622A\u4E2D\u9AD8",
+    "gemini.safety.threshold.blockLowAndAbove": "\u62E6\u622A\u5168\u90E8",
+    "grounding.title": "Google \u641C\u7D22\u6765\u6E90",
+    "grounding.searchSuggestions": "Google \u641C\u7D22\u5EFA\u8BAE",
+    "grounding.sourceCount": "{count} \u4E2A\u6765\u6E90",
+    "grounding.source": "\u6765\u6E90 {index}",
+    "modelParameters.invalidValue": "\u53C2\u6570\u503C\u65E0\u6548",
+    "modelParameters.objectRequired": "\u8BF7\u8F93\u5165 JSON \u5BF9\u8C61",
+    "modelParameters.invalidJson": "JSON \u683C\u5F0F\u65E0\u6548",
+    "modelParameters.migrated": "\u5DF2\u6309\u5F53\u524D\u6A21\u578B\u517C\u5BB9 {count} \u4E2A\u65E7\u53C2\u6570",
+    "modelParameters.historyConfiguration": "\u5386\u53F2\u914D\u7F6E",
+    "modelParameters.legacyTask": "\u65E7\u7248\u4EFB\u52A1",
     "imageEditor.guidance": "\u7F16\u8F91\u6307\u5BFC",
     "imageEditor.instructionMarksGuidance": "\u6807\u6CE8",
     "imageEditor.editRegionGuidance": "\u906E\u7F69",
@@ -10983,23 +11521,23 @@
     "imageEditor.maskHelp": "\u84DD\u8272\u906E\u7F69\u8986\u76D6\u7684\u533A\u57DF\u4F1A\u4FDD\u7559\uFF1B\u7528\u64E6\u9664\u753B\u7B14\u3001\u77E9\u5F62\u6216\u5706\u5F62\u6316\u51FA\u7684\u900F\u660E\u533A\u57DF\u4F1A\u88AB\u4FEE\u6539\u3002",
     "imageEditor.emptyEditRegion": "\u8BF7\u5148\u4ECE\u906E\u7F69\u4E2D\u64E6\u51FA\u4E00\u4E2A\u9700\u8981\u4FEE\u6539\u7684\u900F\u660E\u533A\u57DF\u3002",
     "imageInput.instructionMarksApplied": "\u6307\u4EE4\u6807\u8BB0\u5DF2\u5E94\u7528",
-    "imageInput.editRegionApplied": "\u7F16\u8F91\u533A\u57DF\u5DF2\u5E94\u7528"
+    "imageInput.editRegionApplied": "\u7F16\u8F91\u533A\u57DF\u5DF2\u5E94\u7528",
+    "editPreflight.title": "\u63D0\u4EA4\u524D\u68C0\u67E5",
+    "editPreflight.primary": "\u906E\u7F69\u53EA\u4F5C\u7528\u4E8E\u7B2C\u4E00\u5F20\u4E3B\u7F16\u8F91\u56FE\uFF1A{name}\uFF1B\u63D0\u4EA4\u65F6\u539F\u56FE\u3001\u906E\u7F69\u548C\u8F93\u51FA\u4F1A\u9501\u5B9A\u4E3A\u540C\u4E00 PNG \u753B\u5E03",
+    "editPreflight.responsesResize": "Responses \u63D0\u4EA4\u65F6\u4F1A\u5C06 {width}\xD7{height} \u7F29\u653E\u4E3A {targetWidth}\xD7{targetHeight}",
+    "editPreflight.editArea": "\u900F\u660E\u7F16\u8F91\u533A\u57DF\u5360 {percent}%",
+    "editPreflight.editAreaSmall": "\u7F16\u8F91\u533A\u57DF\u5F88\u5C0F\uFF0C\u6A21\u578B\u53EF\u80FD\u65E0\u6CD5\u660E\u663E\u4FEE\u6539",
+    "editPreflight.editAreaLarge": "\u5927\u90E8\u5206\u753B\u9762\u90FD\u53EF\u7F16\u8F91\uFF0C\u7ED3\u679C\u53EF\u80FD\u63A5\u8FD1\u5168\u56FE\u91CD\u7ED8",
+    "editPreflight.aspectMismatch": "\u539F\u56FE\u6BD4\u4F8B\u7EA6\u4E3A {sourceRatio}\uFF0C\u8F93\u51FA\u4E3A {outputRatio}\uFF0C\u53EF\u80FD\u53D1\u751F\u88C1\u5207\u6216\u6574\u4F53\u91CD\u6784",
+    "editPreflight.maskDimensionsMismatch": "\u906E\u7F69\u5C3A\u5BF8 {maskWidth}\xD7{maskHeight} \u4E0E\u539F\u56FE {width}\xD7{height} \u4E0D\u4E00\u81F4\uFF0C\u8BF7\u91CD\u65B0\u6253\u5F00\u7F16\u8F91\u5668\u5E76\u4FDD\u5B58\u906E\u7F69",
+    "editPreflight.emptyEditArea": "\u906E\u7F69\u6CA1\u6709\u900F\u660E\u7F16\u8F91\u533A\u57DF\uFF0C\u8BF7\u5148\u64E6\u51FA\u9700\u8981\u4FEE\u6539\u7684\u533A\u57DF",
+    "editPreflight.maskInactive": "\u5F53\u524D\u672A\u4F7F\u7528\u7F16\u8F91\u533A\u57DF\uFF0C\u6A21\u578B\u53EF\u4FEE\u6539\u6574\u5F20\u4E3B\u7F16\u8F91\u56FE",
+    "editPreflight.inspectionFailed": "\u65E0\u6CD5\u8BFB\u53D6\u906E\u7F69\u9884\u68C0\u4FE1\u606F\uFF1B\u63D0\u4EA4\u65F6\u4ECD\u4F1A\u7531\u670D\u52A1\u7AEF\u6821\u9A8C",
+    "editPreflight.blocked": "\u8BF7\u5148\u5904\u7406\u63D0\u4EA4\u524D\u68C0\u67E5\u4E2D\u7684\u9519\u8BEF"
   };
 
   // codex_image/webui/frontend/src/i18n/zh-hk.ts
   var ZH_HK_DICTIONARY = {
-    "editPreflight.title": "\u63D0\u4EA4\u524D\u6AA2\u67E5",
-    "editPreflight.primary": "\u906E\u7F69\u53EA\u6703\u5957\u7528\u5230\u7B2C\u4E00\u5F35\u4E3B\u8981\u7DE8\u8F2F\u5716\u7247\uFF1A{name}",
-    "editPreflight.responsesResize": "Responses \u63D0\u4EA4\u6642\u6703\u5C07 {width}\xD7{height} \u7E2E\u653E\u70BA {targetWidth}\xD7{targetHeight}",
-    "editPreflight.editArea": "\u900F\u660E\u7DE8\u8F2F\u5340\u57DF\u4F54 {percent}%",
-    "editPreflight.editAreaSmall": "\u7DE8\u8F2F\u5340\u57DF\u5F88\u5C0F\uFF0C\u6A21\u578B\u53EF\u80FD\u7121\u6CD5\u7522\u751F\u660E\u986F\u4FEE\u6539",
-    "editPreflight.editAreaLarge": "\u5927\u90E8\u5206\u756B\u9762\u90FD\u53EF\u7DE8\u8F2F\uFF0C\u7D50\u679C\u53EF\u80FD\u63A5\u8FD1\u6574\u5F35\u91CD\u7E6A",
-    "editPreflight.aspectMismatch": "\u539F\u5716\u6BD4\u4F8B\u7D04\u70BA {sourceRatio}\uFF0C\u8F38\u51FA\u70BA {outputRatio}\uFF0C\u53EF\u80FD\u51FA\u73FE\u88C1\u5207\u6216\u6574\u9AD4\u91CD\u69CB",
-    "editPreflight.maskDimensionsMismatch": "\u906E\u7F69\u5C3A\u5BF8 {maskWidth}\xD7{maskHeight} \u8207\u539F\u5716 {width}\xD7{height} \u4E0D\u4E00\u81F4\uFF0C\u8ACB\u91CD\u65B0\u958B\u555F\u7DE8\u8F2F\u5668\u4E26\u5132\u5B58\u906E\u7F69",
-    "editPreflight.emptyEditArea": "\u906E\u7F69\u6C92\u6709\u900F\u660E\u7DE8\u8F2F\u5340\u57DF\uFF0C\u8ACB\u5148\u64E6\u51FA\u8981\u4FEE\u6539\u7684\u5340\u57DF",
-    "editPreflight.maskInactive": "\u76EE\u524D\u672A\u4F7F\u7528\u7DE8\u8F2F\u5340\u57DF\uFF0C\u6A21\u578B\u53EF\u4FEE\u6539\u6574\u5F35\u4E3B\u8981\u7DE8\u8F2F\u5716\u7247",
-    "editPreflight.inspectionFailed": "\u7121\u6CD5\u8B80\u53D6\u906E\u7F69\u9810\u6AA2\u8CC7\u6599\uFF1B\u63D0\u4EA4\u6642\u4ECD\u6703\u7531\u4F3A\u670D\u5668\u9A57\u8B49",
-    "editPreflight.blocked": "\u8ACB\u5148\u8655\u7406\u63D0\u4EA4\u524D\u6AA2\u67E5\u4E2D\u7684\u932F\u8AA4",
     "app.newTask": "\u65B0\u589E",
     "app.newTaskAria": "\u65B0\u5EFA\u5C0D\u8A71",
     "sidebar.searchPlaceholder": "\u641C\u5C0B\u63D0\u793A\u8A5E\u6216\u4EFB\u52D9ID",
@@ -11123,7 +11661,7 @@
     "footer.archiveCount": "\u6703\u8A71\u6B78\u6A94{count}",
     "footer.historyLibrary": "\u6B77\u53F2\u5EAB",
     "historyLibrary.openFull": "\u958B\u555F\u5B8C\u6574\u6B77\u53F2\u5EAB",
-    "history.documentTitle": "\u6B77\u53F2\u5EAB - iLabGPTCONJURE",
+    "history.documentTitle": "\u6B77\u53F2\u5EAB - iLab CONJURE",
     "history.back": "\u8FD4\u56DE\u751F\u6210\u9801",
     "history.title": "\u6B77\u53F2\u5EAB",
     "history.loading": "\u8F09\u5165\u4E2D",
@@ -11467,6 +12005,7 @@
     "output.lock.lockedHint": "\u53C3\u6578\u5DF2\u56FA\u5B9A\u3002\u9EDE\u64CA\u53F3\u4E0A\u89D2\u9396\u5716\u793A\u6062\u5FA9\u7DE8\u8F2F\u3002",
     "output.lock.enabled": "\u958B\u555F",
     "output.lock.disabled": "\u95DC\u9589",
+    "output.lock.custom": "\u81EA\u8A02",
     "output.mainModel": "\u4E3B\u6A21\u578B",
     "output.selectMainModel": "\u9078\u64C7\u4E3B\u6A21\u578B",
     "output.mainModelCustomForInput": "\u4F9D\u76EE\u524D\u8F38\u5165\u4F7F\u7528\u81EA\u8A02\u6A21\u578B",
@@ -11490,6 +12029,7 @@
     "output.promptHelp.images.original": "\u61C9\u7528\u7A0B\u5F0F\u4E0D\u52A0\u5165\u63D0\u793A\u8A5E\u898F\u5247\uFF0C\u6309\u7528\u6236\u539F\u6587\u76F4\u63A5\u63D0\u4EA4\u81F3\u5716\u50CF\u4ECB\u9762\u3002",
     "output.promptHelp.images.strict": "\u61C9\u7528\u7A0B\u5F0F\u5C07\u4FDD\u771F\u898F\u5247\u8207\u539F\u63D0\u793A\u8A5E\u4E00\u4F75\u63D0\u4EA4\uFF0C\u5F37\u8ABF\u4FDD\u7559\u6240\u6709\u786C\u6027\u9650\u5236\u3002",
     "output.promptHelp.images.automatic": "\u6309\u5716\u50CF\u4ECB\u9762\u7684\u9810\u8A2D\u65B9\u5F0F\u63D0\u4EA4\uFF1B\u5716\u5EAB\u5F15\u7528\u7B49\u5FC5\u8981\u8AAA\u660E\u4ECD\u6703\u96A8\u63D0\u793A\u8A5E\u50B3\u9001\u3002",
+    "output.size": "\u8F38\u51FA\u5C3A\u5BF8",
     "output.sizeMode": "\u5C3A\u5BF8\u6A21\u5F0F",
     "output.sizePreset": "\u9810\u8A2D\u5C3A\u5BF8",
     "output.sizeCustom": "\u81EA\u8A02\u5C3A\u5BF8",
@@ -11796,6 +12336,20 @@
     "apiSettings.providerCount": "{count}\u500B\u4F9B\u61C9\u5546",
     "apiSettings.provider": "\u4F9B\u61C9\u5546",
     "apiSettings.providerName": "\u4F9B\u61C9\u5546\u540D\u7A31",
+    "apiSettings.providerIcon": "Emoji \u5716\u793A",
+    "apiSettings.providerIconPlaceholder": "\u53EF\u9078\uFF0C\u4F8B\u5982 \u{1FA84}",
+    "apiSettings.connectionScope": "\u8FDE\u63A5\u7EA7\u8BBE\u7F6E",
+    "apiSettings.connectionPreview": "\u9023\u7DDA\u9810\u89BD",
+    "apiSettings.modelBindings": "\u6A21\u578B\u7ED1\u5B9A",
+    "apiSettings.modelBindingsHint": "\u4E00\u4E2A\u4F9B\u5E94\u5546\u53EF\u540C\u65F6\u7ED1\u5B9A\u591A\u4E2A\u578B\u53F7\u548C\u534F\u8BAE\u3002",
+    "apiSettings.addModelBinding": "\u6DFB\u52A0\u6A21\u578B\u7ED1\u5B9A",
+    "apiSettings.appendRatioPrompt": "\u52A0\u5165\u6BD4\u4F8B\u63D0\u793A",
+    "apiSettings.defaultProviderForModel": "\u8A2D\u70BA\u9810\u8A2D\u4F9B\u61C9\u5546",
+    "apiSettings.removeBinding": "\u522A\u9664\u7D81\u5B9A",
+    "apiSettings.catalogRequiredForBinding": "\u6A21\u578B\u76EE\u5F55\u4E0D\u53EF\u7528\uFF0C\u6682\u65F6\u65E0\u6CD5\u6DFB\u52A0\u7ED1\u5B9A",
+    "apiSettings.keepOneBinding": "\u6BCF\u4E2A\u4F9B\u5E94\u5546\u81F3\u5C11\u4FDD\u7559\u4E00\u6761\u6A21\u578B\u7ED1\u5B9A",
+    "apiSettings.bindingRequiredFields": "\u8BF7\u4E3A\u6BCF\u6761\u7ED1\u5B9A\u9009\u62E9\u578B\u53F7\u3001\u586B\u5199\u8FDC\u7AEF\u6A21\u578B\u540D\u5E76\u81F3\u5C11\u9009\u62E9\u4E00\u4E2A\u64CD\u4F5C",
+    "apiSettings.bindingOverlap": "{model} \u7684 {operation} \u64CD\u4F5C\u88AB\u591A\u6761\u7ED1\u5B9A\u91CD\u590D\u5904\u7406",
     "apiSettings.actualRequest": "\u5BE6\u969B\u8ACB\u6C42",
     "apiSettings.newProviderAction": "\u65B0\u5EFA\u4F9B\u61C9\u5546",
     "apiSettings.copyProvider": "\u8907\u88FD",
@@ -11977,6 +12531,40 @@
     "history.referenceFiles": "\u53C3\u8003\u6A94\u6848",
     "history.downloadReferenceFile": "\u4E0B\u8F09\u6A94\u6848",
     "history.readdReferenceFile": "\u91CD\u65B0\u52A0\u5165",
+    "modelSelection.family": "\u6A21\u578B\u7CFB\u5217",
+    "modelSelection.concreteModel": "\u5177\u9AD4\u578B\u865F",
+    "modelSelection.provider": "\u4F9B\u61C9\u5546",
+    "modelSelection.providerUnavailable": "\u76EE\u524D\u578B\u865F\u6C92\u6709\u53EF\u7528\u4F9B\u61C9\u5546",
+    "modelSelection.openSettings": "\u958B\u555F\u4F9B\u61C9\u5546\u8A2D\u5B9A",
+    "modelSelection.codexUnavailable": "Codex \u767B\u5165\u4E0D\u53EF\u7528",
+    "modelSelection.catalogUnavailable": "\u6A21\u578B\u76EE\u9304\u4E0D\u53EF\u7528",
+    "output.background": "\u80CC\u666F",
+    "canvas.aspectRatio": "\u756B\u9762\u6BD4\u4F8B",
+    "canvas.resolution": "\u89E3\u50CF\u5EA6",
+    "gemini.googleSearch": "Google \u641C\u5C0B",
+    "gemini.googleImageSearch": "Google \u5716\u7247\u641C\u5C0B",
+    "output.modalities": "\u8F38\u51FA\u6A21\u614B",
+    "gemini.safetySettings": "\u5B89\u5168\u8A2D\u5B9A",
+    "gemini.safety.harassment": "\u9A37\u64FE",
+    "gemini.safety.hateSpeech": "\u4EC7\u6068\u8A00\u8AD6",
+    "gemini.safety.sexuallyExplicit": "\u8272\u60C5\u9732\u9AA8\u5167\u5BB9",
+    "gemini.safety.dangerousContent": "\u5371\u96AA\u5167\u5BB9",
+    "gemini.safety.threshold.unspecified": "\u9810\u8A2D",
+    "gemini.safety.threshold.off": "\u95DC\u9589\u904E\u6FFE",
+    "gemini.safety.threshold.blockNone": "\u4E0D\u6514\u622A",
+    "gemini.safety.threshold.blockOnlyHigh": "\u6514\u622A\u9AD8\u5371",
+    "gemini.safety.threshold.blockMediumAndAbove": "\u6514\u622A\u4E2D\u9AD8",
+    "gemini.safety.threshold.blockLowAndAbove": "\u6514\u622A\u5168\u90E8",
+    "grounding.title": "Google \u641C\u5C0B\u4F86\u6E90",
+    "grounding.searchSuggestions": "Google \u641C\u5C0B\u5EFA\u8B70",
+    "grounding.sourceCount": "{count} \u500B\u4F86\u6E90",
+    "grounding.source": "\u4F86\u6E90 {index}",
+    "modelParameters.invalidValue": "\u53C3\u6578\u503C\u7121\u6548",
+    "modelParameters.objectRequired": "\u8ACB\u8F38\u5165 JSON \u7269\u4EF6",
+    "modelParameters.invalidJson": "JSON \u683C\u5F0F\u7121\u6548",
+    "modelParameters.migrated": "\u5DF2\u6309\u76EE\u524D\u6A21\u578B\u517C\u5BB9\u8655\u7406 {count} \u500B\u820A\u53C3\u6578",
+    "modelParameters.historyConfiguration": "\u6B77\u53F2\u8A2D\u5B9A",
+    "modelParameters.legacyTask": "\u820A\u7248\u4EFB\u52D9",
     "imageEditor.guidance": "\u7DE8\u8F2F\u6307\u5F15",
     "imageEditor.instructionMarksGuidance": "\u6307\u4EE4\u6A19\u8A18",
     "imageEditor.editRegionGuidance": "\u906E\u7F69",
@@ -11990,23 +12578,23 @@
     "imageEditor.maskHelp": "\u85CD\u8272\u906E\u7F69\u8986\u84CB\u7684\u5340\u57DF\u6703\u4FDD\u7559\uFF1B\u7528\u64E6\u9664\u756B\u7B46\u3001\u77E9\u5F62\u6216\u5713\u5F62\u6316\u51FA\u7684\u900F\u660E\u5340\u57DF\u6703\u88AB\u4FEE\u6539\u3002",
     "imageEditor.emptyEditRegion": "\u8ACB\u5148\u5F9E\u906E\u7F69\u4E2D\u64E6\u51FA\u4E00\u500B\u9700\u8981\u4FEE\u6539\u7684\u900F\u660E\u5340\u57DF\u3002",
     "imageInput.instructionMarksApplied": "\u6307\u4EE4\u6A19\u8A18\u5DF2\u5957\u7528",
-    "imageInput.editRegionApplied": "\u7DE8\u8F2F\u5340\u57DF\u5DF2\u5957\u7528"
+    "imageInput.editRegionApplied": "\u7DE8\u8F2F\u5340\u57DF\u5DF2\u5957\u7528",
+    "editPreflight.title": "\u63D0\u4EA4\u524D\u6AA2\u67E5",
+    "editPreflight.primary": "\u906E\u7F69\u53EA\u6703\u5957\u7528\u5230\u7B2C\u4E00\u5F35\u4E3B\u8981\u7DE8\u8F2F\u5716\u7247\uFF1A{name}",
+    "editPreflight.responsesResize": "Responses \u63D0\u4EA4\u6642\u6703\u5C07 {width}\xD7{height} \u7E2E\u653E\u70BA {targetWidth}\xD7{targetHeight}",
+    "editPreflight.editArea": "\u900F\u660E\u7DE8\u8F2F\u5340\u57DF\u4F54 {percent}%",
+    "editPreflight.editAreaSmall": "\u7DE8\u8F2F\u5340\u57DF\u5F88\u5C0F\uFF0C\u6A21\u578B\u53EF\u80FD\u7121\u6CD5\u7522\u751F\u660E\u986F\u4FEE\u6539",
+    "editPreflight.editAreaLarge": "\u5927\u90E8\u5206\u756B\u9762\u90FD\u53EF\u7DE8\u8F2F\uFF0C\u7D50\u679C\u53EF\u80FD\u63A5\u8FD1\u6574\u5F35\u91CD\u7E6A",
+    "editPreflight.aspectMismatch": "\u539F\u5716\u6BD4\u4F8B\u7D04\u70BA {sourceRatio}\uFF0C\u8F38\u51FA\u70BA {outputRatio}\uFF0C\u53EF\u80FD\u51FA\u73FE\u88C1\u5207\u6216\u6574\u9AD4\u91CD\u69CB",
+    "editPreflight.maskDimensionsMismatch": "\u906E\u7F69\u5C3A\u5BF8 {maskWidth}\xD7{maskHeight} \u8207\u539F\u5716 {width}\xD7{height} \u4E0D\u4E00\u81F4\uFF0C\u8ACB\u91CD\u65B0\u958B\u555F\u7DE8\u8F2F\u5668\u4E26\u5132\u5B58\u906E\u7F69",
+    "editPreflight.emptyEditArea": "\u906E\u7F69\u6C92\u6709\u900F\u660E\u7DE8\u8F2F\u5340\u57DF\uFF0C\u8ACB\u5148\u64E6\u51FA\u8981\u4FEE\u6539\u7684\u5340\u57DF",
+    "editPreflight.maskInactive": "\u76EE\u524D\u672A\u4F7F\u7528\u7DE8\u8F2F\u5340\u57DF\uFF0C\u6A21\u578B\u53EF\u4FEE\u6539\u6574\u5F35\u4E3B\u8981\u7DE8\u8F2F\u5716\u7247",
+    "editPreflight.inspectionFailed": "\u7121\u6CD5\u8B80\u53D6\u906E\u7F69\u9810\u6AA2\u8CC7\u6599\uFF1B\u63D0\u4EA4\u6642\u4ECD\u6703\u7531\u4F3A\u670D\u5668\u9A57\u8B49",
+    "editPreflight.blocked": "\u8ACB\u5148\u8655\u7406\u63D0\u4EA4\u524D\u6AA2\u67E5\u4E2D\u7684\u932F\u8AA4"
   };
 
   // codex_image/webui/frontend/src/i18n/zh-tw.ts
   var ZH_TW_DICTIONARY = {
-    "editPreflight.title": "\u9001\u51FA\u524D\u6AA2\u67E5",
-    "editPreflight.primary": "\u906E\u7F69\u53EA\u6703\u5957\u7528\u5230\u7B2C\u4E00\u5F35\u4E3B\u8981\u7DE8\u8F2F\u5716\u7247\uFF1A{name}",
-    "editPreflight.responsesResize": "Responses \u9001\u51FA\u6642\u6703\u5C07 {width}\xD7{height} \u7E2E\u653E\u70BA {targetWidth}\xD7{targetHeight}",
-    "editPreflight.editArea": "\u900F\u660E\u7DE8\u8F2F\u5340\u57DF\u5360 {percent}%",
-    "editPreflight.editAreaSmall": "\u7DE8\u8F2F\u5340\u57DF\u5F88\u5C0F\uFF0C\u6A21\u578B\u53EF\u80FD\u7121\u6CD5\u7522\u751F\u660E\u986F\u8B8A\u66F4",
-    "editPreflight.editAreaLarge": "\u5927\u90E8\u5206\u756B\u9762\u90FD\u53EF\u7DE8\u8F2F\uFF0C\u7D50\u679C\u53EF\u80FD\u63A5\u8FD1\u6574\u5F35\u91CD\u7E6A",
-    "editPreflight.aspectMismatch": "\u539F\u5716\u6BD4\u4F8B\u7D04\u70BA {sourceRatio}\uFF0C\u8F38\u51FA\u70BA {outputRatio}\uFF0C\u53EF\u80FD\u767C\u751F\u88C1\u5207\u6216\u6574\u9AD4\u91CD\u69CB",
-    "editPreflight.maskDimensionsMismatch": "\u906E\u7F69\u5C3A\u5BF8 {maskWidth}\xD7{maskHeight} \u8207\u539F\u5716 {width}\xD7{height} \u4E0D\u4E00\u81F4\uFF0C\u8ACB\u91CD\u65B0\u958B\u555F\u7DE8\u8F2F\u5668\u4E26\u5132\u5B58\u906E\u7F69",
-    "editPreflight.emptyEditArea": "\u906E\u7F69\u6C92\u6709\u900F\u660E\u7DE8\u8F2F\u5340\u57DF\uFF0C\u8ACB\u5148\u64E6\u51FA\u8981\u4FEE\u6539\u7684\u5340\u57DF",
-    "editPreflight.maskInactive": "\u76EE\u524D\u672A\u4F7F\u7528\u7DE8\u8F2F\u5340\u57DF\uFF0C\u6A21\u578B\u53EF\u4FEE\u6539\u6574\u5F35\u4E3B\u8981\u7DE8\u8F2F\u5716\u7247",
-    "editPreflight.inspectionFailed": "\u7121\u6CD5\u8B80\u53D6\u906E\u7F69\u9810\u6AA2\u8CC7\u8A0A\uFF1B\u9001\u51FA\u6642\u4ECD\u6703\u7531\u4F3A\u670D\u5668\u9A57\u8B49",
-    "editPreflight.blocked": "\u8ACB\u5148\u8655\u7406\u9001\u51FA\u524D\u6AA2\u67E5\u4E2D\u7684\u932F\u8AA4",
     "app.newTask": "\u65B0\u589E",
     "app.newTaskAria": "\u65B0\u5EFA\u5C0D\u8A71",
     "sidebar.searchPlaceholder": "\u641C\u5C0B\u63D0\u793A\u8A5E\u6216\u4EFB\u52D9ID",
@@ -12130,7 +12718,7 @@
     "footer.archiveCount": "\u6703\u8A71\u6B78\u6A94{count}",
     "footer.historyLibrary": "\u6B77\u53F2\u5EAB",
     "historyLibrary.openFull": "\u958B\u555F\u5B8C\u6574\u6B77\u53F2\u5EAB",
-    "history.documentTitle": "\u6B77\u53F2\u5EAB - iLabGPTCONJURE",
+    "history.documentTitle": "\u6B77\u53F2\u5EAB - iLab CONJURE",
     "history.back": "\u8FD4\u56DE\u751F\u6210\u9801",
     "history.title": "\u6B77\u53F2\u5EAB",
     "history.loading": "\u8F09\u5165\u4E2D",
@@ -12474,6 +13062,7 @@
     "output.lock.lockedHint": "\u53C3\u6578\u5DF2\u56FA\u5B9A\u3002\u9EDE\u64CA\u53F3\u4E0A\u89D2\u9396\u5716\u793A\u6062\u5FA9\u7DE8\u8F2F\u3002",
     "output.lock.enabled": "\u958B\u555F",
     "output.lock.disabled": "\u95DC\u9589",
+    "output.lock.custom": "\u81EA\u8A02",
     "output.mainModel": "\u4E3B\u6A21\u578B",
     "output.selectMainModel": "\u9078\u64C7\u4E3B\u6A21\u578B",
     "output.mainModelCustomForInput": "\u4F9D\u76EE\u524D\u8F38\u5165\u4F7F\u7528\u81EA\u8A02\u6A21\u578B",
@@ -12497,6 +13086,7 @@
     "output.promptHelp.images.original": "\u61C9\u7528\u7A0B\u5F0F\u4E0D\u52A0\u5165\u63D0\u793A\u8A5E\u898F\u5247\uFF0C\u6309\u4F7F\u7528\u8005\u539F\u6587\u76F4\u63A5\u63D0\u4EA4\u81F3\u5716\u50CF\u4ECB\u9762\u3002",
     "output.promptHelp.images.strict": "\u61C9\u7528\u7A0B\u5F0F\u5C07\u4FDD\u771F\u898F\u5247\u8207\u539F\u63D0\u793A\u8A5E\u4E00\u4F75\u63D0\u4EA4\uFF0C\u5F37\u8ABF\u4FDD\u7559\u6240\u6709\u786C\u6027\u9650\u5236\u3002",
     "output.promptHelp.images.automatic": "\u6309\u5716\u50CF\u4ECB\u9762\u7684\u9810\u8A2D\u65B9\u5F0F\u63D0\u4EA4\uFF1B\u5716\u5EAB\u5F15\u7528\u7B49\u5FC5\u8981\u8AAA\u660E\u4ECD\u6703\u96A8\u63D0\u793A\u8A5E\u50B3\u9001\u3002",
+    "output.size": "\u8F38\u51FA\u5C3A\u5BF8",
     "output.sizeMode": "\u5C3A\u5BF8\u6A21\u5F0F",
     "output.sizePreset": "\u9810\u8A2D\u5C3A\u5BF8",
     "output.sizeCustom": "\u81EA\u8A02\u5C3A\u5BF8",
@@ -12803,6 +13393,20 @@
     "apiSettings.providerCount": "{count}\u500B\u4F9B\u61C9\u5546",
     "apiSettings.provider": "\u4F9B\u61C9\u5546",
     "apiSettings.providerName": "\u4F9B\u61C9\u5546\u540D\u7A31",
+    "apiSettings.providerIcon": "Emoji \u5716\u793A",
+    "apiSettings.providerIconPlaceholder": "\u9078\u586B\uFF0C\u4F8B\u5982 \u{1FA84}",
+    "apiSettings.connectionScope": "\u8FDE\u63A5\u7EA7\u8BBE\u7F6E",
+    "apiSettings.connectionPreview": "\u9023\u7DDA\u9810\u89BD",
+    "apiSettings.modelBindings": "\u6A21\u578B\u7ED1\u5B9A",
+    "apiSettings.modelBindingsHint": "\u4E00\u4E2A\u4F9B\u5E94\u5546\u53EF\u540C\u65F6\u7ED1\u5B9A\u591A\u4E2A\u578B\u53F7\u548C\u534F\u8BAE\u3002",
+    "apiSettings.addModelBinding": "\u6DFB\u52A0\u6A21\u578B\u7ED1\u5B9A",
+    "apiSettings.appendRatioPrompt": "\u8FFD\u52A0\u6BD4\u4F8B\u63D0\u793A",
+    "apiSettings.defaultProviderForModel": "\u8A2D\u70BA\u9810\u8A2D\u4F9B\u61C9\u5546",
+    "apiSettings.removeBinding": "\u522A\u9664\u7D81\u5B9A",
+    "apiSettings.catalogRequiredForBinding": "\u6A21\u578B\u76EE\u5F55\u4E0D\u53EF\u7528\uFF0C\u6682\u65F6\u65E0\u6CD5\u6DFB\u52A0\u7ED1\u5B9A",
+    "apiSettings.keepOneBinding": "\u6BCF\u4E2A\u4F9B\u5E94\u5546\u81F3\u5C11\u4FDD\u7559\u4E00\u6761\u6A21\u578B\u7ED1\u5B9A",
+    "apiSettings.bindingRequiredFields": "\u8BF7\u4E3A\u6BCF\u6761\u7ED1\u5B9A\u9009\u62E9\u578B\u53F7\u3001\u586B\u5199\u8FDC\u7AEF\u6A21\u578B\u540D\u5E76\u81F3\u5C11\u9009\u62E9\u4E00\u4E2A\u64CD\u4F5C",
+    "apiSettings.bindingOverlap": "{model} \u7684 {operation} \u64CD\u4F5C\u88AB\u591A\u6761\u7ED1\u5B9A\u91CD\u590D\u5904\u7406",
     "apiSettings.actualRequest": "\u5BE6\u969B\u8ACB\u6C42",
     "apiSettings.newProviderAction": "\u65B0\u5EFA\u4F9B\u61C9\u5546",
     "apiSettings.copyProvider": "\u8907\u88FD",
@@ -12984,6 +13588,40 @@
     "history.referenceFiles": "\u53C3\u8003\u6A94\u6848",
     "history.downloadReferenceFile": "\u4E0B\u8F09\u6A94\u6848",
     "history.readdReferenceFile": "\u91CD\u65B0\u52A0\u5165",
+    "modelSelection.family": "\u6A21\u578B\u7CFB\u5217",
+    "modelSelection.concreteModel": "\u5177\u9AD4\u578B\u865F",
+    "modelSelection.provider": "\u4F9B\u61C9\u5546",
+    "modelSelection.providerUnavailable": "\u76EE\u524D\u578B\u865F\u6C92\u6709\u53EF\u7528\u4F9B\u61C9\u5546",
+    "modelSelection.openSettings": "\u958B\u555F\u4F9B\u61C9\u5546\u8A2D\u5B9A",
+    "modelSelection.codexUnavailable": "Codex \u767B\u5165\u4E0D\u53EF\u7528",
+    "modelSelection.catalogUnavailable": "\u6A21\u578B\u76EE\u9304\u4E0D\u53EF\u7528",
+    "output.background": "\u80CC\u666F",
+    "canvas.aspectRatio": "\u756B\u9762\u6BD4\u4F8B",
+    "canvas.resolution": "\u89E3\u6790\u5EA6",
+    "gemini.googleSearch": "Google \u641C\u5C0B",
+    "gemini.googleImageSearch": "Google \u5716\u7247\u641C\u5C0B",
+    "output.modalities": "\u8F38\u51FA\u6A21\u614B",
+    "gemini.safetySettings": "\u5B89\u5168\u8A2D\u5B9A",
+    "gemini.safety.harassment": "\u9A37\u64FE",
+    "gemini.safety.hateSpeech": "\u4EC7\u6068\u8A00\u8AD6",
+    "gemini.safety.sexuallyExplicit": "\u8272\u60C5\u9732\u9AA8\u5167\u5BB9",
+    "gemini.safety.dangerousContent": "\u5371\u96AA\u5167\u5BB9",
+    "gemini.safety.threshold.unspecified": "\u9810\u8A2D",
+    "gemini.safety.threshold.off": "\u95DC\u9589\u904E\u6FFE",
+    "gemini.safety.threshold.blockNone": "\u4E0D\u5C01\u9396",
+    "gemini.safety.threshold.blockOnlyHigh": "\u5C01\u9396\u9AD8\u98A8\u96AA",
+    "gemini.safety.threshold.blockMediumAndAbove": "\u5C01\u9396\u4E2D\u9AD8\u98A8\u96AA",
+    "gemini.safety.threshold.blockLowAndAbove": "\u5C01\u9396\u5168\u90E8",
+    "grounding.title": "Google \u641C\u5C0B\u4F86\u6E90",
+    "grounding.searchSuggestions": "Google \u641C\u5C0B\u5EFA\u8B70",
+    "grounding.sourceCount": "{count} \u500B\u4F86\u6E90",
+    "grounding.source": "\u4F86\u6E90 {index}",
+    "modelParameters.invalidValue": "\u53C3\u6578\u503C\u7121\u6548",
+    "modelParameters.objectRequired": "\u8ACB\u8F38\u5165 JSON \u7269\u4EF6",
+    "modelParameters.invalidJson": "JSON \u683C\u5F0F\u7121\u6548",
+    "modelParameters.migrated": "\u5DF2\u4F9D\u76EE\u524D\u6A21\u578B\u76F8\u5BB9\u8655\u7406 {count} \u500B\u820A\u53C3\u6578",
+    "modelParameters.historyConfiguration": "\u6B77\u53F2\u8A2D\u5B9A",
+    "modelParameters.legacyTask": "\u820A\u7248\u4EFB\u52D9",
     "imageEditor.guidance": "\u7DE8\u8F2F\u6307\u5F15",
     "imageEditor.instructionMarksGuidance": "\u6307\u4EE4\u6A19\u8A18",
     "imageEditor.editRegionGuidance": "\u906E\u7F69",
@@ -12997,7 +13635,19 @@
     "imageEditor.maskHelp": "\u85CD\u8272\u906E\u7F69\u8986\u84CB\u7684\u5340\u57DF\u6703\u4FDD\u7559\uFF1B\u7528\u64E6\u9664\u756B\u7B46\u3001\u77E9\u5F62\u6216\u5713\u5F62\u6316\u51FA\u7684\u900F\u660E\u5340\u57DF\u6703\u88AB\u4FEE\u6539\u3002",
     "imageEditor.emptyEditRegion": "\u8ACB\u5148\u5F9E\u906E\u7F69\u4E2D\u64E6\u51FA\u4E00\u500B\u9700\u8981\u4FEE\u6539\u7684\u900F\u660E\u5340\u57DF\u3002",
     "imageInput.instructionMarksApplied": "\u6307\u4EE4\u6A19\u8A18\u5DF2\u5957\u7528",
-    "imageInput.editRegionApplied": "\u7DE8\u8F2F\u5340\u57DF\u5DF2\u5957\u7528"
+    "imageInput.editRegionApplied": "\u7DE8\u8F2F\u5340\u57DF\u5DF2\u5957\u7528",
+    "editPreflight.title": "\u9001\u51FA\u524D\u6AA2\u67E5",
+    "editPreflight.primary": "\u906E\u7F69\u53EA\u6703\u5957\u7528\u5230\u7B2C\u4E00\u5F35\u4E3B\u8981\u7DE8\u8F2F\u5716\u7247\uFF1A{name}",
+    "editPreflight.responsesResize": "Responses \u9001\u51FA\u6642\u6703\u5C07 {width}\xD7{height} \u7E2E\u653E\u70BA {targetWidth}\xD7{targetHeight}",
+    "editPreflight.editArea": "\u900F\u660E\u7DE8\u8F2F\u5340\u57DF\u5360 {percent}%",
+    "editPreflight.editAreaSmall": "\u7DE8\u8F2F\u5340\u57DF\u5F88\u5C0F\uFF0C\u6A21\u578B\u53EF\u80FD\u7121\u6CD5\u7522\u751F\u660E\u986F\u8B8A\u66F4",
+    "editPreflight.editAreaLarge": "\u5927\u90E8\u5206\u756B\u9762\u90FD\u53EF\u7DE8\u8F2F\uFF0C\u7D50\u679C\u53EF\u80FD\u63A5\u8FD1\u6574\u5F35\u91CD\u7E6A",
+    "editPreflight.aspectMismatch": "\u539F\u5716\u6BD4\u4F8B\u7D04\u70BA {sourceRatio}\uFF0C\u8F38\u51FA\u70BA {outputRatio}\uFF0C\u53EF\u80FD\u767C\u751F\u88C1\u5207\u6216\u6574\u9AD4\u91CD\u69CB",
+    "editPreflight.maskDimensionsMismatch": "\u906E\u7F69\u5C3A\u5BF8 {maskWidth}\xD7{maskHeight} \u8207\u539F\u5716 {width}\xD7{height} \u4E0D\u4E00\u81F4\uFF0C\u8ACB\u91CD\u65B0\u958B\u555F\u7DE8\u8F2F\u5668\u4E26\u5132\u5B58\u906E\u7F69",
+    "editPreflight.emptyEditArea": "\u906E\u7F69\u6C92\u6709\u900F\u660E\u7DE8\u8F2F\u5340\u57DF\uFF0C\u8ACB\u5148\u64E6\u51FA\u8981\u4FEE\u6539\u7684\u5340\u57DF",
+    "editPreflight.maskInactive": "\u76EE\u524D\u672A\u4F7F\u7528\u7DE8\u8F2F\u5340\u57DF\uFF0C\u6A21\u578B\u53EF\u4FEE\u6539\u6574\u5F35\u4E3B\u8981\u7DE8\u8F2F\u5716\u7247",
+    "editPreflight.inspectionFailed": "\u7121\u6CD5\u8B80\u53D6\u906E\u7F69\u9810\u6AA2\u8CC7\u8A0A\uFF1B\u9001\u51FA\u6642\u4ECD\u6703\u7531\u4F3A\u670D\u5668\u9A57\u8B49",
+    "editPreflight.blocked": "\u8ACB\u5148\u8655\u7406\u9001\u51FA\u524D\u6AA2\u67E5\u4E2D\u7684\u932F\u8AA4"
   };
 
   // codex_image/webui/frontend/src/i18n/dictionaries.ts
@@ -13026,6 +13676,168 @@
       throw new Error("WebUI legacy bridge is not initialized");
     }
     return bridge;
+  }
+
+  // codex_image/webui/frontend/src/themed-select.ts
+  var instances = /* @__PURE__ */ new WeakMap();
+  var openInstances = /* @__PURE__ */ new Set();
+  function optionText(option) {
+    return option?.textContent?.trim() || option?.label || option?.value || "";
+  }
+  function appendOptionContent(target, option) {
+    target.replaceChildren();
+    const icon = option?.dataset.optionIcon?.trim();
+    const kind = option?.dataset.optionIconKind === "image" ? "image" : "emoji";
+    if (icon) {
+      const iconElement = document.createElement("span");
+      iconElement.className = `themed-select-option-icon ${kind}`;
+      iconElement.setAttribute("aria-hidden", "true");
+      if (kind === "image") {
+        const image = document.createElement("img");
+        image.src = icon;
+        image.alt = "";
+        image.decoding = "async";
+        iconElement.append(image);
+      } else {
+        iconElement.textContent = icon;
+      }
+      target.append(iconElement);
+    }
+    const label = document.createElement("span");
+    label.className = "themed-select-option-label";
+    label.textContent = optionText(option);
+    target.append(label);
+  }
+  function selectableOptionIndexes(instance) {
+    return Array.from(instance.select.options).map((option, index) => ({ option, index })).filter(({ option }) => !option.disabled && !option.hidden).map(({ index }) => index);
+  }
+  function nearestSelectableIndex(instance, preferredIndex) {
+    const indexes = selectableOptionIndexes(instance);
+    if (!indexes.length) return -1;
+    return indexes.includes(preferredIndex) ? preferredIndex : indexes[0] ?? -1;
+  }
+  function moveSelectableIndex(instance, direction) {
+    const indexes = selectableOptionIndexes(instance);
+    if (!indexes.length) return -1;
+    const current = indexes.indexOf(nearestSelectableIndex(instance, instance.activeIndex));
+    return indexes[(current + direction + indexes.length) % indexes.length] ?? -1;
+  }
+  function copyAriaAttributes(instance) {
+    const attributes = ["aria-label", "aria-labelledby", "aria-describedby"];
+    attributes.forEach((attribute) => {
+      const value = instance.select.getAttribute(attribute);
+      if (value) instance.trigger.setAttribute(attribute, value);
+      else instance.trigger.removeAttribute(attribute);
+    });
+  }
+  function syncTrigger(instance) {
+    const selected = instance.select.selectedOptions[0];
+    appendOptionContent(instance.value, selected);
+    instance.trigger.disabled = instance.select.disabled;
+    instance.trigger.title = instance.select.title || optionText(selected);
+    copyAriaAttributes(instance);
+    if (instance.select.disabled) closeThemedSelect(instance);
+  }
+  function optionButtonId(instance, index) {
+    return `themed-select-${instance.id}-option-${index}`;
+  }
+  function focusOption(instance, index) {
+    const nextIndex = nearestSelectableIndex(instance, index);
+    if (nextIndex < 0) return;
+    instance.activeIndex = nextIndex;
+    renderOptions(instance);
+    instance.menu.querySelector(`#${optionButtonId(instance, nextIndex)}`)?.focus();
+  }
+  function selectOption(instance, index) {
+    const option = instance.select.options[index];
+    if (!option || option.disabled) return;
+    instance.select.selectedIndex = index;
+    instance.select.dispatchEvent(new Event("input", { bubbles: true }));
+    instance.select.dispatchEvent(new Event("change", { bubbles: true }));
+    syncThemedSelect(instance.select);
+    closeThemedSelect(instance, true);
+  }
+  function handleOptionKeydown(instance, event, index) {
+    if (event.key === "ArrowDown") {
+      event.preventDefault();
+      event.stopPropagation();
+      focusOption(instance, moveSelectableIndex(instance, 1));
+    } else if (event.key === "ArrowUp") {
+      event.preventDefault();
+      event.stopPropagation();
+      focusOption(instance, moveSelectableIndex(instance, -1));
+    } else if (event.key === "Home") {
+      event.preventDefault();
+      event.stopPropagation();
+      focusOption(instance, selectableOptionIndexes(instance)[0] ?? -1);
+    } else if (event.key === "End") {
+      event.preventDefault();
+      event.stopPropagation();
+      const indexes = selectableOptionIndexes(instance);
+      focusOption(instance, indexes[indexes.length - 1] ?? -1);
+    } else if (event.key === "Enter" || event.key === " " || event.key === "Spacebar") {
+      event.preventDefault();
+      event.stopPropagation();
+      selectOption(instance, index);
+    } else if (event.key === "Escape") {
+      event.preventDefault();
+      event.stopPropagation();
+      closeThemedSelect(instance, true);
+    } else if (event.key === "Tab") {
+      closeThemedSelect(instance);
+    }
+  }
+  function renderOptions(instance) {
+    const selectedIndex = instance.select.selectedIndex;
+    const options = Array.from(instance.select.options);
+    if (!options.length) {
+      const empty = document.createElement("span");
+      empty.className = "themed-select-empty";
+      empty.textContent = "-";
+      instance.menu.replaceChildren(empty);
+      return;
+    }
+    const buttons = options.map((option, index) => {
+      const button = document.createElement("button");
+      button.id = optionButtonId(instance, index);
+      button.type = "button";
+      button.className = "themed-select-option";
+      button.setAttribute("role", "option");
+      button.setAttribute("aria-selected", index === selectedIndex ? "true" : "false");
+      button.disabled = option.disabled;
+      button.hidden = option.hidden;
+      appendOptionContent(button, option);
+      if (index === selectedIndex) button.classList.add("selected");
+      if (index === instance.activeIndex) button.classList.add("active");
+      button.addEventListener("click", () => selectOption(instance, index));
+      button.addEventListener("keydown", (event) => handleOptionKeydown(instance, event, index));
+      return button;
+    });
+    instance.menu.replaceChildren(...buttons);
+  }
+  function resetThemedSelectMenuPosition(instance) {
+    instance.menu.classList.remove("is-portal", "opens-upward");
+    ["top", "left", "width", "max-height"].forEach((property) => {
+      instance.menu.style.removeProperty(property);
+    });
+  }
+  function restoreThemedSelectMenu(instance) {
+    resetThemedSelectMenuPosition(instance);
+    if (instance.menu.parentElement !== instance.host) instance.host.append(instance.menu);
+  }
+  function closeThemedSelect(instance, restoreFocus = false) {
+    if (!openInstances.delete(instance)) return;
+    instance.menu.classList.add("hidden");
+    restoreThemedSelectMenu(instance);
+    instance.trigger.setAttribute("aria-expanded", "false");
+    if (restoreFocus) instance.trigger.focus({ preventScroll: true });
+  }
+  function syncThemedSelect(select) {
+    if (!select) return;
+    const instance = instances.get(select);
+    if (!instance) return;
+    syncTrigger(instance);
+    if (openInstances.has(instance)) renderOptions(instance);
   }
 
   // codex_image/webui/frontend/src/i18n.ts
@@ -13106,6 +13918,7 @@
   function updateLanguageSelect() {
     const select = languageSelectElement();
     if (select && select.value !== currentLocale) select.value = currentLocale;
+    syncThemedSelect(select);
   }
   function applyLocaleToDocument() {
     document.documentElement.lang = currentLocale;
@@ -13247,10 +14060,10 @@
   function outputSizeForTask(task, index, output = {}) {
     return parseSizeParts(output?.size || output?.output_size) || parseSizeParts(Array.isArray(task?.output_sizes) ? task.output_sizes[index] : "") || parseSizeParts(task?.output_size) || parseSizeParts(task?.params?.size);
   }
-  function outputOrientation(record) {
-    if (!record.width || !record.height) return "unknown";
-    if (record.width > record.height) return "landscape";
-    if (record.height > record.width) return "portrait";
+  function outputOrientation(record2) {
+    if (!record2.width || !record2.height) return "unknown";
+    if (record2.width > record2.height) return "landscape";
+    if (record2.height > record2.width) return "portrait";
     return "square";
   }
   function taskSelectedOutputIndexes(task) {
@@ -13338,8 +14151,8 @@
     }
     return records;
   }
-  function outputRevisedPromptHtml(taskId, record, index) {
-    const revisedPrompt = String(record.revisedPrompt || "").trim();
+  function outputRevisedPromptHtml(taskId, record2, index) {
+    const revisedPrompt = String(record2.revisedPrompt || "").trim();
     if (!revisedPrompt) return "";
     const displayIndex = index + 1;
     const title = formatTranslation("history.outputRevisedPromptTitle", { index: displayIndex });
@@ -13351,7 +14164,7 @@
           class="ghost-button text-sm history-prompt-copy"
           type="button"
           data-history-copy-output-prompt-task-id="${escapeHtml(taskId)}"
-          data-history-copy-output-prompt-index="${record.index}"
+          data-history-copy-output-prompt-index="${record2.index}"
           aria-label="${escapeHtml(formatTranslation("history.copyOutputPromptPanel", { index: displayIndex }))}"
         >${escapeHtml(translate("history.copyPromptShort"))}</button>
       </div>
@@ -13359,35 +14172,35 @@
     </div>
   `;
   }
-  function historyDetailImageHtml(taskId, record, index, selectedCount, totalCount) {
-    const selectedClass = record.selected ? " selected" : "";
-    const selectedText = record.selected ? translate("history.selected") : translate("history.select");
+  function historyDetailImageHtml(taskId, record2, index, selectedCount, totalCount) {
+    const selectedClass = record2.selected ? " selected" : "";
+    const selectedText = record2.selected ? translate("history.selected") : translate("history.select");
     const outputBadge = totalCount > 1 ? `<span class="history-detail-output-index">${index + 1} / ${totalCount}</span>` : "";
-    const revisedPrompt = outputRevisedPromptHtml(taskId, record, index);
+    const revisedPrompt = outputRevisedPromptHtml(taskId, record2, index);
     return `
     <article class="history-detail-image history-detail-output-card${selectedClass}">
       <div class="history-detail-image-media">
         <button
           class="history-detail-image-preview history-detail-output-preview"
           type="button"
-          data-history-lightbox-url="${escapeHtml(record.url)}"
+          data-history-lightbox-url="${escapeHtml(record2.url)}"
           data-history-lightbox-index="${index}"
           aria-label="${escapeHtml(translate("history.openPreview"))}"
         >
           ${outputBadge}
-          <img src="${escapeHtml(record.url)}" alt="" loading="lazy" decoding="async">
+          <img src="${escapeHtml(record2.url)}" alt="" loading="lazy" decoding="async">
         </button>
         <div class="history-detail-image-actions" aria-label="${escapeHtml(translate("history.outputActions"))}">
           <button
             class="history-detail-overlay-button"
             type="button"
-            aria-pressed="${record.selected ? "true" : "false"}"
+            aria-pressed="${record2.selected ? "true" : "false"}"
             data-history-output-selected-task-id="${escapeHtml(taskId)}"
-            data-history-output-selected-index="${record.index}"
+            data-history-output-selected-index="${record2.index}"
           >${selectedText}</button>
-          <a class="history-detail-overlay-button" href="${escapeHtml(record.url)}" download>${escapeHtml(formatTranslation("history.downloadIndex", { index: index + 1 }))}</a>
-          <button class="history-detail-overlay-button primary" type="button" data-history-reference-handoff-url="${escapeHtml(record.url)}">${escapeHtml(translate("history.addReference"))}</button>
-          ${selectedCount === 1 && record.selected ? `<a class="history-detail-overlay-button" href="${escapeHtml(record.url)}" download>${escapeHtml(translate("history.downloadSelected"))}</a>` : ""}
+          <a class="history-detail-overlay-button" href="${escapeHtml(record2.url)}" download>${escapeHtml(formatTranslation("history.downloadIndex", { index: index + 1 }))}</a>
+          <button class="history-detail-overlay-button primary" type="button" data-history-reference-handoff-url="${escapeHtml(record2.url)}">${escapeHtml(translate("history.addReference"))}</button>
+          ${selectedCount === 1 && record2.selected ? `<a class="history-detail-overlay-button" href="${escapeHtml(record2.url)}" download>${escapeHtml(translate("history.downloadSelected"))}</a>` : ""}
         </div>
       </div>
       ${revisedPrompt}
@@ -13395,20 +14208,20 @@
   `;
   }
   function historyDetailImagesHtml(taskId, records, selectedCount) {
-    return records.map((record, index) => historyDetailImageHtml(taskId, record, index, selectedCount, records.length)).join("");
+    return records.map((record2, index) => historyDetailImageHtml(taskId, record2, index, selectedCount, records.length)).join("");
   }
   function historyInputReferencesHtml(task) {
     const records = taskInputRecords(task);
     if (!records.length) return "";
-    const thumbs = records.map((record, index) => `
+    const thumbs = records.map((record2, index) => `
     <button
       class="history-detail-input-thumb"
       type="button"
-      title="${escapeHtml(record.label)}"
+      title="${escapeHtml(record2.label)}"
       data-history-input-lightbox-index="${index}"
       aria-label="${escapeHtml(formatTranslation("history.inputReferenceIndex", { index: index + 1 }))}"
     >
-      <img src="${escapeHtml(record.thumbnailUrl)}" alt="" loading="lazy" decoding="async">
+      <img src="${escapeHtml(record2.thumbnailUrl)}" alt="" loading="lazy" decoding="async">
     </button>
   `).join("");
     return `
@@ -13440,7 +14253,7 @@
   function referenceFileRowHtml(file, taskId, index) {
     const assetId = String(file?.id || file?.reference_file_id || "");
     const validAssetId = /^[0-9a-f]{64}$/.test(assetId);
-    const record = {
+    const record2 = {
       id: validAssetId ? assetId : "",
       filename: String(file?.filename || translate("referenceFiles.missing")),
       sizeBytes: Math.max(0, Number(file?.size_bytes || 0)),
@@ -13448,15 +14261,15 @@
       downloadUrl: validAssetId && !file?.missing ? referenceFileDownloadUrl(taskId, index) : "",
       missing: Boolean(file?.missing || !validAssetId)
     };
-    const meta = `${referenceFileSize(record.sizeBytes)} \xB7 ${referenceFileFamilyLabel(record.family)}`;
-    const status = record.missing ? `<span class="history-reference-file-missing" role="status"><span aria-hidden="true">!</span>${escapeHtml(translate("referenceFiles.missing"))}</span>` : `<span class="history-reference-file-actions">
-        ${record.downloadUrl ? `<a class="ghost-button text-sm" href="${escapeHtml(record.downloadUrl)}" download aria-label="${escapeHtml(`${translate("history.downloadReferenceFile")} ${record.filename}`)}">${escapeHtml(translate("history.downloadReferenceFile"))}</a>` : ""}
-        <button class="ghost-button text-sm" type="button" data-history-reference-file-id="${record.id}" aria-label="${escapeHtml(`${translate("history.readdReferenceFile")} ${record.filename}`)}">${escapeHtml(translate("history.readdReferenceFile"))}</button>
+    const meta = `${referenceFileSize(record2.sizeBytes)} \xB7 ${referenceFileFamilyLabel(record2.family)}`;
+    const status = record2.missing ? `<span class="history-reference-file-missing" role="status"><span aria-hidden="true">!</span>${escapeHtml(translate("referenceFiles.missing"))}</span>` : `<span class="history-reference-file-actions">
+        ${record2.downloadUrl ? `<a class="ghost-button text-sm" href="${escapeHtml(record2.downloadUrl)}" download aria-label="${escapeHtml(`${translate("history.downloadReferenceFile")} ${record2.filename}`)}">${escapeHtml(translate("history.downloadReferenceFile"))}</a>` : ""}
+        <button class="ghost-button text-sm" type="button" data-history-reference-file-id="${record2.id}" aria-label="${escapeHtml(`${translate("history.readdReferenceFile")} ${record2.filename}`)}">${escapeHtml(translate("history.readdReferenceFile"))}</button>
       </span>`;
-    return `<div class="history-reference-file-row${record.missing ? " is-missing" : ""}">
-    <span class="history-reference-file-icon" aria-hidden="true">${referenceFileIconSvgMarkup(record.filename)}</span>
+    return `<div class="history-reference-file-row${record2.missing ? " is-missing" : ""}">
+    <span class="history-reference-file-icon" aria-hidden="true">${referenceFileIconSvgMarkup(record2.filename)}</span>
     <span class="history-reference-file-copy">
-      <span class="history-reference-file-name" title="${escapeHtml(record.filename)}">${escapeHtml(record.filename)}</span>
+      <span class="history-reference-file-name" title="${escapeHtml(record2.filename)}">${escapeHtml(record2.filename)}</span>
       <span class="history-reference-file-meta">${escapeHtml(meta)}</span>
     </span>
     ${status}
@@ -13471,10 +14284,10 @@
   </section>`;
   }
   function historyLightboxUrlsFromTask(task) {
-    return taskOutputRecords(task).map((record) => record.url).filter(Boolean);
+    return taskOutputRecords(task).map((record2) => record2.url).filter(Boolean);
   }
   function historyInputLightboxUrlsFromTask(task) {
-    return taskInputRecords(task).map((record) => record.url).filter(Boolean);
+    return taskInputRecords(task).map((record2) => record2.url).filter(Boolean);
   }
 
   // codex_image/webui/frontend/src/history-window.ts
@@ -13997,7 +14810,7 @@
 
   // codex_image/webui/frontend/src/segmented-indicator.ts
   var HOST_SELECTORS = [
-    ".radio-group:not(.ratio-group)",
+    ".radio-group:not(.ratio-group):not(.model-parameter-segmented-multiline):not(.model-aspect-ratio-grid)",
     "#authSourceGroup",
     "#systemSettingsTabs",
     ".history-view-toggle",
@@ -14007,6 +14820,7 @@
   var BUTTON_SELECTOR = ".radio-btn, .auth-source-button, .system-settings-tab, .history-view-button, .history-sort-button";
   var INDICATOR_CLASS = "segmented-indicator";
   var HOST_CLASS = "segmented-indicator-host";
+  var READY_CLASS = "segmented-indicator-ready";
   var initializedHosts = /* @__PURE__ */ new WeakSet();
   var scheduledFrames = /* @__PURE__ */ new WeakMap();
   var segmentedIndicatorsInitialized = false;
@@ -14025,15 +14839,21 @@
   }
   function updateIndicator(host) {
     scheduledFrames.delete(host);
-    if (!host.isConnected) return;
+    if (!host.isConnected) return false;
     const indicator = ensureIndicator(host);
     const active = activeSegment(host);
     if (!active) {
+      host.classList.remove(READY_CLASS);
       indicator.style.setProperty("--segmented-indicator-opacity", "0");
-      return;
+      return false;
     }
     const hostRect = host.getBoundingClientRect();
     const activeRect = active.getBoundingClientRect();
+    if (hostRect.width <= 0 || hostRect.height <= 0 || activeRect.width <= 0 || activeRect.height <= 0) {
+      host.classList.remove(READY_CLASS);
+      indicator.style.setProperty("--segmented-indicator-opacity", "0");
+      return false;
+    }
     const hostStyle = window.getComputedStyle(host);
     const borderLeft = Number.parseFloat(hostStyle.borderLeftWidth) || 0;
     const borderTop = Number.parseFloat(hostStyle.borderTopWidth) || 0;
@@ -14042,10 +14862,14 @@
     indicator.style.setProperty("--segmented-indicator-width", `${activeRect.width}px`);
     indicator.style.setProperty("--segmented-indicator-height", `${activeRect.height}px`);
     indicator.style.setProperty("--segmented-indicator-opacity", "1");
+    return true;
+  }
+  function commitIndicatorUpdate(host) {
+    if (updateIndicator(host)) host.classList.add(READY_CLASS);
   }
   function scheduleIndicatorUpdate(host) {
     if (scheduledFrames.has(host)) return;
-    scheduledFrames.set(host, window.requestAnimationFrame(() => updateIndicator(host)));
+    scheduledFrames.set(host, window.requestAnimationFrame(() => commitIndicatorUpdate(host)));
   }
   function watchButtonClassChanges(host) {
     const observer = new MutationObserver(() => scheduleIndicatorUpdate(host));
@@ -14054,7 +14878,7 @@
     });
   }
   function initHost(host) {
-    if (initializedHosts.has(host)) return;
+    if (initializedHosts.has(host)) return false;
     initializedHosts.add(host);
     host.classList.add(HOST_CLASS);
     ensureIndicator(host);
@@ -14066,10 +14890,13 @@
       }));
       resizeObserver.observe(host);
     }
-    scheduleIndicatorUpdate(host);
+    commitIndicatorUpdate(host);
+    return true;
   }
   function refreshSegmentedIndicators() {
-    document.querySelectorAll(HOST_SELECTOR).forEach(scheduleIndicatorUpdate);
+    document.querySelectorAll(HOST_SELECTOR).forEach((host) => {
+      if (!initHost(host)) scheduleIndicatorUpdate(host);
+    });
   }
   function initSegmentedIndicatorFeature() {
     if (segmentedIndicatorsInitialized) return;
@@ -14089,6 +14916,128 @@
   }
   function webAppDocumentTitle(standaloneTitle, fullTitle) {
     return isStandaloneWebApp() ? standaloneTitle : fullTitle;
+  }
+
+  // codex_image/webui/frontend/src/grounding-attribution.ts
+  function record(value) {
+    return value && typeof value === "object" && !Array.isArray(value) ? value : null;
+  }
+  function groundingFromToolUsage(value) {
+    const usage = record(value);
+    if (!usage) return [];
+    const providerMetadata = record(usage.provider_metadata);
+    const grounding = providerMetadata?.grounding ?? usage.grounding;
+    return Array.isArray(grounding) ? grounding : [];
+  }
+  function toolUsages(task) {
+    const values = [];
+    if (task?.tool_usage) values.push(task.tool_usage);
+    if (Array.isArray(task?.tool_usages)) values.push(...task.tool_usages);
+    if (Array.isArray(task?.outputs)) {
+      task.outputs.forEach((output) => {
+        if (output?.tool_usage) values.push(output.tool_usage);
+      });
+    }
+    return values;
+  }
+  function taskGroundingEntries(task) {
+    const entries = [];
+    const seen = /* @__PURE__ */ new Set();
+    toolUsages(task).forEach((usage) => {
+      groundingFromToolUsage(usage).forEach((rawEntry) => {
+        const sourceEntry = record(rawEntry);
+        if (!sourceEntry) return;
+        const sources = Array.isArray(sourceEntry.sources) ? sourceEntry.sources.map(record).filter(Boolean).map((source) => {
+          const normalized = {};
+          if (typeof source?.page_uri === "string") normalized.page_uri = source.page_uri;
+          if (typeof source?.image_uri === "string") normalized.image_uri = source.image_uri;
+          if (typeof source?.title === "string") normalized.title = source.title;
+          return normalized;
+        }) : [];
+        const entry = { sources };
+        if (typeof sourceEntry.rendered_content === "string") {
+          entry.rendered_content = sourceEntry.rendered_content;
+        }
+        const key = JSON.stringify(entry);
+        if (seen.has(key)) return;
+        seen.add(key);
+        entries.push(entry);
+      });
+    });
+    return entries;
+  }
+  function safeHttpsUrl(value) {
+    if (typeof value !== "string" || !value.trim()) return null;
+    try {
+      const url = new URL(value);
+      if (url.protocol !== "https:") return null;
+      return url.href;
+    } catch {
+      return null;
+    }
+  }
+  function usableSources(entries) {
+    const sources = [];
+    const seen = /* @__PURE__ */ new Set();
+    entries.forEach((entry) => {
+      entry.sources.forEach((source) => {
+        const pageUri = safeHttpsUrl(source.page_uri);
+        if (!pageUri || seen.has(pageUri)) return;
+        seen.add(pageUri);
+        const normalized = { page_uri: pageUri };
+        const imageUri = safeHttpsUrl(source.image_uri);
+        if (imageUri) normalized.image_uri = imageUri;
+        if (source.title) normalized.title = source.title;
+        sources.push(normalized);
+      });
+    });
+    return sources;
+  }
+  function renderedContentFrame(renderedContent) {
+    const frame = document.createElement("iframe");
+    frame.className = "grounding-search-entry-frame";
+    frame.title = translate("grounding.searchSuggestions");
+    frame.setAttribute("sandbox", "allow-popups allow-popups-to-escape-sandbox");
+    frame.referrerPolicy = "no-referrer";
+    frame.loading = "lazy";
+    frame.srcdoc = `<!doctype html><html><head><meta charset="utf-8"><meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'none'; connect-src 'none'; frame-src 'none'; form-action 'none'; img-src https: data:; style-src 'unsafe-inline'; font-src https: data:; base-uri 'none'"><base target="_blank"><style>html{color-scheme:light dark}body{margin:0;padding:4px;font:12px/1.35 system-ui,sans-serif;overflow:auto}a{color:inherit}</style></head><body>${renderedContent}</body></html>`;
+    return frame;
+  }
+  function createGroundingAttribution(task) {
+    const entries = taskGroundingEntries(task);
+    const renderedContent = entries.map((entry) => entry.rendered_content?.trim() || "").find(Boolean) || "";
+    const sources = usableSources(entries);
+    if (!renderedContent && !sources.length) return null;
+    const section = document.createElement("section");
+    section.className = "grounding-attribution";
+    section.setAttribute("aria-label", translate("grounding.title"));
+    const header = document.createElement("div");
+    header.className = "grounding-attribution-header";
+    const title = document.createElement("strong");
+    title.textContent = translate("grounding.title");
+    const count = document.createElement("span");
+    count.textContent = formatTranslation("grounding.sourceCount", { count: sources.length });
+    header.append(title, count);
+    section.append(header);
+    if (renderedContent) {
+      section.append(renderedContentFrame(renderedContent));
+    }
+    if (sources.length) {
+      const sourceList = document.createElement("div");
+      sourceList.className = "grounding-source-list";
+      sources.forEach((source, index) => {
+        const link = document.createElement("a");
+        link.className = "grounding-source-link";
+        link.href = source.page_uri || "";
+        link.target = "_blank";
+        link.rel = "noopener noreferrer";
+        link.referrerPolicy = "no-referrer";
+        link.textContent = source.title?.trim() || formatTranslation("grounding.source", { index: index + 1 });
+        sourceList.append(link);
+      });
+      section.append(sourceList);
+    }
+    return section;
   }
 
   // codex_image/webui/frontend/src/history.ts
@@ -15189,7 +16138,7 @@
     return loadToken === historyDetailLoadToken && historyState.selectedTaskId === taskId;
   }
   async function preloadHistoryDetailImages(task) {
-    const urls = taskOutputRecords(task).map((record) => record.url).filter((url) => Boolean(url));
+    const urls = taskOutputRecords(task).map((record2) => record2.url).filter((url) => Boolean(url));
     if (!urls.length) return;
     await Promise.all(urls.map((url) => preloadHistoryDetailImage(url)));
   }
@@ -15318,6 +16267,9 @@
     ${referenceFiles}
     ${promptCompareHtml(task)}
   `;
+    const grounding = createGroundingAttribution(task);
+    const imageGrid = els.detail.querySelector(".history-detail-images");
+    if (grounding && imageGrid) imageGrid.insertAdjacentElement("afterend", grounding);
   }
   function detailTitle(task) {
     return truncateText(task.prompt_preview || task.prompt || task.mode || task.task_id || translate("history.untitled"), 120);
@@ -15398,7 +16350,7 @@
     return uniquePromptTexts(values).join("\n\n");
   }
   function outputRevisedPromptTexts(task) {
-    return uniquePromptTexts(taskOutputRecords(task).map((record) => record.revisedPrompt));
+    return uniquePromptTexts(taskOutputRecords(task).map((record2) => record2.revisedPrompt));
   }
   function hasDistinctOutputRevisedPrompts(task) {
     return outputRevisedPromptTexts(task).length > 1;
@@ -15632,8 +16584,8 @@
   function outputPromptTextForIndex(outputIndex) {
     const index = positiveInt2(outputIndex);
     if (index === null) return "";
-    const record = taskOutputRecords(historyState.detailTask || {}).find((output) => output.index === index);
-    return String(record?.revisedPrompt || "").trim();
+    const record2 = taskOutputRecords(historyState.detailTask || {}).find((output) => output.index === index);
+    return String(record2?.revisedPrompt || "").trim();
   }
   async function writeClipboardText(text) {
     if (navigator.clipboard?.writeText) {

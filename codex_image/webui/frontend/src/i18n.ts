@@ -1,6 +1,7 @@
 import { DEFAULT_LOCALE, DICTIONARIES, LOCALES } from "./i18n/dictionaries";
 import type { Locale, TranslationValues } from "./i18n/types";
 import { getLegacyBridge } from "./state";
+import { syncThemedSelect } from "./themed-select";
 
 export type { Locale, TranslationValues } from "./i18n/types";
 
@@ -72,6 +73,10 @@ export function translationsForKey(key: string): string[] {
   return [...new Set(LOCALES.map((locale) => translate(key, locale)))];
 }
 
+export function currentLocaleCode(): Locale {
+  return currentLocale;
+}
+
 export function formatTranslation(key: string, values: TranslationValues = {}, locale: Locale = currentLocale): string {
   return translate(key, locale).replace(/\{(\w+)\}/g, (match, name) => {
     const value = values[name];
@@ -103,6 +108,7 @@ function languageSelectElement(): HTMLSelectElement | null {
 function updateLanguageSelect(): void {
   const select = languageSelectElement();
   if (select && select.value !== currentLocale) select.value = currentLocale;
+  syncThemedSelect(select);
 }
 
 export function applyLocaleToDocument(): void {

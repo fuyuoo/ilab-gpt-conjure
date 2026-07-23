@@ -474,7 +474,9 @@ class EditingGuidanceStateTests(unittest.TestCase):
               { dataset: { mode: "edit" }, classList: { toggle() {} } },
             ];
             let previewUpdates = 0;
-            const bridge = { state, els: {}, methods: {} };
+            const bridge = { state, els: {}, methods: {
+              updateRequestPreview: () => { previewUpdates += 1; },
+            } };
             const noop = () => {};
             const module = { exports: {} };
             vm.runInNewContext(code, {

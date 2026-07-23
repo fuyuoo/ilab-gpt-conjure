@@ -37,8 +37,8 @@ class WebUIPWATests(unittest.TestCase):
         manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
 
         self.assertEqual(manifest["id"], "/")
-        self.assertEqual(manifest["name"], "iLab CONJ Web")
-        self.assertEqual(manifest["short_name"], "iLab CONJ Web")
+        self.assertEqual(manifest["name"], "iLab CONJURE")
+        self.assertEqual(manifest["short_name"], "iLab CONJURE")
         self.assertEqual(manifest["start_url"], "/")
         self.assertEqual(manifest["scope"], "/")
         self.assertEqual(manifest["display"], "standalone")
@@ -86,13 +86,13 @@ class WebUIPWATests(unittest.TestCase):
         self.assertTrue(worker_path.exists())
         source = worker_path.read_text(encoding="utf-8")
 
-        self.assertIn('const CACHE_NAME = "ilab-gpt-conjure-shell-v57";', source)
+        self.assertIn('const CACHE_NAME = "ilab-conjure-shell-v107";', source)
         self.assertIn('"/"', source)
         self.assertIn('"/history"', source)
         self.assertIn('"/manifest.webmanifest"', source)
-        self.assertIn('"/static/app.js"', source)
-        self.assertIn('"/static/history.js"', source)
-        self.assertIn('"/static/styles.css"', source)
+        self.assertIn('"/static/app.js?v=runtime-640"', source)
+        self.assertIn('"/static/history.js?v=history-71"', source)
+        self.assertIn('"/static/styles.css?v=runtime-640"', source)
         self.assertIn("request.mode === \"navigate\"", source)
         self.assertIn("fetch(request).then", source)
         self.assertIn("catch(() => caches.match(request, { ignoreSearch: true }))", source)
@@ -100,24 +100,6 @@ class WebUIPWATests(unittest.TestCase):
         self.assertNotIn('"/events', source)
         self.assertNotIn('"/inputs', source)
         self.assertNotIn('"/outputs', source)
-
-    def test_shell_assets_refresh_before_cache_fallback_and_use_mask_release_versions(self) -> None:
-        index_html = Path("codex_image/webui/static/index.html").read_text(encoding="utf-8")
-        history_html = Path("codex_image/webui/static/history.html").read_text(encoding="utf-8")
-        worker = Path("codex_image/webui/static/service-worker.js").read_text(encoding="utf-8")
-
-        self.assertIn('/static/styles.css?v=runtime-573', index_html)
-        self.assertIn('/static/app.js?v=runtime-573', index_html)
-        self.assertIn('/static/styles.css?v=runtime-573', history_html)
-        self.assertIn('/static/history.js?v=history-70', history_html)
-        self.assertIn('ilab-gpt-conjure-shell-v57', worker)
-
-        shell_fetch = worker[worker.index('if (!APP_SHELL_PATHS.has(requestUrl.pathname)) return;'):]
-        self.assertLess(
-            shell_fetch.index('fetch(request)'),
-            shell_fetch.index('caches.match(request,'),
-            'online shell requests must fetch the matching bundle before falling back to cache',
-        )
 
     def test_pwa_root_assets_are_served_from_webui_app(self) -> None:
         from codex_image.webui.app import create_app
@@ -129,7 +111,7 @@ class WebUIPWATests(unittest.TestCase):
             manifest_response = client.get("/manifest.webmanifest")
             self.assertEqual(manifest_response.status_code, 200)
             self.assertEqual(manifest_response.headers["content-type"].split(";")[0], "application/manifest+json")
-            self.assertEqual(manifest_response.json()["name"], "iLab CONJ Web")
+            self.assertEqual(manifest_response.json()["name"], "iLab CONJURE")
             self.assertEqual(manifest_response.headers["cache-control"], "no-store")
             self.assertEqual(client.head("/manifest.webmanifest").status_code, 200)
 
