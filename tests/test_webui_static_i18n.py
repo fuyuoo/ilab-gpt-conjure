@@ -20,6 +20,7 @@ class WebUIStaticI18nTests(WebUIStaticTestCase):
             "imageEditor.emptyEditRegion", "imageInput.instructionMarksApplied", "imageInput.editRegionApplied",
         )
         locale_paths = [p for p in sorted(Path("codex_image/webui/frontend/src/i18n").glob("*.ts")) if p.name not in {"types.ts", "dictionaries.ts"}]
+
         self.assertEqual(13, len(locale_paths))
         for path in locale_paths:
             source = path.read_text(encoding="utf-8")
@@ -34,11 +35,63 @@ class WebUIStaticI18nTests(WebUIStaticTestCase):
             "editPreflight.maskInactive", "editPreflight.inspectionFailed", "editPreflight.blocked",
         )
         locale_paths = [p for p in sorted(Path("codex_image/webui/frontend/src/i18n").glob("*.ts")) if p.name not in {"types.ts", "dictionaries.ts"}]
+
         self.assertEqual(13, len(locale_paths))
         for path in locale_paths:
             source = path.read_text(encoding="utf-8")
             for key in required_keys:
                 self.assertIn(f'"{key}"', source, f"{key} missing from {path.name}")
+
+    def test_network_settings_strings_exist_in_every_locale(self) -> None:
+        required_keys = (
+            "systemSettings.networkTab",
+            "networkEgress.mode",
+            "networkEgress.system",
+            "networkEgress.direct",
+            "networkEgress.custom",
+            "networkEgress.customProxy",
+            "networkEgress.currentRoute",
+            "networkEgress.test",
+            "networkEgress.save",
+            "networkEgress.saved",
+            "networkEgress.testSucceeded",
+            "networkEgress.testFailed",
+            "networkEgress.loadFailed",
+            "networkEgress.saveFailed",
+        )
+        locale_paths = sorted(Path("codex_image/webui/frontend/src/i18n").glob("*.ts"))
+        locale_paths = [
+            path
+            for path in locale_paths
+            if path.name not in {"types.ts", "dictionaries.ts"}
+        ]
+
+        self.assertEqual(13, len(locale_paths))
+        for path in locale_paths:
+            source = path.read_text(encoding="utf-8")
+            for key in required_keys:
+                self.assertIn(f'"{key}"', source, f"{path.name} is missing {key}")
+
+    def test_batch_cancel_copy_exists_in_every_locale(self) -> None:
+        required_keys = (
+            "batch.cancelTasksShortcut",
+            "batch.cancelSelected",
+            "batch.noActiveSelected",
+            "batch.cancelTitle",
+            "batch.cancelMessage",
+            "batch.cancelDetail",
+            "batch.cancelConfirm",
+            "batch.cancelResult",
+            "batch.cancelFailed",
+        )
+        locale_paths = sorted(Path("codex_image/webui/frontend/src/i18n").glob("*.ts"))
+        locale_paths = [path for path in locale_paths if path.name not in {"types.ts", "dictionaries.ts"}]
+
+        self.assertEqual(13, len(locale_paths))
+        for path in locale_paths:
+            source = path.read_text(encoding="utf-8")
+            for key in required_keys:
+                self.assertIn(f'"{key}"', source, f"{path.name} is missing {key}")
 
     def test_history_document_title_uses_multimodel_product_brand_in_every_locale(self) -> None:
         locale_paths = sorted(Path("codex_image/webui/frontend/src/i18n").glob("*.ts"))
