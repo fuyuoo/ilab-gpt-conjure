@@ -20,6 +20,10 @@ _MESSAGES = {
         "The provider address changed after this task was queued. Review the provider settings "
         "and submit the task again."
     ),
+    "edit_mask_canvas_snapshot_mismatch": (
+        "The queued edit-mask canvas size differs from the normalized execution size. "
+        "Reuse this task and submit it again."
+    ),
     "snapshot_manifest_incompatible": "The queued request is incompatible with the current model manifest.",
 }
 _ANSI_ESCAPE_RE = re.compile(r"\x1b(?:\[[0-?]*[ -/]*[@-~]|[@-_])")
@@ -64,9 +68,13 @@ class GenerationErrorDetail:
     provider_id: str
     canonical_model_id: str
     protocol_profile: str
+    details: dict[str, Any] | None = None
 
     def to_dict(self) -> dict[str, Any]:
-        return asdict(self)
+        payload = asdict(self)
+        if payload["details"] is None:
+            payload.pop("details")
+        return payload
 
 
 class GenerationProviderError(RuntimeError):
@@ -84,6 +92,7 @@ def provider_error(
     protocol_profile: str,
     status_code: int = 502,
     retryable: bool | None = None,
+    details: dict[str, Any] | None = None,
 ) -> GenerationProviderError:
     if code not in _MESSAGES:
         code = "upstream_error"
@@ -97,6 +106,7 @@ def provider_error(
             provider_id=str(provider_id),
             canonical_model_id=str(canonical_model_id),
             protocol_profile=str(protocol_profile),
+            details=dict(details) if details is not None else None,
         ),
         status_code=status_code,
     )

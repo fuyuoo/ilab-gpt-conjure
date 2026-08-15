@@ -1,6 +1,7 @@
 import { getLegacyBridge } from "./state";
 import { taskWasCancelled } from "./task-cancellation";
 import { formatTranslation, translate } from "./i18n";
+import { generationErrorPresentation } from "./generation-error-presentation";
 
 const RATIO_ORIENTATION: Record<string, string> = {
   "1:1": "square",
@@ -482,6 +483,8 @@ function nonnegativeInt(value: any) {
 function taskFailureMessage(task: any) {
   if (!task || (task.status !== "failed" && task.status !== "partial_failed")) return "";
   if (taskWasCancelled(task)) return translate("queue.runningCancelled");
+  const presentation = generationErrorPresentation(task);
+  if (presentation) return formatTranslation(presentation.key, presentation.values);
   return String(task.error || task.last_error || "").trim();
 }
 

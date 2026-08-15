@@ -1,9 +1,13 @@
 from __future__ import annotations
 
 from collections.abc import Mapping
+import re
 from typing import Any
 
-from codex_image.generation.catalog import get_model_manifest
+from codex_image.generation.catalog import (
+    RESPONSES_EDIT_MASK_MAX_EDGE,
+    get_model_manifest,
+)
 from codex_image.generation.errors import provider_error
 from codex_image.generation.resolver import validate_command_inputs
 from codex_image.generation.service import redacted_protocol_request
@@ -18,6 +22,38 @@ from codex_image.providers.registry import ProviderRegistry
 
 
 SNAPSHOT_SCHEMA_VERSION = 1
+_CANVAS_SIZE_RE = re.compile(r"^[1-9][0-9]{0,5}x[1-9][0-9]{0,5}$")
+
+
+def _edit_mask_canvas_mismatch_details(
+    *,
+    snapshot: Mapping[str, Any],
+    command: GenerationCommand,
+) -> dict[str, Any] | None:
+    queued = dict(snapshot.get("requested_parameters") or {})
+    execution = dict(command.parameters)
+    changed_fields = {
+        key
+        for key in queued.keys() | execution.keys()
+        if queued.get(key) != execution.get(key)
+    }
+    queued_size = str(queued.get("canvas.size") or "")
+    execution_size = str(execution.get("canvas.size") or "")
+    if not (
+        command.operation == "edit"
+        and command.mask_image
+        and str(snapshot.get("protocol_profile") or "").endswith("responses")
+        and changed_fields == {"canvas.size"}
+        and _CANVAS_SIZE_RE.fullmatch(queued_size)
+        and _CANVAS_SIZE_RE.fullmatch(execution_size)
+    ):
+        return None
+    return {
+        "queued_size": queued_size,
+        "execution_size": execution_size,
+        "provider_max_edge": RESPONSES_EDIT_MASK_MAX_EDGE,
+        "recommended_action": "reuse_task",
+    }
 
 
 def _request_dict(request: ProtocolRequest) -> dict[str, Any]:
@@ -119,6 +155,18 @@ def execution_plan_from_snapshot(
         if command.canonical_model_id != model.id or command.provider_id != binding.provider_id:
             raise ValueError("command identity changed")
         if dict(command.parameters) != dict(snapshot.get("requested_parameters") or {}):
+            mismatch_details = _edit_mask_canvas_mismatch_details(
+                snapshot=snapshot,
+                command=command,
+            )
+            if mismatch_details is not None:
+                raise provider_error(
+                    "edit_mask_canvas_snapshot_mismatch",
+                    **identity,
+                    status_code=400,
+                    retryable=False,
+                    details=mismatch_details,
+                )
             raise ValueError("command parameters changed")
         if dict(command.legacy_compat_parameters) != dict(snapshot.get("legacy_compat_parameters") or {}):
             raise ValueError("legacy compatibility parameters changed")

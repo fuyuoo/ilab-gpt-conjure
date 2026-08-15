@@ -306,6 +306,14 @@ def _prepare_generation_submission(
             canonical_parameters = parse_parameters_json(parameters_json)
         except ValueError as exc:
             raise _generation_request_error(exc) from exc
+    if edit_mask_canvas_locked and canonical_parameters is not None:
+        canonical_parameters = dict(canonical_parameters)
+        canonical_parameters["canvas.size"] = effective_size
+        parameters_json = json.dumps(
+            canonical_parameters,
+            ensure_ascii=False,
+            separators=(",", ":"),
+        )
     if (
         auth_source == "codex"
         and canonical_model_id == "gpt-image-2"
@@ -1169,11 +1177,20 @@ def register_generation_routes(app: FastAPI, ctx: WebUIContext) -> None:
         )
         mask_canvas_size: tuple[int, int] | None = None
         if prepared_mask is not None:
+            mask_requested_size = size
+            if parameters_json is not None:
+                try:
+                    mask_parameters = parse_parameters_json(parameters_json)
+                except ValueError as exc:
+                    raise _generation_request_error(exc) from exc
+                canonical_mask_size = str(mask_parameters.get("canvas.size") or "").strip()
+                if canonical_mask_size:
+                    mask_requested_size = canonical_mask_size
             try:
                 validate_edit_mask(prepared_mask.data, decode_image_data_url(all_image_data_urls[0]))
                 mask_canvas_size = aligned_edit_mask_canvas_size(
                     all_image_data_urls[0],
-                    requested_size=size,
+                    requested_size=mask_requested_size,
                     model=model,
                     max_edge=RESPONSES_EDIT_MASK_MAX_EDGE if requested_backend.endswith("_responses") else None,
                 )

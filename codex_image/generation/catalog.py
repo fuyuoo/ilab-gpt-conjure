@@ -11,6 +11,7 @@ from .types import (
 )
 
 MODEL_MANIFEST_VERSION = 1
+RESPONSES_EDIT_MASK_MAX_EDGE = 2048
 
 _ALL_OPERATIONS = frozenset({"generate", "edit"})
 _GENERATE_ONLY = frozenset({"generate"})

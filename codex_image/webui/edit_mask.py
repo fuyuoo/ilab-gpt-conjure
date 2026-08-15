@@ -8,8 +8,9 @@ from io import BytesIO
 
 from PIL import Image, UnidentifiedImageError
 
+from codex_image.generation.catalog import RESPONSES_EDIT_MASK_MAX_EDGE
 
-RESPONSES_EDIT_MASK_MAX_EDGE = 2048
+
 EDIT_MASK_MAX_FILE_BYTES = 50 * 1024 * 1024
 GPT_IMAGE_2_MAX_EDGE = 3840
 GPT_IMAGE_2_MIN_PIXELS = 655_360

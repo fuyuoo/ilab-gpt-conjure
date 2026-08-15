@@ -11,7 +11,11 @@ from fastapi.testclient import TestClient
 
 class WebUIProviderRoutingTests(unittest.TestCase):
     @staticmethod
-    def _png_bytes(marker: str | None = None) -> bytes:
+    def _png_bytes(
+        marker: str | None = None,
+        *,
+        size: tuple[int, int] = (2, 2),
+    ) -> bytes:
         from PIL import Image
         from PIL.PngImagePlugin import PngInfo
 
@@ -19,7 +23,7 @@ class WebUIProviderRoutingTests(unittest.TestCase):
         png_info = PngInfo()
         if marker:
             png_info.add_text("marker", marker)
-        Image.new("RGB", (2, 2), "white").save(
+        Image.new("RGB", size, "white").save(
             buffer,
             format="PNG",
             pnginfo=png_info,
@@ -27,11 +31,11 @@ class WebUIProviderRoutingTests(unittest.TestCase):
         return buffer.getvalue()
 
     @staticmethod
-    def _mask_png_bytes() -> bytes:
+    def _mask_png_bytes(*, size: tuple[int, int] = (2, 2)) -> bytes:
         from PIL import Image
 
         buffer = io.BytesIO()
-        Image.new("RGBA", (2, 2), (255, 255, 255, 0)).save(buffer, format="PNG")
+        Image.new("RGBA", size, (255, 255, 255, 0)).save(buffer, format="PNG")
         return buffer.getvalue()
 
     def assert_no_secret_field(self, value) -> None:
@@ -736,8 +740,16 @@ class WebUIProviderRoutingTests(unittest.TestCase):
                     "parameters_json": json.dumps(parameters),
                 },
                 files={
-                    "images": ("input.png", self._png_bytes(), "image/png"),
-                    "mask": ("mask.png", self._mask_png_bytes(), "image/png"),
+                    "images": (
+                        "input.png",
+                        self._png_bytes(size=(1024, 1024)),
+                        "image/png",
+                    ),
+                    "mask": (
+                        "mask.png",
+                        self._mask_png_bytes(size=(1024, 1024)),
+                        "image/png",
+                    ),
                 },
             )
             asyncio.run(app.state.queue_manager.run_available_once())
@@ -748,6 +760,142 @@ class WebUIProviderRoutingTests(unittest.TestCase):
         self.assertIsNone(fake.edit_calls[0]["input_fidelity"])
         self.assertTrue(fake.edit_calls[0]["images"])
         self.assertTrue(fake.edit_calls[0]["mask_image"].startswith("data:image/png;base64,"))
+
+    def test_canonical_masked_responses_edit_freezes_the_normalized_canvas(self) -> None:
+        import asyncio
+
+        from PIL import Image
+
+        from codex_image.webui.edit_mask import decode_image_data_url
+        from tests.webui_helpers import FakeImageClient
+
+        source_size = (3081, 1359)
+        expected_size = "2032x896"
+        parameters = {
+            "canvas.size": "3072x1360",
+            "gpt.quality": "high",
+            "gpt.background": "auto",
+            "output.format": "png",
+            "gpt.moderation": "low",
+            "output.count": 1,
+        }
+        with tempfile.TemporaryDirectory() as tmp:
+            app = self._app(Path(tmp))
+            fake = FakeImageClient()
+            app.state.ctx.client_factory = lambda: fake
+            app.state.client_factory = app.state.ctx.client_factory
+            response = TestClient(app).post(
+                "/api/edit",
+                data={
+                    "prompt": "canonical masked edit",
+                    "canonical_model_id": "gpt-image-2",
+                    "provider_id": "codex",
+                    "binding_id": "codex-gpt-image-2-responses",
+                    "parameters_json": json.dumps(parameters),
+                },
+                files={
+                    "images": (
+                        "input.png",
+                        self._png_bytes(size=source_size),
+                        "image/png",
+                    ),
+                    "mask": (
+                        "mask.png",
+                        self._mask_png_bytes(size=source_size),
+                        "image/png",
+                    ),
+                },
+            )
+            task_id = response.json()["task"]["task_id"]
+            queued = app.state.storage.read_metadata(task_id)
+
+            self.assertEqual(response.status_code, 200)
+            self.assertEqual(queued["params"]["size"], expected_size)
+            self.assertEqual(
+                queued["generation_snapshot"]["requested_parameters"]["canvas.size"],
+                expected_size,
+            )
+
+            asyncio.run(app.state.queue_manager.run_available_once())
+            completed = app.state.storage.read_metadata(task_id)
+
+        self.assertEqual(completed["status"], "completed")
+        self.assertEqual(len(fake.edit_calls), 1)
+        primary = Image.open(io.BytesIO(decode_image_data_url(fake.edit_calls[0]["images"][0])))
+        mask = Image.open(io.BytesIO(decode_image_data_url(fake.edit_calls[0]["mask_image"])))
+        self.assertEqual(primary.size, (2032, 896))
+        self.assertEqual(mask.size, (2032, 896))
+        self.assertEqual(mask.size, primary.size)
+
+    def test_canonical_masked_responses_edit_uses_canonical_requested_area_for_normalization(self) -> None:
+        import asyncio
+        from PIL import Image
+
+        from codex_image.webui.edit_mask import decode_image_data_url
+        from tests.webui_helpers import FakeImageClient
+
+        parameters = {
+            "canvas.size": "1024x1024",
+            "gpt.quality": "high",
+            "gpt.background": "auto",
+            "output.format": "png",
+            "gpt.moderation": "auto",
+            "output.count": 1,
+        }
+        original_image = self._png_bytes(size=(3000, 1000))
+        original_mask = self._mask_png_bytes(size=(3000, 1000))
+        with tempfile.TemporaryDirectory() as tmp:
+            app = self._app(Path(tmp))
+            fake = FakeImageClient()
+            app.state.ctx.client_factory = lambda: fake
+            app.state.client_factory = app.state.ctx.client_factory
+            response = TestClient(app).post(
+                "/api/edit",
+                data={
+                    "prompt": "canonical normalization area",
+                    "canonical_model_id": "gpt-image-2",
+                    "provider_id": "codex",
+                    "binding_id": "codex-gpt-image-2-responses",
+                    "parameters_json": json.dumps(parameters),
+                },
+                files={
+                    "images": (
+                        "input.png",
+                        original_image,
+                        "image/png",
+                    ),
+                    "mask": (
+                        "mask.png",
+                        original_mask,
+                        "image/png",
+                    ),
+                },
+            )
+            self.assertEqual(response.status_code, 200, response.text)
+            task_id = response.json()["task"]["task_id"]
+            queued = app.state.storage.read_metadata(task_id)
+            self.assertEqual(queued["params"]["size"], "1776x592")
+            self.assertEqual(
+                queued["generation_snapshot"]["requested_parameters"]["canvas.size"],
+                "1776x592",
+            )
+
+            asyncio.run(app.state.queue_manager.run_available_once())
+            completed = app.state.storage.read_metadata(task_id)
+            original_asset_path = app.state.reference_asset_storage.image_path(
+                queued["reference_assets"][0]["id"]
+            )
+            original_mask_path = app.state.storage.input_path(queued["mask_file"])
+            self.assertEqual(original_asset_path.read_bytes(), original_image)
+            self.assertEqual(original_mask_path.read_bytes(), original_mask)
+
+        self.assertEqual(completed["status"], "completed")
+        self.assertEqual(len(fake.edit_calls), 1)
+        primary = Image.open(io.BytesIO(decode_image_data_url(fake.edit_calls[0]["images"][0])))
+        mask = Image.open(io.BytesIO(decode_image_data_url(fake.edit_calls[0]["mask_image"])))
+        self.assertEqual(primary.size, (1776, 592))
+        self.assertEqual(mask.size, (1776, 592))
+        self.assertEqual(mask.size, primary.size)
 
     def test_legacy_compat_options_are_frozen_in_snapshot_for_worker(self) -> None:
         import asyncio
@@ -1178,6 +1326,67 @@ class GenerationRequestTests(unittest.TestCase):
                 snapshot=snapshot, command=invalid, api_key="", registry=registry
             )
         self.assertEqual(raised.exception.detail.code, "snapshot_manifest_incompatible")
+
+    def test_snapshot_restore_reports_mask_canvas_size_mismatch_details(self) -> None:
+        from dataclasses import replace
+
+        from codex_image.generation.catalog import get_model_manifest
+        from codex_image.generation.errors import GenerationProviderError
+        from codex_image.generation.resolver import BindingResolver
+        from codex_image.generation.service import GenerationService
+        from codex_image.generation.snapshot import (
+            execution_plan_from_snapshot,
+            generation_snapshot,
+        )
+        from codex_image.generation.types import GenerationCommand, ImageInput
+        from codex_image.providers.registry import default_registry
+        from codex_image.webui.generation_request import codex_provider_connection
+
+        registry = default_registry()
+        provider = codex_provider_connection("responses")
+        command = GenerationCommand(
+            "edit",
+            "gpt-image-2",
+            "codex",
+            "p",
+            {"canvas.size": "3072x1360", "output.count": 1},
+            binding_id="codex-gpt-image-2-responses",
+            image_inputs=(ImageInput("data:image/png;base64,eA=="),),
+            mask_image="data:image/png;base64,eA==",
+        )
+        plan = GenerationService(
+            BindingResolver(
+                models={"gpt-image-2": get_model_manifest("gpt-image-2")},
+                providers={"codex": provider},
+                registry=registry,
+            ),
+            registry,
+        ).preview(command)
+        snapshot = generation_snapshot(plan)
+        normalized = replace(
+            command,
+            parameters={"canvas.size": "2032x896", "output.count": 1},
+        )
+
+        with self.assertRaises(GenerationProviderError) as raised:
+            execution_plan_from_snapshot(
+                snapshot=snapshot,
+                command=normalized,
+                api_key="",
+                registry=registry,
+            )
+
+        detail = raised.exception.detail
+        self.assertEqual(detail.code, "edit_mask_canvas_snapshot_mismatch")
+        self.assertEqual(
+            detail.to_dict()["details"],
+            {
+                "queued_size": "3072x1360",
+                "execution_size": "2032x896",
+                "provider_max_edge": 2048,
+                "recommended_action": "reuse_task",
+            },
+        )
 
     def test_gpt_codecs_do_not_construct_uninitialized_clients(self) -> None:
         import inspect

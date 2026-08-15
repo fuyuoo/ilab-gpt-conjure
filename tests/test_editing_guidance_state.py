@@ -1,11 +1,17 @@
 from __future__ import annotations
 
+import base64
+import io
 import json
 import shutil
 import subprocess
 import tempfile
 import unittest
 from pathlib import Path
+
+from PIL import Image
+
+from codex_image.webui.edit_mask import aligned_edit_mask_canvas_size
 
 
 class EditingGuidanceStateTests(unittest.TestCase):
@@ -100,10 +106,57 @@ class EditingGuidanceStateTests(unittest.TestCase):
 
         self.assertEqual(
             [issue["code"] for issue in result["issues"]],
-            ["primary", "edit_area"],
+            ["primary", "responses_resize", "edit_area"],
         )
         self.assertEqual(result["issues"][0]["values"]["name"], "poster.png")
-        self.assertEqual(result["issues"][1]["values"]["percent"], "1.82")
+        self.assertEqual(
+            result["issues"][1]["values"],
+            {
+                "width": 1080,
+                "height": 2100,
+                "targetWidth": 864,
+                "targetHeight": 1680,
+            },
+        )
+        self.assertEqual(result["issues"][2]["values"]["percent"], "1.82")
+
+    def test_responses_resize_preview_matches_server_alignment(self) -> None:
+        vectors = [
+            (3081, 1359, "3072x1360"),
+            (1080, 2100, "1024x1024"),
+            (4096, 4096, "2048x2048"),
+            (3000, 1000, "1536x1024"),
+            (3072, 1024, "2048x1024"),
+        ]
+        result = self._run_module_probe(
+            f"""
+            const {{ alignedResponsesEditMaskCanvasSize }} = require(process.argv[1]);
+            const vectors = {json.dumps(vectors)};
+            process.stdout.write(JSON.stringify({{
+              results: vectors.map(([width, height, requested]) =>
+                alignedResponsesEditMaskCanvasSize(width, height, requested)
+              ),
+            }}));
+            """,
+            module="codex_image/webui/frontend/src/edit-request-preflight.ts",
+        )
+
+        expected: list[list[int]] = []
+        for width, height, requested in vectors:
+            image_bytes = io.BytesIO()
+            Image.new("RGB", (width, height)).save(image_bytes, format="PNG")
+            image_data_url = "data:image/png;base64," + base64.b64encode(
+                image_bytes.getvalue()
+            ).decode("ascii")
+            target_width, target_height = aligned_edit_mask_canvas_size(
+                image_data_url,
+                requested_size=requested,
+                model="gpt-image-2",
+                max_edge=2048,
+            )
+            expected.append([target_width, target_height])
+
+        self.assertEqual(result["results"], expected)
 
     def test_edit_request_preflight_classifies_small_and_large_edit_regions_as_warnings(self) -> None:
         result = self._run_module_probe(

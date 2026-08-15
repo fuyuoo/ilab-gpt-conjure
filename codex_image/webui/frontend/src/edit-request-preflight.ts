@@ -3,6 +3,10 @@ import { getLegacyBridge } from "./state";
 
 const SMALL_EDIT_AREA_FRACTION = 0.005;
 const LARGE_EDIT_AREA_FRACTION = 0.9;
+const RESPONSES_EDIT_MASK_MAX_EDGE = 2048;
+const GPT_IMAGE_2_MIN_PIXELS = 655_360;
+const GPT_IMAGE_2_MAX_PIXELS = 8_294_400;
+const GPT_IMAGE_2_MAX_ASPECT_RATIO = 3;
 
 export type EditRequestPreflightLevel = "info" | "warning" | "error";
 
@@ -61,6 +65,55 @@ function formattedPercentage(editablePixels: number, totalPixels: number): strin
   return percentage.toFixed(percentage < 10 ? 2 : 1);
 }
 
+function parsedSize(value: string): [number, number] | null {
+  const match = /^([1-9][0-9]*)x([1-9][0-9]*)$/.exec(String(value || "").trim());
+  if (!match) return null;
+  return [Number(match[1]), Number(match[2])];
+}
+
+export function alignedResponsesEditMaskCanvasSize(
+  width: number,
+  height: number,
+  requestedSize: string,
+): [number, number] | null {
+  const sourceWidth = positiveInteger(width);
+  const sourceHeight = positiveInteger(height);
+  if (!sourceWidth || !sourceHeight) return null;
+  const sourceRatio = sourceWidth / sourceHeight;
+  if (Math.max(sourceRatio, 1 / sourceRatio) > GPT_IMAGE_2_MAX_ASPECT_RATIO) return null;
+  const requested = parsedSize(requestedSize);
+  const requestedPixels = requested
+    ? requested[0] * requested[1]
+    : sourceWidth * sourceHeight;
+  const desiredPixels = Math.min(
+    Math.max(requestedPixels, GPT_IMAGE_2_MIN_PIXELS),
+    GPT_IMAGE_2_MAX_PIXELS,
+  );
+  let best: { score: number; width: number; height: number } | null = null;
+  for (let candidateWidth = 16; candidateWidth <= RESPONSES_EDIT_MASK_MAX_EDGE; candidateWidth += 16) {
+    const idealHeight = candidateWidth / sourceRatio;
+    const heightSteps = new Set([
+      Math.max(1, Math.floor(idealHeight / 16)),
+      Math.max(1, Math.ceil(idealHeight / 16)),
+    ]);
+    for (const heightStep of heightSteps) {
+      const candidateHeight = heightStep * 16;
+      if (candidateHeight > RESPONSES_EDIT_MASK_MAX_EDGE) continue;
+      const pixels = candidateWidth * candidateHeight;
+      if (pixels < GPT_IMAGE_2_MIN_PIXELS || pixels > GPT_IMAGE_2_MAX_PIXELS) continue;
+      const candidateRatio = candidateWidth / candidateHeight;
+      if (Math.max(candidateRatio, 1 / candidateRatio) > GPT_IMAGE_2_MAX_ASPECT_RATIO) continue;
+      const ratioError = Math.abs(Math.log(candidateRatio / sourceRatio));
+      const areaError = Math.abs(Math.log(pixels / desiredPixels));
+      const score = ratioError * 100 + areaError;
+      if (!best || score < best.score) {
+        best = { score, width: candidateWidth, height: candidateHeight };
+      }
+    }
+  }
+  return best ? [best.width, best.height] : null;
+}
+
 export function evaluateEditRequestPreflight(input: EditRequestPreflightInput): EditRequestPreflightResult {
   if (input.mode !== "edit") return { issues: [] };
   if (!input.hasMask) return { issues: [{ code: "mask_inactive", level: "info" }] };
@@ -82,6 +135,21 @@ export function evaluateEditRequestPreflight(input: EditRequestPreflightInput): 
   }
   if (editablePixels === 0) issues.push({ code: "empty_edit_area", level: "error" });
   issues.push({ code: "primary", level: "info", values: { name: input.primaryName || "-" } });
+  if (input.usesResponses && Math.max(width, height) > RESPONSES_EDIT_MASK_MAX_EDGE) {
+    const target = alignedResponsesEditMaskCanvasSize(width, height, input.outputSize);
+    if (target) {
+      issues.push({
+        code: "responses_resize",
+        level: "warning",
+        values: {
+          width,
+          height,
+          targetWidth: target[0],
+          targetHeight: target[1],
+        },
+      });
+    }
+  }
 
   const editableFraction = editablePixels / totalPixels;
   issues.push({ code: "edit_area", level: "info", values: { percent: formattedPercentage(editablePixels, totalPixels) } });
@@ -92,6 +160,36 @@ export function evaluateEditRequestPreflight(input: EditRequestPreflightInput): 
   }
 
   return { issues };
+}
+
+export function responsesResizeConfirmationIssue(
+  result: EditRequestPreflightResult,
+): EditRequestPreflightIssue | null {
+  return result.issues.find((issue) => issue.code === "responses_resize" && issue.level === "warning") || null;
+}
+
+export function responsesResizeConfirmationKey(
+  issue: EditRequestPreflightIssue | null,
+): string {
+  if (!issue || issue.code !== "responses_resize") return "";
+  const width = Number(issue.values?.width);
+  const height = Number(issue.values?.height);
+  const targetWidth = Number(issue.values?.targetWidth);
+  const targetHeight = Number(issue.values?.targetHeight);
+  if (![width, height, targetWidth, targetHeight].every((value) => Number.isInteger(value) && value > 0)) {
+    return "";
+  }
+  return `${width}x${height}->${targetWidth}x${targetHeight}`;
+}
+
+export function pendingResponsesResizeConfirmation(
+  result: EditRequestPreflightResult,
+  approvedKey = "",
+): { issue: EditRequestPreflightIssue; key: string } | null {
+  const issue = responsesResizeConfirmationIssue(result);
+  if (!issue) return null;
+  const key = responsesResizeConfirmationKey(issue);
+  return approvedKey === key ? null : { issue, key };
 }
 
 async function imageDimensions(file: File): Promise<ImageDimensions> {
@@ -151,7 +249,7 @@ async function inspectCurrentEditRequest(request: any): Promise<EditRequestPrefl
       primaryName: primary.name || primaryFile?.name || "",
       primaryWidth: 0,
       primaryHeight: 0,
-      outputSize: String(request?.size || ""),
+      outputSize: String(request?.parameters?.["canvas.size"] || request?.size || ""),
       editablePixels: 0,
       totalPixels: 0,
     });
@@ -173,7 +271,7 @@ async function inspectCurrentEditRequest(request: any): Promise<EditRequestPrefl
       primaryHeight: primaryMetrics.height,
       maskWidth: editMaskMetrics.width,
       maskHeight: editMaskMetrics.height,
-      outputSize: String(request?.size || ""),
+      outputSize: String(request?.parameters?.["canvas.size"] || request?.size || ""),
       editablePixels: editMaskMetrics.editablePixels,
       totalPixels: editMaskMetrics.totalPixels,
     });

@@ -1,7 +1,10 @@
 import { getLegacyBridge } from "./state";
-import { currentLocaleCode, translate } from "./i18n";
+import { currentLocaleCode, formatTranslation, translate } from "./i18n";
 import { editMaskForSubmission, imageFilesForSubmission } from "./edit-region-materialization";
 import { editingGuidanceForSubmission } from "./editing-guidance-persistence";
+import {
+  pendingResponsesResizeConfirmation,
+} from "./edit-request-preflight";
 import { selectedProviderBinding } from "./provider-selection";
 import { appendCanonicalGenerationFields, currentGenerationSelection } from "./generation-request";
 import { taskOutputControlValues } from "./task-model-summary";
@@ -67,6 +70,7 @@ function referenceFileUploads(...args: any[]) { return legacyMethod("referenceFi
 function storedReferenceFileInputs(...args: any[]) { return legacyMethod("storedReferenceFileInputs", ...args); }
 function missingReferenceFileInputs(...args: any[]) { return legacyMethod("missingReferenceFileInputs", ...args); }
 function renderPreview(...args: any[]) { return legacyMethod("renderPreview", ...args); }
+function openConfirmPopover(...args: any[]) { return legacyMethod("openConfirmPopover", ...args); }
 
 export function currentCanonicalParameters(): Record<string, unknown> {
   return currentGenerationSelection().parameters;
@@ -259,7 +263,7 @@ function addQueuedTask(task: any) {
   replacePendingTask(state.pendingTaskId || task.task_id, task);
 }
 
-async function runTask() {
+async function runTask(options: { responsesResizeConfirmationKey?: string } = {}) {
   syncPromptFromEditor();
   syncGalleryInputsFromPrompt();
   const prompt = getPromptText();
@@ -313,6 +317,20 @@ async function runTask() {
   const preflight = await updateEditRequestPreflight(buildPreviewRequest());
   if (preflight?.issues?.some((issue: any) => issue.level === "error")) {
     setStatus(translate("editPreflight.blocked"), "error");
+    return;
+  }
+  const resizeConfirmation = pendingResponsesResizeConfirmation(
+    preflight || { issues: [] },
+    options.responsesResizeConfirmationKey,
+  );
+  if (resizeConfirmation) {
+    openConfirmPopover(els.runButton, {
+      title: translate("editPreflight.title"),
+      message: formatTranslation("editPreflight.responsesResize", resizeConfirmation.issue.values),
+      confirmText: translate("action.confirm"),
+      danger: false,
+      onConfirm: () => runTask({ responsesResizeConfirmationKey: resizeConfirmation.key }),
+    });
     return;
   }
 

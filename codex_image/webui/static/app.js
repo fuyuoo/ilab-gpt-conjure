@@ -1717,7 +1717,8 @@
     "imageInput.editRegionApplied": "Edit Region applied",
     "editPreflight.title": "Pre-submit check",
     "editPreflight.primary": "The mask applies only to the first Primary Edit Image: {name}; the image, mask, and output are locked to one PNG canvas on submit",
-    "editPreflight.responsesResize": "Responses will resize {width}\xD7{height} to {targetWidth}\xD7{targetHeight} before submission",
+    "editPreflight.responsesResize": "Responses will temporarily resize request copies of the image and mask from {width}\xD7{height} to {targetWidth}\xD7{targetHeight}; the original files remain unchanged",
+    "generationError.editMaskCanvasSnapshotMismatch": "Task {taskId} has an edit-mask canvas mismatch: queued {queuedSize}, execution {executionSize} ({providerId}/{modelId}, maximum edge {maxEdge}). Reuse the task and submit it again.",
     "editPreflight.editArea": "Transparent edit area: {percent}%",
     "editPreflight.editAreaSmall": "The edit area is very small, so the model may not make a visible change",
     "editPreflight.editAreaLarge": "Most of the image is editable; the result may resemble a full-image redraw",
@@ -2928,7 +2929,8 @@
     "imageInput.editRegionApplied": "Bearbeitungsbereich angewendet",
     "editPreflight.title": "Pr\xFCfung vor dem Senden",
     "editPreflight.primary": "Die Maske gilt nur f\xFCr das erste prim\xE4re Bearbeitungsbild: {name}",
-    "editPreflight.responsesResize": "Responses skaliert {width}\xD7{height} vor dem Senden auf {targetWidth}\xD7{targetHeight}",
+    "editPreflight.responsesResize": "Responses skaliert tempor\xE4re Anfragekopien von Bild und Maske von {width}\xD7{height} auf {targetWidth}\xD7{targetHeight}; die Originaldateien bleiben unver\xE4ndert",
+    "generationError.editMaskCanvasSnapshotMismatch": "Aufgabe {taskId} hat eine abweichende Bearbeitungsmaske: Warteschlange {queuedSize}, Ausf\xFChrung {executionSize} ({providerId}/{modelId}, maximale Kante {maxEdge}). Aufgabe wiederverwenden und erneut senden.",
     "editPreflight.editArea": "Transparenter Bearbeitungsbereich: {percent}%",
     "editPreflight.editAreaSmall": "Der Bearbeitungsbereich ist sehr klein; m\xF6glicherweise entsteht keine sichtbare \xC4nderung",
     "editPreflight.editAreaLarge": "Fast das gesamte Bild ist bearbeitbar; das Ergebnis kann einer vollst\xE4ndigen Neuzeichnung \xE4hneln",
@@ -4139,7 +4141,8 @@
     "imageInput.editRegionApplied": "Regi\xF3n de edici\xF3n aplicada",
     "editPreflight.title": "Comprobaci\xF3n previa al env\xEDo",
     "editPreflight.primary": "La m\xE1scara solo se aplica a la primera imagen de edici\xF3n principal: {name}",
-    "editPreflight.responsesResize": "Responses redimensionar\xE1 {width}\xD7{height} a {targetWidth}\xD7{targetHeight} antes del env\xEDo",
+    "editPreflight.responsesResize": "Responses redimensionar\xE1 temporalmente copias de la imagen y la m\xE1scara de {width}\xD7{height} a {targetWidth}\xD7{targetHeight}; los archivos originales no se modificar\xE1n",
+    "generationError.editMaskCanvasSnapshotMismatch": "La tarea {taskId} tiene un lienzo de m\xE1scara incompatible: en cola {queuedSize}, en ejecuci\xF3n {executionSize} ({providerId}/{modelId}, lado m\xE1ximo {maxEdge}). Reutiliza la tarea y env\xEDala de nuevo.",
     "editPreflight.editArea": "\xC1rea de edici\xF3n transparente: {percent}%",
     "editPreflight.editAreaSmall": "El \xE1rea de edici\xF3n es muy peque\xF1a; puede que el modelo no produzca un cambio visible",
     "editPreflight.editAreaLarge": "Casi toda la imagen es editable; el resultado puede parecer un redibujado completo",
@@ -5350,7 +5353,8 @@
     "imageInput.editRegionApplied": "Zone d\u2019\xE9dition appliqu\xE9e",
     "editPreflight.title": "V\xE9rification avant envoi",
     "editPreflight.primary": "Le masque s\u2019applique uniquement \xE0 la premi\xE8re image principale \xE0 modifier : {name}",
-    "editPreflight.responsesResize": "Responses redimensionnera {width}\xD7{height} en {targetWidth}\xD7{targetHeight} avant l\u2019envoi",
+    "editPreflight.responsesResize": "Responses redimensionnera temporairement des copies de l\u2019image et du masque de {width}\xD7{height} en {targetWidth}\xD7{targetHeight} ; les fichiers originaux resteront inchang\xE9s",
+    "generationError.editMaskCanvasSnapshotMismatch": "La t\xE2che {taskId} pr\xE9sente un canevas de masque incompatible : file {queuedSize}, ex\xE9cution {executionSize} ({providerId}/{modelId}, c\xF4t\xE9 maximal {maxEdge}). R\xE9utilisez la t\xE2che et soumettez-la \xE0 nouveau.",
     "editPreflight.editArea": "Zone de modification transparente : {percent}%",
     "editPreflight.editAreaSmall": "La zone de modification est tr\xE8s petite ; le mod\xE8le risque de ne produire aucun changement visible",
     "editPreflight.editAreaLarge": "La majeure partie de l\u2019image est modifiable ; le r\xE9sultat peut ressembler \xE0 une recr\xE9ation compl\xE8te",
@@ -6561,7 +6565,8 @@
     "imageInput.editRegionApplied": "\u7DE8\u96C6\u9818\u57DF\u3092\u9069\u7528\u6E08\u307F",
     "editPreflight.title": "\u9001\u4FE1\u524D\u30C1\u30A7\u30C3\u30AF",
     "editPreflight.primary": "\u30DE\u30B9\u30AF\u306F\u6700\u521D\u306E\u30E1\u30A4\u30F3\u7DE8\u96C6\u753B\u50CF\u306B\u306E\u307F\u9069\u7528\u3055\u308C\u307E\u3059\uFF1A{name}",
-    "editPreflight.responsesResize": "Responses \u306F\u9001\u4FE1\u524D\u306B {width}\xD7{height} \u3092 {targetWidth}\xD7{targetHeight} \u306B\u7E2E\u5C0F\u3057\u307E\u3059",
+    "editPreflight.responsesResize": "Responses \u306F\u753B\u50CF\u3068\u30DE\u30B9\u30AF\u306E\u4E00\u6642\u7684\u306A\u30EA\u30AF\u30A8\u30B9\u30C8\u30B3\u30D4\u30FC\u3092 {width}\xD7{height} \u304B\u3089 {targetWidth}\xD7{targetHeight} \u306B\u7E2E\u5C0F\u3057\u307E\u3059\u3002\u5143\u306E\u30D5\u30A1\u30A4\u30EB\u306F\u5909\u66F4\u3055\u308C\u307E\u305B\u3093",
+    "generationError.editMaskCanvasSnapshotMismatch": "\u30BF\u30B9\u30AF {taskId} \u306E\u7DE8\u96C6\u30DE\u30B9\u30AF\u30AD\u30E3\u30F3\u30D0\u30B9\u304C\u30AD\u30E5\u30FC\u30B9\u30CA\u30C3\u30D7\u30B7\u30E7\u30C3\u30C8\u3068\u4E00\u81F4\u3057\u307E\u305B\u3093\uFF1A\u30AD\u30E5\u30FC {queuedSize}\u3001\u5B9F\u884C {executionSize}\uFF08{providerId}/{modelId}\u3001\u6700\u5927\u8FBA {maxEdge}\uFF09\u3002\u30BF\u30B9\u30AF\u3092\u518D\u5229\u7528\u3057\u3066\u518D\u9001\u4FE1\u3057\u3066\u304F\u3060\u3055\u3044\u3002",
     "editPreflight.editArea": "\u900F\u660E\u306A\u7DE8\u96C6\u9818\u57DF\uFF1A{percent}%",
     "editPreflight.editAreaSmall": "\u7DE8\u96C6\u9818\u57DF\u304C\u975E\u5E38\u306B\u5C0F\u3055\u3044\u305F\u3081\u3001\u76EE\u306B\u898B\u3048\u308B\u5909\u66F4\u304C\u884C\u308F\u308C\u306A\u3044\u53EF\u80FD\u6027\u304C\u3042\u308A\u307E\u3059",
     "editPreflight.editAreaLarge": "\u753B\u50CF\u306E\u5927\u90E8\u5206\u304C\u7DE8\u96C6\u53EF\u80FD\u306A\u305F\u3081\u3001\u5168\u4F53\u3092\u63CF\u304D\u76F4\u3057\u305F\u3088\u3046\u306A\u7D50\u679C\u306B\u306A\u308B\u53EF\u80FD\u6027\u304C\u3042\u308A\u307E\u3059",
@@ -7772,7 +7777,8 @@
     "imageInput.editRegionApplied": "\uD3B8\uC9D1 \uC601\uC5ED \uC801\uC6A9\uB428",
     "editPreflight.title": "\uC81C\uCD9C \uC804 \uD655\uC778",
     "editPreflight.primary": "\uB9C8\uC2A4\uD06C\uB294 \uCCAB \uBC88\uC9F8 \uAE30\uBCF8 \uD3B8\uC9D1 \uC774\uBBF8\uC9C0\uC5D0\uB9CC \uC801\uC6A9\uB429\uB2C8\uB2E4: {name}",
-    "editPreflight.responsesResize": "Responses\uB294 \uC81C\uCD9C \uC804\uC5D0 {width}\xD7{height}\uB97C {targetWidth}\xD7{targetHeight}\uB85C \uCD95\uC18C\uD569\uB2C8\uB2E4",
+    "editPreflight.responsesResize": "Responses\uB294 \uC774\uBBF8\uC9C0\uC640 \uB9C8\uC2A4\uD06C\uC758 \uC784\uC2DC \uC694\uCCAD \uC0AC\uBCF8\uC744 {width}\xD7{height}\uC5D0\uC11C {targetWidth}\xD7{targetHeight}\uB85C \uCD95\uC18C\uD558\uBA70 \uC6D0\uBCF8 \uD30C\uC77C\uC740 \uBCC0\uACBD\uD558\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4",
+    "generationError.editMaskCanvasSnapshotMismatch": "\uC791\uC5C5 {taskId}\uC758 \uD3B8\uC9D1 \uB9C8\uC2A4\uD06C \uCE94\uBC84\uC2A4\uAC00 \uB300\uAE30\uC5F4 \uC2A4\uB0C5\uC0F7\uACFC \uC77C\uCE58\uD558\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4: \uB300\uAE30\uC5F4 {queuedSize}, \uC2E4\uD589 {executionSize} ({providerId}/{modelId}, \uCD5C\uB300 \uBCC0 {maxEdge}). \uC791\uC5C5\uC744 \uC7AC\uC0AC\uC6A9\uD574 \uB2E4\uC2DC \uC81C\uCD9C\uD558\uC138\uC694.",
     "editPreflight.editArea": "\uD22C\uBA85 \uD3B8\uC9D1 \uC601\uC5ED: {percent}%",
     "editPreflight.editAreaSmall": "\uD3B8\uC9D1 \uC601\uC5ED\uC774 \uB9E4\uC6B0 \uC791\uC544 \uB208\uC5D0 \uB744\uB294 \uBCC0\uACBD\uC774 \uC5C6\uC744 \uC218 \uC788\uC2B5\uB2C8\uB2E4",
     "editPreflight.editAreaLarge": "\uC774\uBBF8\uC9C0 \uB300\uBD80\uBD84\uC744 \uD3B8\uC9D1\uD560 \uC218 \uC788\uC5B4 \uC804\uCCB4 \uC774\uBBF8\uC9C0\uB97C \uB2E4\uC2DC \uADF8\uB9B0 \uACB0\uACFC\uC640 \uBE44\uC2B7\uD560 \uC218 \uC788\uC2B5\uB2C8\uB2E4",
@@ -8983,7 +8989,8 @@
     "imageInput.editRegionApplied": "Regi\xE3o de edi\xE7\xE3o aplicada",
     "editPreflight.title": "Verifica\xE7\xE3o antes do envio",
     "editPreflight.primary": "A m\xE1scara se aplica apenas \xE0 primeira imagem principal de edi\xE7\xE3o: {name}",
-    "editPreflight.responsesResize": "O Responses redimensionar\xE1 {width}\xD7{height} para {targetWidth}\xD7{targetHeight} antes do envio",
+    "editPreflight.responsesResize": "O Responses redimensionar\xE1 temporariamente c\xF3pias da imagem e da m\xE1scara de {width}\xD7{height} para {targetWidth}\xD7{targetHeight}; os arquivos originais n\xE3o ser\xE3o alterados",
+    "generationError.editMaskCanvasSnapshotMismatch": "A tarefa {taskId} tem um canvas de m\xE1scara incompat\xEDvel: na fila {queuedSize}, na execu\xE7\xE3o {executionSize} ({providerId}/{modelId}, lado m\xE1ximo {maxEdge}). Reutilize a tarefa e envie novamente.",
     "editPreflight.editArea": "\xC1rea transparente de edi\xE7\xE3o: {percent}%",
     "editPreflight.editAreaSmall": "A \xE1rea de edi\xE7\xE3o \xE9 muito pequena; o modelo pode n\xE3o produzir uma altera\xE7\xE3o vis\xEDvel",
     "editPreflight.editAreaLarge": "Quase toda a imagem pode ser editada; o resultado pode parecer um redesenho completo",
@@ -10194,7 +10201,8 @@
     "imageInput.editRegionApplied": "\u041E\u0431\u043B\u0430\u0441\u0442\u044C \u0440\u0435\u0434\u0430\u043A\u0442\u0438\u0440\u043E\u0432\u0430\u043D\u0438\u044F \u043F\u0440\u0438\u043C\u0435\u043D\u0435\u043D\u0430",
     "editPreflight.title": "\u041F\u0440\u043E\u0432\u0435\u0440\u043A\u0430 \u043F\u0435\u0440\u0435\u0434 \u043E\u0442\u043F\u0440\u0430\u0432\u043A\u043E\u0439",
     "editPreflight.primary": "\u041C\u0430\u0441\u043A\u0430 \u043F\u0440\u0438\u043C\u0435\u043D\u044F\u0435\u0442\u0441\u044F \u0442\u043E\u043B\u044C\u043A\u043E \u043A \u043F\u0435\u0440\u0432\u043E\u043C\u0443 \u043E\u0441\u043D\u043E\u0432\u043D\u043E\u043C\u0443 \u0438\u0437\u043E\u0431\u0440\u0430\u0436\u0435\u043D\u0438\u044E \u0434\u043B\u044F \u0440\u0435\u0434\u0430\u043A\u0442\u0438\u0440\u043E\u0432\u0430\u043D\u0438\u044F: {name}",
-    "editPreflight.responsesResize": "\u041F\u0435\u0440\u0435\u0434 \u043E\u0442\u043F\u0440\u0430\u0432\u043A\u043E\u0439 Responses \u0438\u0437\u043C\u0435\u043D\u0438\u0442 \u0440\u0430\u0437\u043C\u0435\u0440 {width}\xD7{height} \u043D\u0430 {targetWidth}\xD7{targetHeight}",
+    "editPreflight.responsesResize": "Responses \u0432\u0440\u0435\u043C\u0435\u043D\u043D\u043E \u0438\u0437\u043C\u0435\u043D\u0438\u0442 \u0440\u0430\u0437\u043C\u0435\u0440 \u043A\u043E\u043F\u0438\u0439 \u0438\u0437\u043E\u0431\u0440\u0430\u0436\u0435\u043D\u0438\u044F \u0438 \u043C\u0430\u0441\u043A\u0438 \u0441 {width}\xD7{height} \u043D\u0430 {targetWidth}\xD7{targetHeight}; \u0438\u0441\u0445\u043E\u0434\u043D\u044B\u0435 \u0444\u0430\u0439\u043B\u044B \u043E\u0441\u0442\u0430\u043D\u0443\u0442\u0441\u044F \u0431\u0435\u0437 \u0438\u0437\u043C\u0435\u043D\u0435\u043D\u0438\u0439",
+    "generationError.editMaskCanvasSnapshotMismatch": "\u0423 \u0437\u0430\u0434\u0430\u0447\u0438 {taskId} \u043D\u0435 \u0441\u043E\u0432\u043F\u0430\u0434\u0430\u0435\u0442 \u0445\u043E\u043B\u0441\u0442 \u043C\u0430\u0441\u043A\u0438: \u0432 \u043E\u0447\u0435\u0440\u0435\u0434\u0438 {queuedSize}, \u043F\u0440\u0438 \u0432\u044B\u043F\u043E\u043B\u043D\u0435\u043D\u0438\u0438 {executionSize} ({providerId}/{modelId}, \u043C\u0430\u043A\u0441\u0438\u043C\u0430\u043B\u044C\u043D\u0430\u044F \u0441\u0442\u043E\u0440\u043E\u043D\u0430 {maxEdge}). \u041F\u043E\u0432\u0442\u043E\u0440\u043D\u043E \u0438\u0441\u043F\u043E\u043B\u044C\u0437\u0443\u0439\u0442\u0435 \u0437\u0430\u0434\u0430\u0447\u0443 \u0438 \u043E\u0442\u043F\u0440\u0430\u0432\u044C\u0442\u0435 \u0435\u0451 \u0437\u0430\u043D\u043E\u0432\u043E.",
     "editPreflight.editArea": "\u041F\u0440\u043E\u0437\u0440\u0430\u0447\u043D\u0430\u044F \u043E\u0431\u043B\u0430\u0441\u0442\u044C \u0440\u0435\u0434\u0430\u043A\u0442\u0438\u0440\u043E\u0432\u0430\u043D\u0438\u044F: {percent}%",
     "editPreflight.editAreaSmall": "\u041E\u0431\u043B\u0430\u0441\u0442\u044C \u0440\u0435\u0434\u0430\u043A\u0442\u0438\u0440\u043E\u0432\u0430\u043D\u0438\u044F \u043E\u0447\u0435\u043D\u044C \u043C\u0430\u043B\u0430, \u043F\u043E\u044D\u0442\u043E\u043C\u0443 \u0437\u0430\u043C\u0435\u0442\u043D\u044B\u0445 \u0438\u0437\u043C\u0435\u043D\u0435\u043D\u0438\u0439 \u043C\u043E\u0436\u0435\u0442 \u043D\u0435 \u0431\u044B\u0442\u044C",
     "editPreflight.editAreaLarge": "\u041F\u043E\u0447\u0442\u0438 \u0432\u0441\u0451 \u0438\u0437\u043E\u0431\u0440\u0430\u0436\u0435\u043D\u0438\u0435 \u0434\u043E\u0441\u0442\u0443\u043F\u043D\u043E \u0434\u043B\u044F \u0440\u0435\u0434\u0430\u043A\u0442\u0438\u0440\u043E\u0432\u0430\u043D\u0438\u044F; \u0440\u0435\u0437\u0443\u043B\u044C\u0442\u0430\u0442 \u043C\u043E\u0436\u0435\u0442 \u0431\u044B\u0442\u044C \u043F\u043E\u0445\u043E\u0436 \u043D\u0430 \u043F\u043E\u043B\u043D\u0443\u044E \u043F\u0435\u0440\u0435\u0440\u0438\u0441\u043E\u0432\u043A\u0443",
@@ -11405,7 +11413,8 @@
     "imageInput.editRegionApplied": "Area di modifica applicata",
     "editPreflight.title": "Controllo prima dell\u2019invio",
     "editPreflight.primary": "La maschera si applica solo alla prima immagine principale da modificare: {name}",
-    "editPreflight.responsesResize": "Responses ridimensioner\xE0 {width}\xD7{height} a {targetWidth}\xD7{targetHeight} prima dell\u2019invio",
+    "editPreflight.responsesResize": "Responses ridimensioner\xE0 temporaneamente copie dell\u2019immagine e della maschera da {width}\xD7{height} a {targetWidth}\xD7{targetHeight}; i file originali resteranno invariati",
+    "generationError.editMaskCanvasSnapshotMismatch": "L\u2019attivit\xE0 {taskId} ha un canvas maschera non corrispondente: in coda {queuedSize}, in esecuzione {executionSize} ({providerId}/{modelId}, lato massimo {maxEdge}). Riutilizza l\u2019attivit\xE0 e inviala di nuovo.",
     "editPreflight.editArea": "Area di modifica trasparente: {percent}%",
     "editPreflight.editAreaSmall": "L\u2019area di modifica \xE8 molto piccola; il modello potrebbe non produrre cambiamenti visibili",
     "editPreflight.editAreaLarge": "Quasi tutta l\u2019immagine \xE8 modificabile; il risultato potrebbe sembrare un ridisegno completo",
@@ -12616,7 +12625,8 @@
     "imageInput.editRegionApplied": "\u0938\u0902\u092A\u093E\u0926\u0928 \u0915\u094D\u0937\u0947\u0924\u094D\u0930 \u0932\u093E\u0917\u0942",
     "editPreflight.title": "\u0938\u092C\u092E\u093F\u091F \u0915\u0930\u0928\u0947 \u0938\u0947 \u092A\u0939\u0932\u0947 \u091C\u093E\u0901\u091A",
     "editPreflight.primary": "\u092E\u093E\u0938\u094D\u0915 \u0915\u0947\u0935\u0932 \u092A\u0939\u0932\u0940 \u092E\u0941\u0916\u094D\u092F \u0938\u0902\u092A\u093E\u0926\u0928 \u091B\u0935\u093F \u092A\u0930 \u0932\u093E\u0917\u0942 \u0939\u094B\u0924\u093E \u0939\u0948: {name}",
-    "editPreflight.responsesResize": "Responses \u0938\u092C\u092E\u093F\u091F \u0915\u0930\u0928\u0947 \u0938\u0947 \u092A\u0939\u0932\u0947 {width}\xD7{height} \u0915\u094B {targetWidth}\xD7{targetHeight} \u092E\u0947\u0902 \u092C\u0926\u0932\u0947\u0917\u093E",
+    "editPreflight.responsesResize": "Responses \u091A\u093F\u0924\u094D\u0930 \u0914\u0930 \u092E\u093E\u0938\u094D\u0915 \u0915\u0940 \u0905\u0938\u094D\u0925\u093E\u092F\u0940 \u0905\u0928\u0941\u0930\u094B\u0927 \u092A\u094D\u0930\u0924\u093F\u092F\u094B\u0902 \u0915\u094B {width}\xD7{height} \u0938\u0947 {targetWidth}\xD7{targetHeight} \u0915\u0930\u0947\u0917\u093E; \u092E\u0942\u0932 \u092B\u093C\u093E\u0907\u0932\u0947\u0902 \u0928\u0939\u0940\u0902 \u092C\u0926\u0932\u0947\u0902\u0917\u0940",
+    "generationError.editMaskCanvasSnapshotMismatch": "\u0915\u093E\u0930\u094D\u092F {taskId} \u0915\u093E \u0938\u0902\u092A\u093E\u0926\u0928 \u092E\u093E\u0938\u094D\u0915 \u0915\u0948\u0928\u0935\u093E\u0938 \u092E\u0947\u0932 \u0928\u0939\u0940\u0902 \u0916\u093E\u0924\u093E: \u0915\u0924\u093E\u0930 {queuedSize}, \u0928\u093F\u0937\u094D\u092A\u093E\u0926\u0928 {executionSize} ({providerId}/{modelId}, \u0905\u0927\u093F\u0915\u0924\u092E \u0915\u093F\u0928\u093E\u0930\u093E {maxEdge})\u0964 \u0915\u093E\u0930\u094D\u092F \u0915\u093E \u092A\u0941\u0928\u0903 \u0909\u092A\u092F\u094B\u0917 \u0915\u0930\u0915\u0947 \u092B\u093F\u0930 \u0938\u092C\u092E\u093F\u091F \u0915\u0930\u0947\u0902\u0964",
     "editPreflight.editArea": "\u092A\u093E\u0930\u0926\u0930\u094D\u0936\u0940 \u0938\u0902\u092A\u093E\u0926\u0928 \u0915\u094D\u0937\u0947\u0924\u094D\u0930: {percent}%",
     "editPreflight.editAreaSmall": "\u0938\u0902\u092A\u093E\u0926\u0928 \u0915\u094D\u0937\u0947\u0924\u094D\u0930 \u092C\u0939\u0941\u0924 \u091B\u094B\u091F\u093E \u0939\u0948, \u0907\u0938\u0932\u093F\u090F \u092E\u0949\u0921\u0932 \u0938\u094D\u092A\u0937\u094D\u091F \u092C\u0926\u0932\u093E\u0935 \u0928\u0939\u0940\u0902 \u0915\u0930 \u0938\u0915\u0924\u093E",
     "editPreflight.editAreaLarge": "\u0905\u0927\u093F\u0915\u093E\u0902\u0936 \u091B\u0935\u093F \u0938\u0902\u092A\u093E\u0926\u0928 \u092F\u094B\u0917\u094D\u092F \u0939\u0948; \u092A\u0930\u093F\u0923\u093E\u092E \u092A\u0942\u0930\u0940 \u091B\u0935\u093F \u0915\u094B \u092B\u093F\u0930 \u0938\u0947 \u092C\u0928\u093E\u0928\u0947 \u091C\u0948\u0938\u093E \u0939\u094B \u0938\u0915\u0924\u093E \u0939\u0948",
@@ -13837,7 +13847,8 @@
     "imageInput.editRegionApplied": "\u0110\xE3 \xE1p d\u1EE5ng v\xF9ng ch\u1EC9nh s\u1EEDa",
     "editPreflight.title": "Ki\u1EC3m tra tr\u01B0\u1EDBc khi g\u1EEDi",
     "editPreflight.primary": "M\u1EB7t n\u1EA1 ch\u1EC9 \xE1p d\u1EE5ng cho \u1EA2nh ch\u1EC9nh s\u1EEDa ch\xEDnh \u0111\u1EA7u ti\xEAn: {name}; \u1EA3nh, m\u1EB7t n\u1EA1 v\xE0 \u0111\u1EA7u ra \u0111\u01B0\u1EE3c kh\xF3a tr\xEAn c\xF9ng m\u1ED9t canvas PNG khi g\u1EEDi",
-    "editPreflight.responsesResize": "Responses s\u1EBD \u0111\u1ED5i k\xEDch th\u01B0\u1EDBc {width}\xD7{height} th\xE0nh {targetWidth}\xD7{targetHeight} tr\u01B0\u1EDBc khi g\u1EEDi",
+    "editPreflight.responsesResize": "Responses s\u1EBD t\u1EA1m th\u1EDDi \u0111\u1ED5i k\xEDch th\u01B0\u1EDBc b\u1EA3n sao y\xEAu c\u1EA7u c\u1EE7a \u1EA3nh v\xE0 m\u1EB7t n\u1EA1 t\u1EEB {width}\xD7{height} th\xE0nh {targetWidth}\xD7{targetHeight}; t\u1EC7p g\u1ED1c kh\xF4ng b\u1ECB thay \u0111\u1ED5i",
+    "generationError.editMaskCanvasSnapshotMismatch": "T\xE1c v\u1EE5 {taskId} c\xF3 canvas m\u1EB7t n\u1EA1 kh\xF4ng kh\u1EDBp: trong h\xE0ng \u0111\u1EE3i {queuedSize}, khi th\u1EF1c thi {executionSize} ({providerId}/{modelId}, c\u1EA1nh t\u1ED1i \u0111a {maxEdge}). H\xE3y d\xF9ng l\u1EA1i t\xE1c v\u1EE5 v\xE0 g\u1EEDi l\u1EA1i.",
     "editPreflight.editArea": "V\xF9ng ch\u1EC9nh s\u1EEDa trong su\u1ED1t: {percent}%",
     "editPreflight.editAreaSmall": "V\xF9ng ch\u1EC9nh s\u1EEDa r\u1EA5t nh\u1ECF n\xEAn m\xF4 h\xECnh c\xF3 th\u1EC3 kh\xF4ng t\u1EA1o ra thay \u0111\u1ED5i r\xF5 r\xE0ng",
     "editPreflight.editAreaLarge": "Ph\u1EA7n l\u1EDBn \u1EA3nh c\xF3 th\u1EC3 ch\u1EC9nh s\u1EEDa; k\u1EBFt qu\u1EA3 c\xF3 th\u1EC3 gi\u1ED1ng nh\u01B0 v\u1EBD l\u1EA1i to\xE0n b\u1ED9 \u1EA3nh",
@@ -15058,7 +15069,8 @@
     "imageInput.editRegionApplied": "\u7F16\u8F91\u533A\u57DF\u5DF2\u5E94\u7528",
     "editPreflight.title": "\u63D0\u4EA4\u524D\u68C0\u67E5",
     "editPreflight.primary": "\u906E\u7F69\u53EA\u4F5C\u7528\u4E8E\u7B2C\u4E00\u5F20\u4E3B\u7F16\u8F91\u56FE\uFF1A{name}\uFF1B\u63D0\u4EA4\u65F6\u539F\u56FE\u3001\u906E\u7F69\u548C\u8F93\u51FA\u4F1A\u9501\u5B9A\u4E3A\u540C\u4E00 PNG \u753B\u5E03",
-    "editPreflight.responsesResize": "Responses \u63D0\u4EA4\u65F6\u4F1A\u5C06 {width}\xD7{height} \u7F29\u653E\u4E3A {targetWidth}\xD7{targetHeight}",
+    "editPreflight.responsesResize": "Responses \u63D0\u4EA4\u65F6\u4F1A\u5C06\u4E3B\u56FE\u548C\u906E\u7F69\u7684\u4E34\u65F6\u8BF7\u6C42\u526F\u672C\u4ECE {width}\xD7{height} \u7F29\u653E\u4E3A {targetWidth}\xD7{targetHeight}\uFF1B\u539F\u59CB\u6587\u4EF6\u4E0D\u4F1A\u88AB\u4FEE\u6539",
+    "generationError.editMaskCanvasSnapshotMismatch": "\u4EFB\u52A1 {taskId} \u7684\u906E\u7F69\u753B\u5E03\u4E0E\u961F\u5217\u5FEB\u7167\u4E0D\u4E00\u81F4\uFF1A\u961F\u5217 {queuedSize}\uFF0C\u6267\u884C {executionSize}\uFF08{providerId}/{modelId}\uFF0C\u6700\u957F\u8FB9\u9650\u5236 {maxEdge}\uFF09\u3002\u8BF7\u590D\u7528\u8BE5\u4EFB\u52A1\u5E76\u91CD\u65B0\u63D0\u4EA4\u3002",
     "editPreflight.editArea": "\u900F\u660E\u7F16\u8F91\u533A\u57DF\u5360 {percent}%",
     "editPreflight.editAreaSmall": "\u7F16\u8F91\u533A\u57DF\u5F88\u5C0F\uFF0C\u6A21\u578B\u53EF\u80FD\u65E0\u6CD5\u660E\u663E\u4FEE\u6539",
     "editPreflight.editAreaLarge": "\u5927\u90E8\u5206\u753B\u9762\u90FD\u53EF\u7F16\u8F91\uFF0C\u7ED3\u679C\u53EF\u80FD\u63A5\u8FD1\u5168\u56FE\u91CD\u7ED8",
@@ -16279,7 +16291,8 @@
     "imageInput.editRegionApplied": "\u7DE8\u8F2F\u5340\u57DF\u5DF2\u5957\u7528",
     "editPreflight.title": "\u63D0\u4EA4\u524D\u6AA2\u67E5",
     "editPreflight.primary": "\u906E\u7F69\u53EA\u6703\u5957\u7528\u5230\u7B2C\u4E00\u5F35\u4E3B\u8981\u7DE8\u8F2F\u5716\u7247\uFF1A{name}",
-    "editPreflight.responsesResize": "Responses \u63D0\u4EA4\u6642\u6703\u5C07 {width}\xD7{height} \u7E2E\u653E\u70BA {targetWidth}\xD7{targetHeight}",
+    "editPreflight.responsesResize": "Responses \u63D0\u4EA4\u6642\u6703\u5C07\u4E3B\u5716\u548C\u906E\u7F69\u7684\u81E8\u6642\u8ACB\u6C42\u526F\u672C\u7531 {width}\xD7{height} \u7E2E\u653E\u70BA {targetWidth}\xD7{targetHeight}\uFF1B\u539F\u59CB\u6A94\u6848\u4E0D\u6703\u88AB\u4FEE\u6539",
+    "generationError.editMaskCanvasSnapshotMismatch": "\u4EFB\u52D9 {taskId} \u7684\u906E\u7F69\u756B\u5E03\u8207\u968A\u5217\u5FEB\u7167\u4E0D\u4E00\u81F4\uFF1A\u968A\u5217 {queuedSize}\uFF0C\u57F7\u884C {executionSize}\uFF08{providerId}/{modelId}\uFF0C\u6700\u9577\u908A\u9650\u5236 {maxEdge}\uFF09\u3002\u8ACB\u91CD\u7528\u6B64\u4EFB\u52D9\u4E26\u91CD\u65B0\u63D0\u4EA4\u3002",
     "editPreflight.editArea": "\u900F\u660E\u7DE8\u8F2F\u5340\u57DF\u4F54 {percent}%",
     "editPreflight.editAreaSmall": "\u7DE8\u8F2F\u5340\u57DF\u5F88\u5C0F\uFF0C\u6A21\u578B\u53EF\u80FD\u7121\u6CD5\u7522\u751F\u660E\u986F\u4FEE\u6539",
     "editPreflight.editAreaLarge": "\u5927\u90E8\u5206\u756B\u9762\u90FD\u53EF\u7DE8\u8F2F\uFF0C\u7D50\u679C\u53EF\u80FD\u63A5\u8FD1\u6574\u5F35\u91CD\u7E6A",
@@ -17500,7 +17513,8 @@
     "imageInput.editRegionApplied": "\u7DE8\u8F2F\u5340\u57DF\u5DF2\u5957\u7528",
     "editPreflight.title": "\u9001\u51FA\u524D\u6AA2\u67E5",
     "editPreflight.primary": "\u906E\u7F69\u53EA\u6703\u5957\u7528\u5230\u7B2C\u4E00\u5F35\u4E3B\u8981\u7DE8\u8F2F\u5716\u7247\uFF1A{name}",
-    "editPreflight.responsesResize": "Responses \u9001\u51FA\u6642\u6703\u5C07 {width}\xD7{height} \u7E2E\u653E\u70BA {targetWidth}\xD7{targetHeight}",
+    "editPreflight.responsesResize": "Responses \u9001\u51FA\u6642\u6703\u5C07\u4E3B\u5716\u548C\u906E\u7F69\u7684\u66AB\u6642\u8ACB\u6C42\u526F\u672C\u5F9E {width}\xD7{height} \u7E2E\u653E\u70BA {targetWidth}\xD7{targetHeight}\uFF1B\u539F\u59CB\u6A94\u6848\u4E0D\u6703\u88AB\u4FEE\u6539",
+    "generationError.editMaskCanvasSnapshotMismatch": "\u4EFB\u52D9 {taskId} \u7684\u906E\u7F69\u756B\u5E03\u8207\u4F47\u5217\u5FEB\u7167\u4E0D\u4E00\u81F4\uFF1A\u4F47\u5217 {queuedSize}\uFF0C\u57F7\u884C {executionSize}\uFF08{providerId}/{modelId}\uFF0C\u6700\u9577\u908A\u9650\u5236 {maxEdge}\uFF09\u3002\u8ACB\u91CD\u7528\u6B64\u4EFB\u52D9\u4E26\u91CD\u65B0\u9001\u51FA\u3002",
     "editPreflight.editArea": "\u900F\u660E\u7DE8\u8F2F\u5340\u57DF\u5360 {percent}%",
     "editPreflight.editAreaSmall": "\u7DE8\u8F2F\u5340\u57DF\u5F88\u5C0F\uFF0C\u6A21\u578B\u53EF\u80FD\u7121\u6CD5\u7522\u751F\u660E\u986F\u8B8A\u66F4",
     "editPreflight.editAreaLarge": "\u5927\u90E8\u5206\u756B\u9762\u90FD\u53EF\u7DE8\u8F2F\uFF0C\u7D50\u679C\u53EF\u80FD\u63A5\u8FD1\u6574\u5F35\u91CD\u7E6A",
@@ -48561,6 +48575,281 @@ ${galleryText}`;
     };
   }
 
+  // codex_image/webui/frontend/src/edit-request-preflight.ts
+  var SMALL_EDIT_AREA_FRACTION = 5e-3;
+  var LARGE_EDIT_AREA_FRACTION = 0.9;
+  var RESPONSES_EDIT_MASK_MAX_EDGE = 2048;
+  var GPT_IMAGE_2_MIN_PIXELS2 = 655360;
+  var GPT_IMAGE_2_MAX_PIXELS2 = 8294400;
+  var GPT_IMAGE_2_MAX_ASPECT_RATIO = 3;
+  var imageDimensionsCache = /* @__PURE__ */ new WeakMap();
+  var maskMetricsCache = /* @__PURE__ */ new WeakMap();
+  var renderGeneration = 0;
+  var lastRenderedResult = { issues: [] };
+  var ISSUE_TRANSLATION_KEYS = {
+    mask_dimensions_mismatch: "editPreflight.maskDimensionsMismatch",
+    empty_edit_area: "editPreflight.emptyEditArea",
+    mask_inactive: "editPreflight.maskInactive",
+    primary: "editPreflight.primary",
+    responses_resize: "editPreflight.responsesResize",
+    edit_area: "editPreflight.editArea",
+    edit_area_small: "editPreflight.editAreaSmall",
+    edit_area_large: "editPreflight.editAreaLarge",
+    aspect_mismatch: "editPreflight.aspectMismatch",
+    inspection_failed: "editPreflight.inspectionFailed"
+  };
+  function positiveInteger(value) {
+    const parsed = Number(value);
+    return Number.isFinite(parsed) && parsed > 0 ? Math.round(parsed) : 0;
+  }
+  function formattedPercentage(editablePixels, totalPixels) {
+    const percentage = totalPixels > 0 ? editablePixels / totalPixels * 100 : 0;
+    return percentage.toFixed(percentage < 10 ? 2 : 1);
+  }
+  function parsedSize(value) {
+    const match = /^([1-9][0-9]*)x([1-9][0-9]*)$/.exec(String(value || "").trim());
+    if (!match) return null;
+    return [Number(match[1]), Number(match[2])];
+  }
+  function alignedResponsesEditMaskCanvasSize(width, height, requestedSize) {
+    const sourceWidth = positiveInteger(width);
+    const sourceHeight = positiveInteger(height);
+    if (!sourceWidth || !sourceHeight) return null;
+    const sourceRatio = sourceWidth / sourceHeight;
+    if (Math.max(sourceRatio, 1 / sourceRatio) > GPT_IMAGE_2_MAX_ASPECT_RATIO) return null;
+    const requested = parsedSize(requestedSize);
+    const requestedPixels = requested ? requested[0] * requested[1] : sourceWidth * sourceHeight;
+    const desiredPixels = Math.min(
+      Math.max(requestedPixels, GPT_IMAGE_2_MIN_PIXELS2),
+      GPT_IMAGE_2_MAX_PIXELS2
+    );
+    let best = null;
+    for (let candidateWidth = 16; candidateWidth <= RESPONSES_EDIT_MASK_MAX_EDGE; candidateWidth += 16) {
+      const idealHeight = candidateWidth / sourceRatio;
+      const heightSteps = /* @__PURE__ */ new Set([
+        Math.max(1, Math.floor(idealHeight / 16)),
+        Math.max(1, Math.ceil(idealHeight / 16))
+      ]);
+      for (const heightStep of heightSteps) {
+        const candidateHeight = heightStep * 16;
+        if (candidateHeight > RESPONSES_EDIT_MASK_MAX_EDGE) continue;
+        const pixels = candidateWidth * candidateHeight;
+        if (pixels < GPT_IMAGE_2_MIN_PIXELS2 || pixels > GPT_IMAGE_2_MAX_PIXELS2) continue;
+        const candidateRatio = candidateWidth / candidateHeight;
+        if (Math.max(candidateRatio, 1 / candidateRatio) > GPT_IMAGE_2_MAX_ASPECT_RATIO) continue;
+        const ratioError = Math.abs(Math.log(candidateRatio / sourceRatio));
+        const areaError = Math.abs(Math.log(pixels / desiredPixels));
+        const score = ratioError * 100 + areaError;
+        if (!best || score < best.score) {
+          best = { score, width: candidateWidth, height: candidateHeight };
+        }
+      }
+    }
+    return best ? [best.width, best.height] : null;
+  }
+  function evaluateEditRequestPreflight(input) {
+    if (input.mode !== "edit") return { issues: [] };
+    if (!input.hasMask) return { issues: [{ code: "mask_inactive", level: "info" }] };
+    const width = positiveInteger(input.primaryWidth);
+    const height = positiveInteger(input.primaryHeight);
+    const totalPixels = positiveInteger(input.totalPixels);
+    const editablePixels = Math.min(totalPixels, Math.max(0, Math.round(Number(input.editablePixels) || 0)));
+    if (!width || !height || !totalPixels) return { issues: [] };
+    const issues = [];
+    const maskWidth = positiveInteger(input.maskWidth);
+    const maskHeight = positiveInteger(input.maskHeight);
+    if (maskWidth && maskHeight && (maskWidth !== width || maskHeight !== height)) {
+      issues.push({
+        code: "mask_dimensions_mismatch",
+        level: "error",
+        values: { width, height, maskWidth, maskHeight }
+      });
+    }
+    if (editablePixels === 0) issues.push({ code: "empty_edit_area", level: "error" });
+    issues.push({ code: "primary", level: "info", values: { name: input.primaryName || "-" } });
+    if (input.usesResponses && Math.max(width, height) > RESPONSES_EDIT_MASK_MAX_EDGE) {
+      const target = alignedResponsesEditMaskCanvasSize(width, height, input.outputSize);
+      if (target) {
+        issues.push({
+          code: "responses_resize",
+          level: "warning",
+          values: {
+            width,
+            height,
+            targetWidth: target[0],
+            targetHeight: target[1]
+          }
+        });
+      }
+    }
+    const editableFraction = editablePixels / totalPixels;
+    issues.push({ code: "edit_area", level: "info", values: { percent: formattedPercentage(editablePixels, totalPixels) } });
+    if (editableFraction > 0 && editableFraction <= SMALL_EDIT_AREA_FRACTION) {
+      issues.push({ code: "edit_area_small", level: "warning" });
+    } else if (editableFraction >= LARGE_EDIT_AREA_FRACTION) {
+      issues.push({ code: "edit_area_large", level: "warning" });
+    }
+    return { issues };
+  }
+  function responsesResizeConfirmationIssue(result) {
+    return result.issues.find((issue) => issue.code === "responses_resize" && issue.level === "warning") || null;
+  }
+  function responsesResizeConfirmationKey(issue) {
+    if (!issue || issue.code !== "responses_resize") return "";
+    const width = Number(issue.values?.width);
+    const height = Number(issue.values?.height);
+    const targetWidth = Number(issue.values?.targetWidth);
+    const targetHeight = Number(issue.values?.targetHeight);
+    if (![width, height, targetWidth, targetHeight].every((value) => Number.isInteger(value) && value > 0)) {
+      return "";
+    }
+    return `${width}x${height}->${targetWidth}x${targetHeight}`;
+  }
+  function pendingResponsesResizeConfirmation(result, approvedKey = "") {
+    const issue = responsesResizeConfirmationIssue(result);
+    if (!issue) return null;
+    const key = responsesResizeConfirmationKey(issue);
+    return approvedKey === key ? null : { issue, key };
+  }
+  async function imageDimensions(file) {
+    const cached = imageDimensionsCache.get(file);
+    if (cached) return cached;
+    const pending = createImageBitmap(file).then((bitmap) => {
+      const dimensions2 = { width: bitmap.width, height: bitmap.height };
+      bitmap.close?.();
+      return dimensions2;
+    });
+    imageDimensionsCache.set(file, pending);
+    return pending;
+  }
+  async function maskMetrics(file) {
+    const cached = maskMetricsCache.get(file);
+    if (cached) return cached;
+    const pending = createImageBitmap(file).then((bitmap) => {
+      const canvas = document.createElement("canvas");
+      canvas.width = bitmap.width;
+      canvas.height = bitmap.height;
+      const context = canvas.getContext("2d", { willReadFrequently: true });
+      if (!context) throw new Error("Mask canvas is unavailable");
+      context.drawImage(bitmap, 0, 0);
+      bitmap.close?.();
+      const pixels = context.getImageData(0, 0, canvas.width, canvas.height).data;
+      let editablePixels = 0;
+      for (let offset = 3; offset < pixels.length; offset += 4) {
+        if ((pixels[offset] ?? 255) < 128) editablePixels += 1;
+      }
+      return { width: canvas.width, height: canvas.height, editablePixels, totalPixels: canvas.width * canvas.height };
+    });
+    maskMetricsCache.set(file, pending);
+    return pending;
+  }
+  function requestUsesResponses(request) {
+    return String(request?.requested_backend || "").endsWith("_responses") || request?.endpoint === "/responses" || request?.api_mode === "responses" || request?.codex_mode === "responses";
+  }
+  async function inspectCurrentEditRequest(request) {
+    const state33 = getLegacyBridge().state;
+    const primary = state33.images[0];
+    const maskFile = primary?.activeGuidance === "edit-region" ? primary.editMaskFile : null;
+    const primaryFile = primary?.baseFile || primary?.originalFile || primary?.file;
+    if (state33.mode !== "edit" || !primary) {
+      return { issues: [] };
+    }
+    if (!(maskFile instanceof File)) {
+      return evaluateEditRequestPreflight({
+        mode: state33.mode,
+        hasMask: false,
+        usesResponses: requestUsesResponses(request),
+        primaryName: primary.name || primaryFile?.name || "",
+        primaryWidth: 0,
+        primaryHeight: 0,
+        outputSize: String(request?.parameters?.["canvas.size"] || request?.size || ""),
+        editablePixels: 0,
+        totalPixels: 0
+      });
+    }
+    if (!(primaryFile instanceof File)) {
+      return { issues: [{ code: "inspection_failed", level: "warning" }] };
+    }
+    try {
+      const [primaryMetrics, editMaskMetrics] = await Promise.all([
+        imageDimensions(primaryFile),
+        maskMetrics(maskFile)
+      ]);
+      return evaluateEditRequestPreflight({
+        mode: state33.mode,
+        hasMask: true,
+        usesResponses: requestUsesResponses(request),
+        primaryName: primary.name || primaryFile.name,
+        primaryWidth: primaryMetrics.width,
+        primaryHeight: primaryMetrics.height,
+        maskWidth: editMaskMetrics.width,
+        maskHeight: editMaskMetrics.height,
+        outputSize: String(request?.parameters?.["canvas.size"] || request?.size || ""),
+        editablePixels: editMaskMetrics.editablePixels,
+        totalPixels: editMaskMetrics.totalPixels
+      });
+    } catch {
+      return { issues: [{ code: "inspection_failed", level: "warning" }] };
+    }
+  }
+  function setEditRequestPreflightOpen(open) {
+    const { els: els44 } = getLegacyBridge();
+    els44.editPreflightList?.classList.toggle("hidden", !open);
+    els44.editPreflightToggle?.setAttribute("aria-expanded", String(open));
+    els44.editPreflight?.closest(".prompt-panel")?.classList.toggle("edit-preflight-open", open);
+  }
+  function renderEditRequestPreflight(result) {
+    const { els: els44 } = getLegacyBridge();
+    const panel = els44.editPreflight;
+    const summary = els44.editPreflightSummary;
+    const list = els44.editPreflightList;
+    lastRenderedResult = result;
+    if (!panel || !list) return;
+    list.replaceChildren();
+    panel.classList.toggle("hidden", result.issues.length === 0);
+    if (!result.issues.length) {
+      setEditRequestPreflightOpen(false);
+      panel.removeAttribute("data-level");
+      if (summary) summary.textContent = "0";
+      return;
+    }
+    const level = result.issues.some((issue) => issue.level === "error") ? "error" : result.issues.some((issue) => issue.level === "warning") ? "warning" : "info";
+    panel.dataset.level = level;
+    if (summary) summary.textContent = String(result.issues.length);
+    result.issues.forEach((issue) => {
+      const item = document.createElement("div");
+      item.className = `edit-preflight-item ${issue.level}`;
+      const icon = document.createElement("span");
+      icon.className = "edit-preflight-icon";
+      icon.textContent = issue.level === "warning" ? "!" : issue.level === "error" ? "\xD7" : "i";
+      const message = document.createElement("span");
+      message.textContent = formatTranslation(ISSUE_TRANSLATION_KEYS[issue.code] || issue.code, issue.values);
+      item.append(icon, message);
+      list.append(item);
+    });
+  }
+  async function updateEditRequestPreflight(request) {
+    const generation = ++renderGeneration;
+    const result = await inspectCurrentEditRequest(request);
+    if (generation === renderGeneration) renderEditRequestPreflight(result);
+    return result;
+  }
+  function initEditRequestPreflightFeature() {
+    const { els: els44, methods } = getLegacyBridge();
+    Object.assign(methods, { updateEditRequestPreflight });
+    els44.editPreflightToggle?.addEventListener("click", () => {
+      const open = els44.editPreflightToggle?.getAttribute("aria-expanded") !== "true";
+      setEditRequestPreflightOpen(open);
+    });
+    document.addEventListener("click", (event) => {
+      if (!els44.editPreflight?.contains(event.target)) setEditRequestPreflightOpen(false);
+    });
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape") setEditRequestPreflightOpen(false);
+    });
+    document.addEventListener(LOCALE_CHANGE_EVENT, () => renderEditRequestPreflight(lastRenderedResult));
+  }
+
   // codex_image/webui/frontend/src/generation-request.ts
   function sortedRecord(values) {
     return Object.fromEntries(Object.keys(values).sort().map((key) => [key, values[key]]));
@@ -48641,7 +48930,7 @@ ${galleryText}`;
   function updateRequestPreview11(...args) {
     return legacyMethod36("updateRequestPreview", ...args);
   }
-  function updateEditRequestPreflight(...args) {
+  function updateEditRequestPreflight2(...args) {
     return legacyMethod36("updateEditRequestPreflight", ...args);
   }
   function currentTaskParams2(...args) {
@@ -48721,6 +49010,9 @@ ${galleryText}`;
   }
   function renderPreview4(...args) {
     return legacyMethod36("renderPreview", ...args);
+  }
+  function openConfirmPopover7(...args) {
+    return legacyMethod36("openConfirmPopover", ...args);
   }
   function currentCanonicalParameters() {
     return currentGenerationSelection().parameters;
@@ -48893,7 +49185,7 @@ ${galleryText}`;
   function addQueuedTask(task) {
     replacePendingTask2(state24.pendingTaskId || task.task_id, task);
   }
-  async function runTask() {
+  async function runTask(options = {}) {
     syncPromptFromEditor6();
     syncGalleryInputsFromPrompt3();
     const prompt = getPromptText9();
@@ -48943,9 +49235,23 @@ ${galleryText}`;
       setStatus17(translate("imageEditor.emptyEditRegion"), "error");
       return;
     }
-    const preflight = await updateEditRequestPreflight(buildPreviewRequest2());
+    const preflight = await updateEditRequestPreflight2(buildPreviewRequest2());
     if (preflight?.issues?.some((issue) => issue.level === "error")) {
       setStatus17(translate("editPreflight.blocked"), "error");
+      return;
+    }
+    const resizeConfirmation = pendingResponsesResizeConfirmation(
+      preflight || { issues: [] },
+      options.responsesResizeConfirmationKey
+    );
+    if (resizeConfirmation) {
+      openConfirmPopover7(els33.runButton, {
+        title: translate("editPreflight.title"),
+        message: formatTranslation("editPreflight.responsesResize", resizeConfirmation.issue.values),
+        confirmText: translate("action.confirm"),
+        danger: false,
+        onConfirm: () => runTask({ responsesResizeConfirmationKey: resizeConfirmation.key })
+      });
       return;
     }
     const form = new FormData();
@@ -49021,201 +49327,6 @@ ${galleryText}`;
       addQueuedTask,
       runTask
     });
-  }
-
-  // codex_image/webui/frontend/src/edit-request-preflight.ts
-  var SMALL_EDIT_AREA_FRACTION = 5e-3;
-  var LARGE_EDIT_AREA_FRACTION = 0.9;
-  var imageDimensionsCache = /* @__PURE__ */ new WeakMap();
-  var maskMetricsCache = /* @__PURE__ */ new WeakMap();
-  var renderGeneration = 0;
-  var lastRenderedResult = { issues: [] };
-  var ISSUE_TRANSLATION_KEYS = {
-    mask_dimensions_mismatch: "editPreflight.maskDimensionsMismatch",
-    empty_edit_area: "editPreflight.emptyEditArea",
-    mask_inactive: "editPreflight.maskInactive",
-    primary: "editPreflight.primary",
-    responses_resize: "editPreflight.responsesResize",
-    edit_area: "editPreflight.editArea",
-    edit_area_small: "editPreflight.editAreaSmall",
-    edit_area_large: "editPreflight.editAreaLarge",
-    aspect_mismatch: "editPreflight.aspectMismatch",
-    inspection_failed: "editPreflight.inspectionFailed"
-  };
-  function positiveInteger(value) {
-    const parsed = Number(value);
-    return Number.isFinite(parsed) && parsed > 0 ? Math.round(parsed) : 0;
-  }
-  function formattedPercentage(editablePixels, totalPixels) {
-    const percentage = totalPixels > 0 ? editablePixels / totalPixels * 100 : 0;
-    return percentage.toFixed(percentage < 10 ? 2 : 1);
-  }
-  function evaluateEditRequestPreflight(input) {
-    if (input.mode !== "edit") return { issues: [] };
-    if (!input.hasMask) return { issues: [{ code: "mask_inactive", level: "info" }] };
-    const width = positiveInteger(input.primaryWidth);
-    const height = positiveInteger(input.primaryHeight);
-    const totalPixels = positiveInteger(input.totalPixels);
-    const editablePixels = Math.min(totalPixels, Math.max(0, Math.round(Number(input.editablePixels) || 0)));
-    if (!width || !height || !totalPixels) return { issues: [] };
-    const issues = [];
-    const maskWidth = positiveInteger(input.maskWidth);
-    const maskHeight = positiveInteger(input.maskHeight);
-    if (maskWidth && maskHeight && (maskWidth !== width || maskHeight !== height)) {
-      issues.push({
-        code: "mask_dimensions_mismatch",
-        level: "error",
-        values: { width, height, maskWidth, maskHeight }
-      });
-    }
-    if (editablePixels === 0) issues.push({ code: "empty_edit_area", level: "error" });
-    issues.push({ code: "primary", level: "info", values: { name: input.primaryName || "-" } });
-    const editableFraction = editablePixels / totalPixels;
-    issues.push({ code: "edit_area", level: "info", values: { percent: formattedPercentage(editablePixels, totalPixels) } });
-    if (editableFraction > 0 && editableFraction <= SMALL_EDIT_AREA_FRACTION) {
-      issues.push({ code: "edit_area_small", level: "warning" });
-    } else if (editableFraction >= LARGE_EDIT_AREA_FRACTION) {
-      issues.push({ code: "edit_area_large", level: "warning" });
-    }
-    return { issues };
-  }
-  async function imageDimensions(file) {
-    const cached = imageDimensionsCache.get(file);
-    if (cached) return cached;
-    const pending = createImageBitmap(file).then((bitmap) => {
-      const dimensions2 = { width: bitmap.width, height: bitmap.height };
-      bitmap.close?.();
-      return dimensions2;
-    });
-    imageDimensionsCache.set(file, pending);
-    return pending;
-  }
-  async function maskMetrics(file) {
-    const cached = maskMetricsCache.get(file);
-    if (cached) return cached;
-    const pending = createImageBitmap(file).then((bitmap) => {
-      const canvas = document.createElement("canvas");
-      canvas.width = bitmap.width;
-      canvas.height = bitmap.height;
-      const context = canvas.getContext("2d", { willReadFrequently: true });
-      if (!context) throw new Error("Mask canvas is unavailable");
-      context.drawImage(bitmap, 0, 0);
-      bitmap.close?.();
-      const pixels = context.getImageData(0, 0, canvas.width, canvas.height).data;
-      let editablePixels = 0;
-      for (let offset = 3; offset < pixels.length; offset += 4) {
-        if ((pixels[offset] ?? 255) < 128) editablePixels += 1;
-      }
-      return { width: canvas.width, height: canvas.height, editablePixels, totalPixels: canvas.width * canvas.height };
-    });
-    maskMetricsCache.set(file, pending);
-    return pending;
-  }
-  function requestUsesResponses(request) {
-    return String(request?.requested_backend || "").endsWith("_responses") || request?.endpoint === "/responses" || request?.api_mode === "responses" || request?.codex_mode === "responses";
-  }
-  async function inspectCurrentEditRequest(request) {
-    const state33 = getLegacyBridge().state;
-    const primary = state33.images[0];
-    const maskFile = primary?.activeGuidance === "edit-region" ? primary.editMaskFile : null;
-    const primaryFile = primary?.baseFile || primary?.originalFile || primary?.file;
-    if (state33.mode !== "edit" || !primary) {
-      return { issues: [] };
-    }
-    if (!(maskFile instanceof File)) {
-      return evaluateEditRequestPreflight({
-        mode: state33.mode,
-        hasMask: false,
-        usesResponses: requestUsesResponses(request),
-        primaryName: primary.name || primaryFile?.name || "",
-        primaryWidth: 0,
-        primaryHeight: 0,
-        outputSize: String(request?.size || ""),
-        editablePixels: 0,
-        totalPixels: 0
-      });
-    }
-    if (!(primaryFile instanceof File)) {
-      return { issues: [{ code: "inspection_failed", level: "warning" }] };
-    }
-    try {
-      const [primaryMetrics, editMaskMetrics] = await Promise.all([
-        imageDimensions(primaryFile),
-        maskMetrics(maskFile)
-      ]);
-      return evaluateEditRequestPreflight({
-        mode: state33.mode,
-        hasMask: true,
-        usesResponses: requestUsesResponses(request),
-        primaryName: primary.name || primaryFile.name,
-        primaryWidth: primaryMetrics.width,
-        primaryHeight: primaryMetrics.height,
-        maskWidth: editMaskMetrics.width,
-        maskHeight: editMaskMetrics.height,
-        outputSize: String(request?.size || ""),
-        editablePixels: editMaskMetrics.editablePixels,
-        totalPixels: editMaskMetrics.totalPixels
-      });
-    } catch {
-      return { issues: [{ code: "inspection_failed", level: "warning" }] };
-    }
-  }
-  function setEditRequestPreflightOpen(open) {
-    const { els: els44 } = getLegacyBridge();
-    els44.editPreflightList?.classList.toggle("hidden", !open);
-    els44.editPreflightToggle?.setAttribute("aria-expanded", String(open));
-    els44.editPreflight?.closest(".prompt-panel")?.classList.toggle("edit-preflight-open", open);
-  }
-  function renderEditRequestPreflight(result) {
-    const { els: els44 } = getLegacyBridge();
-    const panel = els44.editPreflight;
-    const summary = els44.editPreflightSummary;
-    const list = els44.editPreflightList;
-    lastRenderedResult = result;
-    if (!panel || !list) return;
-    list.replaceChildren();
-    panel.classList.toggle("hidden", result.issues.length === 0);
-    if (!result.issues.length) {
-      setEditRequestPreflightOpen(false);
-      panel.removeAttribute("data-level");
-      if (summary) summary.textContent = "0";
-      return;
-    }
-    const level = result.issues.some((issue) => issue.level === "error") ? "error" : result.issues.some((issue) => issue.level === "warning") ? "warning" : "info";
-    panel.dataset.level = level;
-    if (summary) summary.textContent = String(result.issues.length);
-    result.issues.forEach((issue) => {
-      const item = document.createElement("div");
-      item.className = `edit-preflight-item ${issue.level}`;
-      const icon = document.createElement("span");
-      icon.className = "edit-preflight-icon";
-      icon.textContent = issue.level === "warning" ? "!" : issue.level === "error" ? "\xD7" : "i";
-      const message = document.createElement("span");
-      message.textContent = formatTranslation(ISSUE_TRANSLATION_KEYS[issue.code] || issue.code, issue.values);
-      item.append(icon, message);
-      list.append(item);
-    });
-  }
-  async function updateEditRequestPreflight2(request) {
-    const generation = ++renderGeneration;
-    const result = await inspectCurrentEditRequest(request);
-    if (generation === renderGeneration) renderEditRequestPreflight(result);
-    return result;
-  }
-  function initEditRequestPreflightFeature() {
-    const { els: els44, methods } = getLegacyBridge();
-    Object.assign(methods, { updateEditRequestPreflight: updateEditRequestPreflight2 });
-    els44.editPreflightToggle?.addEventListener("click", () => {
-      const open = els44.editPreflightToggle?.getAttribute("aria-expanded") !== "true";
-      setEditRequestPreflightOpen(open);
-    });
-    document.addEventListener("click", (event) => {
-      if (!els44.editPreflight?.contains(event.target)) setEditRequestPreflightOpen(false);
-    });
-    document.addEventListener("keydown", (event) => {
-      if (event.key === "Escape") setEditRequestPreflightOpen(false);
-    });
-    document.addEventListener(LOCALE_CHANGE_EVENT, () => renderEditRequestPreflight(lastRenderedResult));
   }
 
   // codex_image/webui/frontend/src/task-list-controls.ts
@@ -51510,6 +51621,39 @@ ${galleryText}`;
     return event.target instanceof Element ? event.target : null;
   }
 
+  // codex_image/webui/frontend/src/generation-error-presentation.ts
+  var SAFE_SIZE = /^[1-9][0-9]{0,5}x[1-9][0-9]{0,5}$/;
+  var SAFE_IDENTIFIER = /^[A-Za-z0-9._:-]{1,100}$/;
+  var SAFE_TASK_ID = /^[A-Za-z0-9._:-]{1,160}$/;
+  function safeText(value, pattern) {
+    const text = String(value || "").trim();
+    return pattern.test(text) ? text : "-";
+  }
+  function generationErrorPresentation(task) {
+    const error = task?.generation_error;
+    const details = error?.details;
+    if (error?.code !== "edit_mask_canvas_snapshot_mismatch" || !details || typeof details !== "object") {
+      return null;
+    }
+    const queuedSize = safeText(details.queued_size, SAFE_SIZE);
+    const executionSize = safeText(details.execution_size, SAFE_SIZE);
+    const maxEdge = Number(details.provider_max_edge);
+    if (queuedSize === "-" || executionSize === "-" || !Number.isInteger(maxEdge) || maxEdge <= 0 || maxEdge > 1e5) {
+      return null;
+    }
+    return {
+      key: "generationError.editMaskCanvasSnapshotMismatch",
+      values: {
+        taskId: safeText(task?.task_id, SAFE_TASK_ID),
+        providerId: safeText(error.provider_id, SAFE_IDENTIFIER),
+        modelId: safeText(error.canonical_model_id, SAFE_IDENTIFIER),
+        queuedSize,
+        executionSize,
+        maxEdge
+      }
+    };
+  }
+
   // codex_image/webui/frontend/src/task-derived.ts
   var RATIO_ORIENTATION2 = {
     "1:1": "square",
@@ -51945,6 +52089,8 @@ ${galleryText}`;
   function taskFailureMessage(task) {
     if (!task || task.status !== "failed" && task.status !== "partial_failed") return "";
     if (taskWasCancelled(task)) return translate("queue.runningCancelled");
+    const presentation = generationErrorPresentation(task);
+    if (presentation) return formatTranslation(presentation.key, presentation.values);
     return String(task.error || task.last_error || "").trim();
   }
   function canRetryFailedTask2(task) {
@@ -52276,7 +52422,7 @@ ${galleryText}`;
   function acceptTaskSuccesses2(...args) {
     return legacyMethod41("acceptTaskSuccesses", ...args);
   }
-  function openConfirmPopover7(...args) {
+  function openConfirmPopover8(...args) {
     return legacyMethod41("openConfirmPopover", ...args);
   }
   function setStatus20(...args) {
@@ -52869,7 +53015,7 @@ ${galleryText}`;
       setStatus20(translate("preview.noUnselectedOutputs"), "error");
       return;
     }
-    openConfirmPopover7(button, {
+    openConfirmPopover8(button, {
       title: translate("preview.deleteUnselectedTitle"),
       message: translate("preview.deleteUnselectedMessage"),
       detail: formatTranslation("preview.deleteUnselectedDetail", { selected: selectedCount, deleted: deleteCount }),
@@ -54105,7 +54251,7 @@ ${galleryText}`;
     document.body.appendChild(confirmPopoverEl);
     return confirmPopoverEl;
   }
-  function openConfirmPopover8(anchor, options = {}) {
+  function openConfirmPopover9(anchor, options = {}) {
     if (!anchor) return;
     const popover = ensureConfirmPopover();
     if (!popover.classList.contains("hidden") && confirmPopoverState.anchor === anchor) {
@@ -54377,7 +54523,7 @@ ${galleryText}`;
     Object.assign(getLegacyBridge().methods, {
       bindOverlayPopoverEvents,
       ensureConfirmPopover,
-      openConfirmPopover: openConfirmPopover8,
+      openConfirmPopover: openConfirmPopover9,
       closeConfirmPopover: closeConfirmPopover4,
       positionConfirmPopover,
       promptPopoverSection,
