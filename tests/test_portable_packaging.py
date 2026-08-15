@@ -1,10 +1,89 @@
 from __future__ import annotations
 
 from pathlib import Path
+import subprocess
+import sys
+import tempfile
 import unittest
 
 
 class PortablePackagingTests(unittest.TestCase):
+    def test_runtime_cleanup_removes_build_only_files_and_keeps_http_transport(self) -> None:
+        cleanup_script = Path("packaging/cleanup-runtime.py")
+        self.assertTrue(cleanup_script.exists(), "runtime cleanup script should exist")
+
+        for platform in ("macos", "windows"):
+            with self.subTest(platform=platform), tempfile.TemporaryDirectory() as tmp:
+                root = Path(tmp)
+                app_dir = root / "app"
+                runtime_dir = root / "runtime"
+                keep_paths = (
+                    app_dir / "codex_image" / "httpx_transport.py",
+                    app_dir / "codex_image" / "webui" / "static" / "app.js",
+                    app_dir / ".deps" / "httpx" / "__init__.py",
+                    app_dir / ".deps" / "certifi" / "cacert.pem",
+                )
+                remove_paths = (
+                    app_dir / "codex_image" / "webui" / "frontend" / "src" / "feature.ts",
+                    app_dir / "codex_image" / "webui" / "static" / "app.js.map",
+                    app_dir / "codex_image" / "webui" / "static" / "styles" / "20-tasks.css",
+                    app_dir / "package.json",
+                    app_dir / "package-lock.json",
+                    app_dir / "tsconfig.webui.json",
+                    app_dir / "scripts" / "build-webui-css.mjs",
+                    app_dir / "launcher" / "Cargo.toml",
+                    app_dir / ".deps" / "pip" / "__init__.py",
+                    app_dir / ".deps" / "setuptools" / "__init__.py",
+                    app_dir / ".deps" / "distutils-precedence.pth",
+                    app_dir / ".deps" / "colorama" / "tests" / "test_runtime.py",
+                )
+                if platform == "macos":
+                    remove_paths += (
+                        runtime_dir / "Python.framework" / "Versions" / "3.11" / "include" / "Python.h",
+                        runtime_dir / "Python.framework" / "Versions" / "3.11" / "share" / "doc" / "python.txt",
+                        runtime_dir / "Python.framework" / "Versions" / "3.11" / "lib" / "python3.11" / "test" / "test_os.py",
+                        runtime_dir / "Python.framework" / "Versions" / "3.11" / "lib" / "python3.11" / "ctypes" / "test" / "test_runtime.py",
+                        runtime_dir / "Python.framework" / "Versions" / "3.11" / "lib" / "python3.11" / "ensurepip" / "__init__.py",
+                        runtime_dir / "Python.framework" / "Versions" / "3.11" / "lib" / "python3.11" / "site-packages" / "distutils-precedence.pth",
+                    )
+                else:
+                    remove_paths += (
+                        runtime_dir / "Lib" / "site-packages" / "pip" / "__init__.py",
+                        runtime_dir / "Lib" / "site-packages" / "setuptools" / "__init__.py",
+                        runtime_dir / "Lib" / "site-packages" / "distutils-precedence.pth",
+                        runtime_dir / "Scripts" / "pip.exe",
+                        runtime_dir / "Lib" / "ctypes" / "test" / "test_runtime.py",
+                    )
+                    keep_paths += (
+                        runtime_dir / "Lib" / "site-packages" / "httpx" / "__init__.py",
+                        runtime_dir / "Lib" / "site-packages" / "certifi" / "cacert.pem",
+                    )
+
+                for path in (*keep_paths, *remove_paths):
+                    path.parent.mkdir(parents=True, exist_ok=True)
+                    path.write_text("fixture\n", encoding="utf-8")
+
+                subprocess.run(
+                    [
+                        sys.executable,
+                        str(cleanup_script),
+                        "--app-dir",
+                        str(app_dir),
+                        "--runtime-dir",
+                        str(runtime_dir),
+                        "--platform",
+                        platform,
+                    ],
+                    check=True,
+                    capture_output=True,
+                    text=True,
+                )
+
+                for path in keep_paths:
+                    self.assertTrue(path.exists(), f"cleanup removed runtime file: {path}")
+                for path in remove_paths:
+                    self.assertFalse(path.exists(), f"cleanup retained build-only file: {path}")
+
     def test_all_packaged_webui_entrypoints_persist_network_egress_settings(self) -> None:
         entrypoints = (
             Path("packaging/macos/portable_webui_app.py"),
@@ -24,28 +103,22 @@ class PortablePackagingTests(unittest.TestCase):
         launcher_text = Path("launcher/src/lib.rs").read_text(encoding="utf-8")
         self.assertIn('"webui-network-egress-settings.json"', launcher_text)
 
-    def test_github_workflows_use_node24_compatible_actions(self) -> None:
+    def test_github_workflows_pin_node24_compatible_actions(self) -> None:
         workflow_paths = [
             Path(".github/workflows/ci.yml"),
             Path(".github/workflows/release-portable.yml"),
         ]
-        deprecated_actions = [
-            "actions/checkout@v4",
-            "actions/setup-node@v4",
-            "actions/setup-python@v5",
-            "actions/upload-artifact@v4",
-            "actions/download-artifact@v4",
+        pinned_actions = [
+            "actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1",
+            "actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6.5.0",
+            "actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0",
+            "actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0",
+            "actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1",
         ]
 
         combined = "\n".join(path.read_text(encoding="utf-8") for path in workflow_paths)
-        for deprecated_action in deprecated_actions:
-            self.assertNotIn(deprecated_action, combined)
-
-        self.assertIn("actions/checkout@v7", combined)
-        self.assertIn("actions/setup-node@v6", combined)
-        self.assertIn("actions/setup-python@v6", combined)
-        self.assertIn("actions/upload-artifact@v6", combined)
-        self.assertIn("actions/download-artifact@v8", combined)
+        for pinned_action in pinned_actions:
+            self.assertIn(pinned_action, combined)
 
     def test_ci_workflow_avoids_github_unsupported_job_hashfiles_if(self) -> None:
         workflow = Path(".github/workflows/ci.yml")
@@ -169,7 +242,9 @@ class PortablePackagingTests(unittest.TestCase):
         self.assertIn("Do not put API keys", readme_text)
         self.assertIn("Start iLab GPT CONJURE.exe", readme_text)
         self.assertIn("# iLab CONJURE Windows Portable Package", readme_text)
-        self.assertIn("iLab CONJURE source code", readme_text)
+        self.assertIn("iLab CONJURE runtime source", readme_text)
+        self.assertIn("Frontend TypeScript/CSS source, source maps, and frontend build metadata are", readme_text)
+        self.assertIn("Complete source\nand rebuild instructions remain available in the public repository", readme_text)
         self.assertIn("system tray", readme_text.lower())
         self.assertIn("OpenAI-compatible API", readme_text)
         self.assertIn("Update WebUI Portable.bat", readme_text)
@@ -319,12 +394,15 @@ class PortablePackagingTests(unittest.TestCase):
         app_module_text = app_module.read_text(encoding="utf-8")
         self.assertIn("ILAB_CONJURE_DATA_DIR", app_module_text)
         self.assertIn("create_app", app_module_text)
+        self.assertIn("enforce_single_instance=True", app_module_text)
 
         readme_text = readme.read_text(encoding="utf-8")
         self.assertIn("Double-click", readme_text)
         self.assertIn("Start iLab GPT CONJURE.app", readme_text)
         self.assertIn("# iLab CONJURE macOS Portable Package", readme_text)
-        self.assertIn("iLab CONJURE source code", readme_text)
+        self.assertIn("iLab CONJURE runtime source", readme_text)
+        self.assertIn("Frontend TypeScript/CSS source, source maps, and frontend build metadata are", readme_text)
+        self.assertIn("Complete source\nand rebuild instructions remain available in the public repository", readme_text)
         self.assertIn("menu bar", readme_text.lower())
         self.assertIn("Apple Silicon", readme_text)
         self.assertIn("Intel", readme_text)
@@ -386,6 +464,7 @@ class PortablePackagingTests(unittest.TestCase):
         self.assertIn("iLab GPT CONJURE", app_module_text)
         self.assertIn("ILAB_CONJURE_DATA_DIR", app_module_text)
         self.assertIn("create_app", app_module_text)
+        self.assertIn("enforce_single_instance=True", app_module_text)
 
         readme_text = readme.read_text(encoding="utf-8")
         self.assertIn("Drag iLab GPT CONJURE.app to Applications", readme_text)
@@ -426,6 +505,7 @@ class PortablePackagingTests(unittest.TestCase):
         self.assertIn("iLab GPT CONJURE", app_module_text)
         self.assertIn("ILAB_CONJURE_DATA_DIR", app_module_text)
         self.assertIn("create_app", app_module_text)
+        self.assertIn("enforce_single_instance=True", app_module_text)
 
         readme_text = readme.read_text(encoding="utf-8")
         self.assertIn("%APPDATA%\\iLab GPT CONJURE", readme_text)
@@ -479,7 +559,10 @@ class PortablePackagingTests(unittest.TestCase):
         self.assertIn("GH_REPO: ${{ github.repository }}", text)
         self.assertIn("## 发布说明", text)
         self.assertIn('release_summary="$(awk', text)
-        self.assertIn("/^当前版本：/ || /^本版重点：/", text)
+        self.assertIn(
+            "/^(当前版本|受影响平台|必要操作与数据迁移|本版重点)：/",
+            text,
+        )
         self.assertIn("/^本版详情：/", text)
         self.assertIn("in_details && /^## /", text)
         self.assertIn("${release_summary}", text)

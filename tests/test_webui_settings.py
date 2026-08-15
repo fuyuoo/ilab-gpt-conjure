@@ -20,6 +20,7 @@ from unittest.mock import patch
 from urllib import error as urllib_error
 
 from fastapi.testclient import TestClient
+from PIL import Image
 
 from tests.webui_helpers import (
     AlwaysFailQueueTestExecutor,
@@ -67,6 +68,12 @@ def _fake_jwt(payload: dict[str, object]) -> str:
 
 
 class WebUISettingsTests(unittest.TestCase):
+    def _png_bytes(self) -> bytes:
+        image = Image.new("RGB", (12, 8), (80, 130, 180))
+        buffer = BytesIO()
+        image.save(buffer, format="PNG")
+        return buffer.getvalue()
+
     def test_api_responses_slot_claim_admits_larger_task_into_remaining_provider_capacity(self) -> None:
         from codex_image.webui.queue import QueueChannel
         from codex_image.webui.queue_runtime import _api_responses_task_slot_claim
@@ -159,6 +166,40 @@ class WebUISettingsTests(unittest.TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertFalse(response.json()["auth_available"])
+
+    def test_health_omits_local_paths_and_reports_sanitized_queue_health(self) -> None:
+        from codex_image.webui.app import create_app
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            app = create_app(
+                output_root=root / "private-output",
+                auth_checker=lambda: True,
+                auto_start_queue=False,
+            )
+            for _ in range(3):
+                app.state.queue_worker_health.record_failure(
+                    RuntimeError(
+                        f"prompt secret in {root / 'private-output'}"
+                    )
+                )
+
+            response = TestClient(app).get("/api/health")
+
+        self.assertEqual(response.status_code, 200)
+        payload = response.json()
+        self.assertEqual(
+            payload["queue"],
+            {
+                "status": "unhealthy",
+                "worker_running": False,
+                "consecutive_failures": 3,
+                "last_error_type": "RuntimeError",
+            },
+        )
+        for key in ("input_root", "output_root", "gallery_root", "source_data_root"):
+            self.assertNotIn(key, payload)
+        self.assertNotIn(str(root), json.dumps(payload, ensure_ascii=False))
 
     def test_app_version_reports_source_version_without_portable_notice(self) -> None:
         from codex_image.version import APP_VERSION
@@ -285,10 +326,12 @@ class WebUISettingsTests(unittest.TestCase):
         self.assertEqual(payload["latest_version"], "0.3.7")
         self.assertTrue(payload["update_available"])
         self.assertTrue(payload["updater_available"])
-        self.assertEqual(
-            payload["updater_label"],
-            "Update WebUI Portable.bat" if platform.system().lower() == "windows" else "Update WebUI Portable.command",
+        expected_updater = (
+            "Update WebUI Portable.bat"
+            if platform.system().lower() == "windows"
+            else "Update WebUI Portable.command"
         )
+        self.assertEqual(payload["updater_label"], expected_updater)
         self.assertIsNone(payload["post_update_onboarding"])
 
     def test_app_version_reports_portable_standard_app_transition_notice(self) -> None:
@@ -818,6 +861,70 @@ class WebUISettingsTests(unittest.TestCase):
         self.assertNotIn("api_key_source_provider_id", persisted["providers"][1])
         self.assertNotIn("test-api-key-copy-secret", response_text)
 
+    def test_api_settings_reject_cross_origin_key_copy_without_changing_saved_settings(self) -> None:
+        from codex_image.webui.app import create_app
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            api_settings_path = root / "api-settings.json"
+            app = create_app(
+                output_root=root / "tasks",
+                auth_settings_path=root / "auth-settings.json",
+                api_settings_path=api_settings_path,
+                auto_start_queue=False,
+            )
+            client = TestClient(app)
+            original = client.patch(
+                "/api/api-settings",
+                json={
+                    "active_provider_id": "vendor-a",
+                    "providers": [
+                        {
+                            "id": "vendor-a",
+                            "name": "Vendor A",
+                            "base_url": "https://vendor-a.example.com/v1",
+                            "api_key": "test-api-key-origin-secret",
+                            "image_model": "vendor-a-image",
+                            "api_mode": "images",
+                            "images_concurrency": 4,
+                        }
+                    ],
+                },
+            )
+            before = api_settings_path.read_text(encoding="utf-8")
+
+            copied = client.patch(
+                "/api/api-settings",
+                json={
+                    "active_provider_id": "vendor-b",
+                    "providers": [
+                        {
+                            "id": "vendor-a",
+                            "name": "Vendor A",
+                            "base_url": "https://vendor-a.example.com/v1",
+                            "image_model": "vendor-a-image",
+                            "api_mode": "images",
+                            "images_concurrency": 4,
+                        },
+                        {
+                            "id": "vendor-b",
+                            "name": "Vendor B",
+                            "base_url": "https://vendor-b.example.com/v1",
+                            "image_model": "vendor-b-image",
+                            "api_mode": "images",
+                            "images_concurrency": 4,
+                            "api_key_source_provider_id": "vendor-a",
+                        },
+                    ],
+                },
+            )
+
+            self.assertEqual(original.status_code, 200)
+            self.assertEqual(copied.status_code, 400)
+            self.assertEqual(copied.json()["detail"], "api_key_origin_mismatch")
+            self.assertEqual(api_settings_path.read_text(encoding="utf-8"), before)
+            self.assertNotIn("test-api-key-origin-secret", copied.text)
+
     def test_api_settings_allows_provider_concurrency_above_single_task_output_limit(self) -> None:
         from codex_image.webui.app import create_app
 
@@ -1076,7 +1183,7 @@ class WebUISettingsTests(unittest.TestCase):
                     "output_format": "png",
                     "prompt_fidelity": "original",
                 },
-                files={"images": ("input.png", b"input-image", "image/png")},
+                files={"images": ("input.png", self._png_bytes(), "image/png")},
             )
             body = response.json()
 
@@ -1087,7 +1194,10 @@ class WebUISettingsTests(unittest.TestCase):
         self.assertEqual(body["request"]["endpoint"], "/images/edits")
         self.assertEqual(body["request"]["size"], "1152x2048")
         self.assertEqual(body["request"]["quality"], "high")
-        self.assertEqual(body["request"]["images"][0]["image_url"], "<redacted image data url, 38 chars>")
+        self.assertRegex(
+            body["request"]["images"][0]["image_url"],
+            r"^<redacted image data url, \d+ chars>$",
+        )
         self.assertNotIn("tools", body["request"])
 
     def test_codex_queue_worker_uses_images_client_by_default(self) -> None:
@@ -1521,6 +1631,79 @@ class WebUISettingsTests(unittest.TestCase):
             3,
         )
         self.assertEqual(task["outputs"][0]["attempts"], 3)
+
+    def test_api_images_honors_zero_configured_transient_retries(self) -> None:
+        from codex_image.webui.app import create_app
+
+        failure = RuntimeError(
+            'OpenAI-compatible images request failed: HTTP 502: '
+            '{"error":{"message":"Upstream service temporarily unavailable","type":"upstream_error"}}'
+        )
+        TransientFailingApiImageClient.reset(failure, failures=6)
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            with (
+                patch(
+                    "codex_image.webui.auth_routing.OpenAIImagesImageClient",
+                    TransientFailingApiImageClient,
+                    create=True,
+                ),
+                patch(
+                    "codex_image.webui.executor_transport._transient_image_retry_delay_seconds",
+                    return_value=0,
+                    create=True,
+                ),
+            ):
+                app = create_app(
+                    output_root=root / "tasks",
+                    auth_settings_path=root / "auth-settings.json",
+                    api_settings_path=root / "api-settings.json",
+                    network_egress_settings_path=root / "network-egress.json",
+                    batch_delay_seconds=0,
+                    auto_start_queue=False,
+                )
+                client = TestClient(app)
+                client.patch(
+                    "/api/api-settings",
+                    json={
+                        "base_url": "https://api.example.com/v1",
+                        "api_key": "test-api-key-worker-secret",
+                        "image_model": "gpt-image-2",
+                        "api_mode": "images",
+                    },
+                )
+                client.patch("/api/auth", json={"source": "api"})
+                policy_response = client.patch(
+                    "/api/network-egress",
+                    json={
+                        "mode": "system",
+                        "image_request_timeout_seconds": 600,
+                        "image_request_retry_count": 0,
+                    },
+                )
+                created = client.post(
+                    "/api/generate",
+                    data={
+                        "prompt": "do not retry upstream failure",
+                        "size": "1024x1024",
+                        "quality": "low",
+                        "n": "1",
+                    },
+                )
+                task_id = created.json()["task"]["task_id"]
+
+                with self.assertRaisesRegex(RuntimeError, "upstream_error"):
+                    asyncio.run(app.state.queue_manager.run_available_once())
+                task = client.get(f"/api/tasks/{task_id}").json()["task"]
+
+        self.assertEqual(policy_response.status_code, 200)
+        self.assertEqual(task["status"], "failed")
+        self.assertEqual(len(TransientFailingApiImageClient.instances), 1)
+        self.assertEqual(
+            len(TransientFailingApiImageClient.instances[0].generate_calls),
+            1,
+        )
+        self.assertEqual(task["outputs"][0]["attempts"], 1)
 
     def test_api_images_queue_worker_publishes_concurrent_outputs_while_running(self) -> None:
         from codex_image.webui.app import create_app
@@ -2667,6 +2850,7 @@ class WebUISettingsTests(unittest.TestCase):
 
             initial = client.get("/api/settings")
             changed_locale = client.patch("/api/settings", json={"locale": "zh-TW"})
+            normalized_locale = client.patch("/api/settings", json={"locale": "vi-VN"})
             changed_paths = client.patch(
                 "/api/settings",
                 json={
@@ -2684,10 +2868,12 @@ class WebUISettingsTests(unittest.TestCase):
         self.assertEqual(changed_locale.status_code, 200)
         self.assertFalse(changed_locale.json()["restart_required"])
         self.assertEqual(changed_locale.json()["settings"]["locale"], "zh-TW")
+        self.assertEqual(normalized_locale.status_code, 200)
+        self.assertEqual(normalized_locale.json()["settings"]["locale"], "vi")
         self.assertEqual(changed_paths.status_code, 200)
         self.assertTrue(changed_paths.json()["restart_required"])
-        self.assertEqual(changed_paths.json()["settings"]["locale"], "zh-TW")
-        self.assertEqual(persisted["locale"], "zh-TW")
+        self.assertEqual(changed_paths.json()["settings"]["locale"], "vi")
+        self.assertEqual(persisted["locale"], "vi")
         self.assertEqual(invalid_locale.status_code, 400)
     def test_color_palette_endpoint_defaults_and_persists_normalized_colors(self) -> None:
         from codex_image.webui.app import create_app

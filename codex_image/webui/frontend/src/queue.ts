@@ -18,13 +18,16 @@ type QueueTask = WebUITask & {
 };
 
 let queueFeatureInitialized = false;
+let realtimeConnectionNeedsResync = false;
+let realtimeResyncRequested = false;
+let realtimeResyncPromise: Promise<void> | null = null;
 
 export function initializeQueueFeature(): void {
   if (queueFeatureInitialized) return;
   queueFeatureInitialized = true;
   exposeQueueWindowApi();
   bindQueueControls();
-  document.addEventListener(LOCALE_CHANGE_EVENT, renderQueue);
+  document.addEventListener(LOCALE_CHANGE_EVENT, () => renderQueue());
 }
 
 function exposeQueueWindowApi(): void {
@@ -46,8 +49,16 @@ export function startRealtimeUpdates({ migrateLegacyArchives = false } = {}): bo
   if (!window.EventSource) return false;
   closeRealtimeUpdates();
   state.realtimeSnapshotNeedsArchiveMigration = migrateLegacyArchives;
+  realtimeConnectionNeedsResync = false;
   const source = new EventSource(REALTIME_EVENTS_URL);
   state.realtimeSource = source;
+  source.onopen = () => {
+    if (state.realtimeSource !== source) return;
+    if (!realtimeConnectionNeedsResync) return;
+    realtimeConnectionNeedsResync = false;
+    void requestRealtimeResync();
+    clearRealtimeReconnectStatus();
+  };
   source.onmessage = (event) => {
     handleRealtimeMessage(event).catch((error: unknown) => {
       console.error(error);
@@ -56,11 +67,8 @@ export function startRealtimeUpdates({ migrateLegacyArchives = false } = {}): bo
   };
   source.onerror = () => {
     if (state.realtimeSource !== source) return;
-    const shouldMigrateArchives = state.realtimeSnapshotNeedsArchiveMigration;
-    closeRealtimeUpdates();
-    state.realtimeSnapshotNeedsArchiveMigration = false;
-    void refreshQueue();
-    void getLegacyBridge().methods.refreshTasks({ migrateLegacyArchives: shouldMigrateArchives });
+    realtimeConnectionNeedsResync = true;
+    void requestRealtimeResync();
     getLegacyBridge().methods.setStatus(translate("queue.realtimeDisconnected"), "error");
   };
   return true;
@@ -68,9 +76,50 @@ export function startRealtimeUpdates({ migrateLegacyArchives = false } = {}): bo
 
 export function closeRealtimeUpdates(): void {
   const state = getState();
+  realtimeConnectionNeedsResync = false;
+  realtimeResyncRequested = false;
   if (!state.realtimeSource) return;
   state.realtimeSource.close();
   state.realtimeSource = null;
+}
+
+async function resyncRealtimeState(): Promise<void> {
+  const bridge = getLegacyBridge();
+  const state = bridge.state;
+  const shouldMigrateArchives = state.realtimeSnapshotNeedsArchiveMigration;
+  await Promise.all([refreshQueue(), bridge.methods.refreshTasks({ migrateLegacyArchives: shouldMigrateArchives })]);
+  if (shouldMigrateArchives) {
+    state.realtimeSnapshotNeedsArchiveMigration = false;
+  }
+}
+
+function requestRealtimeResync(): Promise<void> {
+  realtimeResyncRequested = true;
+  if (realtimeResyncPromise) return realtimeResyncPromise;
+  const resyncPromise = (async () => {
+    while (realtimeResyncRequested) {
+      realtimeResyncRequested = false;
+      await resyncRealtimeState();
+    }
+  })().catch((error: unknown) => {
+    const bridge = getLegacyBridge();
+    if (realtimeConnectionNeedsResync) {
+      bridge.methods.setStatus(translate("queue.realtimeDisconnected"), "error");
+      return;
+    }
+    console.error(error);
+    bridge.methods.setStatus(errorMessage(error, translate("queue.realtimeUpdateFailed")), "error");
+  }).finally(() => {
+    realtimeResyncPromise = null;
+  });
+  realtimeResyncPromise = resyncPromise;
+  return resyncPromise;
+}
+
+function clearRealtimeReconnectStatus(): void {
+  const bridge = getLegacyBridge();
+  if (bridge.els.statusText?.textContent !== translate("queue.realtimeDisconnected")) return;
+  bridge.methods.setStatus("", "");
 }
 
 export async function handleRealtimeMessage(event: MessageEvent): Promise<void> {
@@ -93,9 +142,13 @@ export async function handleRealtimePayload(payload: RealtimePayload | null | un
     return;
   }
   if (payload?.type === "queue") {
-    applyQueueState(payload.queue);
-    await applyRealtimeTaskPayloads(payload.tasks || []);
+    const updatedTasks = payload.tasks || [];
+    applyQueueState(payload.queue, { deferTaskListRender: true });
+    await applyRealtimeTaskPayloads(updatedTasks);
     applyQueueTasks(payload.queue);
+    if (!updatedTasks.length && !queueTaskCount(payload.queue)) {
+      bridge.methods.renderTasks?.({ preserveScroll: true });
+    }
     return;
   }
   if (payload?.type === "task") {
@@ -148,14 +201,19 @@ export function invalidateQueueRequests(): void {
   getState().queueRequestSeq += 1;
 }
 
-export function applyQueueState(queue: QueueState | null | undefined): void {
+export function applyQueueState(
+  queue: QueueState | null | undefined,
+  { deferTaskListRender = false }: { deferTaskListRender?: boolean } = {},
+): void {
   const state = getState();
   invalidateQueueRequests();
   state.queue = normalizeQueueState(queue);
-  renderQueue();
+  renderQueue({ deferTaskListRender });
 }
 
-export function renderQueue(): void {
+export function renderQueue(
+  { deferTaskListRender = false }: { deferTaskListRender?: boolean } = {},
+): void {
   const bridge = getLegacyBridge();
   const state = bridge.state;
   const summary = state.queue.summary || {};
@@ -184,7 +242,14 @@ export function renderQueue(): void {
     return;
   }
   state.queueRenderKey = nextRenderKey;
-  renderActiveTaskGroupForQueueChange();
+  if (!deferTaskListRender) {
+    renderActiveTaskGroupForQueueChange();
+  }
+}
+
+function queueTaskCount(queue: QueueState | null | undefined): number {
+  return (Array.isArray(queue?.waiting) ? queue.waiting.length : 0)
+    + (Array.isArray(queue?.running) ? queue.running.length : 0);
 }
 
 function renderActiveTaskGroupForQueueChange(): void {
@@ -302,9 +367,9 @@ function taskModeLabel(task: WebUITask): string {
   return "";
 }
 
-export async function promoteQueueTask(taskId: string | undefined): Promise<void> {
+export async function promoteQueueTask(taskId: string | undefined): Promise<boolean> {
   const bridge = getLegacyBridge();
-  if (!taskId) return;
+  if (!taskId) return false;
   invalidateQueueRequests();
   try {
     const response = await fetch(`/api/queue/${encodeURIComponent(taskId)}/promote`, { method: "POST" });
@@ -312,8 +377,10 @@ export async function promoteQueueTask(taskId: string | undefined): Promise<void
     if (!response.ok) throw new Error(data.detail || translate("queue.promoteFailed"));
     applyQueueState(data);
     await bridge.methods.refreshTasks();
+    return true;
   } catch (error: unknown) {
     bridge.methods.setStatus(errorMessage(error, translate("queue.promoteFailed")), "error");
+    return false;
   }
 }
 
@@ -346,6 +413,35 @@ export function deleteQueuedTask(button: Element, taskId: string | undefined): v
       await performDeleteQueuedTask(taskId);
     },
   });
+}
+
+export async function performCancelWaitingTask(taskId: string): Promise<boolean> {
+  const bridge = getLegacyBridge();
+  invalidateQueueRequests();
+  try {
+    const response = await fetch("/api/queue/cancel-batch", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ task_ids: [taskId] }),
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(data.detail || formatTranslation("batch.cancelFailed"));
+    await refreshQueue();
+    await bridge.methods.refreshTasks();
+    bridge.methods.renderPreview();
+    const summary = data.summary || {};
+    const failed = Number(summary.failed || 0);
+    bridge.methods.setStatus(formatTranslation("batch.cancelResult", {
+      cancelled: Number(summary.cancelled || 0),
+      requested: Number(summary.cancellation_requested || 0),
+      skipped: Number(summary.skipped || 0),
+      failed,
+    }), failed > 0 ? "error" : "ok");
+    return failed === 0;
+  } catch (error: unknown) {
+    bridge.methods.setStatus(errorMessage(error, formatTranslation("batch.cancelFailed")), "error");
+    return false;
+  }
 }
 
 export async function performDeleteQueuedTask(taskId: string): Promise<void> {
@@ -395,24 +491,18 @@ export function cancelRunningTask(button: Element, taskId: string | undefined): 
 
 async function performCancelRunningTask(taskId: string): Promise<void> {
   const bridge = getLegacyBridge();
-  const state = bridge.state;
   invalidateQueueRequests();
   try {
     const response = await fetch(`/api/queue/${encodeURIComponent(taskId)}`, { method: "DELETE" });
     const data = await response.json().catch(() => ({}));
     if (!response.ok) throw new Error(data.detail || translate("queue.cancelRunningFailed"));
-    applyQueueState({
-      ...state.queue,
-      running: state.queue.running.filter((item) => item.task_id !== taskId),
-      summary: {
-        ...(state.queue.summary || {}),
-        running_count: Math.max(0, Number(state.queue.summary?.running_count || 0) - 1),
-      },
-    });
     await refreshQueue();
     await bridge.methods.refreshTasks();
     bridge.methods.renderPreview();
-    bridge.methods.setStatus(translate("queue.runningCancelled"), "ok");
+    bridge.methods.setStatus(
+      data.cancellation_pending ? translate("queue.cancellationPending") : translate("queue.runningCancelled"),
+      data.cancellation_pending ? "running" : "ok",
+    );
   } catch (error: unknown) {
     bridge.methods.setStatus(errorMessage(error, translate("queue.cancelRunningFailed")), "error");
   }
@@ -435,55 +525,6 @@ export async function reorderQueue(taskIds: string[]): Promise<void> {
     bridge.methods.setStatus(errorMessage(error, translate("queue.reorderFailed")), "error");
     await refreshQueue();
   }
-}
-
-export function handleQueueDragStart(event: DragEvent): void {
-  const target = eventTargetElement(event);
-  const item = event.currentTarget instanceof HTMLElement && event.currentTarget.dataset.queueTaskId
-    ? event.currentTarget
-    : target?.closest("[data-queue-task-id]");
-  if (!(item instanceof HTMLElement)) return;
-  const draggedId = item.dataset.queueTaskId || null;
-  getState().queueDragTaskId = draggedId;
-  if (event.dataTransfer && draggedId) {
-    event.dataTransfer.effectAllowed = "move";
-    event.dataTransfer.setData("text/plain", draggedId);
-  }
-}
-
-export function handleQueueDragOver(event: DragEvent): void {
-  event.preventDefault();
-  if (event.dataTransfer) {
-    event.dataTransfer.dropEffect = "move";
-  }
-}
-
-export function handleQueueDrop(event: DragEvent): void {
-  event.preventDefault();
-  event.stopPropagation();
-  const state = getState();
-  const draggedId = state.queueDragTaskId;
-  if (!draggedId) return;
-  const ids = (state.queue.waiting || []).map((task) => task.task_id);
-  const nextIds = ids.filter((id) => id !== draggedId);
-  const targetItem = eventTargetElement(event)?.closest("[data-queue-task-id]");
-  const targetId = targetItem instanceof HTMLElement ? targetItem.dataset.queueTaskId : undefined;
-  if (targetId === draggedId) return;
-  if (!targetId) {
-    nextIds.push(draggedId);
-    void reorderQueue(nextIds);
-    return;
-  }
-  const targetIndex = nextIds.indexOf(targetId);
-  if (targetIndex < 0 || !(targetItem instanceof HTMLElement)) return;
-  const targetRect = targetItem.getBoundingClientRect();
-  const insertAfter = event.clientY > targetRect.top + targetRect.height / 2;
-  nextIds.splice(insertAfter ? targetIndex + 1 : targetIndex, 0, draggedId);
-  void reorderQueue(nextIds);
-}
-
-export function handleQueueDragEnd(_event: DragEvent): void {
-  getState().queueDragTaskId = null;
 }
 
 export function applyQueueTasks(queue: QueueState | null | undefined): void {
@@ -531,16 +572,12 @@ function activeTasksNeedQueueReconcile(queueTaskIds: Set<string>): boolean {
     const taskId = String(task?.task_id || "");
     if (!taskId || queueTaskIds.has(taskId) || task?.local_pending) return false;
     const status = String(task?.status || "");
-    return status === "submitting" || status === "queued" || status === "running";
+    return status === "submitting" || status === "queued" || status === "running" || status === "cancelling";
   });
 }
 
 export function updateQueueElapsedDisplays(): void {
   getLegacyBridge().methods.updateTaskElapsedDisplays?.();
-}
-
-function eventTargetElement(event: Event): Element | null {
-  return event.target instanceof Element ? event.target : null;
 }
 
 function escapeHtml(value: unknown): string {

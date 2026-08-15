@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
@@ -13,6 +14,7 @@ from codex_image.client_types import ResponsesInputFile
 from codex_image.generation.types import ImageInput
 from codex_image.webui.context import WebUIContext
 from codex_image.webui.edit_mask import (
+    EDIT_MASK_MAX_FILE_BYTES,
     RESPONSES_EDIT_MASK_MAX_EDGE,
     EditMaskContractError,
     aligned_edit_mask_canvas_size,
@@ -24,6 +26,18 @@ from codex_image.webui.generation_request import (
     parse_parameters_json,
     preview_generation_command,
 )
+from codex_image.webui.image_uploads import (
+    InvalidRasterImage,
+    ValidatedRasterImage,
+    read_validated_raster_uploads,
+    validate_raster_image,
+)
+from codex_image.webui.resource_limits import (
+    MAX_TASK_IMAGE_BYTES,
+    TaskImageLimitError,
+    TaskImageResource,
+    validate_task_image_total,
+)
 from codex_image.webui.executor import (
     _file_to_data_url,
     _instructions_for_transport,
@@ -33,7 +47,11 @@ from codex_image.webui.executor import (
     _resolve_gallery_refs,
     _resolve_reference_assets,
 )
-from codex_image.webui.executor_inputs import _resolve_reference_files
+from codex_image.webui.executor_inputs import (
+    _bytes_to_data_url,
+    _reference_file_to_responses_input,
+    _resolve_reference_files,
+)
 from codex_image.webui.prompt_ratio import (
     append_ratio_prompt_instruction,
     normalize_prompt_ratio,
@@ -46,6 +64,7 @@ from codex_image.webui.reference_file_capabilities import (
 )
 from codex_image.webui.reference_files import (
     ReferenceFileStorage,
+    ValidatedReferenceFile,
     dedupe_reference_file_records,
     read_reference_file_uploads,
     reference_file_task_record,
@@ -73,12 +92,34 @@ PROVIDER_REFERENCE_FILES_UNSUPPORTED_DETAIL = {
     "code": "provider_reference_files_unsupported",
     "message": "This provider does not support reference files for the selected Responses model.",
 }
+TASK_IMAGES_TOTAL_TOO_LARGE_DETAIL = {
+    "code": "task_images_total_too_large",
+    "message": "The combined task images are too large.",
+}
 
 _CODEX_BINDING_MODES = {
     "codex-gpt-image-2-images": "images",
     "codex-gpt-image-2-responses": "responses",
 }
 _CODEX_GPT_BACKENDS = frozenset({"codex_images", "codex_responses"})
+
+
+@dataclass(frozen=True)
+class PreparedReferenceFiles:
+    uploads: tuple[ValidatedReferenceFile, ...]
+    selected_asset_ids: tuple[str, ...]
+    records: tuple[dict[str, Any], ...]
+    response_inputs: tuple[ResponsesInputFile, ...]
+
+
+@dataclass(frozen=True)
+class PreparedGenerationSubmission:
+    plan: Any
+    request_payload: dict[str, Any]
+    model_prompt: str
+    prompt_constraints: Any
+    params: dict[str, Any]
+    prompt_locale: str
 
 
 def _request_auth_source(ctx: WebUIContext, provider_id: str | None) -> str:
@@ -209,15 +250,13 @@ def _enqueue_generation(
         channels = ctx.route_helpers["queue_channels_for_source"](auth_source)
         ctx.queue_manager.channels = channels
         ctx.queue_manager.max_attempts = ctx.route_helpers["queue_max_attempts_for_channels"](channels)
-    ctx.route_helpers["ensure_queue_worker_running"]()
+    ctx.route_helpers["wake_queue_worker"]()
 
 
-def _submit_generation(
+def _prepare_generation_submission(
     ctx: WebUIContext,
     *,
     operation: str,
-    task_id: str,
-    created_at: str,
     prompt: str,
     prompt_for_model: str | None,
     ui_language: str,
@@ -251,14 +290,8 @@ def _submit_generation(
     image_data_urls: list[str],
     mask_data_url: str | None,
     reference_file_inputs: list[ResponsesInputFile],
-    input_files: list[Path],
-    mask_file: str | None,
-    gallery_refs: list[dict[str, Any]],
-    reference_assets: list[dict[str, Any]],
-    file_references: list[dict[str, Any]],
-    editing_guidance: dict[str, Any] | None = None,
     edit_mask_canvas_locked: bool = False,
-) -> dict[str, Any]:
+) -> PreparedGenerationSubmission:
     h = ctx.route_helpers
     compression = _normalize_compression(output_format, output_compression)
     uses_gpt_prompt_processing = canonical_model_id in {None, "gpt-image-2"}
@@ -287,7 +320,9 @@ def _submit_generation(
         if not effective_orientation:
             effective_orientation = orientation_from_ratio(effective_ratio) or None
     base_model_prompt = h["model_prompt_for_fidelity"](prompt, prompt_for_model, fidelity)
-    if auth_source == "api" and canonical_model_id:
+    if fidelity == "original":
+        model_prompt = base_model_prompt
+    elif auth_source == "api" and canonical_model_id:
         model_prompt = base_model_prompt
         if canonical_parameters is not None and _api_binding_appends_aspect_ratio_prompt(
             ctx,
@@ -305,8 +340,16 @@ def _submit_generation(
                 locale=ui_language,
             )
     else:
-        model_prompt = append_ratio_prompt_instruction(base_model_prompt, effective_ratio)
-    prompt_constraints, guard_instructions = h["prompt_guard_context"](prompt, fidelity)
+        model_prompt = append_ratio_prompt_instruction(
+            base_model_prompt,
+            effective_ratio,
+            locale=ui_language,
+        )
+    prompt_constraints, guard_instructions = h["prompt_guard_context"](
+        prompt,
+        fidelity,
+        ui_language,
+    )
     transport_mode = effective_api_mode or effective_codex_mode
     web_search_enabled = bool(web_search) and requested_backend.endswith("_responses")
     request_model_prompt = _prompt_for_transport(
@@ -315,6 +358,7 @@ def _submit_generation(
         api_mode=transport_mode,
         prompt_fidelity=fidelity,
         instructions=guard_instructions,
+        locale=ui_language,
     )
     request_instructions = _instructions_for_transport(
         auth_source=auth_source,
@@ -383,23 +427,6 @@ def _submit_generation(
         request_payload = dict(protocol_preview.json_body or protocol_preview.form_fields)
     else:
         request_payload = h["build_image_request_payload"](**request_kwargs)
-    stored_request_payload = h["slim_request_payload"](
-        request_payload,
-        input_files=[path.name for path in input_files],
-        gallery_refs=gallery_refs,
-        reference_assets=reference_assets,
-        reference_files=file_references,
-        mask_file=mask_file,
-    )
-    stored_request_payload["webui_requested_backend"] = requested_backend
-    if effective_api_provider_id is not None:
-        stored_request_payload["webui_api_provider_id"] = effective_api_provider_id
-    if effective_api_provider_name:
-        stored_request_payload["webui_api_provider_name"] = effective_api_provider_name
-    if auth_source == "api":
-        stored_request_payload["webui_api_images_concurrency"] = effective_api_images_concurrency
-    ctx.storage.write_request(task_id, stored_request_payload)
-
     params = _params(
         effective_main_model, model, effective_size, quality, background, output_format,
         moderation, compression, effective_n,
@@ -431,20 +458,74 @@ def _submit_generation(
         params["api_provider_name"] = effective_api_provider_name
     if auth_source == "api":
         params["api_images_concurrency"] = effective_api_images_concurrency
+    return PreparedGenerationSubmission(
+        plan=plan,
+        request_payload=request_payload,
+        model_prompt=model_prompt,
+        prompt_constraints=prompt_constraints,
+        params=params,
+        prompt_locale=str(ui_language or "zh-CN"),
+    )
+
+
+def _persist_generation_submission(
+    ctx: WebUIContext,
+    *,
+    prepared: PreparedGenerationSubmission,
+    operation: str,
+    task_id: str,
+    created_at: str,
+    prompt: str,
+    requested_backend: str,
+    auth_source: str,
+    effective_api_provider_id: str | None,
+    effective_api_provider_name: str | None,
+    effective_api_images_concurrency: int,
+    input_files: list[Path],
+    mask_file: str | None,
+    gallery_refs: list[dict[str, Any]],
+    reference_assets: list[dict[str, Any]],
+    file_references: list[dict[str, Any]],
+    editing_guidance: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    h = ctx.route_helpers
+    stored_request_payload = h["slim_request_payload"](
+        prepared.request_payload,
+        input_files=[path.name for path in input_files],
+        gallery_refs=gallery_refs,
+        reference_assets=reference_assets,
+        reference_files=file_references,
+        mask_file=mask_file,
+    )
+    stored_request_payload["webui_requested_backend"] = requested_backend
+    if effective_api_provider_id is not None:
+        stored_request_payload["webui_api_provider_id"] = effective_api_provider_id
+    if effective_api_provider_name:
+        stored_request_payload["webui_api_provider_name"] = effective_api_provider_name
+    if auth_source == "api":
+        stored_request_payload["webui_api_images_concurrency"] = (
+            effective_api_images_concurrency
+        )
+    ctx.storage.write_request(task_id, stored_request_payload)
+
     metadata = _write_queued_metadata(
         ctx.storage,
         task_id,
         created_at=created_at,
         mode=operation,
         prompt=prompt,
-        prompt_for_model=model_prompt,
-        params=params,
+        prompt_for_model=prepared.model_prompt,
+        execution_model_prompt=prepared.model_prompt,
+        execution_prompt=str(prepared.plan.command.prompt),
+        execution_instructions=prepared.plan.command.instructions,
+        prompt_locale=prepared.prompt_locale,
+        params=prepared.params,
         input_files=[path.name for path in input_files],
         mask_file=mask_file,
         gallery_refs=gallery_refs,
         reference_assets=reference_assets,
         reference_files=file_references,
-        prompt_constraints=prompt_constraints,
+        prompt_constraints=prepared.prompt_constraints,
         requested_backend=requested_backend,
         max_attempts=ctx.queue_manager.max_attempts if ctx.queue_manager is not None else 1,
         editing_guidance=editing_guidance,
@@ -453,7 +534,7 @@ def _submit_generation(
         ctx,
         task_id=task_id,
         metadata=metadata,
-        plan=plan,
+        plan=prepared.plan,
         auth_source=auth_source,
     )
     return {
@@ -492,7 +573,7 @@ async def _prepare_reference_files(
     storage: ReferenceFileStorage,
     uploads: list[UploadFile],
     asset_ids: list[str],
-) -> list[dict[str, Any]]:
+) -> PreparedReferenceFiles:
     try:
         validated_uploads = await read_reference_file_uploads(uploads)
     except ValueError as exc:
@@ -505,9 +586,14 @@ async def _prepare_reference_files(
         selected_records = resolve_reference_file_ids(storage, asset_ids, touch=False)
     except (FileNotFoundError, OSError, ValueError) as exc:
         raise HTTPException(status_code=404, detail=REFERENCE_FILE_MISSING_DETAIL) from exc
+    verified_selected_records, selected_inputs = _resolve_reference_files(
+        storage,
+        selected_records,
+    )
 
     predicted_records = dedupe_reference_file_records(
-        [reference_file_task_record(upload) for upload in validated_uploads] + selected_records
+        [reference_file_task_record(upload) for upload in validated_uploads]
+        + verified_selected_records
     )
     try:
         validate_reference_file_total(predicted_records)
@@ -518,8 +604,51 @@ async def _prepare_reference_files(
             detail={"code": code, "message": REFERENCE_FILE_ERROR_MESSAGES.get(code, "The reference file is invalid.")},
         ) from exc
 
+    uploads_by_id = {
+        upload.asset_id: upload
+        for upload in validated_uploads
+    }
+    selected_inputs_by_id = {
+        str(record["id"]): response_input
+        for record, response_input in zip(
+            verified_selected_records,
+            selected_inputs,
+            strict=True,
+        )
+    }
+    response_inputs: list[ResponsesInputFile] = []
+    for record in predicted_records:
+        asset_id = str(record["id"])
+        upload = uploads_by_id.get(asset_id)
+        if upload is not None:
+            response_inputs.append(
+                _reference_file_to_responses_input(
+                    Path(upload.filename),
+                    record,
+                    data=upload.data,
+                )
+            )
+        else:
+            response_inputs.append(selected_inputs_by_id[asset_id])
+    return PreparedReferenceFiles(
+        uploads=tuple(validated_uploads),
+        selected_asset_ids=tuple(
+            dict.fromkeys(str(value or "").strip() for value in asset_ids)
+        ),
+        records=tuple(predicted_records),
+        response_inputs=tuple(response_inputs),
+    )
+
+
+def _commit_reference_files(
+    storage: ReferenceFileStorage,
+    prepared: PreparedReferenceFiles,
+) -> list[dict[str, Any]]:
     try:
-        return storage.commit_batch(validated_uploads, asset_ids)
+        return storage.commit_batch(
+            prepared.uploads,
+            prepared.selected_asset_ids,
+        )
     except ValueError as exc:
         code = str(exc)
         if code == "reference_file_missing":
@@ -532,6 +661,184 @@ async def _prepare_reference_files(
                 "message": REFERENCE_FILE_ERROR_MESSAGES[stable_code],
             },
         ) from exc
+
+
+async def _prepare_raster_uploads(
+    uploads: list[UploadFile],
+) -> list[ValidatedRasterImage]:
+    try:
+        return await read_validated_raster_uploads(uploads)
+    except InvalidRasterImage as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+
+def _prepared_reference_asset(image: ValidatedRasterImage) -> dict[str, Any]:
+    return {
+        "id": image.sha256,
+        "sha256": image.sha256,
+        "filename": image.filename,
+        "mime_type": image.mime_type,
+        "size_bytes": len(image.data),
+    }
+
+
+def _commit_reference_assets(
+    ctx: WebUIContext,
+    *,
+    uploads: list[ValidatedRasterImage],
+    predicted_assets: list[dict[str, Any]],
+) -> list[dict[str, Any]]:
+    uploads_by_id = {image.sha256: image for image in uploads}
+    committed: list[dict[str, Any]] = []
+    for predicted in predicted_assets:
+        asset_id = str(predicted.get("id") or "")
+        upload = uploads_by_id.get(asset_id)
+        try:
+            if upload is not None:
+                item = ctx.reference_asset_storage.create_or_touch(
+                    upload.filename,
+                    upload.data,
+                    upload.mime_type,
+                )
+            else:
+                item = ctx.reference_asset_storage.touch(asset_id)
+        except (FileNotFoundError, OSError, ValueError) as exc:
+            raise HTTPException(
+                status_code=404,
+                detail=f"Reference asset not found: {asset_id}",
+            ) from exc
+        committed.append(item)
+    return committed
+
+
+def _predicted_reference_data_urls(
+    ctx: WebUIContext,
+    *,
+    uploads: list[ValidatedRasterImage],
+    predicted_assets: list[dict[str, Any]],
+) -> list[str]:
+    uploads_by_id = {image.sha256: image for image in uploads}
+    data_urls: list[str] = []
+    for item in predicted_assets:
+        asset_id = str(item["id"])
+        upload = uploads_by_id.get(asset_id)
+        if upload is not None:
+            data_urls.append(
+                _bytes_to_data_url(
+                    upload.data,
+                    filename=upload.filename,
+                    mime_type=upload.mime_type,
+                )
+            )
+        else:
+            data_urls.append(
+                _file_to_data_url(
+                    ctx.reference_asset_storage.image_path(asset_id),
+                    mime_type=str(item.get("mime_type") or ""),
+                )
+            )
+    return data_urls
+
+
+def _validate_task_image_resources(
+    *,
+    reference_assets: list[dict[str, Any]],
+    gallery_refs: list[dict[str, Any]],
+    mask: ValidatedRasterImage | None = None,
+) -> None:
+    resources: list[TaskImageResource] = []
+    for item in [*reference_assets, *gallery_refs]:
+        digest = str(item.get("sha256") or item.get("id") or "").strip()
+        resources.append(
+            TaskImageResource(
+                key=f"content:{digest}",
+                size_bytes=int(item.get("size_bytes") or 0),
+            )
+        )
+    if mask is not None:
+        resources.append(
+            TaskImageResource(
+                key=f"content:{mask.sha256}",
+                size_bytes=len(mask.data),
+            )
+        )
+    try:
+        validate_task_image_total(
+            resources,
+            max_total_bytes=MAX_TASK_IMAGE_BYTES,
+        )
+    except TaskImageLimitError as exc:
+        raise HTTPException(
+            status_code=413,
+            detail=TASK_IMAGES_TOTAL_TOO_LARGE_DETAIL,
+        ) from exc
+
+
+def _gallery_data_urls(
+    ctx: WebUIContext,
+    gallery_refs: list[dict[str, Any]],
+) -> list[str]:
+    return [
+        _file_to_data_url(
+            ctx.gallery_storage.image_path(str(item["id"])),
+            mime_type="",
+        )
+        for item in gallery_refs
+    ]
+
+
+def _parse_editing_guidance(
+    raw: str | None,
+    *,
+    shared_base: UploadFile | None,
+    edit_region: UploadFile | None = None,
+    mask_present: bool = True,
+) -> dict[str, Any] | None:
+    if raw is None:
+        return None
+    try:
+        candidate = json.loads(raw)
+    except json.JSONDecodeError as exc:
+        raise HTTPException(status_code=400, detail="Invalid Editing Guidance state") from exc
+    if (
+        not isinstance(candidate, dict)
+        or candidate.get("version") != 1
+        or candidate.get("activeGuidance") not in {"instruction-marks", "edit-region"}
+        or shared_base is None
+    ):
+        raise HTTPException(status_code=400, detail="Invalid Editing Guidance state")
+    if candidate["activeGuidance"] == "edit-region" and (edit_region is None or not mask_present):
+        raise HTTPException(status_code=400, detail="Edit Region guidance requires an Edit Region and Edit Mask")
+    return {"version": 1, "activeGuidance": candidate["activeGuidance"]}
+
+
+async def _persist_editing_guidance(
+    ctx: WebUIContext,
+    task_id: str,
+    state: dict[str, Any] | None,
+    *,
+    shared_base: UploadFile | None,
+    instruction_marks: UploadFile | None,
+    edit_region: UploadFile | None,
+    edit_mask: UploadFile | None = None,
+    existing_mask_file: str | None = None,
+) -> dict[str, Any] | None:
+    if state is None:
+        return None
+    uploads = [upload for upload in (shared_base, instruction_marks, edit_region, edit_mask) if upload is not None]
+    files = await ctx.route_helpers["save_uploads"](task_id, uploads, kind="guidance")
+    file_iter = iter(files)
+    persisted = dict(state)
+    persisted["sharedBaseFile"] = next(file_iter).name
+    if instruction_marks is not None:
+        persisted["instructionMarksFile"] = next(file_iter).name
+    if edit_region is not None:
+        persisted["editRegionFile"] = next(file_iter).name
+    if edit_mask is not None:
+        persisted["editMaskFile"] = next(file_iter).name
+    elif existing_mask_file:
+        persisted["editMaskFile"] = existing_mask_file
+    return persisted
 
 
 def register_generation_routes(app: FastAPI, ctx: WebUIContext) -> None:
@@ -608,61 +915,50 @@ def register_generation_routes(app: FastAPI, ctx: WebUIContext) -> None:
             main_model=main_model,
         )
 
-        gallery_refs, gallery_data_urls = _resolve_gallery_refs(ctx.gallery_storage, gallery_image_ids or [])
-        uploaded_assets = await h["save_reference_assets"](reference_images or [])
-        selected_assets, _ = _resolve_reference_assets(ctx.reference_asset_storage, reference_asset_ids or [])
-        reference_assets = h["dedupe_reference_assets"](uploaded_assets + selected_assets)
-        file_references = await _prepare_reference_files(
+        gallery_refs, _ = _resolve_gallery_refs(
+            ctx.gallery_storage,
+            gallery_image_ids or [],
+            include_data_urls=False,
+        )
+        uploaded_images = await _prepare_raster_uploads(reference_images or [])
+        predicted_uploaded_assets = [
+            _prepared_reference_asset(image)
+            for image in uploaded_images
+        ]
+        selected_assets, _ = _resolve_reference_assets(
+            ctx.reference_asset_storage,
+            reference_asset_ids or [],
+            touch=False,
+            include_data_urls=False,
+        )
+        predicted_assets = h["dedupe_reference_assets"](
+            predicted_uploaded_assets + selected_assets
+        )
+        _validate_task_image_resources(
+            reference_assets=predicted_assets,
+            gallery_refs=gallery_refs,
+        )
+        prepared_reference_files = await _prepare_reference_files(
             ctx.reference_file_storage,
             reference_files or [],
             reference_file_ids or [],
         )
-        _, reference_file_inputs = _resolve_reference_files(
-            ctx.reference_file_storage,
-            file_references,
+        reference_data_urls = _predicted_reference_data_urls(
+            ctx,
+            uploads=uploaded_images,
+            predicted_assets=predicted_assets,
         )
-        guidance_state: dict[str, Any] | None = None
-        if editing_guidance is not None:
-            try:
-                candidate = json.loads(editing_guidance)
-            except json.JSONDecodeError as exc:
-                raise HTTPException(status_code=400, detail="Invalid Editing Guidance state") from exc
-            if (
-                not isinstance(candidate, dict)
-                or candidate.get("version") != 1
-                or candidate.get("activeGuidance") not in {"instruction-marks", "edit-region"}
-                or editing_shared_base is None
-            ):
-                raise HTTPException(status_code=400, detail="Invalid Editing Guidance state")
-            guidance_state = {"version": 1, "activeGuidance": candidate["activeGuidance"]}
-        task = ctx.storage.create_task("generate")
-        created_at = utc_now()
-        input_files: list[Path] = []
-        guidance_uploads = [
-            upload
-            for upload in (editing_shared_base, editing_instruction_marks, editing_edit_region, editing_edit_mask)
-            if upload is not None
-        ]
-        guidance_files = await h["save_uploads"](task.task_id, guidance_uploads, kind="guidance")
-        if guidance_state is not None:
-            guidance_file_iter = iter(guidance_files)
-            guidance_state["sharedBaseFile"] = next(guidance_file_iter).name
-            if editing_instruction_marks is not None:
-                guidance_state["instructionMarksFile"] = next(guidance_file_iter).name
-            if editing_edit_region is not None:
-                guidance_state["editRegionFile"] = next(guidance_file_iter).name
-            if editing_edit_mask is not None:
-                guidance_state["editMaskFile"] = next(guidance_file_iter).name
-        reference_data_urls = [
-            _file_to_data_url(ctx.reference_asset_storage.image_path(str(item["id"])), mime_type=str(item.get("mime_type") or ""))
-            for item in reference_assets
-        ]
+        gallery_data_urls = _gallery_data_urls(ctx, gallery_refs)
         all_reference_data_urls = reference_data_urls + gallery_data_urls
-        return _submit_generation(
+        guidance_state = _parse_editing_guidance(
+            editing_guidance,
+            shared_base=editing_shared_base,
+            edit_region=editing_edit_region,
+            mask_present=editing_edit_mask is not None,
+        )
+        prepared_submission = _prepare_generation_submission(
             ctx,
             operation="generate",
-            task_id=task.task_id,
-            created_at=created_at,
             prompt=prompt,
             prompt_for_model=prompt_for_model,
             ui_language=ui_language,
@@ -695,8 +991,41 @@ def register_generation_routes(app: FastAPI, ctx: WebUIContext) -> None:
             explicit_form_fields=explicit_form_fields,
             image_data_urls=all_reference_data_urls,
             mask_data_url=None,
-            reference_file_inputs=reference_file_inputs,
-            input_files=input_files,
+            reference_file_inputs=list(prepared_reference_files.response_inputs),
+        )
+
+        reference_assets = _commit_reference_assets(
+            ctx,
+            uploads=uploaded_images,
+            predicted_assets=predicted_assets,
+        )
+        file_references = _commit_reference_files(
+            ctx.reference_file_storage,
+            prepared_reference_files,
+        )
+        task = ctx.storage.create_task("generate")
+        guidance_state = await _persist_editing_guidance(
+            ctx,
+            task.task_id,
+            guidance_state,
+            shared_base=editing_shared_base,
+            instruction_marks=editing_instruction_marks,
+            edit_region=editing_edit_region,
+            edit_mask=editing_edit_mask,
+        )
+        return _persist_generation_submission(
+            ctx,
+            prepared=prepared_submission,
+            operation="generate",
+            task_id=task.task_id,
+            created_at=utc_now(),
+            prompt=prompt,
+            requested_backend=requested_backend,
+            auth_source=auth_source,
+            effective_api_provider_id=effective_api_provider_id,
+            effective_api_provider_name=effective_api_provider_name,
+            effective_api_images_concurrency=effective_api_images_concurrency,
+            input_files=[],
             mask_file=None,
             gallery_refs=gallery_refs,
             reference_assets=reference_assets,
@@ -776,32 +1105,72 @@ def register_generation_routes(app: FastAPI, ctx: WebUIContext) -> None:
             main_model=main_model,
         )
 
-        gallery_refs, gallery_data_urls = _resolve_gallery_refs(ctx.gallery_storage, gallery_image_ids or [])
-        uploaded_assets = await h["save_reference_assets"](images or [])
-        selected_assets, _ = _resolve_reference_assets(ctx.reference_asset_storage, reference_asset_ids or [])
-        reference_assets = h["dedupe_reference_assets"](uploaded_assets + selected_assets)
-        if not reference_assets and not gallery_data_urls:
+        gallery_refs, _ = _resolve_gallery_refs(
+            ctx.gallery_storage,
+            gallery_image_ids or [],
+            include_data_urls=False,
+        )
+        uploaded_images = await _prepare_raster_uploads(images or [])
+        prepared_mask: ValidatedRasterImage | None = None
+        if mask is not None:
+            mask_bytes = await mask.read(EDIT_MASK_MAX_FILE_BYTES + 1)
+            await mask.close()
+            if not mask_bytes:
+                exc = EditMaskContractError("edit_mask_empty", "The Edit Mask file cannot be empty.")
+                raise HTTPException(status_code=400, detail=exc.detail) from exc
+            if len(mask_bytes) >= EDIT_MASK_MAX_FILE_BYTES:
+                exc = EditMaskContractError("edit_mask_too_large", "The Edit Mask must be smaller than 50 MB.")
+                raise HTTPException(status_code=400, detail=exc.detail) from exc
+            try:
+                prepared_mask = validate_raster_image(mask_bytes, filename=mask.filename)
+            except InvalidRasterImage as invalid:
+                exc = EditMaskContractError("edit_mask_invalid", "The Edit Mask must be a valid PNG image.")
+                raise HTTPException(status_code=400, detail=exc.detail) from invalid
+        predicted_uploaded_assets = [
+            _prepared_reference_asset(image)
+            for image in uploaded_images
+        ]
+        selected_assets, _ = _resolve_reference_assets(
+            ctx.reference_asset_storage,
+            reference_asset_ids or [],
+            touch=False,
+            include_data_urls=False,
+        )
+        predicted_assets = h["dedupe_reference_assets"](
+            predicted_uploaded_assets + selected_assets
+        )
+        if not predicted_assets and not gallery_refs:
             raise HTTPException(status_code=400, detail="At least one image is required")
-        file_references = await _prepare_reference_files(
+        _validate_task_image_resources(
+            reference_assets=predicted_assets,
+            gallery_refs=gallery_refs,
+            mask=prepared_mask,
+        )
+        prepared_reference_files = await _prepare_reference_files(
             ctx.reference_file_storage,
             reference_files or [],
             reference_file_ids or [],
         )
-        _, reference_file_inputs = _resolve_reference_files(
-            ctx.reference_file_storage,
-            file_references,
+        image_data_urls = _predicted_reference_data_urls(
+            ctx,
+            uploads=uploaded_images,
+            predicted_assets=predicted_assets,
         )
-        image_data_urls = [
-            _file_to_data_url(ctx.reference_asset_storage.image_path(str(item["id"])), mime_type=str(item.get("mime_type") or ""))
-            for item in reference_assets
-        ]
+        gallery_data_urls = _gallery_data_urls(ctx, gallery_refs)
         all_image_data_urls = image_data_urls + gallery_data_urls
+        mask_data_url = (
+            _bytes_to_data_url(
+                prepared_mask.data,
+                filename=prepared_mask.filename,
+                mime_type=prepared_mask.mime_type,
+            )
+            if prepared_mask is not None
+            else None
+        )
         mask_canvas_size: tuple[int, int] | None = None
-        if mask is not None:
-            mask_bytes = await mask.read()
-            await mask.seek(0)
+        if prepared_mask is not None:
             try:
-                validate_edit_mask(mask_bytes, decode_image_data_url(all_image_data_urls[0]))
+                validate_edit_mask(prepared_mask.data, decode_image_data_url(all_image_data_urls[0]))
                 mask_canvas_size = aligned_edit_mask_canvas_size(
                     all_image_data_urls[0],
                     requested_size=size,
@@ -814,55 +1183,21 @@ def register_generation_routes(app: FastAPI, ctx: WebUIContext) -> None:
             size = f"{mask_canvas_size[0]}x{mask_canvas_size[1]}"
             resolution = None
             ratio = None
-            orientation = "square" if mask_canvas_size[0] == mask_canvas_size[1] else (
-                "landscape" if mask_canvas_size[0] > mask_canvas_size[1] else "portrait"
+            orientation = (
+                "square" if mask_canvas_size[0] == mask_canvas_size[1]
+                else "landscape" if mask_canvas_size[0] > mask_canvas_size[1]
+                else "portrait"
             )
-
-        guidance_state: dict[str, Any] | None = None
-        if editing_guidance is not None:
-            try:
-                candidate = json.loads(editing_guidance)
-            except json.JSONDecodeError as exc:
-                raise HTTPException(status_code=400, detail="Invalid Editing Guidance state") from exc
-            if (
-                not isinstance(candidate, dict)
-                or candidate.get("version") != 1
-                or candidate.get("activeGuidance") not in {"instruction-marks", "edit-region"}
-                or editing_shared_base is None
-            ):
-                raise HTTPException(status_code=400, detail="Invalid Editing Guidance state")
-            if candidate["activeGuidance"] == "edit-region" and (editing_edit_region is None or mask is None):
-                raise HTTPException(status_code=400, detail="Edit Region guidance requires an Edit Region and Edit Mask")
-            guidance_state = {"version": 1, "activeGuidance": candidate["activeGuidance"]}
-
-        task = ctx.storage.create_task("edit")
-        created_at = utc_now()
-        input_files: list[Path] = []
-        mask_files = await h["save_uploads"](task.task_id, [mask] if mask is not None else [], kind="mask")
-        guidance_uploads = [
-            upload
-            for upload in (editing_shared_base, editing_instruction_marks, editing_edit_region)
-            if upload is not None
-        ]
-        guidance_files = await h["save_uploads"](task.task_id, guidance_uploads, kind="guidance")
-        if guidance_state is not None:
-            guidance_file_iter = iter(guidance_files)
-            guidance_state["sharedBaseFile"] = next(guidance_file_iter).name
-            if editing_instruction_marks is not None:
-                guidance_state["instructionMarksFile"] = next(guidance_file_iter).name
-            if editing_edit_region is not None:
-                guidance_state["editRegionFile"] = next(guidance_file_iter).name
-        mask_data_url = _file_to_data_url(mask_files[0]) if mask_files else None
+        guidance_state = _parse_editing_guidance(
+            editing_guidance,
+            shared_base=editing_shared_base,
+            edit_region=editing_edit_region,
+            mask_present=prepared_mask is not None,
+        )
         effective_input_fidelity = input_fidelity if image_model_supports_input_fidelity(model) else None
-        image_input_names = [path.name for path in input_files]
-        mask_file = mask_files[0].name if mask_files else None
-        if guidance_state is not None and mask_file:
-            guidance_state["editMaskFile"] = mask_file
-        return _submit_generation(
+        prepared_submission = _prepare_generation_submission(
             ctx,
             operation="edit",
-            task_id=task.task_id,
-            created_at=created_at,
             prompt=prompt,
             prompt_for_model=prompt_for_model,
             ui_language=ui_language,
@@ -895,12 +1230,59 @@ def register_generation_routes(app: FastAPI, ctx: WebUIContext) -> None:
             explicit_form_fields=explicit_form_fields,
             image_data_urls=all_image_data_urls,
             mask_data_url=mask_data_url,
-            reference_file_inputs=reference_file_inputs,
-            input_files=input_files,
+            reference_file_inputs=list(prepared_reference_files.response_inputs),
+            edit_mask_canvas_locked=mask_canvas_size is not None,
+        )
+
+        reference_assets = _commit_reference_assets(
+            ctx,
+            uploads=uploaded_images,
+            predicted_assets=predicted_assets,
+        )
+        file_references = _commit_reference_files(
+            ctx.reference_file_storage,
+            prepared_reference_files,
+        )
+        task = ctx.storage.create_task("edit")
+        mask_files = (
+            [
+                ctx.storage.write_input(
+                    task.task_id,
+                    prepared_mask.filename,
+                    prepared_mask.data,
+                    kind="mask",
+                    index=1,
+                )
+            ]
+            if prepared_mask is not None
+            else []
+        )
+        mask_file = mask_files[0].name if mask_files else None
+        guidance_state = await _persist_editing_guidance(
+            ctx,
+            task.task_id,
+            guidance_state,
+            shared_base=editing_shared_base,
+            instruction_marks=editing_instruction_marks,
+            edit_region=editing_edit_region,
+            existing_mask_file=mask_file,
+        )
+        return _persist_generation_submission(
+            ctx,
+            prepared=prepared_submission,
+            operation="edit",
+            task_id=task.task_id,
+            created_at=utc_now(),
+            prompt=prompt,
+            requested_backend=requested_backend,
+            auth_source=auth_source,
+            effective_api_provider_id=effective_api_provider_id,
+            effective_api_provider_name=effective_api_provider_name,
+            effective_api_images_concurrency=effective_api_images_concurrency,
+            input_files=[],
             mask_file=mask_file,
             gallery_refs=gallery_refs,
             reference_assets=reference_assets,
             file_references=file_references,
             editing_guidance=guidance_state,
-            edit_mask_canvas_locked=mask_canvas_size is not None,
         )

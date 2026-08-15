@@ -171,13 +171,17 @@ $env:PIP_DISABLE_PIP_VERSION_CHECK = "1"
 $env:PIP_NO_CACHE_DIR = "1"
 
 & $PythonExe $GetPipPath --no-warn-script-location
-& $PythonExe -m pip install --no-warn-script-location -r (Join-Path $AppDir "requirements-webui.txt")
+& $PythonExe -m pip install --require-hashes --no-warn-script-location -r (Join-Path $AppDir "requirements-webui.txt")
 $CertifiCaBundle = Join-Path $PythonDir "Lib\site-packages\certifi\cacert.pem"
 if (-not (Test-Path $CertifiCaBundle)) {
   throw "certifi CA bundle was not installed at $CertifiCaBundle"
 }
 & $PythonExe -m pip freeze | Set-Content -Path (Join-Path $BundleRoot "python-requirements.lock.txt") -Encoding UTF8
 & $PythonExe -c "import fastapi, uvicorn, multipart, httpx, PIL; import portable_webui_app; print('portable import ok')"
+& $PythonExe (Join-Path $ScriptDir "..\cleanup-runtime.py") `
+  --app-dir $AppDir `
+  --runtime-dir $PythonDir `
+  --platform windows
 
 if ($null -eq (Get-Command cargo -ErrorAction SilentlyContinue)) {
   throw "cargo was not found. Install Rust toolchain before building the portable tray launcher."

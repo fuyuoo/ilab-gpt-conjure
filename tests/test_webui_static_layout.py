@@ -4,27 +4,224 @@ import json
 import re
 import shutil
 import subprocess
+import textwrap
 from pathlib import Path
 
 from tests.webui_helpers import WebUIStaticTestCase
 
 
 class WebUIStaticLayoutTests(WebUIStaticTestCase):
-    def _extract_div(self, html: str, marker: str) -> str:
-        start = html.index(marker)
-        depth = 0
-        for match in re.finditer(r"<div\b|</div>", html[start:]):
-            if match.group(0).startswith("<div"):
-                depth += 1
-            else:
-                depth -= 1
-                if depth == 0:
-                    return html[start:start + match.end()]
-        raise AssertionError(f"Could not extract div {marker}")
+    def test_shared_theme_preference_runtime_and_shell_bridge(
+        self,
+    ) -> None:
+        node = shutil.which("node")
+        if node is None:
+            self.skipTest(
+                "node is required for frontend behavior checks"
+            )
+        module_path = Path(
+            "codex_image/webui/frontend/src/theme-preference.ts"
+        )
+        self.assertTrue(module_path.is_file())
+        shell_source = Path(
+            "codex_image/webui/frontend/src/shell-ui.ts"
+        ).read_text(encoding="utf-8")
+        self.assertIn('from "./theme-preference"', shell_source)
+        self.assertNotIn(
+            'const THEME_STORAGE_KEY = "codex-image-theme-preference"',
+            shell_source,
+        )
+        for name in (
+            "normalizeThemePreference",
+            "resolveEffectiveTheme",
+            "updateThemeSwitcher",
+            "applyThemePreference",
+            "restoreThemePreference",
+            "handleThemeSystemChange",
+        ):
+            self.assertIn(name, shell_source)
+
+        harness = textwrap.dedent(
+            f"""
+            const fs = require("fs");
+            const ts = require("typescript");
+            const vm = require("vm");
+            const source = fs.readFileSync(
+              {str(module_path)!r},
+              "utf8",
+            );
+            const code = ts.transpileModule(source, {{
+              compilerOptions: {{
+                module: ts.ModuleKind.CommonJS,
+                target: ts.ScriptTarget.ES2020,
+              }},
+            }}).outputText;
+            let mediaHandler = null;
+            let removedMediaHandler = null;
+            const media = {{
+              matches: true,
+              addEventListener(_name, handler) {{
+                mediaHandler = handler;
+              }},
+              removeEventListener(_name, handler) {{
+                removedMediaHandler = handler;
+              }},
+            }};
+            const window = {{
+              matchMedia() {{ return media; }},
+              requestAnimationFrame(callback) {{
+                callback();
+                return 1;
+              }},
+              cancelAnimationFrame() {{}},
+            }};
+            const module = {{ exports: {{}} }};
+            vm.runInNewContext(code, {{
+              module,
+              exports: module.exports,
+              window,
+              requestAnimationFrame: window.requestAnimationFrame,
+              cancelAnimationFrame: window.cancelAnimationFrame,
+              localStorage: {{
+                getItem() {{ return "system"; }},
+                setItem() {{}},
+              }},
+              document: {{
+                documentElement: {{
+                  dataset: {{}},
+                  classList: {{ add() {{}}, remove() {{}} }},
+                }},
+              }},
+              Set,
+              String,
+            }});
+            const m = module.exports;
+            const check = (condition, message) => {{
+              if (!condition) throw new Error(message);
+            }};
+            check(
+              m.normalizeThemePreference("unknown") === "system",
+              "invalid preference was accepted",
+            );
+            check(
+              m.resolveEffectiveTheme("light", true) === "light"
+                && m.resolveEffectiveTheme("dark", false) === "dark",
+              "explicit themes followed system",
+            );
+            check(
+              m.resolveEffectiveTheme("system", true) === "dark"
+                && m.resolveEffectiveTheme("system", false) === "light",
+              "system theme did not resolve",
+            );
+            check(
+              m.readThemePreference({{
+                getItem() {{ throw new Error("blocked"); }},
+              }}) === "system",
+              "blocked storage did not fall back",
+            );
+            m.persistThemePreference("dark", {{
+              setItem() {{ throw new Error("blocked"); }},
+            }});
+            const classes = new Set();
+            const root = {{
+              dataset: {{}},
+              classList: {{
+                add(value) {{ classes.add(value); }},
+                remove(value) {{ classes.delete(value); }},
+              }},
+            }};
+            m.applyDocumentTheme("system", root, true);
+            check(
+              root.dataset.theme === "dark"
+                && root.dataset.themePreference === "system",
+              "document datasets were not applied",
+            );
+            const buttons = ["system", "light", "dark"].map(
+              (value) => ({{
+                dataset: {{ themeOption: value }},
+                active: false,
+                pressed: "",
+                classList: {{
+                  toggle(_name, active) {{
+                    this.owner.active = active;
+                  }},
+                  owner: null,
+                }},
+                setAttribute(_name, value) {{
+                  this.pressed = value;
+                }},
+              }}),
+            );
+            for (const button of buttons) {{
+              button.classList.owner = button;
+            }}
+            let clickHandler = null;
+            let removedClickHandler = null;
+            const switcher = {{
+              querySelectorAll() {{ return buttons; }},
+              contains() {{ return true; }},
+              addEventListener(_name, handler) {{
+                clickHandler = handler;
+              }},
+              removeEventListener(_name, handler) {{
+                removedClickHandler = handler;
+              }},
+            }};
+            m.syncThemeSwitcher(switcher, "dark");
+            check(
+              buttons[2].active
+                && buttons[2].pressed === "true"
+                && buttons[0].pressed === "false",
+              "switcher state was not synchronized",
+            );
+            const selected = [];
+            const unbind = m.bindThemeSwitcher(
+              switcher,
+              (value) => selected.push(value),
+            );
+            clickHandler({{
+              target: {{
+                closest() {{ return buttons[1]; }},
+              }},
+            }});
+            clickHandler({{
+              target: {{
+                closest() {{
+                  return {{
+                    dataset: {{ themeOption: "invalid" }},
+                  }};
+                }},
+              }},
+            }});
+            unbind();
+            check(
+              selected.join(",") === "light"
+                && removedClickHandler === clickHandler,
+              "switcher binding accepted invalid input or did not unbind",
+            );
+            const stopSystem = m.bindSystemThemePreference(() => {{}});
+            stopSystem();
+            check(
+              mediaHandler && removedMediaHandler === mediaHandler,
+              "system listener did not unbind",
+            );
+            """
+        )
+        result = subprocess.run(
+            [node, "-e", harness],
+            cwd=Path.cwd(),
+            check=False,
+            text=True,
+            capture_output=True,
+        )
+        self.assertEqual(result.returncode, 0, result.stderr)
 
     def test_system_settings_has_four_tabs_and_network_controls(self) -> None:
         html = Path("codex_image/webui/static/index.html").read_text(encoding="utf-8")
         styles = Path("codex_image/webui/static/styles.css").read_text(encoding="utf-8")
+        network_styles = Path(
+            "codex_image/webui/static/styles/74-api-system-settings.css"
+        ).read_text(encoding="utf-8")
         source = Path(
             "codex_image/webui/frontend/src/network-egress-settings.ts"
         ).read_text(encoding="utf-8")
@@ -37,6 +234,20 @@ class WebUIStaticLayoutTests(WebUIStaticTestCase):
         self.assertIn('data-network-egress-mode="direct"', html)
         self.assertIn('data-network-egress-mode="custom"', html)
         self.assertIn('id="networkEgressCustomProxy"', html)
+        self.assertRegex(
+            html,
+            r'id="networkEgressTimeoutMinutes"[^>]*type="number"[^>]*min="1"[^>]*max="30"[^>]*step="1"',
+        )
+        self.assertRegex(
+            html,
+            r'id="networkEgressRetryCount"[^>]*type="number"[^>]*min="0"[^>]*max="5"[^>]*step="1"',
+        )
+        self.assertIn('id="networkRequestPolicyHelp"', html)
+        self.assertIn('id="networkEgressTimeoutError"', html)
+        self.assertIn('id="networkEgressRetryError"', html)
+        self.assertIn('id="networkEgressCompatibilityNotice"', html)
+        self.assertIn('aria-describedby="networkRequestPolicyHelp networkEgressTimeoutError"', html)
+        self.assertIn('aria-describedby="networkRequestPolicyHelp networkEgressRetryError"', html)
         self.assertIn('id="testNetworkEgressButton"', html)
         self.assertIn('id="saveNetworkEgressButton"', html)
         self.assertRegex(
@@ -45,10 +256,56 @@ class WebUIStaticLayoutTests(WebUIStaticTestCase):
         )
         self.assertIn('fetch("/api/network-egress")', source)
         self.assertIn('fetch("/api/network-egress/test"', source)
+        self.assertIn('provider_id: selectedProviderId', source)
         self.assertIn("networkEgressPayloadIsValid", source)
         self.assertIn('url.protocol === "http:" || url.protocol === "https:"', source)
         self.assertIn("!url.username", source)
         self.assertIn("!url.password", source)
+        self.assertRegex(
+            network_styles,
+            r"\.network-request-policy-grid\s*\{[^}]*grid-template-columns:\s*repeat\(2,\s*minmax\(0,\s*1fr\)\)",
+        )
+        self.assertRegex(
+            network_styles,
+            r"\.network-egress-panel\s*\{[^}]*grid-template-columns:\s*minmax\(0,\s*1fr\)",
+        )
+        self.assertRegex(
+            network_styles,
+            r"@media\s*\(max-width:\s*520px\)[\s\S]*?\.network-request-policy-grid\s*\{[^}]*grid-template-columns:\s*minmax\(0,\s*1fr\)",
+        )
+
+    def test_network_egress_mode_selector_uses_shared_sliding_indicator(self) -> None:
+        html = Path("codex_image/webui/static/index.html").read_text(encoding="utf-8")
+        styles = Path("codex_image/webui/static/styles.css").read_text(encoding="utf-8")
+        indicator = Path(
+            "codex_image/webui/frontend/src/segmented-indicator.ts"
+        ).read_text(encoding="utf-8")
+
+        self.assertIn('class="network-egress-mode-selector"', html)
+        self.assertIn('".network-egress-mode-selector"', indicator)
+        self.assertIn(".network-egress-mode-button", indicator)
+        self.assertRegex(
+            styles,
+            r"\.network-egress-mode-selector \.segmented-indicator\s*\{[^}]*background:\s*var\(--primary-light\)",
+        )
+        self.assertRegex(
+            styles,
+            r"\.network-egress-mode-selector\.segmented-indicator-host \.network-egress-mode-button\.active\s*\{[^}]*background:\s*transparent",
+        )
+        self.assertRegex(
+            styles,
+            r"\.network-egress-mode-button:focus-visible\s*\{[^}]*outline:\s*2px solid var\(--focus-ring\)",
+        )
+
+    def test_network_egress_current_route_uses_a_neutral_full_surface(self) -> None:
+        styles = Path("codex_image/webui/static/styles.css").read_text(encoding="utf-8")
+        match = re.search(r"\.network-egress-current-route\s*\{([^}]*)\}", styles)
+
+        self.assertIsNotNone(match)
+        declarations = match.group(1)
+        self.assertIn("border: 0", declarations)
+        self.assertNotIn("border-left", declarations)
+        self.assertIn("background: color-mix", declarations)
 
     def test_sidebar_brand_keeps_product_name_stable_and_model_selector_on_its_own_row(self) -> None:
         html = Path("codex_image/webui/static/index.html").read_text(encoding="utf-8")
@@ -97,8 +354,10 @@ class WebUIStaticLayoutTests(WebUIStaticTestCase):
 
     def test_model_family_selector_is_a_subtle_two_segment_control(self) -> None:
         sidebar = Path("codex_image/webui/static/styles/10-sidebar.css").read_text(encoding="utf-8")
+        tokens = Path("codex_image/webui/static/styles/00-tokens.css").read_text(encoding="utf-8")
 
         rail_rule = sidebar.split(".model-family-segments {", 1)[1].split("}", 1)[0]
+        sidebar_rail_rule = sidebar.split(".sidebar .model-family-segments {", 1)[1].split("}", 1)[0]
         option_rule = sidebar.split(".model-family-segment {", 1)[1].split("}", 1)[0]
         icon_rule = sidebar.split(".model-family-segment-icon {", 1)[1].split("}", 1)[0]
         indicator_rule = sidebar.split(".model-family-segments .segmented-indicator {", 1)[1].split("}", 1)[0]
@@ -110,10 +369,46 @@ class WebUIStaticLayoutTests(WebUIStaticTestCase):
         self.assertIn("gap: 6px", option_rule)
         self.assertIn("width: 16px", icon_rule)
         self.assertIn("height: 16px", icon_rule)
-        self.assertIn("background: color-mix", indicator_rule)
+        self.assertIn("border: 0", sidebar_rail_rule)
+        self.assertIn("background: var(--model-family-rail-surface)", sidebar_rail_rule)
+        self.assertIn("border: 0", indicator_rule)
+        self.assertIn("background: var(--model-family-indicator-surface)", indicator_rule)
+        self.assertNotIn("background: color-mix", indicator_rule)
         self.assertIn("box-shadow: none", indicator_rule)
+        self.assertIn("--model-family-rail-surface:", tokens)
+        self.assertIn("--model-family-indicator-surface:", tokens)
         self.assertNotIn("model-family-menu", sidebar)
         self.assertNotIn("model-family-button::after", sidebar)
+
+    def test_sidebar_uses_a_role_based_radius_scale(self) -> None:
+        tokens = Path("codex_image/webui/static/styles/00-tokens.css").read_text(encoding="utf-8")
+        sidebar = Path("codex_image/webui/static/styles/10-sidebar.css").read_text(encoding="utf-8")
+        tasks = Path("codex_image/webui/static/styles/20-tasks.css").read_text(encoding="utf-8")
+        controls = Path("codex_image/webui/static/styles/40-controls.css").read_text(encoding="utf-8")
+
+        brand_rule = sidebar.split(".brand-mark {", 1)[1].split("}", 1)[0]
+        family_rule = sidebar.split(".sidebar .model-family-segments {", 1)[1].split("}", 1)[0]
+        family_option_rule = sidebar.split(".model-family-segments .model-family-segment {", 1)[1].split("}", 1)[0]
+        search_rule = sidebar.split(".sidebar-search input {", 1)[1].split("}", 1)[0]
+        self.assertIn(".sidebar .task-history-batch-button {", sidebar)
+        batch_rule = sidebar.split(".sidebar .task-history-batch-button {", 1)[1].split("}", 1)[0]
+        group_rule = tasks.split(".task-history-anchor-row,", 1)[1].split("}", 1)[0]
+        new_task_rule = controls.split(".brand-new-button {", 1)[1].split("}", 1)[0]
+
+        self.assertIn("--radius: 8px", tokens)
+        self.assertIn("--radius-lg: 12px", tokens)
+        self.assertIn("--radius-xl: 16px", tokens)
+        self.assertIn("border-radius: var(--radius-xl)", brand_rule)
+        self.assertIn("border-radius: var(--radius-lg)", family_rule)
+        self.assertIn(
+            "--segmented-indicator-radius: calc(var(--radius-lg) - var(--segmented-control-padding))",
+            family_rule,
+        )
+        self.assertIn("border-radius: var(--segmented-indicator-radius)", family_option_rule)
+        self.assertIn("border-radius: var(--radius-lg)", search_rule)
+        self.assertIn("border-radius: var(--radius)", batch_rule)
+        self.assertIn("border-radius: var(--radius-lg)", group_rule)
+        self.assertIn("border-radius: var(--radius-lg)", new_task_rule)
 
     def test_model_provider_controls_shrink_without_workspace_overflow(self) -> None:
         sidebar = Path("codex_image/webui/static/styles/10-sidebar.css").read_text(encoding="utf-8")
@@ -264,7 +559,8 @@ class WebUIStaticLayoutTests(WebUIStaticTestCase):
         self.assertRegex(styles, r"\.task-history-shell\s*\{[^}]*min-height:\s*0")
         self.assertRegex(styles, r"\.task-history-shell\s*\{[^}]*gap:\s*6px")
         self.assertRegex(styles, r"\.task-history-anchor-rail\s*\{[^}]*display:\s*grid")
-        self.assertRegex(styles, r"\.task-history-anchor-rail\s*\{[^}]*padding-right:\s*var\(--task-history-scrollbar-offset,\s*0px\)")
+        self.assertRegex(styles, r"\.task-history-current-anchor\s*\{[^}]*flex:\s*0\s+0\s+auto")
+        self.assertNotIn("--task-history-scrollbar-offset", styles)
         self.assertRegex(styles, r"\.task-history-anchor-rail-top\s*\{[^}]*padding-top:\s*0")
         self.assertRegex(styles, r"\.task-history-anchor-row\s*,[\s\S]*\.task-group-header-split\s*\{[^}]*border:\s*1px\s+solid\s+var\(--panel-border\)")
         self.assertRegex(styles, r"\.task-group-header-split\s*\{[^}]*background:\s*var\(--surface\)")
@@ -280,8 +576,44 @@ class WebUIStaticLayoutTests(WebUIStaticTestCase):
         self.assertRegex(styles, r"\.task-group-items\s*\{[^}]*transition:")
         self.assertRegex(
             styles,
-            r"@media \(prefers-reduced-motion:\s*reduce\)\s*\{[\s\S]*\.task-history-anchor-row\s*,[\s\S]*\.task-group-header-split\s*,[\s\S]*\.task-group-items\s*,[\s\S]*\.task-card\s*,[\s\S]*\.task-queue-actions\s*,[\s\S]*\.task-thumb-stack img\s*,[\s\S]*\.task-group-toggle\s*,[\s\S]*transition:\s*none",
+            r"@media \(prefers-reduced-motion:\s*reduce\)\s*\{[\s\S]*\.task-history-anchor-row\s*,[\s\S]*\.task-group-header-split\s*,[\s\S]*\.task-group-items\s*,[\s\S]*\.task-card\s*,[\s\S]*\.task-queue-drop-placeholder\s*,[\s\S]*\.task-thumb-output\s*,[\s\S]*\.task-thumb-reference-badge\s*,[\s\S]*\.task-group-toggle\s*,[\s\S]*transition:\s*none",
         )
+
+    def test_sidebar_header_and_task_history_share_visible_content_axis(self) -> None:
+        sidebar = Path("codex_image/webui/static/styles/10-sidebar.css").read_text(encoding="utf-8")
+        tasks = Path("codex_image/webui/static/styles/20-tasks.css").read_text(encoding="utf-8")
+        anchors = Path("codex_image/webui/frontend/src/task-history-anchors.ts").read_text(encoding="utf-8")
+        render = Path("codex_image/webui/frontend/src/task-list-render.ts").read_text(encoding="utf-8")
+        html = Path("codex_image/webui/static/index.html").read_text(encoding="utf-8")
+
+        self.assertRegex(
+            sidebar,
+            r"\.sidebar\s*\{[^}]*--sidebar-content-inset:\s*12px;",
+        )
+        self.assertNotIn("--task-history-scrollbar-offset", sidebar)
+        self.assertRegex(
+            sidebar,
+            r"\.sidebar-header\s*\{[^}]*padding:\s*16px\s+var\(--sidebar-content-inset\)\s+10px;",
+        )
+        self.assertRegex(
+            sidebar,
+            r"\.task-history-shell\s*\{[^}]*padding:\s*0\s+var\(--sidebar-content-inset\);",
+        )
+        self.assertRegex(
+            html,
+            r'id="taskHistoryTopAnchors"[\s\S]*id="taskHistoryCurrentAnchor"[\s\S]*class="sidebar-content"[\s\S]*id="taskList"[\s\S]*id="taskHistoryBottomAnchors"',
+        )
+        self.assertRegex(
+            sidebar,
+            r"\.task-history-current-anchor\s*\{[^}]*flex:\s*0\s+0\s+auto",
+        )
+        self.assertIn("renderExpandedTaskGroupHeader(group", render)
+        self.assertIn("renderExpandedTaskGroupBodyShellHtml(group)", render)
+        self.assertRegex(
+            tasks,
+            r"\.task-history-tools\s+\.status-text\s*\{[^}]*padding-inline-start:\s*4px;",
+        )
+        self.assertNotIn("syncTaskHistoryAnchorInset", anchors)
 
     def test_motion_tokens_are_defined_and_sidebar_avoids_transition_all(self) -> None:
         tokens = Path("codex_image/webui/static/styles/00-tokens.css").read_text(encoding="utf-8")
@@ -296,9 +628,13 @@ class WebUIStaticLayoutTests(WebUIStaticTestCase):
         self.assertNotRegex(sidebar, r"transition:\s*all")
         self.assertNotRegex(tasks, r"transition:\s*all")
         self.assertNotIn("will-change", tasks)
-        self.assertRegex(styles, r"\.task-card\s*\{[^}]*background var\(--motion-base\)")
-        self.assertRegex(styles, r"\.task-card:focus-visible\s*\{[^}]*outline:\s*2px solid var\(--primary\)")
-        self.assertRegex(styles, r"\.task-card\.active:focus-visible,\s*\.task-card\.batch-selected:focus-visible\s*\{[^}]*outline:\s*none")
+        self.assertRegex(styles, r"\.task-card\s*\{[^}]*transition:\s*transform var\(--motion-fast\)")
+        self.assertRegex(
+            styles,
+            r"\.task-card:focus-visible \.task-card-swipe-surface\s*\{[^}]*"
+            r"outline:\s*2px solid var\(--task-card-focus-ring\)",
+        )
+        self.assertNotRegex(tasks, r"\.task-card\.active:focus-visible[\s\S]*?\{[^}]*outline:\s*none")
         self.assertRegex(
             styles,
             r"\.sidebar-resize-handle:hover::before[\s\S]*color-mix\(in srgb, var\(--primary\) 34%, transparent\)",
@@ -368,17 +704,25 @@ class WebUIStaticLayoutTests(WebUIStaticTestCase):
         script = self._frontend_script_source()
         styles = Path("codex_image/webui/static/styles.css").read_text(encoding="utf-8")
 
-        self.assertIn('/static/app.js?v=runtime-653', html)
-        self.assertIn('/static/styles.css?v=runtime-653', html)
+        self.assertIn('/static/app.js?v=runtime-770', html)
+        self.assertIn('/static/styles.css?v=runtime-770', html)
         self.assertIn('id="recentAssetDock"', html)
+        self.assertIn('id="recentAssetVisibilityToggle"', html)
+        self.assertIn('aria-controls="recentAssetList"', html)
         self.assertRegex(html, r'class="image-input-footer"[\s\S]*id="recentAssetDock"[\s\S]*id="recentAssetList"')
         self.assertRegex(html, r'id="recentAssetDock"[\s\S]*id="quickGalleryDock"[\s\S]*id="galleryManagePanel"')
         self.assertIn("recentAssets: []", script)
         self.assertIn("recentAssetDock: document.querySelector(\"#recentAssetDock\")", script)
         self.assertIn("recentAssetList: document.querySelector(\"#recentAssetList\")", script)
+        self.assertIn("recentAssetVisibilityToggle: document.querySelector(\"#recentAssetVisibilityToggle\")", script)
         self.assertIn("refreshRecentAssets();", script)
         self.assertIn("function refreshRecentAssets()", script)
         self.assertIn("function renderRecentAssets()", script)
+        self.assertIn("function toggleRecentAssetPreviews()", script)
+        self.assertIn('classList.toggle("previews-hidden", recentAssetPreviewsHidden)', script)
+        self.assertIn('toggleAttribute("inert", recentAssetPreviewsHidden)', script)
+        self.assertIn('setAttribute("aria-expanded", String(!recentAssetPreviewsHidden))', script)
+        self.assertIn('els.recentAssetVisibilityToggle?.addEventListener("click", toggleRecentAssetPreviews)', script)
         self.assertIn("function assetSource(item)", script)
         self.assertIn("function referenceAssetInputs()", script)
         self.assertIn("function addReferenceAssetInput(item)", script)
@@ -393,15 +737,23 @@ class WebUIStaticLayoutTests(WebUIStaticTestCase):
         self.assertIn('fetch("/api/reference-assets/recent?limit=50")', script)
         self.assertIn("reference_asset_ids: assets.map((source) => source.id)", script)
         self.assertIn("data-reference-asset-delete", script)
+        self.assertIn("data-reference-asset-hide", script)
         self.assertIn("function deleteRecentAsset", script)
+        self.assertIn("function hideRecentAsset", script)
         self.assertIn('fetch(`/api/reference-assets/${encodeURIComponent(assetId)}`', script)
+        self.assertIn('fetch(`/api/reference-assets/${encodeURIComponent(assetId)}/hide`', script)
         self.assertIn('method: "DELETE"', script)
+        self.assertIn('method: "POST"', script)
         self.assertIn("function handleRecentAssetWheel", script)
         self.assertIn('els.recentAssetList?.addEventListener("wheel", handleRecentAssetWheel, { passive: false });', script)
         self.assertIn("const nextScrollLeft = Math.min(maxScrollLeft, Math.max(0, list.scrollLeft + wheelDelta));", script)
         self.assertIn("openConfirmPopover(button", script)
         self.assertIn('event.stopPropagation();', script)
-        self.assertIn('message: translate("recentAssets.deleteMessage")', script)
+        self.assertIn('formatTranslation("recentAssets.hideMessage"', script)
+        self.assertIn('formatTranslation("recentAssets.inUse"', script)
+        self.assertIn('detail?.code === "reference_asset_in_use"', script)
+        self.assertIn("danger: false", script)
+        self.assertIn('options.danger === false', script)
         self.assertIn('document.addEventListener(LOCALE_CHANGE_EVENT, renderRecentAssets);', script)
         self.assertNotIn("不会影响公用图库或历史任务。", script)
         self.assertNotIn("已加入图像输入的同一图片也会移除", script)
@@ -412,6 +764,10 @@ class WebUIStaticLayoutTests(WebUIStaticTestCase):
         self.assertRegex(styles, r"\.recent-asset-list\s*\{[^}]*display:\s*flex")
         self.assertRegex(styles, r"\.recent-asset-list\s*\{[^}]*scrollbar-width:\s*none")
         self.assertRegex(styles, r"\.recent-asset-list\s*\{[^}]*-ms-overflow-style:\s*none")
+        self.assertRegex(styles, r"\.recent-asset-list\s*\{[^}]*box-sizing:\s*border-box")
+        self.assertRegex(styles, r"\.recent-asset-list\s*\{[^}]*padding:\s*4px 4px 0 0")
+        self.assertRegex(styles, r"\.recent-asset-dock\.previews-hidden\s+\.recent-asset-list\s*\{[^}]*visibility:\s*hidden")
+        self.assertRegex(styles, r"\.recent-asset-visibility-toggle\s*\{[^}]*border:\s*0")
         self.assertRegex(styles, r"\.recent-asset-list::\-webkit-scrollbar\s*\{[^}]*display:\s*none")
         self.assertRegex(styles, r"\.recent-asset-button\s*\{[^}]*width:\s*var\(--recent-asset-size\)")
         self.assertRegex(styles, r"\.recent-asset-button\s*\{[^}]*position:\s*relative")
@@ -559,6 +915,9 @@ class WebUIStaticLayoutTests(WebUIStaticTestCase):
             self.assertRegex(source, rf"\n(?:async\s+)?function {function_name}\(")
             self.assertNotRegex(gallery_source, rf"\n(?:async\s+)?function {function_name}\(")
         self.assertIn('fetch("/api/reference-assets/recent?limit=50")', source)
+        self.assertIn("const RECENT_ASSET_RENDER_BATCH_SIZE = 12", source)
+        self.assertIn('loading="eager"', source)
+        self.assertNotIn('loading="lazy"', source)
         self.assertIn("addReferenceAssetInput(item)", source)
         self.assertIn("Object.assign(getLegacyBridge().methods", source)
     def test_quick_gallery_feature_has_typescript_source_contract(self) -> None:
@@ -924,7 +1283,7 @@ class WebUIStaticLayoutTests(WebUIStaticTestCase):
 
         self.assertRegex(styles, r"\.brand-mark\s*\{[^}]*width:\s*42px")
         self.assertRegex(styles, r"\.brand-mark\s*\{[^}]*height:\s*42px")
-        self.assertRegex(styles, r"\.brand-mark\s*\{[^}]*border-radius:\s*15px")
+        self.assertRegex(styles, r"\.brand-mark\s*\{[^}]*border-radius:\s*var\(--radius-xl\)")
         self.assertRegex(styles, r"\.brand-rabbit-logo\s*\{[^}]*fill:\s*currentColor")
         self.assertRegex(styles, r"\.brand-rabbit-logo\s*\{[^}]*color:\s*#ffffff")
         self.assertRegex(styles, r"\.brand-rabbit-cutout\s*\{[^}]*fill:\s*#457b66")
@@ -1045,6 +1404,36 @@ class WebUIStaticLayoutTests(WebUIStaticTestCase):
         self.assertNotRegex(shell, r"\.preview-col\s*\{[^}]*height:")
         self.assertIn("@container workspace (max-width: 1100px)", responsive)
         self.assertIn("@container workspace (max-width: 899px)", responsive)
+
+    def test_control_panel_titles_and_labels_use_a_shared_optical_inset(self) -> None:
+        layout = Path(
+            "codex_image/webui/static/styles/30-layout-top-nav-panels.css"
+        ).read_text(encoding="utf-8")
+        output = Path(
+            "codex_image/webui/static/styles/70-output-settings.css"
+        ).read_text(encoding="utf-8")
+
+        self.assertRegex(
+            layout,
+            r"\.controls-col\s*\{[^}]*--control-label-optical-inset:\s*2px",
+        )
+        self.assertRegex(
+            layout,
+            r"\.controls-col \.panel-heading h2,\s*"
+            r"\.controls-col \.output-settings-header h2\s*\{[^}]*"
+            r"padding-inline-start:\s*var\(--control-label-optical-inset\)",
+        )
+        self.assertRegex(
+            output,
+            r"\.controls-col \.output-panel \.field > span,\s*"
+            r"\.controls-col \.output-panel \.field-label\s*\{[^}]*"
+            r"padding-inline-start:\s*var\(--control-label-optical-inset\)",
+        )
+        self.assertNotRegex(
+            layout + output,
+            r"(?:panel-heading h2|output-settings-header h2|field-label)[^{]*"
+            r"\{[^}]*(?:margin-left|transform):",
+        )
 
     def test_compact_navigation_scroll_does_not_clip_notification_center(self) -> None:
         responsive = Path("codex_image/webui/static/styles/80-utilities-responsive.css").read_text(encoding="utf-8")
@@ -1215,7 +1604,7 @@ class WebUIStaticLayoutTests(WebUIStaticTestCase):
             Path("Start WebUI.bat").read_text(encoding="utf-8"),
         ]
 
-        self.assertIn('FastAPI(title="iLab CONJURE"', app_source)
+        self.assertRegex(app_source, r'FastAPI\(\s*title="iLab CONJURE"')
         self.assertIn("<title>iLab CONJURE</title><h1>iLab CONJURE</h1>", app_source)
         self.assertNotIn("iLab GPT CONJURE", app_source)
         self.assertNotIn("GPT-image-2 Studio", app_source)
@@ -1495,6 +1884,22 @@ class WebUIStaticLayoutTests(WebUIStaticTestCase):
         self.assertIn("color: var(--primary-foreground)", resource_button_styles)
         self.assertNotIn("thumb-label", script)
         self.assertNotIn(".thumb-label", styles)
+
+    def test_short_desktop_recent_uploads_fit_inside_reference_input_footer(self) -> None:
+        responsive = Path(
+            "codex_image/webui/static/styles/80-utilities-responsive.css"
+        ).read_text(encoding="utf-8")
+        compact = self._extract_css_at_rule(
+            responsive,
+            "@media (max-height: 1390px) and (min-width: 900px)",
+        )
+
+        self.assertRegex(
+            compact,
+            r"\.image-input-workspace\s*\{[^}]*--recent-asset-size:\s*"
+            r"clamp\(\s*24px,\s*calc\(var\(--image-input-action-height\)\s*-\s*4px\),\s*32px\s*\)",
+        )
+
     def test_short_desktop_layout_reduces_input_prompt_and_output_settings_height(self) -> None:
         responsive = Path(
             "codex_image/webui/static/styles/80-utilities-responsive.css"
@@ -1524,7 +1929,11 @@ class WebUIStaticLayoutTests(WebUIStaticTestCase):
             r"\.image-input-workspace\s*\{[^}]*--image-input-thumb-size:\s*clamp\("
             r"[\s\S]*104px,[\s\S]*116px",
         )
-        self.assertIn("--recent-asset-size: 32px", compact)
+        self.assertRegex(
+            compact,
+            r"--recent-asset-size:\s*clamp\(\s*24px,\s*"
+            r"calc\(var\(--image-input-action-height\)\s*-\s*4px\),\s*32px",
+        )
         self.assertRegex(compact, r"\.image-uploader-grid\s*\{[^}]*padding:\s*clamp\(")
         self.assertRegex(
             compact,
@@ -1906,6 +2315,7 @@ class WebUIStaticLayoutTests(WebUIStaticTestCase):
         advanced_source = Path("codex_image/webui/frontend/src/api-advanced-settings.ts").read_text(encoding="utf-8")
         provider_list_source = Path("codex_image/webui/frontend/src/api-provider-list-ui.ts").read_text(encoding="utf-8")
         provider_source = Path("codex_image/webui/frontend/src/api-provider-settings.ts").read_text(encoding="utf-8")
+        provider_sort_source = Path("codex_image/webui/frontend/src/api-provider-sort.ts").read_text(encoding="utf-8")
         main_source = Path("codex_image/webui/frontend/src/main.ts").read_text(encoding="utf-8")
         styles = Path("codex_image/webui/static/styles.css").read_text(encoding="utf-8")
 
@@ -2088,7 +2498,7 @@ class WebUIStaticLayoutTests(WebUIStaticTestCase):
         self.assertIn("function editApiProvider", script)
         self.assertIn("function copyApiProvider", script)
         self.assertIn("function toggleApiProviderSortMode", script)
-        self.assertIn("function moveApiProvider", script)
+        self.assertIn("function reorderApiProviders", script)
         self.assertIn("api_key_source_provider_id", script)
         self.assertIn("const copiesSavedKey = providerHasApiKey(provider)", script)
         self.assertIn('api_key_source_provider_id: copiesSavedKey ? provider.id : ""', script)
@@ -2141,7 +2551,9 @@ class WebUIStaticLayoutTests(WebUIStaticTestCase):
         self.assertIn("function queueApiSettingsAutosave", script)
         self.assertRegex(provider_source, r"function deleteApiProvider\(\)[\s\S]*queueApiSettingsAutosave\(\);[\s\S]*function confirmDeleteApiProvider")
         self.assertRegex(provider_source, r"function selectApiProvider\(providerId[^)]*\)[\s\S]*queueApiSettingsAutosave\(\);[\s\S]*function editApiProvider")
-        self.assertRegex(provider_source, r"function moveApiProvider\(providerId[^,]*, direction[^)]*\)[\s\S]*queueApiSettingsAutosave\(\);[\s\S]*async function saveApiProviderEdit")
+        self.assertRegex(provider_source, r"function reorderApiProviders\(orderedIds[^)]*\)[\s\S]*queueApiSettingsAutosave\(\);[\s\S]*async function saveApiProviderEdit")
+        self.assertIn("const sortFocusId = autoSave ? focusedApiProviderSortId()", provider_source)
+        self.assertRegex(provider_source, r"populateApiSettingsForm\(\);\s*focusApiProviderSortHandle\(sortFocusId\);")
         self.assertIn('void saveApiSettings({ auto: true })', script)
         self.assertIn('translate("apiSettings.autoSaving")', script)
         self.assertIn('translate("apiSettings.autoSaved")', script)
@@ -2165,8 +2577,19 @@ class WebUIStaticLayoutTests(WebUIStaticTestCase):
         self.assertNotIn('apiSourceSettingsButton?.addEventListener("click"', script)
         self.assertIn('apiProviderList?.addEventListener("click"', script)
         self.assertIn('apiProviderSearch?.addEventListener("input", () => call(methods, "renderApiProviderList"))', script)
-        self.assertIn('closest?.("[data-api-provider-sort]")', script)
-        self.assertIn('call(methods, "moveApiProvider"', script)
+        self.assertNotIn('closest?.("[data-api-provider-sort]")', event_source)
+        self.assertNotIn('call(methods, "moveApiProvider"', event_source)
+        self.assertIn("data-api-provider-sort-handle", provider_sort_source)
+        self.assertIn("handle.dataset.apiProviderSortHandle", provider_source)
+        self.assertIn('addEventListener("pointerdown"', provider_sort_source)
+        self.assertIn('addEventListener("pointermove"', provider_sort_source)
+        self.assertIn('addEventListener("pointerup"', provider_sort_source)
+        self.assertIn('addEventListener("pointercancel"', provider_sort_source)
+        self.assertIn('addEventListener("keydown"', provider_sort_source)
+        self.assertIn('event.key === "Escape"', provider_sort_source)
+        self.assertIn("setPointerCapture", provider_sort_source)
+        self.assertNotIn("dataTransfer", provider_sort_source)
+        self.assertNotIn("draggable = true", provider_sort_source)
         self.assertIn('call(methods, "selectApiProvider"', script)
         self.assertIn('editApiProviderButton?.addEventListener("click", () => call(methods, "editApiProvider"))', script)
         self.assertIn('copyApiProviderButton?.addEventListener("click", () => call(methods, "copyApiProvider"))', script)
@@ -2324,8 +2747,14 @@ class WebUIStaticLayoutTests(WebUIStaticTestCase):
         self.assertRegex(styles, r"\.api-provider-section-header\s*\{[^}]*justify-content:\s*space-between")
         self.assertRegex(styles, r"\.api-provider-sort-toggle\s*\{[^}]*min-width:\s*72px")
         self.assertRegex(styles, r"\.api-provider-list\.is-sorting\s*\{[^}]*display:\s*grid")
-        self.assertRegex(styles, r"\.api-provider-sort-row\s*\{[^}]*grid-template-columns:\s*minmax\(0,\s*1fr\)\s+auto")
-        self.assertRegex(styles, r"\.api-provider-sort-button\s*\{[^}]*min-width:\s*48px")
+        self.assertRegex(styles, r"\.api-provider-sort-row\s*\{[^}]*grid-template-columns:\s*minmax\(0,\s*1fr\)\s+36px")
+        self.assertRegex(styles, r"\.api-provider-sort-handle\s*\{[^}]*touch-action:\s*none")
+        self.assertRegex(styles, r"\.api-provider-sort-drag-layer\s*\{[^}]*position:\s*fixed")
+        self.assertRegex(styles, r"\.api-provider-sort-drag-layer\s*\{[^}]*pointer-events:\s*none")
+        self.assertRegex(styles, r"\.api-provider-sort-drag-preview\s*\{[^}]*box-shadow:\s*var\(--shadow-popover\)")
+        self.assertRegex(styles, r"\.api-provider-sort-drag-preview\s*\{[^}]*will-change:\s*transform")
+        self.assertRegex(styles, r"@media \(prefers-reduced-motion:\s*reduce\)[\s\S]*?\.api-provider-sort-row\.is-dragging")
+        self.assertNotIn(".api-provider-sort-button", styles)
         self.assertRegex(styles, r"\.model-tool-row\s*\{[^}]*grid-template-columns:\s*minmax\(0,\s*1fr\)\s+minmax\(104px,\s*max-content\)")
         self.assertIn(".web-search-toggle", styles)
         self.assertIn(".web-search-field.is-disabled", styles)
@@ -3053,69 +3482,97 @@ class WebUIStaticLayoutTests(WebUIStaticTestCase):
     def test_lightbox_is_fixed_overlay(self) -> None:
         styles = Path("codex_image/webui/static/styles.css").read_text(encoding="utf-8")
 
-        self.assertRegex(styles, r"\.lightbox\s*\{[^}]*position:\s*fixed", "lightbox should float over the viewport")
-        self.assertRegex(styles, r"\.lightbox\s*\{[^}]*display:\s*none", "lightbox should be hidden when inactive")
-        self.assertRegex(styles, r"\.lightbox\.active\s*\{[^}]*display:\s*flex", "active lightbox should be visible")
-        self.assertRegex(styles, r"\.lightbox-close\s*\{[^}]*position:\s*absolute", "close button should stay inside the overlay")
-        self.assertRegex(styles, r"\.lightbox-close\s*\{[^}]*display:\s*inline-flex", "close icon should not rely on glyph line-height")
-        self.assertRegex(styles, r"\.lightbox-close\s*\{[^}]*align-items:\s*center", "close icon should be vertically centered")
-        self.assertRegex(styles, r"\.lightbox-close\s*\{[^}]*justify-content:\s*center", "close icon should be horizontally centered")
+        self.assertRegex(styles, r"\.history-lightbox\s*\{[^}]*position:\s*fixed", "shared lightbox should float over the viewport")
+        self.assertRegex(styles, r"\.history-lightbox\[hidden\]\s*\{[^}]*display:\s*none", "shared lightbox should be hidden when inactive")
+        self.assertRegex(styles, r"\.history-lightbox-close\s*\{[^}]*position:\s*absolute", "close button should stay inside the overlay")
+        self.assertRegex(styles, r"\.history-lightbox-close\s*\{[^}]*display:\s*inline-flex", "close icon should not rely on glyph line-height")
+        self.assertRegex(styles, r"\.history-lightbox-close\s*\{[^}]*align-items:\s*center", "close icon should be vertically centered")
+        self.assertRegex(styles, r"\.history-lightbox-close\s*\{[^}]*justify-content:\s*center", "close icon should be horizontally centered")
 
     def test_lightbox_can_close_with_button_and_escape(self) -> None:
-        script = self._frontend_script_source()
         lightbox_source = self._lightbox_source()
+        shared_source = Path("codex_image/webui/frontend/src/history-lightbox.ts").read_text(encoding="utf-8")
 
-        self.assertIn("lightboxClose", script)
-        self.assertIn("addEventListener(\"click\", closeLightbox)", script)
-        self.assertIn("addEventListener(\"keydown\"", script)
-        self.assertIn('event.key === "Escape"', script)
-        self.assertIn('class="drawer-close-icon"', lightbox_source)
-        self.assertIn('<path d="M6 6l12 12M18 6L6 18"></path>', lightbox_source)
-        self.assertNotIn('aria-label="${translate("lightbox.close")}">×</button>', lightbox_source)
+        self.assertIn("closeHistoryLightbox", lightbox_source)
+        self.assertIn('addEventListener("click", closeHistoryLightbox)', shared_source)
+        self.assertIn('addEventListener("keydown"', shared_source)
+        self.assertIn('event.key === "Escape"', shared_source)
+        self.assertIn('class="drawer-close-icon"', shared_source)
+        self.assertIn('<path d="M6 6l12 12M18 6L6 18"></path>', shared_source)
+        self.assertNotIn('aria-label="${translate("lightbox.close")}">×</button>', shared_source)
 
     def test_lightbox_can_navigate_multiple_outputs(self) -> None:
         script = self._frontend_script_source()
+        lightbox_source = self._lightbox_source()
+        shared_source = Path("codex_image/webui/frontend/src/history-lightbox.ts").read_text(encoding="utf-8")
         styles = Path("codex_image/webui/static/styles.css").read_text(encoding="utf-8")
 
         self.assertIn('const images = [...els.previewGrid.querySelectorAll("[data-lightbox-url]")]', script)
-        self.assertIn("window.openLightbox?.(currentUrl, urls, Math.max(0, images.indexOf(image)))", script)
-        self.assertIn("urls: []", script)
-        self.assertIn("showPreviousLightboxImage", script)
-        self.assertIn("showNextLightboxImage", script)
-        self.assertIn('event.key === "ArrowLeft"', script)
-        self.assertIn('event.key === "ArrowRight"', script)
-        self.assertIn('class="lightbox-nav lightbox-prev"', script)
-        self.assertIn('class="lightbox-nav lightbox-next"', script)
-        self.assertIn("lightbox-counter", script)
-        self.assertRegex(styles, r"\.lightbox-nav\s*\{[^}]*position:\s*absolute")
-        self.assertRegex(styles, r"\.lightbox-counter\s*\{[^}]*position:\s*absolute")
+        self.assertIn("window.openLightbox?.(currentUrl, urls, Math.max(0, images.indexOf(image)), {", script)
+        self.assertIn('from "./history-lightbox"', lightbox_source)
+        self.assertIn("openHistoryLightbox(", lightbox_source)
+        self.assertIn('data-history-lightbox-slot="previous"', shared_source)
+        self.assertIn('data-history-lightbox-slot="current"', shared_source)
+        self.assertIn('data-history-lightbox-slot="next"', shared_source)
+        self.assertIn('event.key === "ArrowLeft"', shared_source)
+        self.assertIn('event.key === "ArrowRight"', shared_source)
+        self.assertNotIn('class="lightbox-nav', lightbox_source)
+        self.assertNotIn(".lightbox-nav", styles)
+        self.assertRegex(styles, r"\.history-lightbox-counter\s*\{[^}]*position:\s*absolute")
+
+    def test_generation_lightbox_shares_zoom_and_task_navigation_controls(self) -> None:
+        lightbox_source = self._lightbox_source()
+        shared_source = Path("codex_image/webui/frontend/src/history-lightbox.ts").read_text(encoding="utf-8")
+        selection_source = Path("codex_image/webui/frontend/src/task-selection.ts").read_text(encoding="utf-8")
+        preview_source = Path("codex_image/webui/frontend/src/task-preview.ts").read_text(encoding="utf-8")
+
+        self.assertIn('from "./history-lightbox"', lightbox_source)
+        self.assertIn('from "./lightbox-controls"', shared_source)
+        self.assertIn("lightboxZoomChromeHtml", shared_source)
+        self.assertIn("lightboxActionForKey", shared_source)
+        self.assertIn("isLightboxAtOrBelowFitScale", shared_source)
+        self.assertIn("shouldCloseLightboxFromClick(event.target, historyLightboxEl!)", shared_source)
+        self.assertIn("showLightboxShortcutHint", shared_source)
+        self.assertIn("const wasActive = isHistoryLightboxActive();", shared_source)
+        self.assertRegex(shared_source, r"if \(!wasActive\) \{\s*showLightboxShortcutHint")
+        self.assertIn("openMainTaskLightboxByDirection", selection_source)
+        self.assertIn("onTaskNavigate: openMainTaskLightboxByDirection", selection_source)
+        self.assertIn('onTaskNavigate: (direction, context) => legacyMethod("openMainTaskLightboxByDirection", direction, context)', preview_source)
+        self.assertIn('event.key === "ArrowUp"', shared_source)
+        self.assertIn('event.key === "ArrowDown"', shared_source)
+        self.assertNotIn("event.target === historyLightboxEl", shared_source)
+
     def test_lightbox_controls_stay_above_zoomed_image(self) -> None:
         styles = Path("codex_image/webui/static/styles.css").read_text(encoding="utf-8")
 
-        self.assertRegex(styles, r"\.lightbox\s+img\s*\{[^}]*z-index:\s*1")
-        self.assertRegex(styles, r"\.lightbox-close\s*\{[^}]*z-index:\s*2")
-        self.assertRegex(styles, r"\.lightbox-nav\s*\{[^}]*z-index:\s*2")
-        self.assertRegex(styles, r"\.lightbox-counter\s*\{[^}]*z-index:\s*2")
+        self.assertRegex(styles, r"\.history-lightbox\s+img\s*\{[^}]*z-index:\s*1")
+        self.assertRegex(styles, r"\.history-lightbox-close\s*\{[^}]*z-index:\s*2")
+        self.assertRegex(styles, r"\.history-lightbox-peek\s*\{[^}]*z-index:\s*1")
+        self.assertRegex(styles, r"\.history-lightbox-counter\s*\{[^}]*z-index:\s*2")
     def test_lightbox_right_click_does_not_leave_image_panning(self) -> None:
-        script = self._frontend_script_source()
+        shared_source = Path("codex_image/webui/frontend/src/history-lightbox.ts").read_text(encoding="utf-8")
 
-        self.assertIn("function stopLightboxPanning", script)
-        self.assertIn("if (event.button !== 0)", script)
-        self.assertIn("img?.addEventListener(\"contextmenu\", stopLightboxPanning)", script)
-        self.assertIn("window.addEventListener(\"mouseup\", stopLightboxPanning)", script)
-        self.assertIn("window.addEventListener(\"blur\", stopLightboxPanning)", script)
-        self.assertIn("event.buttons !== undefined && (event.buttons & 1) !== 1", script)
+        self.assertIn("function stopHistoryLightboxPanning", shared_source)
+        self.assertIn("if (event.button !== 0)", shared_source)
+        self.assertIn('image?.addEventListener("contextmenu", stopHistoryLightboxPanning)', shared_source)
+        self.assertIn('window.addEventListener("mouseup", stopHistoryLightboxPanning)', shared_source)
+        self.assertIn('window.addEventListener("blur", stopHistoryLightboxPanning)', shared_source)
+        self.assertIn("event.buttons !== undefined && (event.buttons & 1) !== 1", shared_source)
     def test_lightbox_feature_has_typescript_source_contract(self) -> None:
         lightbox_source = self._lightbox_source()
         legacy_source = self._bootstrap_source()
 
         self.assertIn("export function initLightboxFeature", lightbox_source)
         self.assertIn("function openLightbox", lightbox_source)
-        self.assertIn("function closeLightbox", lightbox_source)
         self.assertIn("function syncActiveLightboxUrls", lightbox_source)
+        self.assertIn("openHistoryLightbox", lightbox_source)
+        self.assertIn("closeHistoryLightbox", lightbox_source)
+        self.assertIn("syncHistoryLightboxUrls", lightbox_source)
         self.assertIn("window.openLightbox = openLightbox", lightbox_source)
         self.assertIn("window.addToInput = addToInput", lightbox_source)
         self.assertIn("Object.assign(getLegacyBridge().methods", lightbox_source)
+        self.assertNotIn("function ensureLightboxElement", lightbox_source)
+        self.assertNotIn('class="lightbox-nav', lightbox_source)
         for function_name in [
             "isLightboxActive",
             "setLightboxTransform",
@@ -3281,8 +3738,8 @@ class WebUIStaticLayoutTests(WebUIStaticTestCase):
         script = self._frontend_script_source()
         styles = Path("codex_image/webui/static/styles.css").read_text(encoding="utf-8")
 
-        self.assertIn('/static/app.js?v=runtime-653', html)
-        self.assertIn('/static/styles.css?v=runtime-653', html)
+        self.assertIn('/static/app.js?v=runtime-770', html)
+        self.assertIn('/static/styles.css?v=runtime-770', html)
         self.assertIn('id="pasteClipboardButton"', html)
         self.assertIn('id="statusText"', html)
         self.assertRegex(
@@ -3724,24 +4181,34 @@ class WebUIStaticLayoutTests(WebUIStaticTestCase):
     def test_theme_mode_javascript_and_styles_exist(self) -> None:
         html = Path("codex_image/webui/static/index.html").read_text(encoding="utf-8")
         script = self._frontend_script_source()
+        theme_source = Path(
+            "codex_image/webui/frontend/src/theme-preference.ts"
+        ).read_text(encoding="utf-8")
+        shell_source = Path(
+            "codex_image/webui/frontend/src/shell-ui.ts"
+        ).read_text(encoding="utf-8")
         styles = Path("codex_image/webui/static/styles.css").read_text(encoding="utf-8")
 
-        self.assertIn("/static/app.js?v=runtime-653", html)
-        self.assertIn("/static/styles.css?v=runtime-653", html)
-        self.assertIn('const THEME_STORAGE_KEY = "codex-image-theme-preference";', script)
+        self.assertIn("/static/app.js?v=runtime-770", html)
+        self.assertIn("/static/styles.css?v=runtime-770", html)
+        self.assertIn('"codex-image-theme-preference"', theme_source)
         self.assertIn('themePreference: "system"', script)
         self.assertIn('call(methods, "restoreThemePreference")', script)
-        self.assertIn("function resolveEffectiveTheme", script)
-        self.assertIn("function applyThemePreference", script)
-        self.assertIn("let themeTransitionLockFrameId", script)
-        self.assertIn("function lockThemeTransitions", script)
-        self.assertIn('document.documentElement.classList.add("theme-transition-lock")', script)
-        self.assertIn('document.documentElement.classList.remove("theme-transition-lock")', script)
-        self.assertRegex(script, r"function applyThemePreference\(preference,[\s\S]*lockThemeTransitions\(\)")
-        self.assertIn("function updateThemeSwitcher", script)
-        self.assertIn("function handleThemeSystemChange", script)
-        self.assertIn('localStorage.getItem(THEME_STORAGE_KEY)', script)
-        self.assertIn('localStorage.setItem(THEME_STORAGE_KEY', script)
+        self.assertIn('from "./theme-preference";', shell_source)
+        self.assertIn("function resolveEffectiveTheme", shell_source)
+        self.assertIn("function applyThemePreference", shell_source)
+        self.assertIn("function updateThemeSwitcher", shell_source)
+        self.assertIn("function handleThemeSystemChange", shell_source)
+        self.assertIn("let themeTransitionFrame", theme_source)
+        self.assertIn("function lockThemeTransitions", theme_source)
+        self.assertIn('root.classList.add("theme-transition-lock")', theme_source)
+        self.assertIn('root.classList.remove("theme-transition-lock")', theme_source)
+        self.assertRegex(
+            theme_source,
+            r"function applyDocumentTheme\([\s\S]*lockThemeTransitions\(root\)",
+        )
+        self.assertIn("storage.getItem(THEME_STORAGE_KEY)", theme_source)
+        self.assertIn("storage.setItem(THEME_STORAGE_KEY", theme_source)
         self.assertRegex(styles, r":root\[data-theme=\"dark\"\]\s*\{[\s\S]*--bg:")
         self.assertIn("--success-soft:", styles)
         self.assertIn("--danger-soft:", styles)
@@ -3830,3 +4297,15 @@ class WebUIStaticLayoutTests(WebUIStaticTestCase):
         self.assertNotIn("rgba(226, 232, 229", panel_block)
         self.assertNotRegex(styles, r"\.modal-panel\s*\{[^}]*width:\s*min\(920px,\s*94vw\)[^}]*rgba\(226, 232, 229")
         self.assertNotIn("rgba(226, 232, 229", styles)
+
+    def _extract_div(self, html: str, marker: str) -> str:
+        start = html.index(marker)
+        depth = 0
+        for match in re.finditer(r"<div\b|</div>", html[start:]):
+            if match.group(0).startswith("<div"):
+                depth += 1
+            else:
+                depth -= 1
+                if depth == 0:
+                    return html[start:start + match.end()]
+        raise AssertionError(f"Could not extract div {marker}")

@@ -1,6 +1,9 @@
 from __future__ import annotations
 
+import asyncio
 import base64
+from contextlib import asynccontextmanager
+from functools import wraps
 from io import BytesIO
 import json
 import mimetypes
@@ -25,8 +28,6 @@ from codex_image.client import (
     image_model_supports_input_fidelity,
 )
 from codex_image.prompt_guard import (
-    build_guarded_prompt,
-    build_original_prompt_instructions,
     build_prompt_guard_instructions,
     extract_prompt_constraints,
 )
@@ -60,6 +61,10 @@ from .auth_routing import (
     _request_codex_mode,
     _task_metadata_uses_api,
     _update_stored_request_api_provider,
+)
+from .cancellation import (
+    finalize_task_cancellation,
+    request_task_cancellation,
 )
 from .queue_runtime import (
     _client_for_queue_channel,
@@ -103,6 +108,7 @@ from .schemas import (
     DEFAULT_WEBUI_SETTINGS_PATH,
     DEFAULT_WEBUI_SOURCE_DATA_SUBDIR,
 )
+from .shutdown_control import ShutdownCoordinator
 from .network_egress import NetworkEgressManager, NetworkEgressSettings
 from .storage import GalleryStorage, QueueStorage, ReferenceAssetStorage, SQLiteQueueStorage, TaskStorage, _guess_mime_type, utc_now
 from .reference_files import ReferenceFileStorage
@@ -118,9 +124,22 @@ from .settings_store import (
     _mask_api_key,
     _parse_color_palette_import,
 )
+from .security import LocalWebUISecurityMiddleware
 from .context import WebUIContext
 from .events import event_key, event_snapshot, queue_snapshot, queued_or_running_task_ids, sse_message, task_event
+from .history_export import HistoryExportService
+from .history_backup_export import HistoryBackupExportService
+from .history_backup_import import HistoryBackupImportService
+from .history_backup_plan import TaskBackupPlanner
+from .image_uploads import InvalidRasterImage, read_validated_raster_upload
+from .instance_lock import (
+    WebUIInstanceLock,
+    validate_single_worker_environment,
+)
 from .routes import register_webui_routes
+from .routes.history_backup import (
+    shutdown_history_backup_services,
+)
 from .executor import (
     _call_image_client,
     _debug_sse_path,
@@ -188,6 +207,47 @@ class NoCacheStaticFiles(StaticFiles):
         return response
 
 
+def _single_instance_guard(builder: Callable[..., FastAPI]) -> Callable[..., FastAPI]:
+    @wraps(builder)
+    def guarded(*args: Any, **kwargs: Any) -> FastAPI:
+        if not bool(kwargs.get("enforce_single_instance", False)):
+            return builder(*args, **kwargs)
+        validate_single_worker_environment()
+        settings = WebUISettings(
+            Path(kwargs.get("webui_settings_path", DEFAULT_WEBUI_SETTINGS_PATH))
+        )
+        configured_paths = settings.read_paths()
+        output_root = kwargs.get("output_root", DEFAULT_WEBUI_OUTPUT_ROOT)
+        custom_output = Path(output_root) != DEFAULT_WEBUI_OUTPUT_ROOT
+        output_path = (
+            Path(output_root)
+            if custom_output
+            else configured_paths["output_root"]
+        )
+        requested_source_data_root = kwargs.get("source_data_root")
+        source_data_path = (
+            Path(requested_source_data_root)
+            if requested_source_data_root is not None
+            else (
+                output_path / DEFAULT_WEBUI_SOURCE_DATA_SUBDIR
+                if custom_output
+                else configured_paths["source_data_root"]
+            )
+        )
+        instance_lock = WebUIInstanceLock.acquire(source_data_path)
+        try:
+            app_instance = builder(*args, **kwargs)
+        except BaseException:
+            instance_lock.release()
+            raise
+        app_instance.state.webui_instance_lock = instance_lock
+        app_instance.state.ctx.instance_lock = instance_lock
+        return app_instance
+
+    return guarded
+
+
+@_single_instance_guard
 def create_app(
     *,
     input_root: Path | str | None = None,
@@ -208,8 +268,11 @@ def create_app(
     prompt_templates_path: Path | str = DEFAULT_WEBUI_PROMPT_TEMPLATES_PATH,
     webui_settings_path: Path | str = DEFAULT_WEBUI_SETTINGS_PATH,
     queue_path: Path | str | None = None,
+    history_export_temp_root: Path | str | None = None,
+    history_backup_temp_root: Path | str | None = None,
     auto_start_queue: bool = True,
     auto_retry: bool = False,
+    enforce_single_instance: bool = False,
 ) -> FastAPI:
     settings = WebUISettings(Path(webui_settings_path))
     configured_paths = settings.read_paths()
@@ -233,7 +296,10 @@ def create_app(
     )
     _migrate_legacy_gallery_directory(gallery_path, [Path("output") / "webui-gallery"])
     gallery_storage = GalleryStorage(gallery_path)
-    reference_asset_storage = ReferenceAssetStorage(reference_asset_path)
+    reference_asset_storage = ReferenceAssetStorage(
+        reference_asset_path,
+        reference_counts_provider=storage.reference_asset_reference_counts,
+    )
     reference_file_storage = ReferenceFileStorage(reference_file_path)
     queue_storage = (
         QueueStorage(Path(queue_path))
@@ -251,11 +317,44 @@ def create_app(
     color_settings = ColorPaletteSettings(Path(color_settings_path))
     prompt_snippet_settings = PromptSnippetSettings(Path(prompt_snippets_path))
     prompt_template_settings = PromptTemplateSettings(Path(prompt_templates_path))
+    history_export_service = HistoryExportService(
+        storage,
+        temp_root=history_export_temp_root,
+    )
+    history_backup_path = (
+        Path(history_backup_temp_root)
+        if history_backup_temp_root is not None
+        else source_data_path / "history-backups"
+    )
+    history_backup_planner = TaskBackupPlanner(
+        storage,
+        gallery_storage,
+        reference_asset_storage,
+        reference_file_storage,
+    )
+    history_backup_export_service = HistoryBackupExportService(
+        history_backup_planner,
+        history_backup_path,
+        recover_on_init=False,
+    )
+    history_backup_import_service = HistoryBackupImportService(
+        history_backup_planner,
+        history_backup_path,
+        recover_on_init=False,
+    )
     static_path = Path(static_dir) if static_dir is not None else Path(__file__).parent / "static"
     make_client = client_factory or (lambda: _client_for_auth_source(auth_settings.read_source(), api_settings=api_settings))
     check_auth = auth_checker or (lambda: bool(_auth_status(auth_settings.read_source(), api_settings=api_settings)["auth_available"]))
 
-    app = FastAPI(title="iLab CONJURE", lifespan=queue_lifespan)
+    app = FastAPI(
+        title="iLab CONJURE",
+        lifespan=_webui_lifespan,
+        docs_url=None,
+        redoc_url=None,
+        openapi_url=None,
+    )
+    app.state.webui_shutdown_coordinator = ShutdownCoordinator()
+    app.add_middleware(LocalWebUISecurityMiddleware)
     ctx = WebUIContext(
         app=app,
         storage=storage,
@@ -271,6 +370,11 @@ def create_app(
         color_settings=color_settings,
         prompt_snippet_settings=prompt_snippet_settings,
         prompt_template_settings=prompt_template_settings,
+        history_export_service=history_export_service,
+        history_backup_planner=history_backup_planner,
+        history_backup_export_service=history_backup_export_service,
+        history_backup_import_service=history_backup_import_service,
+        history_backup_temp_root=history_backup_path,
         client_factory=make_client,
         auth_checker=check_auth,
         input_root=input_path,
@@ -289,8 +393,6 @@ def create_app(
         auto_retry=auto_retry,
         client_factory_overridden=client_factory is not None,
     )
-    app.mount("/inputs", StaticFiles(directory=input_path, check_dir=False), name="inputs")
-    app.mount("/outputs", StaticFiles(directory=output_path, check_dir=False), name="outputs")
     app.mount("/static", NoCacheStaticFiles(directory=static_path, check_dir=False), name="static")
 
     @app.get("/", response_model=None)
@@ -338,6 +440,7 @@ def create_app(
     ctx.route_helpers.update(
         {
             "ensure_queue_worker_running": queue_runtime.ensure_queue_worker_running,
+            "wake_queue_worker": queue_runtime.wake_queue_worker,
             "queue_channel_available": queue_runtime.queue_channel_available,
             "auth_status": lambda source: _auth_status(source, api_settings=api_settings),
             "codex_auth_checker": check_auth if auth_checker is not None else _codex_auth_available,
@@ -353,7 +456,14 @@ def create_app(
             "running_channel_for_task": lambda task_id: _running_channel_for_task(queue_storage, task_id),
             "with_stored_request_payload": lambda task_id, metadata: _with_stored_request_payload(storage, task_id, metadata),
             "set_task_archived": lambda task_id, archived: _set_task_archived(storage, task_id, archived),
-            "mark_task_cancelled": lambda task_id: _mark_task_cancelled(storage, task_id),
+            "request_task_cancellation": lambda task_id: request_task_cancellation(
+                storage,
+                task_id,
+            ),
+            "finalize_task_cancellation": lambda task_id: finalize_task_cancellation(
+                storage,
+                task_id,
+            ),
             "materialize_orphaned_running_failure": lambda task_id, metadata: _materialize_orphaned_running_failure(storage, task_id, metadata),
             "apply_retry_api_provider": lambda task_id, metadata, api_provider_id=None: _apply_retry_api_provider(
                 storage, task_id, metadata, api_settings, api_provider_id
@@ -363,7 +473,11 @@ def create_app(
             "dedupe_reference_assets": _dedupe_reference_assets,
             "build_image_request_payload": lambda **kwargs: _build_image_request_payload(**kwargs),
             "slim_request_payload": lambda request_payload, **kwargs: _slim_request_payload(request_payload, **kwargs),
-            "prompt_guard_context": lambda prompt, prompt_fidelity: _prompt_guard_context(prompt, prompt_fidelity),
+            "prompt_guard_context": lambda prompt, prompt_fidelity, ui_language=None: _prompt_guard_context(
+                prompt,
+                prompt_fidelity,
+                ui_language,
+            ),
             "model_prompt_for_fidelity": lambda prompt, prompt_for_model, prompt_fidelity: _model_prompt_for_fidelity(
                 prompt, prompt_for_model, prompt_fidelity
             ),
@@ -389,6 +503,60 @@ def create_app(
     register_webui_routes(app, ctx)
 
     return app
+
+
+@asynccontextmanager
+async def _webui_lifespan(app_instance: FastAPI):
+    async with queue_lifespan(app_instance):
+        ctx = app_instance.state.ctx
+        owner_lock = WebUIInstanceLock.acquire(ctx.history_backup_temp_root)
+        ctx.history_backup_owner_lock = owner_lock
+        app_instance.state.history_backup_owner_lock = owner_lock
+        cleanup_stop: asyncio.Event | None = None
+        cleanup_task: asyncio.Task[None] | None = None
+        try:
+            ctx.history_backup_export_service.recover_startup()
+            ctx.history_backup_import_service.recover_startup()
+            ctx.history_backup_accepting_jobs = True
+            app_instance.state.history_backup_accepting_jobs = True
+            cleanup_stop = asyncio.Event()
+            cleanup_task = asyncio.create_task(
+                _history_backup_cleanup_loop(
+                    ctx.history_backup_export_service,
+                    cleanup_stop,
+                )
+            )
+            yield
+        finally:
+            try:
+                ctx.history_backup_accepting_jobs = False
+                app_instance.state.history_backup_accepting_jobs = False
+                if cleanup_stop is not None:
+                    cleanup_stop.set()
+                if cleanup_task is not None:
+                    await cleanup_task
+                shutdown_history_backup_services(ctx)
+            finally:
+                owner_lock.release()
+                ctx.history_backup_owner_lock = None
+                app_instance.state.history_backup_owner_lock = None
+
+
+async def _history_backup_cleanup_loop(
+    export_service: Any,
+    stop: asyncio.Event,
+    *,
+    interval_seconds: float = 60.0,
+) -> None:
+    while not stop.is_set():
+        try:
+            await asyncio.wait_for(stop.wait(), timeout=interval_seconds)
+        except TimeoutError:
+            try:
+                await asyncio.to_thread(export_service.cleanup_expired)
+            except Exception:
+                # Cleanup is best-effort and will retry on the next interval.
+                continue
 
 
 def _default_client_factory() -> CodexImageClient:
@@ -434,14 +602,21 @@ def _with_stored_request_payload(storage: TaskStorage, task_id: str, metadata: d
     return enriched
 
 
-def _prompt_guard_context(prompt: str, prompt_fidelity: str) -> tuple[list[str], str]:
+def _prompt_guard_context(
+    prompt: str,
+    prompt_fidelity: str,
+    ui_language: str | None = None,
+) -> tuple[list[str], str]:
     mode = _normalize_prompt_fidelity(prompt_fidelity)
     if mode == "original":
-        return [], build_original_prompt_instructions()
+        return [], ""
     if mode != "strict":
         return [], ""
     constraints = extract_prompt_constraints(prompt)
-    return constraints, build_prompt_guard_instructions(constraints)
+    return constraints, build_prompt_guard_instructions(
+        constraints,
+        locale=ui_language,
+    )
 
 
 def _model_prompt_for_fidelity(prompt: str, prompt_for_model: str | None, prompt_fidelity: str) -> str:
@@ -509,12 +684,13 @@ def _redact_request_data(value: Any, *, key: str | None = None) -> Any:
 async def _save_uploads(storage: TaskStorage, task_id: str, files: list[UploadFile], *, kind: str = "input") -> list[Path]:
     saved: list[Path] = []
     for index, upload in enumerate(files, start=1):
-        data = await upload.read()
-        if not data:
-            continue
-        if upload.content_type and not upload.content_type.startswith("image/"):
-            raise HTTPException(status_code=400, detail=f"Unsupported image type: {upload.content_type}")
-        saved.append(storage.write_input(task_id, upload.filename or "image.png", data, kind=kind, index=index))
+        try:
+            image = await read_validated_raster_upload(upload)
+        except InvalidRasterImage as exc:
+            if str(exc) == "Image is required":
+                continue
+            raise HTTPException(status_code=400, detail=str(exc)) from exc
+        saved.append(storage.write_input(task_id, image.filename, image.data, kind=kind, index=index))
     return saved
 
 
@@ -522,15 +698,13 @@ async def _save_reference_assets(storage: ReferenceAssetStorage, files: list[Upl
     assets: list[dict[str, Any]] = []
     seen: set[str] = set()
     for upload in files:
-        data = await upload.read()
-        if not data:
-            continue
-        mime_type = _image_mime_type(upload.content_type, upload.filename or "image.png", data)
-        if upload.content_type and not upload.content_type.startswith("image/"):
-            raise HTTPException(status_code=400, detail=f"Unsupported image type: {upload.content_type}")
-        if mime_type is None:
-            raise HTTPException(status_code=400, detail=f"Unsupported image type: {upload.content_type or 'application/octet-stream'}")
-        item = storage.create_or_touch(upload.filename or "image.png", data, mime_type)
+        try:
+            image = await read_validated_raster_upload(upload)
+        except InvalidRasterImage as exc:
+            if str(exc) == "Image is required":
+                continue
+            raise HTTPException(status_code=400, detail=str(exc)) from exc
+        item = storage.create_or_touch(image.filename, image.data, image.mime_type)
         if item["id"] in seen:
             continue
         seen.add(item["id"])
@@ -560,22 +734,13 @@ def _set_task_archived(storage: TaskStorage, task_id: str, archived: bool) -> di
     return metadata
 
 
-def _mark_task_cancelled(storage: TaskStorage, task_id: str) -> dict[str, Any]:
-    metadata = storage.read_metadata(task_id)
-    cancelled_at = utc_now()
-    metadata.update(
-        {
-            "status": "failed",
-            "updated_at": cancelled_at,
-            "cancelled_at": cancelled_at,
-            "cancel_requested": True,
-            "error": "Task cancelled by user.",
-            "last_error": "Task cancelled by user.",
-        }
-    )
-    metadata.pop("request", None)
-    storage.write_metadata(task_id, metadata)
-    return metadata
+_runtime_app: FastAPI | None = None
 
 
-app = create_app()
+def __getattr__(name: str) -> Any:
+    if name != "app":
+        raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
+    global _runtime_app
+    if _runtime_app is None:
+        _runtime_app = create_app(enforce_single_instance=True)
+    return _runtime_app

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from dataclasses import dataclass
 from pathlib import Path
 import re
 from typing import Any
@@ -19,6 +20,43 @@ from .thumbnails import (
     create_sidebar_thumbnail,
     thumbnail_needs_refresh,
 )
+
+
+@dataclass(frozen=True)
+class ExportableTaskOutput:
+    slot_index: int
+    path: Path
+    revised_prompt: str
+
+
+def exportable_task_outputs(
+    storage: TaskStorage,
+    task_id: str,
+    metadata: dict[str, Any],
+) -> list[ExportableTaskOutput]:
+    outputs: list[ExportableTaskOutput] = []
+    for record in _visible_completed_output_records(metadata):
+        slot_index = _positive_int(record.get("index"))
+        filename = _output_record_filename(record)
+        path = _safe_output_path(
+            storage,
+            task_id,
+            filename,
+        )
+        if slot_index is None or path is None:
+            raise ValueError(
+                f"Unsafe output record for task {task_id}"
+            )
+        outputs.append(
+            ExportableTaskOutput(
+                slot_index=slot_index,
+                path=path,
+                revised_prompt=str(
+                    record.get("revised_prompt") or ""
+                ),
+            )
+        )
+    return outputs
 
 
 def _normalize_api_images_concurrency_for_metadata(value: Any) -> int:
@@ -581,8 +619,10 @@ def _set_task_output_selected(storage: TaskStorage, task_id: str, metadata: dict
         selected_indexes.add(index)
     else:
         selected_indexes.discard(index)
+    now = utc_now()
     metadata["selected_output_indexes"] = sorted(selected_indexes)
-    metadata["updated_at"] = utc_now()
+    metadata["updated_at"] = now
+    metadata["viewed_at"] = now
     storage.write_metadata(task_id, metadata)
     return metadata
 
@@ -686,6 +726,7 @@ def _pruned_task_metadata(
         {
             "status": "completed",
             "updated_at": now,
+            "viewed_at": now,
             "generated_count": len(accepted_outputs),
             "failed_count": 0,
             "total_count": len(accepted_outputs),
@@ -795,6 +836,10 @@ def _write_queued_metadata(
     mode: str,
     prompt: str,
     prompt_for_model: str,
+    execution_model_prompt: str | None = None,
+    execution_prompt: str | None = None,
+    execution_instructions: str | None = None,
+    prompt_locale: str | None = None,
     params: dict[str, Any],
     input_files: list[str],
     mask_file: str | None,
@@ -834,6 +879,17 @@ def _write_queued_metadata(
         metadata["requested_backend"] = requested_backend
     if editing_guidance:
         metadata["editing_guidance"] = dict(editing_guidance)
+    if execution_prompt is not None:
+        metadata["execution_model_prompt"] = str(
+            execution_model_prompt
+            if execution_model_prompt is not None
+            else prompt_for_model
+        )
+        metadata["execution_prompt"] = str(execution_prompt)
+        metadata["execution_instructions"] = str(
+            execution_instructions or ""
+        )
+        metadata["prompt_locale"] = str(prompt_locale or "zh-CN")
     _apply_api_provider_metadata(metadata, params)
     _apply_api_images_concurrency_metadata(metadata, params)
     if prompt_constraints:

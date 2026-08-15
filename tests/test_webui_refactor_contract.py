@@ -403,13 +403,33 @@ class WebUIRefactorContractTests(unittest.TestCase):
                 ("/api/tasks/delete-batch", "POST"),
                 ("/api/task-history/summary", "GET"),
                 ("/api/task-history/tasks", "GET"),
+                ("/api/task-history/tags", "GET"),
+                ("/api/task-history/tags", "POST"),
+                ("/api/task-history/tags/{tag_id}", "PATCH"),
+                ("/api/task-history/tags/{tag_id}", "DELETE"),
+                ("/api/task-history/organize", "POST"),
+                ("/api/task-history/exports", "POST"),
+                ("/api/task-history/exports/{export_id}", "GET"),
+                ("/api/task-history/backup-exports", "POST"),
+                ("/api/task-history/backup-exports/estimate", "POST"),
+                ("/api/task-history/backup-exports/{job_id}", "GET"),
+                ("/api/task-history/backup-exports/{job_id}", "DELETE"),
+                ("/api/task-history/backup-exports/{job_id}/download", "GET"),
+                ("/api/task-history/backup-imports", "POST"),
+                ("/api/task-history/backup-imports/{session_id}/chunks", "PUT"),
+                ("/api/task-history/backup-imports/{session_id}", "GET"),
+                ("/api/task-history/backup-imports/{session_id}", "DELETE"),
+                ("/api/task-history/backup-imports/{session_id}/validate", "POST"),
+                ("/api/task-history/backup-imports/{session_id}/restore", "POST"),
                 ("/api/tasks/{task_id}", "GET"),
                 ("/api/tasks/{task_id}", "DELETE"),
                 ("/api/tasks/{task_id}/viewed", "PATCH"),
                 ("/api/tasks/{task_id}/outputs.zip", "GET"),
                 ("/api/tasks/{task_id}/reveal-output", "POST"),
+                ("/api/tasks/{task_id}/inputs/{input_index}/image", "GET"),
                 ("/api/tasks/{task_id}/inputs/{input_index}/thumbnail", "GET"),
                 ("/api/tasks/{task_id}/reference-files/{file_index}/download", "GET"),
+                ("/api/tasks/{task_id}/outputs/{output_index}/image", "GET"),
                 ("/api/tasks/{task_id}/outputs/{output_index}/thumbnail", "GET"),
                 ("/api/tasks/{task_id}/outputs/{output_index}/sidebar-thumbnail", "GET"),
                 ("/api/tasks/{task_id}/outputs/{output_index}/selected", "PATCH"),
@@ -436,10 +456,12 @@ class WebUIRefactorContractTests(unittest.TestCase):
                 ("/api/gallery/{item_id}/image", "GET"),
                 ("/api/gallery/{item_id}/image", "PUT"),
                 ("/api/reference-assets/recent", "GET"),
+                ("/api/reference-assets/{asset_id}/hide", "POST"),
                 ("/api/reference-assets/{asset_id}", "DELETE"),
                 ("/api/reference-assets/{asset_id}/image", "GET"),
                 ("/api/reference-files/recent", "GET"),
                 ("/api/generation-catalog", "GET"),
+                ("/api/tasks/sidebar/groups/{group_key}/position/{task_id}", "GET"),
                 ("/api/network-egress", "GET"),
                 ("/api/network-egress", "PATCH"),
                 ("/api/network-egress/test", "POST"),
@@ -463,6 +485,9 @@ class WebUIRefactorContractTests(unittest.TestCase):
             self.assertIs(app.state.ctx.storage, app.state.storage)
             self.assertIs(app.state.ctx.queue_storage, app.state.queue_storage)
             self.assertIs(app.state.ctx.queue_manager, app.state.queue_manager)
+            self.assertIs(app.state.ctx.history_backup_planner, app.state.history_backup_planner)
+            self.assertIs(app.state.ctx.history_backup_export_service, app.state.history_backup_export_service)
+            self.assertIs(app.state.ctx.history_backup_import_service, app.state.history_backup_import_service)
 
     def test_health_route_still_reports_auth_status(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

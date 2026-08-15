@@ -351,12 +351,12 @@ class ReferenceFileFrontendContractTests(unittest.TestCase):
         index = (ROOT / "codex_image/webui/static/index.html").read_text(encoding="utf-8")
         history = (ROOT / "codex_image/webui/static/history.html").read_text(encoding="utf-8")
         worker = (ROOT / "codex_image/webui/static/service-worker.js").read_text(encoding="utf-8")
-        self.assertIn("runtime-653", index)
-        self.assertIn("runtime-653", history)
-        self.assertIn("history-71", history)
-        self.assertIn('ilab-conjure-shell-v120', worker)
-        self.assertIn('/static/app.js?v=runtime-653', worker)
-        self.assertIn('/static/styles.css?v=runtime-653', worker)
+        self.assertIn("runtime-770", index)
+        self.assertIn("runtime-770", history)
+        self.assertIn("history-110", history)
+        self.assertIn('ilab-conjure-shell-v247', worker)
+        self.assertIn('/static/app.js?v=runtime-770', worker)
+        self.assertIn('/static/styles.css?v=runtime-770', worker)
 
     def test_design_system_documents_shared_input_rail_and_filename_summary_tiles(self) -> None:
         design_path = ROOT / "DESIGN.md"
@@ -700,6 +700,9 @@ class ReferenceFileFrontendContractTests(unittest.TestCase):
                 if (name === "./state") return {{ getLegacyBridge: () => bridge, getState: () => state }};
                 if (name === "./reference-file-inputs") return {{
                   addReferenceFileInput: (item) => added.push(item), partitionReferenceDropFiles: () => ({{ images: [], referenceFiles: [], unsupported: [] }}),
+                }};
+                if (name === "./staged-references-session") return {{
+                  persistStagedReferences() {{}}, readStagedReferences() {{ return []; }},
                 }};
                 throw new Error(`unexpected require: ${{name}}`);
               }},
@@ -1172,6 +1175,9 @@ class ReferenceFileFrontendBehaviorTests(unittest.TestCase):
               if (name === "./i18n") return i18n;
               if (name === "./state") return stateModule;
               if (name === "./reference-file-inputs") return referenceApi;
+              if (name === "./staged-references-session") return {{
+                persistStagedReferences() {{}}, readStagedReferences() {{ return []; }},
+              }};
               throw new Error(`unexpected input require: ${{name}}`);
             }});
             const imageStripApi = evaluate(transpile({str(image_strip_path)!r}), (name) => {{

@@ -14,6 +14,7 @@ from pathlib import Path
 from unittest.mock import patch
 
 from fastapi.testclient import TestClient
+from PIL import Image
 
 from tests.webui_helpers import (
     AlwaysFailQueueTestExecutor,
@@ -51,6 +52,75 @@ from tests.webui_helpers import (
 
 
 class WebUIGalleryTests(unittest.TestCase):
+    def test_gallery_restore_handle_preserves_item_after_metadata_mutation(self) -> None:
+        from codex_image.webui.gallery_storage import GalleryStorage
+
+        with tempfile.TemporaryDirectory() as tmp:
+            storage = GalleryStorage(Path(tmp) / "gallery")
+            payload = self._image_bytes()
+            created = storage.restore_content(
+                "Imported", "portrait", "item.png", payload, "image/png"
+            )
+
+            updated = storage.update_item(
+                str(created.record["id"]),
+                name="Renamed",
+                prompt_note="concurrent prompt",
+                order=40,
+            )
+
+            self.assertFalse(storage.rollback_restore(created))
+            self.assertEqual(storage.read_item(str(created.record["id"])), updated)
+
+    def test_gallery_restore_identity_ignores_category_derived_fields(self) -> None:
+        from codex_image.webui.gallery_storage import GalleryStorage
+
+        with tempfile.TemporaryDirectory() as tmp:
+            storage = GalleryStorage(Path(tmp) / "gallery")
+            created = storage.restore_content(
+                "Imported",
+                "portrait",
+                "item.png",
+                self._image_bytes(),
+                "image/png",
+            )
+
+            storage.update_category(
+                "portrait",
+                name="Renamed category",
+                prompt_role="Changed derived role",
+            )
+
+            self.assertTrue(storage.rollback_restore(created))
+            self.assertEqual(storage.list_items(), [])
+
+    def test_gallery_restore_metadata_failure_leaves_no_image_and_reuse_blocks_rollback(self) -> None:
+        from codex_image.webui.gallery_storage import GalleryStorage
+
+        with tempfile.TemporaryDirectory() as tmp:
+            storage = GalleryStorage(Path(tmp) / "gallery")
+            data = BytesIO()
+            Image.new("RGB", (2, 2), (1, 2, 3)).save(data, format="PNG")
+            payload = data.getvalue()
+            with patch.object(storage, "_write_item_metadata", side_effect=OSError("metadata")):
+                with self.assertRaises(OSError):
+                    storage.restore_content("Imported", "portrait", "item.png", payload, "image/png")
+            self.assertEqual(storage.list_items(), [])
+            self.assertFalse(any(path.is_file() for path in storage.root.rglob("*")))
+
+            created = storage.restore_content("Imported", "portrait", "item.png", payload, "image/png")
+            reused = storage.restore_content("Ignored", "portrait", "item.png", payload, "image/png")
+            self.assertTrue(created.created)
+            self.assertFalse(reused.created)
+            self.assertFalse(storage.rollback_restore(created))
+            self.assertEqual(storage.image_path(created.record["id"]).read_bytes(), payload)
+
+    def _image_bytes(self, image_format: str = "PNG") -> bytes:
+        image = Image.new("RGB", (12, 8), (90, 140, 190))
+        buffer = BytesIO()
+        image.save(buffer, format=image_format)
+        return buffer.getvalue()
+
     def test_gallery_crud_routes_manage_public_library(self) -> None:
         from codex_image.webui.app import create_app
 
@@ -66,7 +136,7 @@ class WebUIGalleryTests(unittest.TestCase):
             created = client.post(
                 "/api/gallery",
                 data={"name": "小美", "category": "portrait"},
-                files={"image": ("portrait.png", b"gallery-bytes", "image/png")},
+                files={"image": ("portrait.png", self._image_bytes(), "image/png")},
             )
             item = created.json()["item"]
             listed = client.get("/api/gallery", params={"category": "portrait"}).json()["items"]
@@ -79,7 +149,7 @@ class WebUIGalleryTests(unittest.TestCase):
         self.assertEqual(item["name"], "小美")
         self.assertEqual(item["category"], "portrait")
         self.assertEqual(listed[0]["image_url"], f"/api/gallery/{item['id']}/image")
-        self.assertEqual(image_response.content, b"gallery-bytes")
+        self.assertEqual(image_response.content, self._image_bytes())
         self.assertEqual(renamed.status_code, 200)
         self.assertEqual(renamed.json()["item"]["category"], "character")
         self.assertEqual(deleted.status_code, 200)
@@ -100,12 +170,12 @@ class WebUIGalleryTests(unittest.TestCase):
             created = client.post(
                 "/api/gallery",
                 data={"name": "小美", "category": "portrait"},
-                files={"image": ("portrait.png", b"old-bytes", "image/png")},
+                files={"image": ("portrait.png", self._image_bytes(), "image/png")},
             )
             item = created.json()["item"]
             replaced = client.put(
                 f"/api/gallery/{item['id']}/image",
-                files={"image": ("replacement.webp", b"new-bytes", "image/webp")},
+                files={"image": ("replacement.webp", self._image_bytes("WEBP"), "image/webp")},
             )
             image_response = client.get(item["image_url"])
 
@@ -113,7 +183,7 @@ class WebUIGalleryTests(unittest.TestCase):
         self.assertEqual(replaced.json()["item"]["id"], item["id"])
         self.assertEqual(replaced.json()["item"]["filename"], "replacement.webp")
         self.assertEqual(replaced.json()["item"]["mime_type"], "image/webp")
-        self.assertEqual(image_response.content, b"new-bytes")
+        self.assertEqual(image_response.content, self._image_bytes("WEBP"))
     def test_gallery_category_routes_manage_custom_categories_and_prompt_metadata(self) -> None:
         from codex_image.webui.app import create_app
 
@@ -139,7 +209,7 @@ class WebUIGalleryTests(unittest.TestCase):
                     "category": category["id"],
                     "prompt_note": "只参考色调和光影，不参考构图。",
                 },
-                files={"image": ("style.png", b"style-bytes", "image/png")},
+                files={"image": ("style.png", self._image_bytes(), "image/png")},
             )
             patched_category = client.patch(
                 f"/api/gallery/categories/{category['id']}",
@@ -189,17 +259,17 @@ class WebUIGalleryTests(unittest.TestCase):
             first = client.post(
                 "/api/gallery",
                 data={"name": "一号模特", "category": "portrait"},
-                files={"image": ("first.png", b"first", "image/png")},
+                files={"image": ("first.png", self._image_bytes(), "image/png")},
             ).json()["item"]
             second = client.post(
                 "/api/gallery",
                 data={"name": "二号模特", "category": "portrait"},
-                files={"image": ("second.png", b"second", "image/png")},
+                files={"image": ("second.png", self._image_bytes(), "image/png")},
             ).json()["item"]
             third = client.post(
                 "/api/gallery",
                 data={"name": "三号模特", "category": "portrait"},
-                files={"image": ("third.png", b"third", "image/png")},
+                files={"image": ("third.png", self._image_bytes(), "image/png")},
             ).json()["item"]
             reordered_items = client.patch(
                 "/api/gallery/reorder",
@@ -230,12 +300,12 @@ class WebUIGalleryTests(unittest.TestCase):
             first = client.post(
                 "/api/gallery",
                 data={"name": "产品图", "category": "product"},
-                files={"image": ("product.png", b"one", "image/png")},
+                files={"image": ("product.png", self._image_bytes(), "image/png")},
             )
             duplicate = client.post(
                 "/api/gallery",
                 data={"name": " 产品图 ", "category": "product"},
-                files={"image": ("product2.png", b"two", "image/png")},
+                files={"image": ("product2.png", self._image_bytes(), "image/png")},
             )
 
         self.assertEqual(first.status_code, 200)
@@ -250,7 +320,7 @@ class WebUIGalleryTests(unittest.TestCase):
             created = client.post(
                 "/api/generate",
                 data={"prompt": "asset upload", "size": "1024x1024"},
-                files={"reference_images": ("source.png", b"same-image-bytes", "image/png")},
+                files={"reference_images": ("source.png", self._image_bytes(), "image/png")},
             )
             item = created.json()["task"]["reference_assets"][0]
             recent = client.get("/api/reference-assets/recent").json()["items"]
@@ -260,9 +330,9 @@ class WebUIGalleryTests(unittest.TestCase):
         self.assertEqual(recent[0]["id"], item["id"])
         self.assertEqual(recent[0]["image_url"], f"/api/reference-assets/{item['id']}/image")
         self.assertEqual(image.status_code, 200)
-        self.assertEqual(image.content, b"same-image-bytes")
+        self.assertEqual(image.content, self._image_bytes())
         self.assertEqual(image.headers["content-type"], "image/png")
-    def test_reference_asset_route_deletes_recent_upload(self) -> None:
+    def test_reference_asset_route_rejects_deleting_task_referenced_upload(self) -> None:
         from codex_image.webui.app import create_app
 
         with tempfile.TemporaryDirectory() as tmp:
@@ -272,18 +342,79 @@ class WebUIGalleryTests(unittest.TestCase):
             created = client.post(
                 "/api/generate",
                 data={"prompt": "asset upload", "size": "1024x1024"},
-                files={"reference_images": ("source.png", b"delete-me", "image/png")},
+                files={"reference_images": ("source.png", self._image_bytes(), "image/png")},
             )
+            task_id = created.json()["task"]["task_id"]
             item = created.json()["task"]["reference_assets"][0]
             deleted = client.delete(f"/api/reference-assets/{item['id']}")
             recent = client.get("/api/reference-assets/recent?limit=50").json()["items"]
             image = client.get(item["image_url"])
+            hidden = client.post(f"/api/reference-assets/{item['id']}/hide")
+            recent_after_hide = client.get(
+                "/api/reference-assets/recent?limit=50"
+            ).json()["items"]
+            image_after_hide = client.get(item["image_url"])
+            task_after_hide = client.get(f"/api/tasks/{task_id}").json()["task"]
+            deleted_task = client.delete(f"/api/tasks/{task_id}")
+            deleted_after_task = client.delete(
+                f"/api/reference-assets/{item['id']}"
+            )
 
         self.assertEqual(created.status_code, 200)
+        self.assertEqual(deleted.status_code, 409)
+        self.assertEqual(
+            deleted.json()["detail"],
+            {
+                "code": "reference_asset_in_use",
+                "message": "This reference asset is used by existing tasks.",
+                "reference_count": 1,
+            },
+        )
+        self.assertNotIn("asset upload", deleted.text)
+        self.assertNotIn(str(root), deleted.text)
+        self.assertEqual([entry["id"] for entry in recent], [item["id"]])
+        self.assertEqual(recent[0]["reference_count"], 1)
+        self.assertFalse(recent[0]["deletable"])
+        self.assertEqual(image.status_code, 200)
+        self.assertEqual(hidden.status_code, 200)
+        self.assertEqual(hidden.json(), {"ok": True})
+        self.assertEqual(recent_after_hide, [])
+        self.assertEqual(image_after_hide.status_code, 200)
+        self.assertEqual(task_after_hide["reference_assets"][0]["id"], item["id"])
+        self.assertEqual(deleted_task.status_code, 200)
+        self.assertEqual(deleted_after_task.status_code, 200)
+
+    def test_reference_asset_route_deletes_unreferenced_recent_upload(self) -> None:
+        from codex_image.webui.app import create_app
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            app = create_app(
+                output_root=root,
+                client_factory=lambda: FakeImageClient(),
+                auth_checker=lambda: True,
+                auto_start_queue=False,
+            )
+            client = TestClient(app)
+            item = app.state.reference_asset_storage.create_or_touch(
+                "unreferenced.png",
+                self._image_bytes(),
+                "image/png",
+            )
+            recent_before_delete = client.get(
+                "/api/reference-assets/recent?limit=50"
+            ).json()["items"]
+
+            deleted = client.delete(f"/api/reference-assets/{item['id']}")
+            recent = client.get(
+                "/api/reference-assets/recent?limit=50"
+            ).json()["items"]
+
+        self.assertEqual(recent_before_delete[0]["reference_count"], 0)
+        self.assertTrue(recent_before_delete[0]["deletable"])
         self.assertEqual(deleted.status_code, 200)
         self.assertEqual(deleted.json(), {"ok": True})
         self.assertEqual(recent, [])
-        self.assertEqual(image.status_code, 404)
     def test_edit_route_accepts_selected_reference_asset_without_upload(self) -> None:
         from codex_image.webui.app import create_app
 
@@ -294,7 +425,7 @@ class WebUIGalleryTests(unittest.TestCase):
             created = client.post(
                 "/api/generate",
                 data={"prompt": "seed asset", "size": "1024x1024"},
-                files={"reference_images": ("source.png", b"asset-bytes", "image/png")},
+                files={"reference_images": ("source.png", self._image_bytes(), "image/png")},
             )
             asset_id = created.json()["task"]["reference_assets"][0]["id"]
             edited = client.post(
@@ -318,7 +449,7 @@ class WebUIGalleryTests(unittest.TestCase):
             created = client.post(
                 "/api/generate",
                 data={"prompt": "use asset once", "size": "1024x1024", "quality": "low"},
-                files={"reference_images": ("source.png", b"asset-once", "image/png")},
+                files={"reference_images": ("source.png", self._image_bytes(), "image/png")},
             )
             asset_id = created.json()["task"]["reference_assets"][0]["id"]
             used_count_after_submit = app.state.reference_asset_storage.read_item(asset_id)["used_count"]
@@ -340,7 +471,7 @@ class WebUIGalleryTests(unittest.TestCase):
             created = client.post(
                 "/api/generate",
                 data={"prompt": "missing asset", "size": "1024x1024", "quality": "low"},
-                files={"reference_images": ("source.png", b"will-disappear", "image/png")},
+                files={"reference_images": ("source.png", self._image_bytes(), "image/png")},
             )
             task_id = created.json()["task"]["task_id"]
             asset_id = created.json()["task"]["reference_assets"][0]["id"]
@@ -369,7 +500,7 @@ class WebUIGalleryTests(unittest.TestCase):
             created = client.post(
                 "/api/generate",
                 data={"prompt": "missing asset retry", "size": "1024x1024", "quality": "low"},
-                files={"reference_images": ("source.png", b"retry-disappear", "image/png")},
+                files={"reference_images": ("source.png", self._image_bytes(), "image/png")},
             )
             task_id = created.json()["task"]["task_id"]
             asset_id = created.json()["task"]["reference_assets"][0]["id"]
@@ -448,7 +579,7 @@ class WebUIGalleryTests(unittest.TestCase):
             gallery_response = client.post(
                 "/api/gallery",
                 data={"name": "小美", "category": "portrait"},
-                files={"image": ("portrait.png", b"gallery-bytes", "image/png")},
+                files={"image": ("portrait.png", self._image_bytes(), "image/png")},
             )
             gallery_item = gallery_response.json()["item"]
             response = client.post(
@@ -504,7 +635,7 @@ class WebUIGalleryTests(unittest.TestCase):
                     "category": style_category["id"],
                     "prompt_note": "只参考色调和光影，不参考构图。",
                 },
-                files={"image": ("style.png", b"style-bytes", "image/png")},
+                files={"image": ("style.png", self._image_bytes(), "image/png")},
             ).json()["item"]
             prompt = "让 @冷调样片 作为画面气质参考"
             prompt_for_model = (
@@ -549,7 +680,7 @@ class WebUIGalleryTests(unittest.TestCase):
             gallery_item = client.post(
                 "/api/gallery",
                 data={"name": "产品图", "category": "product"},
-                files={"image": ("jpg", b"\xff\xd8\xff\xe0jpeg-bytes", "image/jpeg")},
+                files={"image": ("jpg", self._image_bytes("JPEG"), "image/jpeg")},
             ).json()["item"]
             client.post(
                 "/api/generate",
@@ -582,7 +713,7 @@ class WebUIGalleryTests(unittest.TestCase):
             gallery_item = client.post(
                 "/api/gallery",
                 data={"name": "杯子", "category": "product"},
-                files={"image": ("cup.png", b"cup", "image/png")},
+                files={"image": ("cup.png", self._image_bytes(), "image/png")},
             ).json()["item"]
             task = client.post(
                 "/api/generate",
@@ -655,7 +786,7 @@ class WebUIGalleryTests(unittest.TestCase):
             created = client.post(
                 "/api/generate",
                 data={"prompt": "partial then missing asset", "size": "1024x1024", "quality": "low", "n": "4"},
-                files={"reference_images": ("source.png", b"partial-missing", "image/png")},
+                files={"reference_images": ("source.png", self._image_bytes(), "image/png")},
             )
             task_id = created.json()["task"]["task_id"]
             asset_id = created.json()["task"]["reference_assets"][0]["id"]

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+from datetime import datetime, timedelta
 import json
 import os
 import struct
@@ -317,6 +318,7 @@ class WebUITaskTests(unittest.TestCase):
         task_id = "20260726010203-abcdef01"
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
+            archive_temp_root = root / "archive-temp"
             first = root / output_name(task_id, 1)
             second = root / output_name(task_id, 2, "webp")
             first.parent.mkdir(parents=True, exist_ok=True)
@@ -335,7 +337,12 @@ class WebUITaskTests(unittest.TestCase):
                 encoding="utf-8",
             )
 
-            app = create_app(output_root=root, auth_checker=lambda: True, auto_start_queue=False)
+            app = create_app(
+                output_root=root,
+                auth_checker=lambda: True,
+                auto_start_queue=False,
+                history_export_temp_root=archive_temp_root,
+            )
             response = TestClient(app).get(f"/api/tasks/{task_id}/outputs.zip")
 
             self.assertEqual(response.status_code, 200)
@@ -348,6 +355,72 @@ class WebUITaskTests(unittest.TestCase):
                 )
                 self.assertEqual(archive.read(f"{task_id}-image-1.png"), b"first-image")
                 self.assertEqual(archive.read(f"{task_id}-image-2.webp"), b"second-image")
+            self.assertEqual(list(archive_temp_root.iterdir()), [])
+
+    def test_task_outputs_zip_rejects_total_input_over_limit_without_modifying_sources(self) -> None:
+        from codex_image.webui.app import create_app
+
+        task_id = "20260726010203-abcdef01"
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            archive_temp_root = root / "archive-temp"
+            first = root / output_name(task_id, 1)
+            second = root / output_name(task_id, 2)
+            first.parent.mkdir(parents=True, exist_ok=True)
+            first.write_bytes(b"first-image")
+            second.write_bytes(b"second-image")
+            metadata_path(root, task_id).parent.mkdir(
+                parents=True,
+                exist_ok=True,
+            )
+            metadata_path(root, task_id).write_text(
+                json.dumps(
+                    {
+                        "task_id": task_id,
+                        "status": "completed",
+                        "output_files": [
+                            output_name(task_id, 1),
+                            output_name(task_id, 2),
+                        ],
+                        "output_urls": [
+                            output_url(task_id, 1),
+                            output_url(task_id, 2),
+                        ],
+                    }
+                ),
+                encoding="utf-8",
+            )
+            app = create_app(
+                output_root=root,
+                auth_checker=lambda: True,
+                auto_start_queue=False,
+                history_export_temp_root=archive_temp_root,
+            )
+
+            with patch(
+                "codex_image.webui.routes.tasks.MAX_TASK_ARCHIVE_INPUT_BYTES",
+                10,
+            ):
+                response = TestClient(app).get(
+                    f"/api/tasks/{task_id}/outputs.zip"
+                )
+
+            first_bytes = first.read_bytes()
+            second_bytes = second.read_bytes()
+            temporary_files = list(archive_temp_root.iterdir())
+
+        self.assertEqual(response.status_code, 413)
+        self.assertEqual(
+            response.json()["detail"],
+            {
+                "code": "task_archive_too_large",
+                "message": "The task outputs are too large to archive.",
+                "max_input_bytes": 10,
+            },
+        )
+        self.assertEqual(first_bytes, b"first-image")
+        self.assertEqual(second_bytes, b"second-image")
+        self.assertEqual(temporary_files, [])
 
     def test_task_reveal_output_endpoint_opens_output_directory(self) -> None:
         from codex_image.webui.app import create_app
@@ -459,6 +532,14 @@ class WebUITaskTests(unittest.TestCase):
 
             self.assertEqual(first_selection.status_code, 200)
             self.assertEqual(third_selection.status_code, 200)
+            self.assertEqual(
+                first_selection.json()["task"]["viewed_at"],
+                first_selection.json()["task"]["updated_at"],
+            )
+            self.assertEqual(
+                third_selection.json()["task"]["viewed_at"],
+                third_selection.json()["task"]["updated_at"],
+            )
             self.assertEqual(third_selection.json()["task"]["selected_output_indexes"], [1, 3])
 
             selected_zip = client.get(f"/api/tasks/{task_id}/outputs.zip?selected=1")
@@ -479,6 +560,7 @@ class WebUITaskTests(unittest.TestCase):
             self.assertEqual(task["generated_count"], 2)
             self.assertEqual(task["total_count"], 2)
             self.assertEqual(task["selected_output_indexes"], [])
+            self.assertEqual(task["viewed_at"], task["updated_at"])
             self.assertTrue((root / output_files[0]).is_file())
             self.assertFalse((root / output_files[1]).exists())
             self.assertTrue((root / output_files[2]).is_file())
@@ -604,6 +686,59 @@ class WebUITaskTests(unittest.TestCase):
         self.assertEqual(stored_metadata["output_files"], output_files)
         self.assertEqual(stored_metadata["selected_output_indexes"], [1])
 
+    def test_task_detail_api_backfills_image_url_for_restored_file_only_output(self) -> None:
+        from codex_image.webui.app import create_app
+
+        task_id = "20260801074820-57f7da69"
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            output_file = output_name(task_id, 1)
+            output_path = root / output_file
+            output_path.parent.mkdir(parents=True, exist_ok=True)
+            output_path.write_bytes(self._png_bytes())
+            metadata_path(root, task_id).parent.mkdir(parents=True, exist_ok=True)
+            metadata_path(root, task_id).write_text(
+                json.dumps(
+                    {
+                        "task_id": task_id,
+                        "created_at": "2026-08-01T07:48:20+00:00",
+                        "status": "completed",
+                        "generated_count": 1,
+                        "total_count": 1,
+                        "output_file": output_file,
+                        "output_files": [output_file],
+                        "outputs": [
+                            {
+                                "index": 1,
+                                "status": "completed",
+                                "file": output_file,
+                            }
+                        ],
+                        "backup_import_fingerprint": "sha256:" + "a" * 64,
+                    }
+                ),
+                encoding="utf-8",
+            )
+
+            app = create_app(
+                output_root=root,
+                auth_checker=lambda: True,
+                auto_start_queue=False,
+            )
+            client = TestClient(app)
+            task_response = client.get(f"/api/tasks/{task_id}")
+            task = task_response.json()["task"]
+            image_url = task["outputs"][0]["url"]
+            image_response = client.get(image_url)
+
+        self.assertEqual(task_response.status_code, 200)
+        self.assertEqual(
+            image_url,
+            f"/api/tasks/{task_id}/outputs/1/image",
+        )
+        self.assertEqual(image_response.status_code, 200)
+        self.assertEqual(image_response.headers["content-type"], "image/png")
+
     def test_task_thumbnail_route_backfills_legacy_output_thumbnail(self) -> None:
         from codex_image.webui.app import create_app
 
@@ -649,7 +784,8 @@ class WebUITaskTests(unittest.TestCase):
     def test_sidebar_thumbnail_route_uses_cached_256px_webp(self) -> None:
         from codex_image.webui.app import create_app
 
-        task_id = "20260726010203-abcdef01"
+        task_time = datetime.now().astimezone().replace(hour=1, minute=2, second=3, microsecond=0)
+        task_id = f"{task_time:%Y%m%d%H%M%S}-abcdef01"
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             output_file = output_name(task_id, 1)
@@ -661,8 +797,8 @@ class WebUITaskTests(unittest.TestCase):
                 json.dumps(
                     {
                         "task_id": task_id,
-                        "created_at": "2026-07-26T01:02:03+08:00",
-                        "updated_at": "2026-07-26T01:03:03+08:00",
+                        "created_at": task_time.isoformat(),
+                        "updated_at": (task_time + timedelta(minutes=1)).isoformat(),
                         "status": "completed",
                         "generated_count": 1,
                         "total_count": 1,
@@ -680,7 +816,7 @@ class WebUITaskTests(unittest.TestCase):
             sidebar = client.get("/api/tasks/sidebar", params={"limit": 50}).json()
             thumbnail_url = sidebar["tasks"][0]["thumbnail_urls"][0]
             thumbnail_response = client.get(thumbnail_url)
-            thumbnail_path = root / "thumbnails" / "2026-07-26" / f"{task_id}-image-1-sidebar.webp"
+            thumbnail_path = root / "thumbnails" / f"{task_time:%Y-%m-%d}" / f"{task_id}-image-1-sidebar.webp"
             with Image.open(thumbnail_path) as thumbnail:
                 thumbnail_size = thumbnail.size
                 thumbnail_format = thumbnail.format
@@ -701,9 +837,11 @@ class WebUITaskTests(unittest.TestCase):
             root = Path(tmp)
             app = create_app(output_root=root, auth_checker=lambda: True, auto_start_queue=False)
             storage = TaskStorage(root, input_root=root / "inputs", source_data_root=root / "source-data")
+            base_time = datetime.now().astimezone().replace(hour=8, minute=0, second=0, microsecond=0)
             for number in range(75):
-                task_id = f"2026072608{number // 60:02d}{number % 60:02d}-{number:08d}"
-                timestamp = f"2026-07-26T08:{number // 60:02d}:{number % 60:02d}+08:00"
+                task_time = base_time + timedelta(seconds=number)
+                task_id = f"{task_time:%Y%m%d%H%M%S}-{number:08d}"
+                timestamp = task_time.isoformat()
                 storage.write_metadata(
                     task_id,
                     {
@@ -715,6 +853,8 @@ class WebUITaskTests(unittest.TestCase):
                         "params": {"ratio": "1:1", "orientation": "square"},
                     },
                 )
+                if number == 10:
+                    hidden_task_id = task_id
 
             client = TestClient(app)
             page = client.get(
@@ -725,6 +865,9 @@ class WebUITaskTests(unittest.TestCase):
                 "/api/tasks/sidebar/groups/today/selection",
                 params={"status": "failed", "ratio": "1:1"},
             )
+            position = client.get(
+                f"/api/tasks/sidebar/groups/today/position/{hidden_task_id}",
+            )
 
         self.assertEqual(page.status_code, 200)
         self.assertEqual(len(page.json()["tasks"]), 25)
@@ -732,6 +875,10 @@ class WebUITaskTests(unittest.TestCase):
         self.assertEqual(selection.status_code, 200)
         self.assertEqual(selection.json()["count"], 37)
         self.assertEqual(len(selection.json()["task_ids"]), 37)
+        self.assertEqual(position.status_code, 200)
+        self.assertEqual(position.json()["count"], 75)
+        self.assertTrue(position.json()["found"])
+        self.assertEqual(position.json()["position"], 64)
 
     def test_batch_delete_route_deletes_explicit_terminal_tasks_and_skips_running(self) -> None:
         from codex_image.webui.app import create_app
@@ -1180,7 +1327,7 @@ class WebUITaskTests(unittest.TestCase):
 
         self.assertEqual([task["task_id"] for task in promoted["waiting"]], [third, first, second])
         self.assertEqual([task["task_id"] for task in reordered["waiting"]], [second, third, first])
-    def test_queue_delete_running_task_cancels_and_keeps_history(self) -> None:
+    def test_queue_delete_running_task_requests_cancellation_and_keeps_history(self) -> None:
         from codex_image.webui.app import create_app
 
         with tempfile.TemporaryDirectory() as tmp:
@@ -1196,10 +1343,11 @@ class WebUITaskTests(unittest.TestCase):
             queue = client.get("/api/queue").json()
 
         self.assertEqual(deleted.status_code, 200)
-        self.assertEqual(task["status"], "failed")
-        self.assertEqual(task["error"], "Task cancelled by user.")
+        self.assertTrue(deleted.json()["cancellation_pending"])
+        self.assertEqual(task["status"], "cancelling")
         self.assertTrue(task["cancel_requested"])
-        self.assertEqual(queue["running"], [])
+        self.assertNotIn("cancelled_at", task)
+        self.assertEqual(queue["running"][0]["task_id"], task_id)
 
     def test_queue_batch_cancel_keeps_waiting_and_running_history_and_skips_inactive_tasks(self) -> None:
         from codex_image.webui.app import create_app
@@ -1243,23 +1391,43 @@ class WebUITaskTests(unittest.TestCase):
 
         self.assertEqual(response.status_code, 200)
         payload = response.json()
-        self.assertEqual(payload["summary"], {"cancelled": 2, "skipped": 2, "failed": 0})
+        self.assertEqual(
+            payload["summary"],
+            {
+                "cancelled": 1,
+                "cancellation_requested": 1,
+                "skipped": 2,
+                "failed": 0,
+            },
+        )
         self.assertEqual(
             payload["results"],
             [
-                {"task_id": waiting_id, "result": "cancelled", "previous_state": "waiting"},
-                {"task_id": running_id, "result": "cancelled", "previous_state": "running"},
+                {
+                    "task_id": waiting_id,
+                    "result": "cancelled",
+                    "previous_state": "waiting",
+                    "cancellation_pending": False,
+                },
+                {
+                    "task_id": running_id,
+                    "result": "cancellation_requested",
+                    "previous_state": "running",
+                    "cancellation_pending": True,
+                },
                 {"task_id": completed_id, "result": "skipped", "reason": "not_active"},
                 {"task_id": "missing-task", "result": "skipped", "reason": "not_active"},
             ],
         )
         self.assertEqual(queue["waiting"], [])
-        self.assertEqual(queue["running"], [])
-        for task in (waiting_task, running_task):
-            self.assertEqual(task["status"], "failed")
-            self.assertEqual(task["error"], "Task cancelled by user.")
-            self.assertTrue(task["cancel_requested"])
-            self.assertTrue(task["cancelled_at"])
+        self.assertEqual(queue["running"][0]["task_id"], running_id)
+        self.assertEqual(waiting_task["status"], "failed")
+        self.assertEqual(waiting_task["error"], "Task cancelled by user.")
+        self.assertTrue(waiting_task["cancel_requested"])
+        self.assertTrue(waiting_task["cancelled_at"])
+        self.assertEqual(running_task["status"], "cancelling")
+        self.assertTrue(running_task["cancel_requested"])
+        self.assertNotIn("cancelled_at", running_task)
         self.assertEqual(completed_task["status"], "completed")
 
     def test_queue_batch_cancel_requires_at_least_one_task_id(self) -> None:

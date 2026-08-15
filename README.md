@@ -27,7 +27,7 @@
 </p>
 
 <p align="center">
-  <img src="assets/UI_cn.png" alt="iLab CONJURE WebUI 截图" width="960" />
+  <img src="assets/UI_cn.webp" alt="iLab CONJURE WebUI 截图" width="960" />
 </p>
 
 ## 简介
@@ -58,14 +58,17 @@ Images API 或 Responses API 形态。
 - 生成页按需加载最近任务和媒体，隐藏图库与模板仅在打开后渲染；响应式工作区由 CSS Grid 与容器查询驱动，刷新和调整窗口尺寸更流畅。
 - 输出参数支持一键锁定并以只读摘要展示，避免连续生成或浏览历史任务时误改设置；切换任务不会覆盖当前锁定参数。
 - 独立 `/history` 页面支持 SQLite 分页、搜索、筛选、网格/列表视图和懒加载详情。
+- 历史任务可收藏并添加多个标签，也可按收藏、标签或无标签筛选；最多可一次整理 300 个已选任务。
+- 单个或多个历史任务可导出成一个 ZIP，支持仅图片或图片＋提示词；每张图优先附带自己的优化后提示词，没有时回退到任务原提示词。
+- 生成页与历史库共用顶部工具栏、小兔子 Logo、返回入口和跟随系统／浅色／深色主题偏好。
 - Codex Responses 和 API Responses 生图可选启用联网搜索；生成页和历史库搜索支持提示词与任务 ID，并可命中历史任务。
 - 单任务多图输出、部分失败处理和失败重试。
 - 公用图库、最近参考图、颜色 chip、提示词片段 chip 和提示词模板。
 - 图像编辑器支持插入输入框里的其他图片、多图层组合、默认锁定比例变换、
   Shift 自由变换、局部擦除和真实图层缩略图。
-- 系统设置提供语言下拉菜单，支持简体中文、正體中文、繁体中文、日语、韩语、English、西班牙语、葡萄牙语、法语、德语、俄语、意大利语和印地语；首次启动自动跟随浏览器语言，手动选择后偏好保存在当前浏览器。
+- 系统设置提供语言下拉菜单，支持简体中文、正體中文、繁体中文、日语、韩语、English、越南语、西班牙语、葡萄牙语、法语、德语、俄语、意大利语和印地语；首次启动自动跟随浏览器语言，手动选择后偏好保存在当前浏览器。
 - 系统设置整合 API 设置、网络、语言 / Language、存储与通知四个 Tab；Codex Image / Codex Responses 直接在生成页供应商菜单中选择。
-- 网络设置明确提供系统、直连和自定义 HTTP(S) 代理三种出口，保存在应用数据目录，并从后续生成尝试开始生效，无需重启。
+- 网络设置明确提供系统、直连和自定义 HTTP(S) 代理三种出口；还可全局设置单次生图请求超时（1–30 分钟，默认 10 分钟）和可重试瞬时失败后的重试次数（0–5 次，默认 2 次）。设置保存在应用数据目录，覆盖所有供应商的生成与编辑，并从后续任务执行开始生效，无需重启；每次重试使用新的完整超时窗口。
 - API 供应商以卡片快速选择，默认只读详情，支持显式编辑、复制、删除确认和多供应商排序；自定义供应商可选一个 emoji 标识以便快速识别。
 - 标准 macOS DMG 和 Windows App ZIP 提供 Rust 托盘 / 菜单栏启动器、小兔子图标、系统语言跟随、原生关于窗口，并在首次启动时由用户确认复制旧 portable 数据。
 - 包含标准更新助手的 macOS App 支持用户确认后的一键覆盖：helper 校验 signed manifest 与 DMG SHA256，退出当前 App，带回滚保护地替换并重新启动；用户数据仍保存在应用包外。旧版 macOS App 需要手动引导升级一次，Windows 标准 ZIP 仍手动替换。
@@ -97,7 +100,7 @@ Images API 或 Responses API 形态。
 ## 环境要求
 
 - Python 3.11 或更高版本。
-- WebUI 依赖见 `requirements-webui.txt`。
+- WebUI 依赖由 `requirements-webui.txt` 精确锁定并附带包哈希。
 - 修改 TypeScript 或 CSS 时需要 `package.json` 中的前端工具。
 
 ## 安装
@@ -106,8 +109,13 @@ Images API 或 Responses API 形态。
 git clone https://github.com/kadevin/ilab-conjure.git
 cd ilab-conjure
 python3 -m venv .venv
-.venv/bin/python -m pip install -r requirements-webui.txt
+.venv/bin/python -m pip install --require-hashes -r requirements-webui.txt
 ```
+
+普通升级前先退出旧实例。标准包和 portable 包已包含匹配依赖，通常不会出现依赖提示；复用旧
+`.venv` 的源码或旧 portable 安装可能显示一次 `Installing WebUI dependencies...`。如果安装
+失败，保留现有数据，检查网络后重试或重新覆盖完整安装包；不要删除 `data/`、`output/`、
+`source-data/`、图库或配置，更新依赖不需要重置这些文件。
 
 ## 启动 WebUI
 
@@ -126,7 +134,7 @@ Start WebUI.bat
 手动启动：
 
 ```bash
-.venv/bin/python -m uvicorn codex_image.webui.app:app --host 0.0.0.0 --port 8787 --no-access-log
+.venv/bin/python -m codex_image.webui.server codex_image.webui.app:app --host 0.0.0.0 --port 8787 --no-access-log
 ```
 
 然后打开：
@@ -135,21 +143,17 @@ Start WebUI.bat
 http://127.0.0.1:8787/
 ```
 
-启动器会监听所有网络接口。同一局域网内的设备可访问
-`http://<运行 WebUI 的电脑局域网 IP>:8787/`。Windows 或 macOS 防火墙可能需要
-允许 8787/TCP 入站连接。请仅在可信网络中开放，WebUI 不提供独立的局域网访问认证。
-
 ## 应用包下载
 
 当前可用的标准包和一键包见 [下载 / Releases](RELEASES.md)，也可以直接打开
-[GitHub Release v0.7.1](https://github.com/kadevin/ilab-conjure/releases/tag/v0.7.1)。
+[GitHub Release v0.8.2](https://github.com/kadevin/ilab-conjure/releases/tag/v0.8.2)。
 
 新用户建议优先下载标准包：
 
-1. macOS：Apple Silicon 下载 `iLab-GPT-CONJURE-macos-arm64-0.7.1.dmg`，
-   Intel 下载 `iLab-GPT-CONJURE-macos-x64-0.7.1.dmg`，然后把
+1. macOS：Apple Silicon 下载 `iLab-GPT-CONJURE-macos-arm64-0.8.2.dmg`，
+   Intel 下载 `iLab-GPT-CONJURE-macos-x64-0.8.2.dmg`，然后把
    `iLab GPT CONJURE.app` 拖到 Applications。
-2. Windows：下载 `iLab-GPT-CONJURE-windows-x64_0.7.1.zip`，
+2. Windows：下载 `iLab-GPT-CONJURE-windows-x64_0.8.2.zip`，
    解压到普通用户目录，双击 `iLab GPT CONJURE.exe`。
 
 标准包的用户数据会写入 macOS 的

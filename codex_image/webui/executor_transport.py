@@ -12,16 +12,23 @@ from typing import Any, AsyncContextManager, Callable
 from urllib import error as urllib_error
 
 from codex_image.client import CodexImagesImageClient, ImageResult, OpenAIImagesImageClient, OpenAIResponsesImageClient
+from codex_image.httpx_transport import cancellable_http_request_scope
 from codex_image.prompt_guard import build_guarded_prompt
 
+from .network_egress import (
+    DEFAULT_IMAGE_REQUEST_RETRY_COUNT,
+    DEFAULT_IMAGE_REQUEST_TIMEOUT_SECONDS,
+    MAX_IMAGE_REQUEST_RETRY_COUNT,
+    MIN_IMAGE_REQUEST_RETRY_COUNT,
+    _environment_timeout_seconds,
+)
 from .storage import TaskStorage
 
-DEFAULT_IMAGE_REQUEST_TIMEOUT_SECONDS = 600.0
 DEFAULT_API_MODE = "images"
 DEFAULT_API_IMAGES_CONCURRENCY = 4
 MIN_API_IMAGES_CONCURRENCY = 1
 MAX_API_IMAGES_CONCURRENCY = 32
-MAX_TRANSIENT_IMAGE_REQUEST_ATTEMPTS = 3
+MAX_TRANSIENT_IMAGE_REQUEST_ATTEMPTS = DEFAULT_IMAGE_REQUEST_RETRY_COUNT + 1
 TRANSIENT_IMAGE_RETRY_BASE_DELAY_SECONDS = 0.5
 TRANSIENT_IMAGE_RETRY_MAX_DELAY_SECONDS = 2.0
 PROMPT_FIDELITY_MODES = {"strict", "original", "off"}
@@ -42,14 +49,7 @@ def _normalize_api_images_concurrency(value: Any) -> int:
 
 
 def _image_request_timeout_seconds() -> float:
-    raw = os.getenv("CODEX_IMAGE_REQUEST_TIMEOUT_SECONDS", "").strip()
-    if not raw:
-        return DEFAULT_IMAGE_REQUEST_TIMEOUT_SECONDS
-    try:
-        parsed = float(raw)
-    except ValueError:
-        return DEFAULT_IMAGE_REQUEST_TIMEOUT_SECONDS
-    return parsed if parsed > 0 else DEFAULT_IMAGE_REQUEST_TIMEOUT_SECONDS
+    return _environment_timeout_seconds() or DEFAULT_IMAGE_REQUEST_TIMEOUT_SECONDS
 
 
 def _normalize_prompt_fidelity(value: Any) -> str:
@@ -63,9 +63,17 @@ def _direct_images_transport(auth_source: str, api_mode: str | None) -> bool:
     return auth_source in {"api", "codex"} and _normalize_api_mode(api_mode) == "images"
 
 
-def _prompt_for_transport(prompt: str, *, auth_source: str, api_mode: str | None, prompt_fidelity: str, instructions: str) -> str:
+def _prompt_for_transport(
+    prompt: str,
+    *,
+    auth_source: str,
+    api_mode: str | None,
+    prompt_fidelity: str,
+    instructions: str,
+    locale: str | None = None,
+) -> str:
     if _direct_images_transport(auth_source, api_mode) and _normalize_prompt_fidelity(prompt_fidelity) == "strict":
-        return build_guarded_prompt(prompt, instructions)
+        return build_guarded_prompt(prompt, instructions, locale=locale)
     return prompt
 
 
@@ -169,19 +177,41 @@ async def _call_image_client_once(
     timeout_seconds: float | None,
     kwargs: dict[str, Any],
 ) -> ImageResult:
-    call = asyncio.create_task(asyncio.to_thread(method, **kwargs))
-    if timeout_seconds is None:
-        return await call
-    started_at = time.monotonic()
-    try:
-        return await asyncio.wait_for(call, timeout=timeout_seconds)
-    except TimeoutError as exc:
-        if call.done() and not call.cancelled():
+    loop = asyncio.get_running_loop()
+    with cancellable_http_request_scope(loop) as cancellation_scope:
+        call = asyncio.create_task(asyncio.to_thread(method, **kwargs))
+        if timeout_seconds is None:
+            return await call
+        started_at = time.monotonic()
+        try:
+            return await asyncio.wait_for(asyncio.shield(call), timeout=timeout_seconds)
+        except TimeoutError as exc:
+            if call.done() and not call.cancelled():
+                raise
+            elapsed = _format_elapsed_seconds(time.monotonic() - started_at)
+            timeout_error = TimeoutError(
+                f"Image request timed out after {elapsed}s (timeout limit {timeout_seconds:g}s)"
+            )
+            cancellation_scope.cancel()
+            try:
+                await asyncio.shield(call)
+            except asyncio.CancelledError:
+                current_task = asyncio.current_task()
+                if current_task is not None and current_task.cancelling():
+                    raise
+            except BaseException:
+                pass
+            await cancellation_scope.wait_closed()
+            raise timeout_error from exc
+        except asyncio.CancelledError:
+            request_was_active = cancellation_scope.cancel()
+            if request_was_active:
+                try:
+                    await asyncio.shield(call)
+                except BaseException:
+                    pass
+                await cancellation_scope.wait_closed()
             raise
-        elapsed = _format_elapsed_seconds(time.monotonic() - started_at)
-        raise TimeoutError(
-            f"Image request timed out after {elapsed}s (timeout limit {timeout_seconds:g}s)"
-        ) from exc
 
 
 async def _call_image_client(
@@ -189,9 +219,19 @@ async def _call_image_client(
     params: dict[str, Any],
     method: Callable[..., ImageResult],
     timeout_seconds: float | None = None,
+    retry_count: int = DEFAULT_IMAGE_REQUEST_RETRY_COUNT,
     **kwargs: Any,
 ) -> ImageResult:
-    for attempt in range(1, MAX_TRANSIENT_IMAGE_REQUEST_ATTEMPTS + 1):
+    try:
+        parsed_retry_count = int(retry_count)
+    except (TypeError, ValueError):
+        parsed_retry_count = DEFAULT_IMAGE_REQUEST_RETRY_COUNT
+    normalized_retry_count = min(
+        MAX_IMAGE_REQUEST_RETRY_COUNT,
+        max(MIN_IMAGE_REQUEST_RETRY_COUNT, parsed_retry_count),
+    )
+    total_attempts = normalized_retry_count + 1
+    for attempt in range(1, total_attempts + 1):
         context = request_context(params) if request_context is not None else _noop_request_context()
         try:
             async with context:
@@ -201,12 +241,9 @@ async def _call_image_client(
                     kwargs=kwargs,
                 )
         except Exception as exc:
-            try:
-                setattr(exc, "_image_request_attempts", attempt)
-            except Exception:
-                pass
+            setattr(exc, "_image_request_attempts", attempt)
             if (
-                attempt >= MAX_TRANSIENT_IMAGE_REQUEST_ATTEMPTS
+                attempt >= total_attempts
                 or not _is_retryable_transient_image_error(exc)
             ):
                 raise

@@ -6,8 +6,16 @@ import time
 from typing import Any, AsyncContextManager, Callable
 
 from codex_image.client import DEFAULT_MAIN_MODEL, CodexImagesImageClient, ImageResult, OpenAIImagesImageClient
-from codex_image.prompt_guard import build_original_prompt_instructions, build_prompt_guard_instructions
+from codex_image.prompt_guard import build_prompt_guard_instructions
 
+from .edit_mask import (
+    RESPONSES_EDIT_MASK_MAX_EDGE,
+    EditMaskContractError,
+    aligned_edit_mask_canvas_size,
+    is_explicit_edit_mask_rejection,
+    normalize_edit_mask_data_urls,
+    validate_edit_mask_data_urls,
+)
 from .executor_inputs import (
     _file_to_data_url,
     _image_mime_type,
@@ -19,18 +27,11 @@ from .executor_inputs import (
     _sniff_image_mime_type,
     _task_cancel_requested,
 )
-from .edit_mask import (
-    RESPONSES_EDIT_MASK_MAX_EDGE,
-    EditMaskContractError,
-    aligned_edit_mask_canvas_size,
-    is_explicit_edit_mask_rejection,
-    normalize_edit_mask_data_urls,
-    validate_edit_mask_data_urls,
-)
 from .executor_progress import _restore_completed_output_progress
 from .executor_transport import (
     DEFAULT_API_IMAGES_CONCURRENCY,
     DEFAULT_API_MODE,
+    DEFAULT_IMAGE_REQUEST_RETRY_COUNT,
     DEFAULT_IMAGE_REQUEST_TIMEOUT_SECONDS,
     DEFAULT_PROMPT_FIDELITY,
     MAX_API_IMAGES_CONCURRENCY,
@@ -109,6 +110,8 @@ async def _execute_stored_task(
     client: Any,
     batch_delay_seconds: float,
     request_context: Callable[[dict[str, Any]], AsyncContextManager[None]] | None = None,
+    image_request_timeout_seconds: float | None = None,
+    image_request_retry_count: int = DEFAULT_IMAGE_REQUEST_RETRY_COUNT,
 ) -> dict[str, Any]:
     metadata = storage.read_metadata(task_id)
     request = json.loads(storage.request_path(task_id).read_text(encoding="utf-8"))
@@ -116,16 +119,10 @@ async def _execute_stored_task(
     params["main_model"] = effective_reference_file_main_model(params.get("main_model"))
     mode = str(metadata["mode"])
     prompt = str(metadata["prompt"])
-    model_prompt = append_ratio_prompt_instruction(str(metadata.get("prompt_for_model") or prompt), params.get("ratio"))
     prompt_fidelity = _normalize_prompt_fidelity(params.get("prompt_fidelity") or "off")
+    prompt_locale = str(metadata.get("prompt_locale") or "zh-CN")
     raw_constraints = metadata.get("prompt_constraints")
     prompt_constraints = [str(item) for item in raw_constraints] if isinstance(raw_constraints, list) else []
-    if prompt_fidelity == "strict":
-        guard_instructions = build_prompt_guard_instructions(prompt_constraints)
-    elif prompt_fidelity == "original":
-        guard_instructions = build_original_prompt_instructions()
-    else:
-        guard_instructions = ""
     assigned_auth_source = str(metadata.get("assigned_auth_source") or "")
     resolved_backend = str(metadata.get("backend") or metadata.get("requested_backend") or "")
     if resolved_backend in {"codex_responses", "openai_responses"}:
@@ -137,18 +134,47 @@ async def _execute_stored_task(
     else:
         effective_api_mode = _normalize_api_mode(params.get("api_mode"))
     web_search_enabled = bool(params.get("web_search")) and effective_api_mode == "responses"
-    transport_prompt = _prompt_for_transport(
-        model_prompt,
-        auth_source=assigned_auth_source,
-        api_mode=effective_api_mode,
-        prompt_fidelity=prompt_fidelity,
-        instructions=guard_instructions,
-    )
-    transport_instructions = _instructions_for_transport(
-        auth_source=assigned_auth_source,
-        api_mode=effective_api_mode,
-        instructions=guard_instructions,
-    )
+    if "execution_prompt" in metadata:
+        model_prompt = str(
+            metadata.get("execution_model_prompt")
+            or metadata.get("prompt_for_model")
+            or prompt
+        )
+        transport_prompt = str(metadata.get("execution_prompt") or "")
+        transport_instructions = (
+            str(metadata.get("execution_instructions") or "") or None
+        )
+    else:
+        if prompt_fidelity == "original":
+            model_prompt = prompt
+            guard_instructions = ""
+        else:
+            model_prompt = append_ratio_prompt_instruction(
+                str(metadata.get("prompt_for_model") or prompt),
+                params.get("ratio"),
+                locale=prompt_locale,
+            )
+            guard_instructions = (
+                build_prompt_guard_instructions(
+                    prompt_constraints,
+                    locale=prompt_locale,
+                )
+                if prompt_fidelity == "strict"
+                else ""
+            )
+        transport_prompt = _prompt_for_transport(
+            model_prompt,
+            auth_source=assigned_auth_source,
+            api_mode=effective_api_mode,
+            prompt_fidelity=prompt_fidelity,
+            instructions=guard_instructions,
+            locale=prompt_locale,
+        )
+        transport_instructions = _instructions_for_transport(
+            auth_source=assigned_auth_source,
+            api_mode=effective_api_mode,
+            instructions=guard_instructions,
+        )
     input_paths = [storage.input_path(str(name)) for name in metadata.get("input_files", [])]
 
     mask_name = metadata.get("mask_file")
@@ -187,13 +213,15 @@ async def _execute_stored_task(
         params["size"] = f"{mask_canvas_size[0]}x{mask_canvas_size[1]}"
         params["edit_mask_canvas_locked"] = True
         data_urls[0], mask_data_url = normalize_edit_mask_data_urls(
-            data_urls[0],
-            mask_data_url,
-            target_size=mask_canvas_size,
+            data_urls[0], mask_data_url, target_size=mask_canvas_size,
         )
     count = int(params.get("n") or 1)
     debug_sse_path = _debug_sse_path(storage, task_id)
-    image_request_timeout_seconds = _image_request_timeout_seconds()
+    effective_image_request_timeout_seconds = (
+        _image_request_timeout_seconds()
+        if image_request_timeout_seconds is None
+        else image_request_timeout_seconds
+    )
     results, output_paths, output_records = _restore_completed_output_progress(storage, metadata, params, count)
     completed_output_numbers = {
         int(record["index"])
@@ -273,7 +301,7 @@ async def _execute_stored_task(
                     "error": _output_error_message(
                         exc,
                         elapsed_seconds=elapsed_seconds,
-                        timeout_seconds=image_request_timeout_seconds,
+                        timeout_seconds=effective_image_request_timeout_seconds,
                     ),
                     "attempts": _image_request_attempts(exc),
                     "started_at": slot_started_at,
@@ -289,6 +317,7 @@ async def _execute_stored_task(
 
             try:
                 async with semaphore:
+                    _raise_if_task_cancelled(storage, task_id)
                     request_slot = request_context(params) if request_context is not None else _noop_request_context()
                     async with request_slot:
                         slot_started_at = utc_now()
@@ -314,7 +343,8 @@ async def _execute_stored_task(
                                         request_context=None,
                                         params=params,
                                         method=client.edit_image,
-                                        timeout_seconds=image_request_timeout_seconds,
+                                        timeout_seconds=effective_image_request_timeout_seconds,
+                                        retry_count=image_request_retry_count,
                                         prompt=transport_prompt,
                                         images=data_urls,
                                         mask_image=mask_data_url,
@@ -336,7 +366,8 @@ async def _execute_stored_task(
                                         None,
                                         params,
                                         client.generate_image,
-                                        timeout_seconds=image_request_timeout_seconds,
+                                        timeout_seconds=effective_image_request_timeout_seconds,
+                                        retry_count=image_request_retry_count,
                                         prompt=transport_prompt,
                                         **prompt_kwargs,
                                         **response_file_kwargs,
@@ -410,9 +441,16 @@ async def _execute_stored_task(
                 if isinstance(item.get("fatal_error"), Exception):
                     fatal_error = fatal_error or item["fatal_error"]
         except BaseException:
-            for task in tasks:
-                if not task.done():
-                    task.cancel()
+            current_task = asyncio.current_task()
+            externally_cancelled = bool(
+                current_task is not None and current_task.cancelling()
+            )
+            if _task_cancel_requested(storage, task_id) and not externally_cancelled:
+                await asyncio.gather(*tasks, return_exceptions=True)
+            else:
+                for task in tasks:
+                    if not task.done():
+                        task.cancel()
             raise
         if fatal_error is not None and (
             not results
@@ -450,7 +488,8 @@ async def _execute_stored_task(
                                 request_context=request_context,
                                 params=params,
                                 method=client.edit_image,
-                                timeout_seconds=image_request_timeout_seconds,
+                                timeout_seconds=effective_image_request_timeout_seconds,
+                                retry_count=image_request_retry_count,
                                 prompt=transport_prompt,
                                 images=data_urls,
                                 mask_image=mask_data_url,
@@ -472,7 +511,8 @@ async def _execute_stored_task(
                                 request_context,
                                 params,
                                 client.generate_image,
-                                timeout_seconds=image_request_timeout_seconds,
+                                timeout_seconds=effective_image_request_timeout_seconds,
+                                retry_count=image_request_retry_count,
                                 prompt=transport_prompt,
                                 **prompt_kwargs,
                                 **response_file_kwargs,
@@ -509,7 +549,7 @@ async def _execute_stored_task(
                                 "error": _output_error_message(
                                     exc,
                                     elapsed_seconds=elapsed_seconds,
-                                    timeout_seconds=image_request_timeout_seconds,
+                                    timeout_seconds=effective_image_request_timeout_seconds,
                                 ),
                                 "attempts": _image_request_attempts(exc, attempt),
                                 "started_at": slot_started_at,

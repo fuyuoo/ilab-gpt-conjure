@@ -301,7 +301,7 @@ relocate_python_framework "$PYTHON_FRAMEWORK" "$PYTHON_MINOR"
 PYTHON_BIN="${PYTHON_FRAMEWORK}/Versions/${PYTHON_MINOR}/bin/python3"
 "$PYTHON_BIN" -m ensurepip --upgrade
 "$PYTHON_BIN" -m pip install --upgrade pip
-"$PYTHON_BIN" -m pip install --target "${APP_DIR}/.deps" -r "${APP_DIR}/requirements-webui.txt"
+"$PYTHON_BIN" -m pip install --require-hashes --target "${APP_DIR}/.deps" -r "${APP_DIR}/requirements-webui.txt"
 if [[ ! -f "${APP_DIR}/.deps/certifi/cacert.pem" ]]; then
   echo "certifi CA bundle was not installed at ${APP_DIR}/.deps/certifi/cacert.pem" >&2
   exit 1
@@ -313,6 +313,10 @@ ILAB_CONJURE_DATA_DIR="${BUILD_ROOT}/_standard-data-probe" \
 PYTHONPATH="${APP_DIR}:${APP_DIR}/.deps" \
   "$PYTHON_BIN" -c "import fastapi, uvicorn, multipart, httpx, PIL; import standard_webui_app; print('standard import ok')"
 rm -rf "${BUILD_ROOT}/_standard-data-probe"
+"$PYTHON_BIN" "${SCRIPT_DIR}/../cleanup-runtime.py" \
+  --app-dir "$APP_DIR" \
+  --runtime-dir "$PYTHON_DIR" \
+  --platform macos
 
 if ! command -v cargo >/dev/null 2>&1; then
   echo "cargo was not found. Install Rust toolchain before building the standard app launcher." >&2

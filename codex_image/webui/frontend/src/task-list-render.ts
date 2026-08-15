@@ -10,6 +10,13 @@ import {
   taskModelDisplayName,
   taskModelFamilyId,
 } from "./task-model-summary";
+import {
+  taskCardSwipeActionsForState,
+  TASK_QUEUE_REORDER_HINT_STORAGE_KEY,
+  type TaskCardSwipeAction,
+  type TaskCardSwipeActions,
+} from "./task-card-swipe-logic";
+import { sidebarTaskDateBucket } from "./history-task-reveal-model";
 
 const bridge = getLegacyBridge();
 const state = bridge.state;
@@ -18,6 +25,9 @@ const EXPANDED_TASK_GROUP_INITIAL_CARD_COUNT = 24;
 const EXPANDED_TASK_GROUP_CHUNK_SIZE = 48;
 const TASK_SIDEBAR_GROUP_PAGE_SIZE = 50;
 const EXPANDED_TASK_GROUP_ANIMATION_FALLBACK_MS = 320;
+const TASK_THUMB_OUTER_SPIN_DURATION_MS = 1300;
+const TASK_THUMB_INNER_SPIN_DURATION_MS = 950;
+const TASK_THUMB_INNER_SPIN_OFFSET_MS = 280;
 let expandedTaskGroupRenderToken = 0;
 type QueueTaskIdSections = { running: Map<string, number>; waiting: Map<string, number> };
 type TaskListScrollAnchor = {
@@ -30,6 +40,7 @@ type TaskListScrollAnchor = {
 };
 let queueTaskIdsCacheKey = "";
 let queueTaskIdsCache: QueueTaskIdSections | null = null;
+let deferredActiveTaskHtml: string | null = null;
 
 function legacyMethod(name: string, ...args: any[]): any {
   const method = getLegacyBridge().methods[name];
@@ -84,9 +95,18 @@ function renderTasks(options: { preserveScroll?: boolean } = {}) {
   const scrollAnchors = options.preserveScroll ? captureTaskListScrollAnchors() : [];
   const query = taskSearchQuery();
   const filters = taskFilterValues();
-  const visibleTasks = state.tasks.filter((task: any) => !isTaskArchived(task.task_id));
+  const revealedTaskId = String(
+    state.historyTaskReveal?.ready
+    && String(state.historyTaskReveal?.taskId || "") === String(state.selectedTaskId || "")
+      ? state.historyTaskReveal.taskId
+      : "",
+  );
+  const visibleTasks = state.tasks.filter((task: any) => (
+    !isTaskArchived(task.task_id) || String(task?.task_id || "") === revealedTaskId
+  ));
   const tasks = visibleTasks.filter((task: any) => {
-    return taskMatchesSearch(task, query) && taskMatchesFilters(task, filters);
+    return String(task?.task_id || "") === revealedTaskId
+      || (taskMatchesSearch(task, query) && taskMatchesFilters(task, filters));
   });
   const visibleTaskIds = visibleTasks.map((task: any) => String(task.task_id));
   if (!state.batchSelectionIncludesUnloaded) {
@@ -112,6 +132,7 @@ function renderTasks(options: { preserveScroll?: boolean } = {}) {
 
   if (!tasks.length) {
     expandedTaskGroupRenderToken += 1;
+    renderExpandedTaskGroupHeader(null);
     els.taskList.innerHTML = `<div class="task-meta">${escapeHtml(translate("taskList.empty"))}</div>`;
     updateDocumentTitle();
     restoreTaskListScrollAnchors(scrollAnchors);
@@ -120,6 +141,7 @@ function renderTasks(options: { preserveScroll?: boolean } = {}) {
   }
   if (!layout.expandedGroup) {
     expandedTaskGroupRenderToken += 1;
+    renderExpandedTaskGroupHeader(null);
     els.taskList.innerHTML = "";
     updateDocumentTitle();
     restoreTaskListScrollAnchors(scrollAnchors);
@@ -129,9 +151,10 @@ function renderTasks(options: { preserveScroll?: boolean } = {}) {
 
   const group = layout.expandedGroup;
   const shouldAnimateExpandedGroup = state.expandedTaskGroupAnimationPending === true;
-  els.taskList.innerHTML = renderExpandedTaskGroupShellHtml(group, {
+  renderExpandedTaskGroupHeader(group, {
     startExpanded: !shouldAnimateExpandedGroup,
   });
+  els.taskList.innerHTML = renderExpandedTaskGroupBodyShellHtml(group);
   scheduleExpandedTaskGroupItemsRender(group, layout.expandedKey || group?.key || null);
   updateDocumentTitle();
   restoreTaskListScrollAnchors(scrollAnchors);
@@ -210,10 +233,47 @@ function renderHistoryLibraryGroup(tasks: any[], query: string) {
   els.taskHistoryLibrarySlot.classList.toggle("hidden", !html);
 }
 
-function renderActiveTaskGroup(activeHtml: string) {
+function applyActiveTaskGroupHtml(activeHtml: string) {
   if (!els.taskActiveList) return;
   els.taskActiveList.innerHTML = activeHtml;
   els.taskActiveList.classList.toggle("hidden", !activeHtml);
+}
+
+function draggedTaskStillWaiting(): boolean {
+  const taskId = String(state.queueDragTaskId || "");
+  return Boolean(taskId && (state.queue.waiting || []).some(
+    (task: any) => String(task?.task_id || "") === taskId,
+  ));
+}
+
+function renderActiveTaskGroup(activeHtml: string) {
+  if (!els.taskActiveList) return;
+  if (state.queueDragTaskId && draggedTaskStillWaiting()) {
+    deferredActiveTaskHtml = activeHtml;
+    return;
+  }
+  if (state.queueDragTaskId) {
+    getLegacyBridge().methods.cancelActiveTaskQueueReorder?.({ flushDeferred: false });
+  }
+  deferredActiveTaskHtml = null;
+  applyActiveTaskGroupHtml(activeHtml);
+}
+
+function flushDeferredActiveTaskGroupRender(): boolean {
+  if (state.queueDragTaskId || deferredActiveTaskHtml === null) return false;
+  const activeHtml = deferredActiveTaskHtml;
+  deferredActiveTaskHtml = null;
+  const anchor = captureTaskListScrollAnchor(els.taskActiveList, els.taskActiveList);
+  applyActiveTaskGroupHtml(activeHtml);
+  restoreTaskListScrollAnchor(anchor);
+  updateTaskElapsedDisplays();
+  return true;
+}
+
+function discardDeferredActiveTaskGroupRender(): boolean {
+  if (deferredActiveTaskHtml === null) return false;
+  deferredActiveTaskHtml = null;
+  return true;
 }
 
 function taskAnchorLayout(groups: any[], expandedKey: string | null, query: string) {
@@ -250,8 +310,8 @@ function expandedTaskGroupBodyElements(groupKey: string) {
   const body = els.taskList?.querySelector(
     `.task-group-items-expanded[data-expanded-task-group-items-key="${escapedGroupKey}"]`,
   ) as HTMLElement | null;
-  const headerButton = els.taskList?.querySelector(
-    `.task-group[data-task-group="${escapedGroupKey}"] .task-group-header-split`,
+  const headerButton = els.taskHistoryCurrentAnchor?.querySelector(
+    `.task-group-header-split[data-task-group-toggle-key="${escapedGroupKey}"]`,
   ) as HTMLElement | null;
   return { body, headerButton };
 }
@@ -460,37 +520,60 @@ function revealActiveTaskGroup() {
   }
 }
 
-function renderExpandedTaskGroupShellHtml(group: any, options: { startExpanded?: boolean } = {}) {
+function expandedTaskGroupHeaderHtml(group: any, options: { startExpanded?: boolean } = {}) {
   const groupKey = escapeHtml(group.key);
   const startExpanded = options.startExpanded !== false;
   return `
-    <section class="task-group task-group-expanded" data-task-group="${groupKey}">
-      <button
-        class="task-group-header task-group-header-split"
-        type="button"
-        data-task-group-toggle-key="${groupKey}"
-        data-task-group-expanded="true"
-        aria-expanded="${startExpanded ? "true" : "false"}"
-        aria-label="${escapeHtml(formatTranslation("taskGroup.collapse", { label: group.label }))}"
+    <button
+      class="task-group-header task-group-header-split"
+      type="button"
+      data-task-group-toggle-key="${groupKey}"
+      data-task-group-expanded="true"
+      aria-expanded="${startExpanded ? "true" : "false"}"
+      aria-label="${escapeHtml(formatTranslation("taskGroup.collapse", { label: group.label }))}"
+    >
+      <span class="task-group-label-button">
+        <span class="task-group-title">
+          <span class="task-group-label">${escapeHtml(group.label)}</span>
+          <span class="task-group-count-separator" aria-hidden="true">·</span>
+          <span class="task-group-count">${taskGroupCount(group)}</span>
+        </span>
+      </span>
+      <span
+        class="task-group-arrow-button"
+        aria-hidden="true"
       >
-        <span class="task-group-label-button">
-          <span class="task-group-title">
-            <span class="task-group-label">${escapeHtml(group.label)}</span>
-            <span class="task-group-count-separator" aria-hidden="true"> · </span>
-            <span class="task-group-count">${taskGroupCount(group)}</span>
-          </span>
+        <span class="task-group-toggle" aria-hidden="true">
+          <svg class="task-group-toggle-icon" viewBox="0 0 12 12" focusable="false">
+            <path d="M4 2.5 8 6 4 9.5" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"/>
+          </svg>
         </span>
-        <span
-          class="task-group-arrow-button"
-          aria-hidden="true"
-        >
-          <span class="task-group-toggle" aria-hidden="true">
-            <svg class="task-group-toggle-icon" viewBox="0 0 12 12" focusable="false">
-              <path d="M4 2.5 8 6 4 9.5" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"/>
-            </svg>
-          </span>
-        </span>
-      </button>
+      </span>
+    </button>
+  `;
+}
+
+function renderExpandedTaskGroupHeader(group: any | null, options: { startExpanded?: boolean } = {}) {
+  if (!els.taskHistoryCurrentAnchor) return;
+  const html = group ? expandedTaskGroupHeaderHtml(group, options) : "";
+  els.taskHistoryCurrentAnchor.innerHTML = html;
+  els.taskHistoryCurrentAnchor.classList.toggle("hidden", !html);
+}
+
+function renderExpandedTaskGroupBodyShellHtml(group: any) {
+  const groupKey = escapeHtml(group.key);
+  return `
+    <section class="task-group task-group-expanded" data-task-group="${groupKey}">
+      <div class="task-group-items task-group-items-expanded" data-expanded-task-group-items-key="${groupKey}"></div>
+    </section>
+  `;
+}
+
+function renderExpandedTaskGroupShellHtml(group: any, options: { startExpanded?: boolean } = {}) {
+  const groupKey = escapeHtml(group.key);
+  return `
+    <section class="task-group task-group-expanded" data-task-group="${groupKey}">
+      ${expandedTaskGroupHeaderHtml(group, options)}
       <div class="task-group-items task-group-items-expanded" data-expanded-task-group-items-key="${groupKey}"></div>
     </section>
   `;
@@ -503,7 +586,7 @@ function activeTaskSections(tasks: any[]) {
   tasks.forEach((task: any) => {
     const taskId = String(task?.task_id || "");
     const status = String(task?.status || "");
-    if (queueIds.running.has(taskId) || status === "running") {
+    if (queueIds.running.has(taskId) || status === "running" || status === "cancelling") {
       running.push(task);
     } else if (queueIds.waiting.has(taskId) || task?.local_pending || ["submitting", "queued"].includes(status)) {
       waiting.push(task);
@@ -520,11 +603,16 @@ function activeTaskSectionHtml(key: "running" | "waiting", label: string, tasks:
   const sectionData = key === "running"
     ? 'data-active-task-section="running"'
     : 'data-active-task-section="waiting"';
+  const reorderHint = key === "waiting" ? taskQueueReorderHintHtml(tasks.length) : "";
   return `
     <div ${sectionClass} ${sectionData}>
       <div class="task-active-section-title">
-        <span>${escapeHtml(label)}</span>
-        <span class="task-active-section-count">${tasks.length}</span>
+        <span class="task-active-section-heading">
+          <span>${escapeHtml(label)}</span>
+          <span class="task-active-section-count-separator" aria-hidden="true">·</span>
+          <span class="task-active-section-count">${tasks.length}</span>
+        </span>
+        ${reorderHint}
       </div>
       <div class="task-active-section-items">
         ${tasks.map((task: any) => taskCardHtml(task)).join("")}
@@ -579,7 +667,7 @@ function activeTaskGroupHtml(group: any) {
         <span class="task-group-label-button">
           <span class="task-group-title">
             <span class="task-group-label">${activeLabel}</span>
-            <span class="task-group-count-separator" aria-hidden="true"> · </span>
+            <span class="task-group-count-separator" aria-hidden="true">·</span>
             <span class="task-group-count">${activeCount}</span>
           </span>
         </span>
@@ -602,32 +690,7 @@ function expandedTaskGroupHtml(group: any) {
   const groupKey = escapeHtml(group.key);
   return `
     <section class="task-group task-group-expanded" data-task-group="${groupKey}">
-      <button
-        class="task-group-header task-group-header-split"
-        type="button"
-        data-task-group-toggle-key="${groupKey}"
-        data-task-group-expanded="true"
-        aria-expanded="true"
-        aria-label="${escapeHtml(formatTranslation("taskGroup.collapse", { label: group.label }))}"
-      >
-        <span class="task-group-label-button">
-          <span class="task-group-title">
-            <span class="task-group-label">${escapeHtml(group.label)}</span>
-            <span class="task-group-count-separator" aria-hidden="true"> · </span>
-            <span class="task-group-count">${taskGroupCount(group)}</span>
-          </span>
-        </span>
-        <span
-          class="task-group-arrow-button"
-          aria-hidden="true"
-        >
-          <span class="task-group-toggle" aria-hidden="true">
-            <svg class="task-group-toggle-icon" viewBox="0 0 12 12" focusable="false">
-              <path d="M4 2.5 8 6 4 9.5" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"/>
-            </svg>
-          </span>
-        </span>
-      </button>
+      ${expandedTaskGroupHeaderHtml(group)}
       <div class="task-group-items task-group-items-expanded">
         ${group.tasks.map((task: any) => taskCardHtml(task)).join("")}
       </div>
@@ -656,103 +719,59 @@ function waitingQueueIndex(taskId: any, queueIds = queueTaskIdsBySection()) {
   return queueIds.waiting.get(normalizedTaskId) ?? -1;
 }
 
-function taskQueueActionIconHtml(icon: "cancel" | "up" | "down" | "top" | "delete") {
-  if (icon === "cancel") {
-    return `<svg class="task-queue-action-icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
-        <path d="M5.25 5.25h5.5v5.5h-5.5z" />
-      </svg>`;
+function taskQueueReorderHintVisible(waitingCount: number): boolean {
+  if (waitingCount < 2) return false;
+  try {
+    return window.localStorage.getItem(TASK_QUEUE_REORDER_HINT_STORAGE_KEY) !== "1";
+  } catch {
+    return true;
   }
-  if (icon === "up") {
-    return `<svg class="task-queue-action-icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
-        <path d="M8 12V4.5" />
-        <path d="M4.75 7.75 8 4.5l3.25 3.25" />
-      </svg>`;
-  }
-  if (icon === "down") {
-    return `<svg class="task-queue-action-icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
-        <path d="M8 4v7.5" />
-        <path d="M4.75 8.25 8 11.5l3.25-3.25" />
-      </svg>`;
-  }
-  if (icon === "top") {
-    return `<svg class="task-queue-action-icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
-        <path d="M4.5 3.5h7" />
-        <path d="M8 12.5V6" />
-        <path d="M5.25 8.75 8 6l2.75 2.75" />
-      </svg>`;
-  }
-  return `<svg class="task-queue-action-icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
-      <path d="M5.25 6.25v5.5" />
-      <path d="M8 6.25v5.5" />
-      <path d="M10.75 6.25v5.5" />
-      <path d="M4.25 4.25h7.5" />
-      <path d="M6.25 4.25l.5-1h2.5l.5 1" />
-      <path d="M5 4.25h6l-.45 9H5.45z" />
-    </svg>`;
 }
 
-function taskQueueActionStripHtml(task: any, queueSection = taskQueueSection(task), waitingIndex = waitingQueueIndex(task?.task_id)) {
-  if (!queueSection) return "";
-  const taskId = escapeHtml(task.task_id);
-  if (queueSection === "running") {
-    const runningActionsLabel = escapeHtml(translate("queue.runningActions"));
-    const cancelTitle = escapeHtml(translate("queue.cancelRunningTitle"));
-    return `
-      <div class="task-queue-actions task-queue-actions-running" role="group" aria-label="${runningActionsLabel}" data-task-queue-section="${escapeHtml(queueSection)}">
-        <button class="task-queue-action task-queue-cancel-button" type="button" data-task-queue-cancel-id="${taskId}" aria-label="${cancelTitle}" title="${cancelTitle}">${taskQueueActionIconHtml("cancel")}</button>
-      </div>
-    `;
-  }
-  const waitingCount = (state.queue.waiting || []).length;
-  const disableMoveUp = waitingIndex <= 0;
-  const disableMoveDown = waitingIndex < 0 || waitingIndex >= waitingCount - 1;
-  const waitingActionsLabel = escapeHtml(translate("queue.waitingActions"));
-  const dragWaitingLabel = escapeHtml(translate("queue.dragWaiting"));
-  const dragSortLabel = escapeHtml(translate("queue.dragSort"));
-  const moveUpTitle = escapeHtml(translate("queue.moveUpTitle"));
-  const moveDownTitle = escapeHtml(translate("queue.moveDownTitle"));
-  const promoteTitle = escapeHtml(translate("queue.promoteTitle"));
-  const deleteTitle = escapeHtml(translate("queue.deleteWaitingTitle"));
-  return `
-    <div class="task-queue-actions task-queue-actions-waiting" role="group" aria-label="${waitingActionsLabel}" data-task-queue-section="${escapeHtml(queueSection)}">
-      <button class="task-queue-drag-handle" type="button" draggable="true" data-task-queue-drag-handle-id="${taskId}" aria-label="${dragWaitingLabel}" title="${dragSortLabel}">
-        <svg class="task-queue-drag-icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
-          <path d="M5 3.5h.1M5 8h.1M5 12.5h.1M10.5 3.5h.1M10.5 8h.1M10.5 12.5h.1" />
-        </svg>
-      </button>
-      <button class="task-queue-action" type="button" data-task-queue-move-id="${taskId}" data-task-queue-direction="up" aria-label="${moveUpTitle}" title="${moveUpTitle}"${disableMoveUp ? " disabled" : ""}>${taskQueueActionIconHtml("up")}</button>
-      <button class="task-queue-action" type="button" data-task-queue-move-id="${taskId}" data-task-queue-direction="down" aria-label="${moveDownTitle}" title="${moveDownTitle}"${disableMoveDown ? " disabled" : ""}>${taskQueueActionIconHtml("down")}</button>
-      <button class="task-queue-action" type="button" data-task-queue-promote-id="${taskId}" aria-label="${promoteTitle}" title="${promoteTitle}">${taskQueueActionIconHtml("top")}</button>
-      <button class="task-queue-action task-queue-delete-button" type="button" data-task-queue-delete-id="${taskId}" aria-label="${deleteTitle}" title="${deleteTitle}">${taskQueueActionIconHtml("delete")}</button>
-    </div>
-  `;
+function taskQueueReorderHintHtml(waitingCount: number): string {
+  if (!taskQueueReorderHintVisible(waitingCount)) return "";
+  return `<span class="task-queue-reorder-hint">${escapeHtml(translate("queue.dragWaiting"))}</span>`;
 }
 
-function taskCardActionsHtml(taskId: string, queueSection = "") {
-  if (queueSection) return "";
+function taskCardSwipeActionLabel(action: TaskCardSwipeAction): string {
+  if (action === "archive") return translate("action.archive");
+  if (action === "delete") return translate("action.delete");
+  if (action === "stop") return translate("action.stop");
+  if (action === "promote") return translate("queue.promote");
+  return translate("action.cancel");
+}
+
+function taskCardSwipeActionTitle(action: TaskCardSwipeAction): string {
+  if (action === "stop") return translate("queue.cancelRunningTitle");
+  if (action === "promote") return translate("queue.promoteTitle");
+  if (action === "cancel") return translate("batch.cancelSelected");
+  return taskCardSwipeActionLabel(action);
+}
+
+function taskCardSwipeActionHtml(action: TaskCardSwipeAction | null): string {
+  if (!action) return "";
+  const label = escapeHtml(taskCardSwipeActionLabel(action));
+  const title = escapeHtml(taskCardSwipeActionTitle(action));
+  return `<button class="task-card-swipe-action task-card-swipe-${action}" type="button" data-task-card-action="${action}" aria-label="${title}" title="${title}" tabindex="-1" disabled>${label}</button>`;
+}
+
+function taskCardSwipeActionsHtml(actions: TaskCardSwipeActions) {
+  if (!actions.positive && !actions.negative) return "";
   const actionGroupLabel = escapeHtml(translate("taskActions.group"));
-  const archiveLabel = escapeHtml(translate("taskContext.archive"));
-  const deleteLabel = escapeHtml(translate("taskContext.delete"));
   return `
-      <div class="task-card-actions" role="group" aria-label="${actionGroupLabel}">
-        <button class="task-archive-button" type="button" data-archive-task-id="${taskId}" aria-label="${archiveLabel}" title="${archiveLabel}">
-          <svg class="task-action-icon" viewBox="0 0 20 20" aria-hidden="true" focusable="false">
-            <path d="M4 6h12v11H4z" />
-            <path d="M6 3h8l2 3H4l2-3z" />
-            <path d="M10 8v5" />
-            <path d="M7.5 10.5L10 13l2.5-2.5" />
-          </svg>
-        </button>
-        <button class="task-delete-button" type="button" data-delete-task-id="${taskId}" aria-label="${deleteLabel}" title="${deleteLabel}">
-          <svg class="task-action-icon task-delete-icon" viewBox="0 0 20 20" aria-hidden="true" focusable="false">
-            <path d="M5 5h10" />
-            <path d="M8 5l1-2h2l1 2" />
-            <path d="M6 5l1 12h6l1-12" />
-            <path d="M8.5 8v6M11.5 8v6" />
-          </svg>
-        </button>
+      <div class="task-card-swipe-actions" role="group" aria-label="${actionGroupLabel}" aria-hidden="true" inert>
+        ${taskCardSwipeActionHtml(actions.positive)}
+        ${taskCardSwipeActionHtml(actions.negative)}
       </div>
   `;
+}
+
+function taskCardSwipeKeyboardShortcuts(actions: TaskCardSwipeActions, queueReorderable = false): string {
+  const shortcuts = ["Shift+F10"];
+  if (actions.negative) shortcuts.push("Delete", "Shift+ArrowLeft");
+  if (actions.positive) shortcuts.push("Shift+ArrowRight");
+  if (queueReorderable) shortcuts.push("Alt+ArrowUp", "Alt+ArrowDown");
+  return shortcuts.join(" ");
 }
 
 function taskCardHtml(task: any) {
@@ -816,34 +835,53 @@ function taskCardHtml(task: any) {
   const queueIds = queueTaskIdsBySection();
   const queueSection = taskQueueSection(task, queueIds);
   const queueClass = queueSection ? ` queue-${escapeHtml(queueSection)}` : "";
-  const queueTaskData = queueSection === "waiting" ? ` data-queue-task-id="${taskId}"` : "";
-  const queueActions = taskQueueActionStripHtml(task, queueSection, waitingQueueIndex(task.task_id, queueIds));
-  const taskActions = taskCardActionsHtml(taskId, queueSection);
+  const waitingIndexValue = waitingQueueIndex(task.task_id, queueIds);
+  const queueReorderable = queueSection === "waiting"
+    && waitingIndexValue >= 0
+    && (state.queue.waiting || []).length > 1;
+  const queueReorderDescription = queueReorderable
+    ? escapeHtml(translate("queue.dragWaiting"))
+    : "";
+  const queueReorderData = queueReorderable
+    ? ` data-queue-reorderable="true" aria-description="${queueReorderDescription}"`
+    : "";
+  const queueTaskData = queueSection === "waiting"
+    ? ` data-queue-task-id="${taskId}"${queueReorderData}`
+    : "";
+  const swipeActions = taskCardSwipeActionsForState(
+    queueSection,
+    String(task.status || ""),
+    Boolean(task.local_pending),
+  );
+  const swipeEnabled = Boolean(swipeActions.positive || swipeActions.negative);
+  const swipeActionsHtml = taskCardSwipeActionsHtml(swipeActions);
+  const swipeKeyboardShortcuts = escapeHtml(taskCardSwipeKeyboardShortcuts(swipeActions, queueReorderable));
   const batchSelect = state.batchMode ? `
-      <button class="task-select-button" type="button" data-batch-select-task-id="${taskId}" aria-pressed="${batchSelected ? "true" : "false"}" aria-label="${escapeHtml(translate("taskList.selectSession"))}">
+      <button class="task-select-button" type="button" role="checkbox" data-batch-select-task-id="${taskId}" aria-checked="${batchSelected ? "true" : "false"}" aria-label="${escapeHtml(translate("taskList.selectSession"))}">
         <span></span>
       </button>
     ` : "";
   const unreadDot = unread ? `<span class="task-unread-dot" aria-label="${escapeHtml(translate("taskList.unreadUpdate"))}"></span>` : "";
   const activeLabel = escapeHtml(translate("taskList.viewing"));
   return `
-    <div class="task-card${active}${unreadClass}${statusClass}${batchClass}${batchSelectedClass}${queueClass}" role="button" tabindex="0" data-task-id="${taskId}" data-task-unread="${unread ? "true" : "false"}" data-active-label="${activeLabel}"${activeCurrent}${queueTaskData}>
-      ${batchSelect}
-      ${image}
-      <div class="task-info">
-        <div class="task-meta-row">
-          ${imageRow}
-          ${topTimeHtml}
+    <div class="task-card${active}${unreadClass}${statusClass}${batchClass}${batchSelectedClass}${queueClass}" role="button" tabindex="0" data-task-id="${taskId}" data-task-unread="${unread ? "true" : "false"}" data-task-swipe-enabled="${swipeEnabled ? "true" : "false"}" data-task-swipe-positive-action="${escapeHtml(swipeActions.positive || "")}" data-task-swipe-negative-action="${escapeHtml(swipeActions.negative || "")}" data-active-label="${activeLabel}" aria-keyshortcuts="${swipeKeyboardShortcuts}"${activeCurrent}${queueTaskData}>
+      ${swipeActionsHtml}
+      <div class="task-card-swipe-surface">
+        ${batchSelect}
+        ${image}
+        <div class="task-info">
+          <div class="task-meta-row">
+            ${imageRow}
+            ${topTimeHtml}
+          </div>
+          <div class="task-title-row">
+            ${unreadDot}
+            <div class="task-title">${title}</div>
+          </div>
+          ${detailRow}
+          ${groundingHtml}
         </div>
-        <div class="task-title-row">
-          ${unreadDot}
-          <div class="task-title">${title}</div>
-        </div>
-        ${detailRow}
-        ${groundingHtml}
       </div>
-      ${queueActions}
-      ${taskActions}
     </div>
   `;
 }
@@ -902,6 +940,21 @@ function taskHistoryGroups(tasks: any, query: any) {
       || String(right?.task_id || "").localeCompare(String(left?.task_id || ""))
     ));
   const unassignedTasks = () => historicalTasks.filter((task: any) => !assignedTaskIds.has(String(task.task_id)));
+
+  const reveal = state.historyTaskReveal;
+  const transientTaskId = reveal?.ready
+    && reveal?.kind === "transient"
+    && String(reveal?.taskId || "") === String(state.selectedTaskId || "")
+      ? String(reveal.taskId)
+      : "";
+  if (transientTaskId) {
+    addGroup(
+      "current",
+      translate("taskGroup.current"),
+      unassignedTasks().filter((task: any) => String(task?.task_id || "") === transientTaskId),
+      { collapsible: true, defaultCollapsed: false },
+    );
+  }
 
   addGroup(
     "today",
@@ -978,17 +1031,7 @@ function taskHistoryActivityTimestamp(task: any) {
 }
 
 function taskDateBucket(task: any) {
-  const timestamp = taskHistoryActivityTimestamp(task);
-  if (!Number.isFinite(timestamp)) return "older";
-  const now = new Date();
-  const taskDate = new Date(timestamp);
-  const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
-  const taskDayStart = new Date(taskDate.getFullYear(), taskDate.getMonth(), taskDate.getDate()).getTime();
-  const dayDiff = Math.floor((todayStart - taskDayStart) / 86400000);
-  if (dayDiff <= 0) return "today";
-  if (dayDiff === 1) return "yesterday";
-  if (dayDiff <= 6) return "last7";
-  return "older";
+  return sidebarTaskDateBucket(task);
 }
 
 function taskGroupCount(group: any) {
@@ -1026,6 +1069,9 @@ function taskListRenderKey(tasks: any, query: any, layout: any = {}, filters: an
     batchSelectedTaskIds: state.batchSelectedTaskIds.map(String).sort(),
     archivedTaskIds: state.tasks.filter(taskArchived).map((task: any) => String(task.task_id)).sort(),
     expandedTaskGroupKey: state.expandedTaskGroupKey,
+    historyTaskReveal: state.historyTaskReveal?.ready
+      ? [state.historyTaskReveal.kind, state.historyTaskReveal.groupKey, state.historyTaskReveal.taskId]
+      : null,
     queryMode: Boolean(layout.queryMode),
     expandedGroup: layout.expandedGroup
       ? [layout.expandedGroup.key, layout.expandedGroup.label, taskGroupCount(layout.expandedGroup)]
@@ -1087,30 +1133,54 @@ function taskThumbShowsLoading(task: any) {
   return Boolean(task?.local_pending || ["submitting", "queued", "running"].includes(status));
 }
 
+function taskThumbSpinnerStyle(task: any) {
+  const origin = timestampMs(task?.created_at);
+  if (origin === null) return "";
+  const elapsed = Math.max(0, Date.now() - origin);
+  const outerDelay = -(elapsed % TASK_THUMB_OUTER_SPIN_DURATION_MS);
+  const innerDelay = -((elapsed + TASK_THUMB_INNER_SPIN_OFFSET_MS) % TASK_THUMB_INNER_SPIN_DURATION_MS);
+  return ` style="--task-spinner-outer-delay: ${outerDelay}ms; --task-spinner-inner-delay: ${innerDelay}ms"`;
+}
+
 function taskThumbHtml(task: any, className: any = "task-thumb") {
   const outputUrl = taskOutputUrls(task)[0];
   const outputThumbnailUrl = taskThumbnailUrls(task)[0];
   const inputPreviewUrl = taskInputPreviewUrls(task)[0];
-  const imageUrl = outputThumbnailUrl || outputUrl || task.preview_url || inputPreviewUrl;
+  const loading = taskThumbShowsLoading(task);
+  const outputImageUrl = outputThumbnailUrl || outputUrl || (!loading ? task.preview_url : "");
+  const imageUrl = outputImageUrl || inputPreviewUrl || task.preview_url;
   const safeClassName = escapeHtml(className);
-  if (imageUrl && inputPreviewUrl) {
-    const loadingSpinner = taskThumbShowsLoading(task) ? '<span class="task-thumb-stack-spinner" aria-hidden="true"></span>' : "";
+  const loadingSpinner = loading
+    ? `<span class="task-thumb-stack-spinner" aria-hidden="true"${taskThumbSpinnerStyle(task)}></span>`
+    : "";
+  if (outputImageUrl && inputPreviewUrl && outputImageUrl !== inputPreviewUrl) {
     const imageToImageLabel = escapeHtml(translate("taskCard.imageToImageThumb"));
     return `
       <div class="${safeClassName} task-thumb-stack" aria-label="${imageToImageLabel}">
-        <img class="task-thumb-reference" src="${escapeHtml(inputPreviewUrl)}" alt="" loading="lazy" decoding="async" draggable="false">
-        <img class="task-thumb-output" src="${escapeHtml(imageUrl)}" alt="" loading="lazy" decoding="async" draggable="false">
+        <img class="task-thumb-output" src="${escapeHtml(outputImageUrl)}" alt="" loading="lazy" decoding="async" draggable="false">
+        <span class="task-thumb-reference-badge" aria-hidden="true">
+          <img class="task-thumb-reference" src="${escapeHtml(inputPreviewUrl)}" alt="" loading="lazy" decoding="async" draggable="false">
+        </span>
+        ${loadingSpinner}
+      </div>
+    `;
+  }
+  if (inputPreviewUrl && loading) {
+    const imageToImageLabel = escapeHtml(translate("taskCard.imageToImageThumb"));
+    return `
+      <div class="${safeClassName} task-thumb-single task-thumb-loading-reference" aria-label="${imageToImageLabel}">
+        <img class="task-thumb-single-image" src="${escapeHtml(inputPreviewUrl)}" alt="" loading="lazy" decoding="async" draggable="false">
         ${loadingSpinner}
       </div>
     `;
   }
   if (imageUrl) {
-    const textToImageLabel = escapeHtml(translate("taskCard.textToImageThumb"));
-    const textBadge = escapeHtml(translate("taskCard.textBadge"));
+    const thumbnailLabel = escapeHtml(translate(inputPreviewUrl
+      ? "taskCard.imageToImageThumb"
+      : "taskCard.textToImageThumb"));
     return `
-      <div class="${safeClassName} task-thumb-single" aria-label="${textToImageLabel}">
+      <div class="${safeClassName} task-thumb-single" aria-label="${thumbnailLabel}">
         <img class="task-thumb-single-image" src="${escapeHtml(imageUrl)}" alt="" loading="lazy" decoding="async" draggable="false">
-        <span class="task-thumb-mode-badge" aria-hidden="true">${textBadge}</span>
       </div>
     `;
   }
@@ -1120,7 +1190,7 @@ function taskThumbHtml(task: any, className: any = "task-thumb") {
   if (task.status === "failed") {
     return `<div class="${safeClassName} failed-thumb" aria-label="${escapeHtml(translate("taskCard.failedThumb"))}"><span>!</span></div>`;
   }
-  return `<div class="${safeClassName} running-thumb"><span></span></div>`;
+  return `<div class="${safeClassName} running-thumb"><span${taskThumbSpinnerStyle(task)}></span></div>`;
 }
 
 function taskStatusLabelHtml(task: any) {
@@ -1171,7 +1241,7 @@ function taskCardElapsedLineHtml(key: string, values: Record<string, any>, elaps
 }
 
 function taskCardRunningTimerHtml(task: any, taskId: string) {
-  if (task?.status !== "running") return "";
+  if (!["running", "cancelling"].includes(String(task?.status || ""))) return "";
   const startedAt = taskProgressStartValue(task);
   if (!startedAt) return "";
   const elapsed = elapsedTimerSpan("task-card-running", startedAt);
@@ -1241,12 +1311,16 @@ export function initTaskListRenderFeature() {
   });
   Object.assign(getLegacyBridge().methods, {
     renderTasks,
+    flushDeferredActiveTaskGroupRender,
+    discardDeferredActiveTaskGroupRender,
     taskSearchQuery,
     taskFilterValues,
     taskMatchesSearch,
     taskMatchesFilters,
     filteredVisibleTasks,
     taskAnchorLayout,
+    renderExpandedTaskGroupHeader,
+    renderExpandedTaskGroupBodyShellHtml,
     renderExpandedTaskGroupShellHtml,
     scheduleExpandedTaskGroupItemsRender,
     expandedTaskGroupHtml,

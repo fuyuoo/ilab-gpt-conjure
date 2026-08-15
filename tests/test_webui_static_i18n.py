@@ -1,46 +1,54 @@
 from __future__ import annotations
 
+import json
 import re
+import shutil
+import subprocess
 from pathlib import Path
 
 from tests.webui_helpers import WebUIStaticTestCase
 
 
 class WebUIStaticI18nTests(WebUIStaticTestCase):
-    def test_simplified_chinese_uses_user_facing_guidance_labels(self) -> None:
-        source = Path("codex_image/webui/frontend/src/i18n/zh-cn.ts").read_text(encoding="utf-8")
-        self.assertIn('"imageEditor.instructionMarksGuidance": "标注"', source)
-        self.assertIn('"imageEditor.editRegionGuidance": "遮罩"', source)
-
-    def test_edit_region_workflow_copy_exists_in_every_locale(self) -> None:
+    def test_history_backup_restore_copy_exists_in_every_locale(self) -> None:
         required_keys = (
-            "imageEditor.guidance", "imageEditor.instructionMarksGuidance", "imageEditor.editRegionGuidance",
-            "imageEditor.maskErase", "imageEditor.maskRectangle", "imageEditor.maskEllipse",
-            "imageEditor.maskRestore", "imageEditor.maskClear", "imageEditor.maskHelp",
-            "imageEditor.emptyEditRegion", "imageInput.instructionMarksApplied", "imageInput.editRegionApplied",
+            "historyBackup.open", "historyBackup.importOpen", "historyBackup.mode",
+            "historyBackup.scopeSelected", "historyBackup.scopeFiltered", "historyBackup.scopeAll",
+            "historyBackup.scopeCount", "historyBackup.scopeCounting",
+            "historyBackup.scopeCountUnavailable", "historyBackup.scopeNoneSelected",
+            "historyBackup.willBackup", "historyBackup.selectTasksFirst",
+            "historyBackup.scopeLockedUnknown", "historyBackup.scopeLocked",
+            "historyBackup.scopeLockedPending", "historyBackup.progressLabel",
+            "historyBackup.start", "historyBackup.cancel", "historyBackup.download",
+            "historyBackup.dismiss", "historyBackup.discard", "historyBackup.closePanel",
+            "historyBackup.downloadStartedTitle", "historyBackup.idle", "historyBackup.queued", "historyBackup.planning",
+            "historyBackup.packing", "historyBackup.ready", "historyBackup.failed",
+            "historyBackup.readyDetail", "historyBackup.downloaded",
+            "historyBackup.missingInputsWarning",
+            "historyBackup.interrupted", "historyBackup.stats", "historyBackup.errorDisk",
+            "historyBackup.errorSourceChanged", "historyImport.title", "historyImport.choose",
+            "historyImport.uploading", "historyImport.validating", "historyImport.preview",
+            "historyImport.restorable", "historyImport.duplicate", "historyImport.conflict",
+            "historyImport.invalid", "historyImport.confirm", "historyImport.restoring",
+            "historyImport.restored", "historyImport.failed", "historyImport.cleanupWarnings",
+            "historyImport.reselect", "historyImport.noOverwrite",
+            "historyImport.reasonInvalid", "historyImport.reasonSensitive",
+            "historyImport.reasonMismatch",
         )
-        locale_paths = [p for p in sorted(Path("codex_image/webui/frontend/src/i18n").glob("*.ts")) if p.name not in {"types.ts", "dictionaries.ts"}]
-
-        self.assertEqual(13, len(locale_paths))
+        locale_paths = sorted(Path("codex_image/webui/frontend/src/i18n").glob("*.ts"))
+        locale_paths = [path for path in locale_paths if path.name not in {"types.ts", "dictionaries.ts"}]
+        self.assertEqual(14, len(locale_paths))
+        reference = None
         for path in locale_paths:
             source = path.read_text(encoding="utf-8")
-            for key in required_keys:
-                self.assertIn(f'"{key}"', source, f"{key} missing from {path.name}")
-
-    def test_edit_request_preflight_copy_exists_in_every_locale(self) -> None:
-        required_keys = (
-            "editPreflight.title", "editPreflight.primary", "editPreflight.responsesResize",
-            "editPreflight.editArea", "editPreflight.editAreaSmall", "editPreflight.editAreaLarge",
-            "editPreflight.aspectMismatch", "editPreflight.maskDimensionsMismatch", "editPreflight.emptyEditArea",
-            "editPreflight.maskInactive", "editPreflight.inspectionFailed", "editPreflight.blocked",
-        )
-        locale_paths = [p for p in sorted(Path("codex_image/webui/frontend/src/i18n").glob("*.ts")) if p.name not in {"types.ts", "dictionaries.ts"}]
-
-        self.assertEqual(13, len(locale_paths))
-        for path in locale_paths:
-            source = path.read_text(encoding="utf-8")
-            for key in required_keys:
-                self.assertIn(f'"{key}"', source, f"{key} missing from {path.name}")
+            keys = {key for key in required_keys if f'"{key}"' in source}
+            self.assertEqual(set(required_keys), keys, f"{path.name} backup locale keys differ")
+            values = [re.search(rf'"{re.escape(key)}":\s*"([^"]+)"', source) for key in required_keys]
+            self.assertTrue(all(match and match.group(1).strip() for match in values), path.name)
+            if path.name == "en.ts":
+                reference = [match.group(1) for match in values if match]
+            elif path.name not in {"zh-cn.ts", "zh-tw.ts", "zh-hk.ts"} and reference:
+                self.assertNotEqual(reference, [match.group(1) for match in values if match], f"{path.name} must not be an English placeholder block")
 
     def test_network_settings_strings_exist_in_every_locale(self) -> None:
         required_keys = (
@@ -50,6 +58,14 @@ class WebUIStaticI18nTests(WebUIStaticTestCase):
             "networkEgress.direct",
             "networkEgress.custom",
             "networkEgress.customProxy",
+            "networkEgress.timeout",
+            "networkEgress.timeoutUnit",
+            "networkEgress.retryCount",
+            "networkEgress.retryUnit",
+            "networkEgress.requestPolicyHelp",
+            "networkEgress.timeoutInvalid",
+            "networkEgress.retryInvalid",
+            "networkEgress.environmentTimeoutActive",
             "networkEgress.currentRoute",
             "networkEgress.test",
             "networkEgress.save",
@@ -66,7 +82,7 @@ class WebUIStaticI18nTests(WebUIStaticTestCase):
             if path.name not in {"types.ts", "dictionaries.ts"}
         ]
 
-        self.assertEqual(13, len(locale_paths))
+        self.assertEqual(14, len(locale_paths))
         for path in locale_paths:
             source = path.read_text(encoding="utf-8")
             for key in required_keys:
@@ -74,6 +90,7 @@ class WebUIStaticI18nTests(WebUIStaticTestCase):
 
     def test_batch_cancel_copy_exists_in_every_locale(self) -> None:
         required_keys = (
+            "batch.selectWaiting",
             "batch.cancelTasksShortcut",
             "batch.cancelSelected",
             "batch.noActiveSelected",
@@ -83,11 +100,33 @@ class WebUIStaticI18nTests(WebUIStaticTestCase):
             "batch.cancelConfirm",
             "batch.cancelResult",
             "batch.cancelFailed",
+            "queue.cancellationPending",
+            "taskStatus.cancelling",
         )
         locale_paths = sorted(Path("codex_image/webui/frontend/src/i18n").glob("*.ts"))
         locale_paths = [path for path in locale_paths if path.name not in {"types.ts", "dictionaries.ts"}]
 
-        self.assertEqual(13, len(locale_paths))
+        self.assertEqual(14, len(locale_paths))
+        for path in locale_paths:
+            source = path.read_text(encoding="utf-8")
+            for key in required_keys:
+                self.assertIn(f'"{key}"', source, f"{path.name} is missing {key}")
+
+    def test_recent_asset_protection_copy_exists_in_every_locale(self) -> None:
+        required_keys = (
+            "recentAssets.inUse",
+            "recentAssets.hide",
+            "recentAssets.hideTitle",
+            "recentAssets.hideMessage",
+            "recentAssets.hideFailed",
+            "recentAssets.hidden",
+            "recentAssets.hidePreviews",
+            "recentAssets.showPreviews",
+        )
+        locale_paths = sorted(Path("codex_image/webui/frontend/src/i18n").glob("*.ts"))
+        locale_paths = [path for path in locale_paths if path.name not in {"types.ts", "dictionaries.ts"}]
+
+        self.assertEqual(14, len(locale_paths))
         for path in locale_paths:
             source = path.read_text(encoding="utf-8")
             for key in required_keys:
@@ -97,7 +136,7 @@ class WebUIStaticI18nTests(WebUIStaticTestCase):
         locale_paths = sorted(Path("codex_image/webui/frontend/src/i18n").glob("*.ts"))
         locale_paths = [path for path in locale_paths if path.name not in {"types.ts", "dictionaries.ts"}]
 
-        self.assertEqual(13, len(locale_paths))
+        self.assertEqual(14, len(locale_paths))
         for path in locale_paths:
             source = path.read_text(encoding="utf-8")
             self.assertRegex(source, r'"history\.documentTitle": "[^"]*iLab CONJURE"')
@@ -116,7 +155,7 @@ class WebUIStaticI18nTests(WebUIStaticTestCase):
         )
         locale_paths = sorted(Path("codex_image/webui/frontend/src/i18n").glob("*.ts"))
         locale_paths = [path for path in locale_paths if path.name not in {"types.ts", "dictionaries.ts"}]
-        self.assertEqual(13, len(locale_paths))
+        self.assertEqual(14, len(locale_paths))
         for path in locale_paths:
             source = path.read_text(encoding="utf-8")
             for key in required_keys:
@@ -131,7 +170,7 @@ class WebUIStaticI18nTests(WebUIStaticTestCase):
         )
         locale_paths = sorted(Path("codex_image/webui/frontend/src/i18n").glob("*.ts"))
         locale_paths = [path for path in locale_paths if path.name not in {"types.ts", "dictionaries.ts"}]
-        self.assertEqual(13, len(locale_paths))
+        self.assertEqual(14, len(locale_paths))
         for path in locale_paths:
             source = path.read_text(encoding="utf-8")
             for key in required_keys:
@@ -167,6 +206,12 @@ class WebUIStaticI18nTests(WebUIStaticTestCase):
             "ja.ts": ("画像とファイルをクリック、ドロップ、または貼り付け", "画像とファイルをクリック、ドロップ、または貼り付け", "入力を追加", "画像と Responses の参照ファイルに対応"),
             "ko.ts": ("이미지와 파일을 클릭, 드롭 또는 붙여넣기", "이미지와 파일을 클릭, 드롭 또는 붙여넣기", "입력 추가", "이미지 및 Responses 참조 파일 지원"),
             "en.ts": ("Click, drop, or paste images and files", "Click, drop, or paste images and files", "Add input", "Supports images and Responses reference files"),
+            "vi.ts": (
+                "Nhấp, thả hoặc dán hình ảnh và tệp",
+                "Nhấp, thả hoặc dán hình ảnh và tệp",
+                "Thêm đầu vào",
+                "Hỗ trợ hình ảnh và tệp tham chiếu Responses",
+            ),
             "es.ts": ("Haz clic, suelta o pega imágenes y archivos", "Haz clic, suelta o pega imágenes y archivos", "Añadir entrada", "Admite imágenes y archivos de referencia de Responses"),
             "pt.ts": ("Clique, solte ou cole imagens e arquivos", "Clique, solte ou cole imagens e arquivos", "Adicionar entrada", "Compatível com imagens e arquivos de referência do Responses"),
             "fr.ts": ("Cliquez, déposez ou collez des images et des fichiers", "Cliquez, déposez ou collez des images et des fichiers", "Ajouter une entrée", "Images et fichiers de référence pour Responses"),
@@ -177,7 +222,7 @@ class WebUIStaticI18nTests(WebUIStaticTestCase):
         }
         keys = ("uploadAria", "uploadFull", "uploadCompact", "uploadSubtitle")
         locale_dir = Path("codex_image/webui/frontend/src/i18n")
-        self.assertEqual(13, len(expected))
+        self.assertEqual(14, len(expected))
         for filename, values in expected.items():
             source = (locale_dir / filename).read_text(encoding="utf-8")
             for key, value in zip(keys, values):
@@ -220,7 +265,7 @@ class WebUIStaticI18nTests(WebUIStaticTestCase):
         )
         locale_paths = sorted(Path("codex_image/webui/frontend/src/i18n").glob("*.ts"))
         locale_paths = [path for path in locale_paths if path.name not in {"types.ts", "dictionaries.ts"}]
-        self.assertEqual(13, len(locale_paths))
+        self.assertEqual(14, len(locale_paths))
         for path in locale_paths:
             source = path.read_text(encoding="utf-8")
             for key in required_keys:
@@ -238,6 +283,7 @@ class WebUIStaticI18nTests(WebUIStaticTestCase):
             "ko.ts": "문서",
             "pt.ts": "Documento",
             "ru.ts": "Документ",
+            "vi.ts": "Tài liệu",
             "zh-cn.ts": "文档",
             "zh-hk.ts": "文件",
             "zh-tw.ts": "文件",
@@ -259,7 +305,7 @@ class WebUIStaticI18nTests(WebUIStaticTestCase):
         self.assertIn('fetch("/api/settings")', html)
         self.assertIn('body: JSON.stringify({ locale: currentLocale })', html)
         self.assertIn("navigator.languages", html)
-        self.assertIn('const valid = new Set(["zh-CN", "zh-TW", "zh-HK", "ja", "ko", "en", "es", "pt", "fr", "de", "ru", "it", "hi"]);', html)
+        self.assertIn('const valid = new Set(["zh-CN", "zh-TW", "zh-HK", "ja", "ko", "en", "vi", "es", "pt", "fr", "de", "ru", "it", "hi"]);', html)
         self.assertRegex(html, r"document\.documentElement\.lang = currentLocale;")
         self.assertRegex(html, r"document\.documentElement\.dataset\.locale = currentLocale;")
         self.assertNotIn('id="languageSwitcher"', html)
@@ -270,6 +316,7 @@ class WebUIStaticI18nTests(WebUIStaticTestCase):
         self.assertIn('id="languageSelect"', language_panel)
         self.assertIn('<option value="zh-TW">正體中文</option>', language_panel)
         self.assertIn('<option value="zh-HK">繁体中文</option>', language_panel)
+        self.assertIn('<option value="vi">Tiếng Việt</option>', language_panel)
         self.assertIn('<option value="es">Español</option>', language_panel)
         self.assertIn('<option value="pt">Português</option>', language_panel)
         self.assertIn('<option value="fr">Français</option>', language_panel)
@@ -277,6 +324,7 @@ class WebUIStaticI18nTests(WebUIStaticTestCase):
         self.assertIn('<option value="ru">Русский</option>', language_panel)
         self.assertIn('<option value="it">Italiano</option>', language_panel)
         self.assertIn('<option value="hi">हिन्दी</option>', language_panel)
+        self.assertIn('language.startsWith("vi")', html)
         self.assertIn('language.startsWith("ru")', html)
         self.assertIn('language.startsWith("it")', html)
         self.assertIn('language.startsWith("hi")', html)
@@ -285,9 +333,85 @@ class WebUIStaticI18nTests(WebUIStaticTestCase):
         self.assertIn('data-i18n="settings.language"', language_panel)
         self.assertIn('data-i18n="settings.languageCopy"', language_panel)
         self.assertIn('data-i18n="languageSettings.instantStatus"', language_panel)
-        for locale in ("zh-CN", "zh-TW", "zh-HK", "ja", "ko", "en", "es", "pt", "fr", "de", "ru", "it", "hi"):
+        for locale in ("zh-CN", "zh-TW", "zh-HK", "ja", "ko", "en", "vi", "es", "pt", "fr", "de", "ru", "it", "hi"):
             self.assertIn(f'<option value="{locale}"', language_panel)
         self.assertNotIn("settings.status", language_panel)
+
+    def test_language_bootstrap_ignores_stale_restore_after_a_b_a_selection(self) -> None:
+        node = shutil.which("node")
+        if node is None:
+            self.skipTest("node is required for locale bootstrap behavior checks")
+
+        html = Path("codex_image/webui/static/index.html").read_text(encoding="utf-8")
+        scripts = re.findall(r"<script>(.*?)</script>", html, flags=re.DOTALL)
+        bootstrap = next(script for script in scripts if "LOCALE_STORAGE_KEY" in script)
+        harness = """
+        const bootstrap = %s;
+        const storage = new Map([["codex-image-locale-preference", "en"]]);
+        const listeners = new Map();
+        let resolveSettings;
+
+        globalThis.localStorage = {
+          getItem(key) { return storage.has(key) ? storage.get(key) : null; },
+          setItem(key, value) { storage.set(key, String(value)); },
+        };
+        globalThis.navigator = { languages: ["en"], language: "en" };
+        globalThis.document = {
+          documentElement: { dataset: {}, lang: "" },
+          addEventListener(type, listener) {
+            const handlers = listeners.get(type) || [];
+            handlers.push(listener);
+            listeners.set(type, handlers);
+          },
+          dispatchEvent(event) {
+            for (const listener of listeners.get(event.type) || []) listener(event);
+          },
+        };
+        globalThis.fetch = (_url, options = {}) => {
+          if (!options.method || options.method === "GET") {
+            return new Promise((resolve) => { resolveSettings = resolve; });
+          }
+          return Promise.resolve({ ok: true, json: async () => ({}) });
+        };
+
+        (async () => {
+          eval(bootstrap);
+          if (document.documentElement.lang !== "en") {
+            throw new Error("initial locale was not applied");
+          }
+
+          localStorage.setItem("codex-image-locale-preference", "vi");
+          document.dispatchEvent({ type: "codex-image-locale-change" });
+          document.documentElement.lang = "vi";
+          localStorage.setItem("codex-image-locale-preference", "en");
+          document.dispatchEvent({ type: "codex-image-locale-change" });
+          document.documentElement.lang = "en";
+
+          resolveSettings({
+            ok: true,
+            json: async () => ({ settings: { locale: "zh-CN" } }),
+          });
+          await Promise.resolve();
+          await new Promise((resolve) => setImmediate(resolve));
+
+          if (document.documentElement.lang !== "en") {
+            throw new Error(
+              `stale settings restore overwrote the final locale: ${document.documentElement.lang}`
+            );
+          }
+        })().catch((error) => {
+          console.error(error);
+          process.exitCode = 1;
+        });
+        """ % json.dumps(bootstrap)
+
+        result = subprocess.run(
+            [node, "-e", harness],
+            check=False,
+            capture_output=True,
+            text=True,
+        )
+        self.assertEqual(result.returncode, 0, result.stderr)
 
     def test_i18n_source_exposes_locales_and_dom_translation(self) -> None:
         source_path = Path("codex_image/webui/frontend/src/i18n.ts")
@@ -307,6 +431,7 @@ class WebUIStaticI18nTests(WebUIStaticTestCase):
         ru_dictionary_path = Path("codex_image/webui/frontend/src/i18n/ru.ts")
         it_dictionary_path = Path("codex_image/webui/frontend/src/i18n/it.ts")
         hi_dictionary_path = Path("codex_image/webui/frontend/src/i18n/hi.ts")
+        vi_dictionary_path = Path("codex_image/webui/frontend/src/i18n/vi.ts")
         self.assertTrue(types_path.exists(), "i18n types should be isolated from runtime code")
         self.assertTrue(dictionaries_path.exists(), "i18n dictionary registry should be isolated from runtime code")
         self.assertTrue(zh_dictionary_path.exists(), "zh-CN dictionary should live in its own file")
@@ -322,6 +447,7 @@ class WebUIStaticI18nTests(WebUIStaticTestCase):
         self.assertTrue(ru_dictionary_path.exists(), "Russian dictionary should live in its own file")
         self.assertTrue(it_dictionary_path.exists(), "Italian dictionary should live in its own file")
         self.assertTrue(hi_dictionary_path.exists(), "Hindi dictionary should live in its own file")
+        self.assertTrue(vi_dictionary_path.exists(), "Vietnamese dictionary should live in its own file")
 
         source = source_path.read_text(encoding="utf-8")
         types_source = types_path.read_text(encoding="utf-8")
@@ -339,10 +465,11 @@ class WebUIStaticI18nTests(WebUIStaticTestCase):
         ru_dictionary_source = ru_dictionary_path.read_text(encoding="utf-8")
         it_dictionary_source = it_dictionary_path.read_text(encoding="utf-8")
         hi_dictionary_source = hi_dictionary_path.read_text(encoding="utf-8")
+        vi_dictionary_source = vi_dictionary_path.read_text(encoding="utf-8")
         main_source = Path("codex_image/webui/frontend/src/main.ts").read_text(encoding="utf-8")
         elements_source = Path("codex_image/webui/frontend/src/elements.ts").read_text(encoding="utf-8")
 
-        self.assertIn('export type Locale = "zh-CN" | "zh-TW" | "zh-HK" | "ja" | "ko" | "en" | "es" | "pt" | "fr" | "de" | "ru" | "it" | "hi";', types_source)
+        self.assertIn('export type Locale = "zh-CN" | "zh-TW" | "zh-HK" | "ja" | "ko" | "en" | "vi" | "es" | "pt" | "fr" | "de" | "ru" | "it" | "hi";', types_source)
         self.assertIn("export type TranslationDictionary", types_source)
         self.assertIn('const LOCALE_STORAGE_KEY = "codex-image-locale-preference";', source)
         self.assertIn('import { DEFAULT_LOCALE, DICTIONARIES, LOCALES } from "./i18n/dictionaries";', source)
@@ -355,6 +482,7 @@ class WebUIStaticI18nTests(WebUIStaticTestCase):
         self.assertIn('language.startsWith("zh-hk")', source)
         self.assertIn('language.startsWith("ja")', source)
         self.assertIn('language.startsWith("ko")', source)
+        self.assertIn('language.startsWith("vi")', source)
         self.assertIn('language.startsWith("es")', source)
         self.assertIn('language.startsWith("pt")', source)
         self.assertIn('language.startsWith("fr")', source)
@@ -372,6 +500,8 @@ class WebUIStaticI18nTests(WebUIStaticTestCase):
         self.assertIn('"ja": JA_DICTIONARY', dictionaries_source)
         self.assertIn('"ko": KO_DICTIONARY', dictionaries_source)
         self.assertIn('"en": EN_DICTIONARY', dictionaries_source)
+        self.assertIn('"vi": VI_DICTIONARY', dictionaries_source)
+        self.assertIn('import { VI_DICTIONARY } from "./vi";', dictionaries_source)
         self.assertIn('"es": ES_DICTIONARY', dictionaries_source)
         self.assertIn('"pt": PT_DICTIONARY', dictionaries_source)
         self.assertIn('"fr": FR_DICTIONARY', dictionaries_source)
@@ -392,6 +522,7 @@ class WebUIStaticI18nTests(WebUIStaticTestCase):
         self.assertIn("export const RU_DICTIONARY", ru_dictionary_source)
         self.assertIn("export const IT_DICTIONARY", it_dictionary_source)
         self.assertIn("export const HI_DICTIONARY", hi_dictionary_source)
+        self.assertIn("export const VI_DICTIONARY", vi_dictionary_source)
         self.assertIn('"app.newTask": "新建"', zh_dictionary_source)
         self.assertIn('"app.newTask": "新增"', zh_tw_dictionary_source)
         self.assertIn('"app.newTask": "新增"', zh_hk_dictionary_source)
@@ -405,6 +536,7 @@ class WebUIStaticI18nTests(WebUIStaticTestCase):
         self.assertIn('"app.newTask": "Новый"', ru_dictionary_source)
         self.assertIn('"app.newTask": "Nuovo"', it_dictionary_source)
         self.assertIn('"app.newTask": "नया"', hi_dictionary_source)
+        self.assertIn('"app.newTask": "Mới"', vi_dictionary_source)
         self.assertIn('"outputSettings.title": "输出设置"', zh_dictionary_source)
         self.assertIn('"outputSettings.title": "輸出設定"', zh_tw_dictionary_source)
         self.assertIn('"outputSettings.title": "輸出設定"', zh_hk_dictionary_source)
@@ -418,6 +550,23 @@ class WebUIStaticI18nTests(WebUIStaticTestCase):
         self.assertIn('"language.ru": "Русский"', ru_dictionary_source)
         self.assertIn('"language.it": "Italiano"', it_dictionary_source)
         self.assertIn('"language.hi": "हिन्दी"', hi_dictionary_source)
+        for dictionary_source in (
+            zh_dictionary_source,
+            zh_tw_dictionary_source,
+            zh_hk_dictionary_source,
+            ja_dictionary_source,
+            ko_dictionary_source,
+            en_dictionary_source,
+            es_dictionary_source,
+            pt_dictionary_source,
+            fr_dictionary_source,
+            de_dictionary_source,
+            ru_dictionary_source,
+            it_dictionary_source,
+            hi_dictionary_source,
+            vi_dictionary_source,
+        ):
+            self.assertIn('"language.vi": "Tiếng Việt"', dictionary_source)
         self.assertIn('document.querySelectorAll<HTMLElement>("[data-i18n]")', source)
         self.assertIn('querySelectorAll<HTMLElement>("[data-i18n-attr]")', source)
         self.assertIn("window.__codexImageI18n", source)
@@ -451,12 +600,43 @@ class WebUIStaticI18nTests(WebUIStaticTestCase):
         self.assertIn('data-i18n-attr="placeholder:sidebar.searchPlaceholder"', html)
         self.assertIn('data-i18n-attr="aria-label:prompt.editorLabel;data-placeholder:prompt.placeholder"', html)
 
+    def test_vietnamese_dictionary_matches_primary_key_order_and_placeholders(self) -> None:
+        dictionary_pattern = re.compile(r'^\s+"([^"]+)":\s+"(.*)",?\s*$')
+        placeholder_pattern = re.compile(r"\{(\w+)\}")
+
+        def dictionary_entries(path: str) -> list[tuple[str, str]]:
+            entries: list[tuple[str, str]] = []
+            for line in Path(path).read_text(encoding="utf-8").splitlines():
+                match = dictionary_pattern.match(line)
+                if match:
+                    entries.append((match.group(1), match.group(2)))
+            return entries
+
+        zh_entries = dictionary_entries("codex_image/webui/frontend/src/i18n/zh-cn.ts")
+        en_entries = dictionary_entries("codex_image/webui/frontend/src/i18n/en.ts")
+        vi_entries = dictionary_entries("codex_image/webui/frontend/src/i18n/vi.ts")
+
+        self.assertEqual(len(vi_entries), len(en_entries))
+        self.assertEqual([key for key, _value in vi_entries], [key for key, _value in zh_entries])
+        self.assertEqual([key for key, _value in vi_entries], [key for key, _value in en_entries])
+
+        en_values = dict(en_entries)
+        vi_values = dict(vi_entries)
+        for key, en_value in en_values.items():
+            self.assertEqual(
+                sorted(placeholder_pattern.findall(vi_values[key])),
+                sorted(placeholder_pattern.findall(en_value)),
+                key,
+            )
+
     def test_language_select_styles_match_settings_panel_controls(self) -> None:
         styles = Path("codex_image/webui/static/styles.css").read_text(encoding="utf-8")
 
         self.assertRegex(styles, r"\.language-settings-panel\s*\{[^}]*display:\s*grid")
         self.assertRegex(styles, r"\.language-settings-panel\s*\{[^}]*max-width:\s*640px")
-        self.assertRegex(styles, r"\.language-select-field\s*\{[^}]*max-width:\s*420px")
+        self.assertRegex(styles, r"\.language-select-field\s*\{[^}]*max-width:\s*420px[^}]*gap:\s*8px")
+        self.assertRegex(styles, r"\.settings-grid \.field\s*\{[^}]*gap:\s*var\(--compact-field-gap\)")
+        self.assertNotRegex(styles, r"(?m)^\s*\.field\s*\{\s*gap:\s*var\(--compact-field-gap\)")
         self.assertNotRegex(styles, r"\.language-switcher\s*\{")
         self.assertNotRegex(styles, r"\.language-option\s*\{")
 
@@ -544,7 +724,9 @@ class WebUIStaticI18nTests(WebUIStaticTestCase):
             "taskList.viewing",
             "referenceCollector.title",
             "referenceCollector.addAll",
+            "referenceCollector.replaceAll",
             "referenceCollector.added",
+            "referenceCollector.replaced",
             "preview.selectedCount",
             "preview.selectedFeatured",
             "preview.removeFeatured",
@@ -633,7 +815,9 @@ class WebUIStaticI18nTests(WebUIStaticTestCase):
         self.assertIn('formatTranslation("status.historyInputLoadFailed"', runtime_sources["task_selection"])
         self.assertIn('formatTranslation("referenceCollector.title"', runtime_sources["input_sources"])
         self.assertIn('translate("referenceCollector.addAll")', runtime_sources["input_sources"])
+        self.assertIn('translate("referenceCollector.replaceAll")', runtime_sources["input_sources"])
         self.assertIn('formatTranslation("referenceCollector.added"', runtime_sources["input_sources"])
+        self.assertIn('formatTranslation("referenceCollector.replaced"', runtime_sources["input_sources"])
         self.assertIn('formatTranslation("preview.selectedCount"', runtime_sources["task_preview"])
         self.assertIn('translate("preview.selectedFeatured")', runtime_sources["task_preview"])
         self.assertIn('translate("preview.removeFeatured")', runtime_sources["task_preview"])
@@ -691,3 +875,38 @@ class WebUIStaticI18nTests(WebUIStaticTestCase):
                     offenders.append(f"{filename}:{line_number}: {line.strip()}")
 
         self.assertEqual([], offenders)
+
+    def test_simplified_chinese_uses_user_facing_guidance_labels(self) -> None:
+        source = Path("codex_image/webui/frontend/src/i18n/zh-cn.ts").read_text(encoding="utf-8")
+        self.assertIn('"imageEditor.instructionMarksGuidance": "标注"', source)
+        self.assertIn('"imageEditor.editRegionGuidance": "遮罩"', source)
+
+    def test_edit_region_workflow_copy_exists_in_every_locale(self) -> None:
+        required_keys = (
+            "imageEditor.guidance", "imageEditor.instructionMarksGuidance", "imageEditor.editRegionGuidance",
+            "imageEditor.maskErase", "imageEditor.maskRectangle", "imageEditor.maskEllipse",
+            "imageEditor.maskRestore", "imageEditor.maskClear", "imageEditor.maskHelp",
+            "imageEditor.emptyEditRegion", "imageInput.instructionMarksApplied", "imageInput.editRegionApplied",
+        )
+        locale_paths = [p for p in sorted(Path("codex_image/webui/frontend/src/i18n").glob("*.ts")) if p.name not in {"types.ts", "dictionaries.ts"}]
+
+        self.assertEqual(14, len(locale_paths))
+        for path in locale_paths:
+            source = path.read_text(encoding="utf-8")
+            for key in required_keys:
+                self.assertIn(f'"{key}"', source, f"{key} missing from {path.name}")
+
+    def test_edit_request_preflight_copy_exists_in_every_locale(self) -> None:
+        required_keys = (
+            "editPreflight.title", "editPreflight.primary", "editPreflight.responsesResize",
+            "editPreflight.editArea", "editPreflight.editAreaSmall", "editPreflight.editAreaLarge",
+            "editPreflight.aspectMismatch", "editPreflight.maskDimensionsMismatch", "editPreflight.emptyEditArea",
+            "editPreflight.maskInactive", "editPreflight.inspectionFailed", "editPreflight.blocked",
+        )
+        locale_paths = [p for p in sorted(Path("codex_image/webui/frontend/src/i18n").glob("*.ts")) if p.name not in {"types.ts", "dictionaries.ts"}]
+
+        self.assertEqual(14, len(locale_paths))
+        for path in locale_paths:
+            source = path.read_text(encoding="utf-8")
+            for key in required_keys:
+                self.assertIn(f'"{key}"', source, f"{key} missing from {path.name}")

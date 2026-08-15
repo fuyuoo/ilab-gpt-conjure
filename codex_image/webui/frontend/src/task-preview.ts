@@ -72,6 +72,7 @@ function taskPreviewStatus(task: any) {
   const status = String(task?.status || "");
   const taskId = String(task?.task_id || "");
   if (TERMINAL_TASK_STATUSES.has(status)) return status;
+  if (status === "cancelling") return "running";
   if (queueContainsTask(state.queue.running, taskId)) return "running";
   if (queueContainsTask(state.queue.waiting, taskId)) return status === "submitting" ? "submitting" : "queued";
   return status;
@@ -315,7 +316,8 @@ function ensurePreviewOutputCard(key: string) {
     <span class="preview-index hidden"></span>
     <button type="button" class="preview-select-button" data-preview-select-output-index="" aria-pressed="false" aria-label="${addFeaturedLabel}" title="${addFeaturedLabel}" data-i18n-attr="aria-label:preview.addFeatured;title:preview.addFeatured" hidden disabled>
       <svg class="preview-select-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-        <path d="M12 3.5l2.7 5.5 6 .9-4.3 4.2 1 6-5.4-2.8-5.4 2.8 1-6-4.3-4.2 6-.9L12 3.5z" />
+        <circle cx="12" cy="12" r="8.5" />
+        <path d="m8.2 12.1 2.4 2.4 5.2-5.4" />
       </svg>
       <span class="preview-select-label" data-preview-select-label data-i18n="preview.featured">${featuredLabel}</span>
     </button>
@@ -553,7 +555,10 @@ function handlePreviewGridClick(event: any) {
     .filter((url): url is string => Boolean(url));
   const currentUrl = image.dataset.lightboxUrl || image.currentSrc || image.src;
   if (!currentUrl) return;
-  window.openLightbox?.(currentUrl, urls, Math.max(0, images.indexOf(image)));
+  window.openLightbox?.(currentUrl, urls, Math.max(0, images.indexOf(image)), {
+    taskId: String(state.previewTask?.task_id || state.selectedTaskId || ""),
+    onTaskNavigate: (direction, context) => legacyMethod("openMainTaskLightboxByDirection", direction, context),
+  });
 }
 
 function bindPreviewRetryButtons() {
@@ -882,9 +887,6 @@ function renderWaitingPreview(task: any) {
   const elapsed = elapsedTimerSpan("waiting", elapsedFrom);
   const size = escapeHtml(task.params?.size || currentSize());
   const title = submitting ? translate("preview.submittingTitle") : translate("preview.queuedTitle");
-  const detail = submitting
-    ? translate("preview.submittingDetail")
-    : translate("preview.queuedDetail");
   const retryReason = !submitting && task.last_error
     ? `<p>${escapeHtml(formatTranslation("preview.lastError", { error: task.last_error }))}</p>`
     : "";
@@ -898,7 +900,6 @@ function renderWaitingPreview(task: any) {
         <p class="elapsed-line">${previewElapsedLineHtml("preview.elapsedLine", {}, elapsed)}</p>
         <p class="elapsed-meta">${size}</p>
         ${retryStateHtml}
-        <p>${escapeHtml(detail)}</p>
         ${retryReason}
       </div>
       <div class="waiting-bar"><span></span></div>

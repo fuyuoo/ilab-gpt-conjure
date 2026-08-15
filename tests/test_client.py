@@ -9,7 +9,16 @@ import urllib.error
 from pathlib import Path
 from typing import Any
 
-from tests.helpers import FakeResponse, FakeTransport, make_sse_completed_event, write_auth_file
+from tests.helpers import (
+    FakeResponse,
+    FakeTransport,
+    TEST_JPEG_BYTES,
+    TEST_PNG_BASE64,
+    TEST_PNG_BYTES,
+    TEST_WEBP_BYTES,
+    make_sse_completed_event,
+    write_auth_file,
+)
 
 
 def _auth_state(*, access_token: str, account_id: str, refresh_token: str = "refresh-token"):
@@ -86,7 +95,7 @@ class ClientTests(unittest.TestCase):
             def headers(self) -> dict[str, str]:
                 return {"content-type": "text/plain"}
 
-            def read(self) -> bytes:
+            def read(self, size: int = -1) -> bytes:
                 return b"ok"
 
             def __enter__(self) -> "FakeUrlopenResponse":
@@ -116,6 +125,83 @@ class ClientTests(unittest.TestCase):
         self.assertEqual(response.body, b"ok")
         self.assertEqual(captured["timeout"], 12.5)
         self.assertIsNotNone(captured["context"])
+
+    def test_urllib_transport_bounds_success_and_error_response_reads(self) -> None:
+        from unittest.mock import patch
+
+        from codex_image.http import (
+            HTTPResponseTooLarge,
+            MAX_HTTP_ERROR_BODY_BYTES,
+            UrllibTransport,
+        )
+
+        class TrackingBody:
+            def __init__(self, payload: bytes) -> None:
+                self.payload = payload
+                self.read_sizes: list[int] = []
+
+            def read(self, size: int = -1) -> bytes:
+                self.read_sizes.append(size)
+                return self.payload if size < 0 else self.payload[:size]
+
+            def close(self) -> None:
+                return None
+
+        class SuccessResponse(TrackingBody):
+            status = 200
+            headers: dict[str, str] = {}
+
+            @staticmethod
+            def getcode() -> int:
+                return 200
+
+            def __enter__(self) -> "SuccessResponse":
+                return self
+
+            def __exit__(self, *args: object) -> None:
+                return None
+
+        success = SuccessResponse(b"x" * 11)
+        with patch(
+            "codex_image.http.request.urlopen",
+            return_value=success,
+        ):
+            with self.assertRaises(HTTPResponseTooLarge):
+                UrllibTransport().request_bounded(
+                    method="GET",
+                    url="https://example.test/large",
+                    headers={},
+                    body=b"",
+                    max_response_bytes=10,
+                )
+        self.assertEqual(success.read_sizes, [11])
+
+        error_body = TrackingBody(b"e" * (MAX_HTTP_ERROR_BODY_BYTES + 10))
+        http_error = urllib.error.HTTPError(
+            "https://example.test/error",
+            500,
+            "error",
+            {},
+            error_body,
+        )
+        with patch(
+            "codex_image.http.request.urlopen",
+            side_effect=http_error,
+        ):
+            response = UrllibTransport().request_bounded(
+                method="GET",
+                url="https://example.test/error",
+                headers={},
+                body=b"",
+                max_response_bytes=10,
+            )
+
+        self.assertEqual(response.status, 500)
+        self.assertEqual(len(response.body), MAX_HTTP_ERROR_BODY_BYTES)
+        self.assertEqual(
+            error_body.read_sizes,
+            [MAX_HTTP_ERROR_BODY_BYTES + 1],
+        )
 
     def test_urllib_transport_converts_socket_timeout_to_timeout_error(self) -> None:
         from unittest.mock import patch
@@ -161,7 +247,7 @@ class ClientTests(unittest.TestCase):
 
     def test_generate_image_passes_size_and_decodes_image(self) -> None:
         write_auth_file(self.auth_path, access_token="token-1", account_id="acct-1")
-        image_bytes = b"fake-png-data"
+        image_bytes = TEST_PNG_BYTES
         transport = FakeTransport(
             [
                 FakeResponse(
@@ -207,7 +293,7 @@ class ClientTests(unittest.TestCase):
                 FakeResponse(
                     status=200,
                     body=make_sse_completed_event(
-                        image_b64=base64.b64encode(b"image").decode("ascii"),
+                        image_b64=TEST_PNG_BASE64,
                     ),
                     headers={"Content-Type": "text/event-stream"},
                 )
@@ -235,7 +321,7 @@ class ClientTests(unittest.TestCase):
                 FakeResponse(
                     status=200,
                     body=make_sse_completed_event(
-                        image_b64=base64.b64encode(b"image").decode("ascii"),
+                        image_b64=TEST_PNG_BASE64,
                         tool_usage={
                             "image_gen": {"input_tokens": 4, "output_tokens": 5, "total_tokens": 9},
                             "web_search": {"num_requests": 1},
@@ -272,7 +358,7 @@ class ClientTests(unittest.TestCase):
         self.assertEqual(result.tool_usage["web_search"], {"num_requests": 1})
 
     def test_codex_images_generations_posts_json_to_codex_images_endpoint(self) -> None:
-        image_bytes = b"codex-image"
+        image_bytes = TEST_PNG_BYTES
         transport = FakeTransport(
             [
                 FakeResponse(
@@ -306,7 +392,7 @@ class ClientTests(unittest.TestCase):
         )
 
         self.assertEqual(result.image_bytes, image_bytes)
-        self.assertEqual(result.size, "1024x1024")
+        self.assertEqual(result.size, "2x1")
         self.assertEqual(result.usage, {"total_tokens": 7})
         request = transport.requests[0]
         self.assertEqual(request["method"], "POST")
@@ -324,7 +410,7 @@ class ClientTests(unittest.TestCase):
         self.assertNotIn("tools", payload)
 
     def test_codex_images_edits_posts_json_images_array_not_multipart(self) -> None:
-        image_bytes = b"codex-edited"
+        image_bytes = TEST_PNG_BYTES
         input_data_url = "data:image/png;base64," + base64.b64encode(b"input").decode("ascii")
         reference_data_url = "data:image/png;base64," + base64.b64encode(b"reference").decode("ascii")
         mask_data_url = "data:image/png;base64," + base64.b64encode(b"mask").decode("ascii")
@@ -374,7 +460,7 @@ class ClientTests(unittest.TestCase):
         self.assertNotIn("endpoint", payload)
 
     def test_openai_images_client_posts_direct_image_generation_request(self) -> None:
-        image_bytes = b"api-image-data"
+        image_bytes = TEST_WEBP_BYTES
         image_b64 = base64.b64encode(image_bytes).decode("ascii")
         transport = FakeTransport(
             [
@@ -420,7 +506,7 @@ class ClientTests(unittest.TestCase):
         self.assertEqual(result.image_bytes, image_bytes)
         self.assertEqual(result.revised_prompt, "api revised prompt")
         self.assertEqual(result.output_format, "webp")
-        self.assertEqual(result.size, "1024x1536")
+        self.assertEqual(result.size, "2x1")
         self.assertEqual(result.quality, "low")
         self.assertEqual(result.background, "opaque")
         self.assertEqual(result.usage["total_tokens"], 7)
@@ -465,8 +551,8 @@ class ClientTests(unittest.TestCase):
         self.assertEqual(result.size, "2x3")
 
     def test_openai_images_client_can_request_and_parse_multiple_generated_images(self) -> None:
-        first_b64 = base64.b64encode(b"api-image-1").decode("ascii")
-        second_b64 = base64.b64encode(b"api-image-2").decode("ascii")
+        first_b64 = TEST_PNG_BASE64
+        second_b64 = TEST_PNG_BASE64
         transport = FakeTransport(
             [
                 FakeResponse(
@@ -501,7 +587,10 @@ class ClientTests(unittest.TestCase):
             n=2,
         )
 
-        self.assertEqual([result.image_bytes for result in results], [b"api-image-1", b"api-image-2"])
+        self.assertEqual(
+            [result.image_bytes for result in results],
+            [TEST_PNG_BYTES, TEST_PNG_BYTES],
+        )
         self.assertEqual([result.revised_prompt for result in results], ["first prompt", "second prompt"])
         self.assertEqual([result.usage for result in results], [{"total_tokens": 14}, {"total_tokens": 14}])
 
@@ -509,7 +598,7 @@ class ClientTests(unittest.TestCase):
         self.assertEqual(payload["n"], 2)
 
     def test_openai_responses_client_posts_api_key_responses_request_without_codex_headers(self) -> None:
-        image_bytes = b"responses-image-data"
+        image_bytes = TEST_PNG_BYTES
         image_b64 = base64.b64encode(image_bytes).decode("ascii")
         transport = FakeTransport(
             [
@@ -567,7 +656,7 @@ class ClientTests(unittest.TestCase):
             [
                 FakeResponse(
                     status=200,
-                    body=make_sse_completed_event(image_b64=base64.b64encode(b"image").decode("ascii")),
+                    body=make_sse_completed_event(image_b64=TEST_PNG_BASE64),
                     headers={"Content-Type": "text/event-stream"},
                 )
             ]
@@ -596,7 +685,7 @@ class ClientTests(unittest.TestCase):
             [
                 FakeResponse(
                     status=200,
-                    body=make_sse_completed_event(image_b64=base64.b64encode(b"image").decode("ascii")),
+                    body=make_sse_completed_event(image_b64=TEST_PNG_BASE64),
                     headers={"Content-Type": "text/event-stream"},
                 )
             ]
@@ -631,7 +720,7 @@ class ClientTests(unittest.TestCase):
             [
                 FakeResponse(
                     status=200,
-                    body=make_sse_completed_event(image_b64=base64.b64encode(b"image").decode("ascii")),
+                    body=make_sse_completed_event(image_b64=TEST_PNG_BASE64),
                     headers={"Content-Type": "text/event-stream"},
                 )
             ]
@@ -697,7 +786,7 @@ class ClientTests(unittest.TestCase):
             client.generate_image(prompt="draw missing image", size="1024x1024", quality="low")
 
     def test_openai_responses_client_posts_edit_request_with_images_and_mask(self) -> None:
-        image_b64 = base64.b64encode(b"responses-edited-image").decode("ascii")
+        image_b64 = TEST_PNG_BASE64
         transport = FakeTransport(
             [
                 FakeResponse(
@@ -725,7 +814,7 @@ class ClientTests(unittest.TestCase):
             quality="auto",
         )
 
-        self.assertEqual(result.image_bytes, b"responses-edited-image")
+        self.assertEqual(result.image_bytes, TEST_PNG_BYTES)
         self.assertEqual(result.revised_prompt, "responses edit revised")
 
         payload = json.loads(transport.requests[0]["body"].decode("utf-8"))
@@ -740,7 +829,7 @@ class ClientTests(unittest.TestCase):
         )
 
     def test_openai_images_client_posts_direct_edit_request_with_input_images(self) -> None:
-        image_b64 = base64.b64encode(b"edited-api-image").decode("ascii")
+        image_b64 = TEST_PNG_BASE64
         transport = FakeTransport(
             [
                 FakeResponse(
@@ -783,7 +872,7 @@ class ClientTests(unittest.TestCase):
         self.assertIn(b"mask", request["body"])
 
     def test_openai_images_client_downloads_url_image_output(self) -> None:
-        jpeg_bytes = b"\xff\xd8\xffdownloaded-jpeg"
+        jpeg_bytes = TEST_JPEG_BYTES
         transport = FakeTransport(
             [
                 FakeResponse(
@@ -832,7 +921,7 @@ class ClientTests(unittest.TestCase):
         self.assertNotIn("Authorization", transport.requests[1]["headers"])
 
     def test_openai_images_client_retries_url_download_with_api_key_after_forbidden(self) -> None:
-        jpeg_bytes = b"\xff\xd8\xffauthorized-jpeg"
+        jpeg_bytes = TEST_JPEG_BYTES
         transport = FakeTransport(
             [
                 FakeResponse(
@@ -884,9 +973,7 @@ class ClientTests(unittest.TestCase):
         self.assertNotIn("Authorization", transport.requests[1]["headers"])
 
     def test_openai_images_client_decodes_data_url_output(self) -> None:
-        png_bytes = base64.b64decode(
-            "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9Y9Zya4AAAAASUVORK5CYII="
-        )
+        png_bytes = TEST_PNG_BYTES
         body = json.dumps(
             {
                 "data": [
@@ -950,7 +1037,7 @@ class ClientTests(unittest.TestCase):
 
     def test_generate_image_writes_redacted_sse_debug_log(self) -> None:
         write_auth_file(self.auth_path, access_token="token-debug", account_id="acct-debug")
-        image_b64 = base64.b64encode(b"debug-image").decode("ascii")
+        image_b64 = TEST_PNG_BASE64
         transport = FakeTransport(
             [
                 FakeResponse(
@@ -1072,7 +1159,7 @@ class ClientTests(unittest.TestCase):
     def test_generate_image_redacts_partial_image_debug_events(self) -> None:
         write_auth_file(self.auth_path, access_token="token-debug-partial", account_id="acct-debug-partial")
         partial_b64 = base64.b64encode(b"partial-image").decode("ascii")
-        final_b64 = base64.b64encode(b"final-image").decode("ascii")
+        final_b64 = TEST_PNG_BASE64
         partial_event = {
             "type": "response.image_generation_call.partial_image",
             "partial_image_b64": partial_b64,
@@ -1110,7 +1197,7 @@ class ClientTests(unittest.TestCase):
                 "token_type": "Bearer",
             }
         ).encode("utf-8")
-        final_image = base64.b64encode(b"ok-image").decode("ascii")
+        final_image = TEST_PNG_BASE64
         transport = FakeTransport(
             [
                 FakeResponse(status=401, body=b'{"error":"expired"}', headers={"Content-Type": "application/json"}),
@@ -1125,13 +1212,13 @@ class ClientTests(unittest.TestCase):
         client = CodexImageClient(load_auth_state(self.auth_path), transport=transport)
         result = client.generate_image(prompt="draw after refresh")
 
-        self.assertEqual(result.image_bytes, b"ok-image")
+        self.assertEqual(result.image_bytes, TEST_PNG_BYTES)
         self.assertEqual(len(transport.requests), 3)
         self.assertTrue(transport.requests[1]["url"].endswith("/oauth/token"))
         self.assertEqual(transport.requests[2]["headers"]["Authorization"], "Bearer fresh-token")
 
     def test_generate_image_with_auth_provider_rotates_after_401_without_oauth_refresh(self) -> None:
-        final_image = base64.b64encode(b"provider-ok").decode("ascii")
+        final_image = TEST_PNG_BASE64
         transport = FakeTransport(
             [
                 FakeResponse(status=401, body=b'{"error":"expired"}', headers={"Content-Type": "application/json"}),
@@ -1150,7 +1237,7 @@ class ClientTests(unittest.TestCase):
         client = CodexImageClient(auth_provider=provider, transport=transport)
         result = client.generate_image(prompt="draw with provider")
 
-        self.assertEqual(result.image_bytes, b"provider-ok")
+        self.assertEqual(result.image_bytes, TEST_PNG_BYTES)
         self.assertEqual(len(transport.requests), 2)
         self.assertEqual(transport.requests[0]["headers"]["Authorization"], "Bearer expired-access")
         self.assertEqual(transport.requests[0]["headers"]["Chatgpt-Account-Id"], "acct-old")
@@ -1159,7 +1246,7 @@ class ClientTests(unittest.TestCase):
         self.assertFalse(any(request["url"].endswith("/oauth/token") for request in transport.requests))
 
     def test_generate_image_with_auth_provider_rotates_after_usage_limit(self) -> None:
-        final_image = base64.b64encode(b"provider-quota-ok").decode("ascii")
+        final_image = TEST_PNG_BASE64
         usage_limit = {
             "error": {
                 "type": "usage_limit_reached",
@@ -1186,7 +1273,7 @@ class ClientTests(unittest.TestCase):
         client = CodexImageClient(auth_provider=provider, transport=transport)
         result = client.generate_image(prompt="draw after quota")
 
-        self.assertEqual(result.image_bytes, b"provider-quota-ok")
+        self.assertEqual(result.image_bytes, TEST_PNG_BYTES)
         self.assertEqual(len(transport.requests), 2)
         self.assertEqual(transport.requests[0]["headers"]["Authorization"], "Bearer limited-access")
         self.assertEqual(transport.requests[0]["headers"]["Chatgpt-Account-Id"], "acct-limited")
@@ -1225,7 +1312,7 @@ class ClientTests(unittest.TestCase):
             [
                 FakeResponse(
                     status=200,
-                    body=make_sse_completed_event(image_b64=base64.b64encode(b"ref-image").decode("ascii")),
+                    body=make_sse_completed_event(image_b64=TEST_PNG_BASE64),
                     headers={"Content-Type": "text/event-stream"},
                 )
             ]
@@ -1240,7 +1327,7 @@ class ClientTests(unittest.TestCase):
             reference_images=["data:image/png;base64,aaa", "data:image/png;base64,bbb"],
         )
 
-        self.assertEqual(result.image_bytes, b"ref-image")
+        self.assertEqual(result.image_bytes, TEST_PNG_BYTES)
         payload = json.loads(transport.requests[0]["body"].decode("utf-8"))
         content = payload["input"][0]["content"]
         self.assertEqual(content[1]["type"], "input_image")
@@ -1253,7 +1340,7 @@ class ClientTests(unittest.TestCase):
             [
                 FakeResponse(
                     status=200,
-                    body=make_sse_completed_event(image_b64=base64.b64encode(b"main-model-image").decode("ascii")),
+                    body=make_sse_completed_event(image_b64=TEST_PNG_BASE64),
                     headers={"Content-Type": "text/event-stream"},
                 )
             ]
@@ -1275,7 +1362,7 @@ class ClientTests(unittest.TestCase):
             [
                 FakeResponse(
                     status=200,
-                    body=make_sse_completed_event(image_b64=base64.b64encode(b"edited-image").decode("ascii")),
+                    body=make_sse_completed_event(image_b64=TEST_PNG_BASE64),
                     headers={"Content-Type": "text/event-stream"},
                 )
             ]
@@ -1293,7 +1380,7 @@ class ClientTests(unittest.TestCase):
             input_fidelity="high",
         )
 
-        self.assertEqual(result.image_bytes, b"edited-image")
+        self.assertEqual(result.image_bytes, TEST_PNG_BYTES)
         payload = json.loads(transport.requests[0]["body"].decode("utf-8"))
         self.assertEqual(payload["tools"][0]["action"], "edit")
         self.assertEqual(payload["tools"][0]["input_image_mask"]["image_url"], "data:image/png;base64,mask1")
@@ -1307,7 +1394,7 @@ class ClientTests(unittest.TestCase):
             [
                 FakeResponse(
                     status=200,
-                    body=make_sse_completed_event(image_b64=base64.b64encode(b"edited-image").decode("ascii")),
+                    body=make_sse_completed_event(image_b64=TEST_PNG_BASE64),
                     headers={"Content-Type": "text/event-stream"},
                 )
             ]

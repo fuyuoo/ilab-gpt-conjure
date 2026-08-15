@@ -20,99 +20,98 @@
       "#promptTemplateDrawer.open, #galleryDrawer.open, .modal-overlay:not(.hidden), .prompt-popover:not(.hidden), .confirm-popover:not(.hidden), .compression-popover:not(.hidden), .task-notification-center:not(.hidden)"
     ));
   }
-  function handleRunTaskShortcut(event, els43, methods) {
+  function handleRunTaskShortcut(event, els44, methods) {
     if (!isRunTaskShortcut(event)) return;
-    if (hasOpenShortcutBlockingLayer() || els43.runButton.disabled) return;
+    if (hasOpenShortcutBlockingLayer() || els44.runButton.disabled) return;
     event.preventDefault();
     void call(methods, "runTask");
   }
   var systemSettingsBackdropPointerDown = false;
-  function bindWebUIEvents(state32, els43, methods) {
+  function bindSharedTopNavSettingsEvents(els44, methods) {
+    els44.systemSettingsModalClose?.addEventListener("click", () => call(methods, "closeSystemSettingsModal"));
+    els44.systemSettingsModal?.addEventListener("pointerdown", (event) => {
+      systemSettingsBackdropPointerDown = event.target === els44.systemSettingsModal;
+    });
+    els44.systemSettingsModal?.addEventListener("click", (event) => {
+      if (event.target === els44.systemSettingsModal && systemSettingsBackdropPointerDown) {
+        call(methods, "closeSystemSettingsModal");
+      }
+      systemSettingsBackdropPointerDown = false;
+    });
+    els44.saveSettingsButton?.addEventListener("click", () => call(methods, "saveSettings"));
+    els44.authSourceGroup?.addEventListener("click", (event) => call(methods, "handleAuthSourceClick", event));
+    els44.apiDirectSettingsButton?.addEventListener("click", () => call(methods, "openApiSettingsModal"));
+    els44.modelFamilyOptions?.addEventListener("click", (event) => {
+      const item = event.target?.closest?.("[data-family-id]");
+      if (item?.dataset.familyId) call(methods, "selectModelFamily", item.dataset.familyId);
+    });
+    els44.modelFamilyOptions?.addEventListener("keydown", (event) => call(methods, "handleModelFamilyOptionsKeydown", event));
+    els44.concreteModelSelect?.addEventListener("change", () => call(methods, "selectConcreteModel", els44.concreteModelSelect.value));
+    els44.generationProviderSelect?.addEventListener("change", () => call(methods, "selectGenerationProvider", els44.generationProviderSelect.value));
+    els44.generationProviderSettingsButton?.addEventListener("click", () => call(methods, "openGenerationProviderSettings"));
+    els44.apiProviderQuick?.addEventListener("change", () => {
+      call(methods, "selectApiProvider", els44.apiProviderQuick?.value || call(methods, "currentApiProviderId"));
+    });
+    els44.apiProvider?.addEventListener("change", () => {
+      call(methods, "selectApiProvider", els44.apiProvider?.value || call(methods, "currentApiProviderId"));
+    });
+    els44.apiProviderSearch?.addEventListener("input", () => call(methods, "renderApiProviderList"));
+    els44.apiProviderList?.addEventListener("click", (event) => {
+      if (event.target?.closest?.("[data-api-provider-sort-handle]")) return;
+      const button = event.target?.closest?.("[data-api-provider-id]");
+      if (!button) return;
+      call(methods, "selectApiProvider", button.dataset.apiProviderId);
+    });
+    els44.editApiProviderButton?.addEventListener("click", () => call(methods, "editApiProvider"));
+    els44.copyApiProviderButton?.addEventListener("click", () => call(methods, "copyApiProvider"));
+    els44.addApiProviderButton?.addEventListener("click", () => call(methods, "addApiProvider"));
+    els44.sortApiProvidersButton?.addEventListener("click", () => call(methods, "toggleApiProviderSortMode"));
+    els44.deleteApiProviderButton?.addEventListener("click", () => call(methods, "confirmDeleteApiProvider", els44.deleteApiProviderButton));
+    els44.cancelApiProviderEditButton?.addEventListener("click", () => call(methods, "cancelApiProviderEdit"));
+    els44.saveApiProviderEditButton?.addEventListener("click", () => call(methods, "saveApiProviderEdit"));
+    els44.addProviderBindingButton?.addEventListener("click", () => call(methods, "addProviderBinding"));
+    els44.apiProviderBindings?.addEventListener("click", (event) => {
+      const button = event.target?.closest?.("[data-remove-provider-binding]");
+      if (button?.dataset.removeProviderBinding) call(methods, "removeProviderBinding", button.dataset.removeProviderBinding);
+    });
+    els44.apiProviderBindings?.addEventListener("change", (event) => call(methods, "handleProviderBindingEditorChange", event));
+    els44.apiKeyRevealButton?.addEventListener("pointerdown", (event) => call(methods, "revealApiKeyWhilePressed", event));
+    els44.apiKeyRevealButton?.addEventListener("pointerup", () => call(methods, "hideApiKeyReveal"));
+    els44.apiKeyRevealButton?.addEventListener("pointercancel", () => call(methods, "hideApiKeyReveal"));
+    els44.apiKeyRevealButton?.addEventListener("pointerleave", () => call(methods, "hideApiKeyReveal"));
+    els44.apiKeyRevealButton?.addEventListener("blur", () => call(methods, "hideApiKeyReveal"));
+    els44.apiKeyRevealButton?.addEventListener("keydown", (event) => {
+      if (event.key === " " || event.key === "Enter") call(methods, "revealApiKeyWhilePressed", event);
+    });
+    els44.apiKeyRevealButton?.addEventListener("keyup", () => call(methods, "hideApiKeyReveal"));
+    els44.apiKey?.addEventListener("input", () => call(methods, "updateApiKeyRevealButton"));
+    els44.apiBaseUrl?.addEventListener("input", () => call(methods, "updateApiRequestEndpointPreview"));
+    call(methods, "bindOverlayPopoverEvents");
+  }
+  function bindWebUIEvents(state33, els44, methods) {
     call(methods, "bindShellUiEvents");
     call(methods, "bindFormControlEvents");
-    els43.clearPromptButton.addEventListener("click", () => {
+    els44.clearPromptButton.addEventListener("click", () => {
       call(methods, "setPromptText", "");
       call(methods, "syncGalleryInputsFromPrompt");
       call(methods, "updatePromptCount");
       call(methods, "updateRequestPreview");
     });
-    els43.quickGalleryRail?.addEventListener("mouseover", (event) => call(methods, "handleQuickGalleryCategoryEvent", event));
-    els43.quickGalleryRail?.addEventListener("focusin", (event) => call(methods, "handleQuickGalleryCategoryEvent", event));
-    els43.quickGalleryRail?.addEventListener("click", (event) => call(methods, "handleQuickGalleryCategoryEvent", event));
-    els43.quickGalleryList?.addEventListener("scroll", () => call(methods, "scheduleQuickGalleryFocusUpdate"));
-    els43.quickGalleryList?.addEventListener("wheel", (event) => call(methods, "handleQuickGalleryBoundaryWheel", event), { passive: false });
-    els43.addGalleryCategoryButton?.addEventListener("click", () => call(methods, "createGalleryCategory"));
-    els43.addToGalleryClose?.addEventListener("click", () => call(methods, "closeAddToGallery"));
-    els43.addToGalleryModal?.addEventListener("click", (event) => {
-      if (event.target === els43.addToGalleryModal) call(methods, "closeAddToGallery");
+    els44.quickGalleryRail?.addEventListener("mouseover", (event) => call(methods, "handleQuickGalleryCategoryEvent", event));
+    els44.quickGalleryRail?.addEventListener("focusin", (event) => call(methods, "handleQuickGalleryCategoryEvent", event));
+    els44.quickGalleryRail?.addEventListener("click", (event) => call(methods, "handleQuickGalleryCategoryEvent", event));
+    els44.quickGalleryList?.addEventListener("scroll", () => call(methods, "scheduleQuickGalleryFocusUpdate"));
+    els44.quickGalleryList?.addEventListener("wheel", (event) => call(methods, "handleQuickGalleryBoundaryWheel", event), { passive: false });
+    els44.addGalleryCategoryButton?.addEventListener("click", () => call(methods, "createGalleryCategory"));
+    els44.addToGalleryClose?.addEventListener("click", () => call(methods, "closeAddToGallery"));
+    els44.addToGalleryModal?.addEventListener("click", (event) => {
+      if (event.target === els44.addToGalleryModal) call(methods, "closeAddToGallery");
     });
-    els43.saveToGalleryButton?.addEventListener("click", () => call(methods, "saveUploadToGallery"));
-    els43.systemSettingsModalClose?.addEventListener("click", () => call(methods, "closeSystemSettingsModal"));
-    els43.systemSettingsModal?.addEventListener("pointerdown", (event) => {
-      systemSettingsBackdropPointerDown = event.target === els43.systemSettingsModal;
-    });
-    els43.systemSettingsModal?.addEventListener("click", (event) => {
-      if (event.target === els43.systemSettingsModal && systemSettingsBackdropPointerDown) {
-        call(methods, "closeSystemSettingsModal");
-      }
-      systemSettingsBackdropPointerDown = false;
-    });
-    els43.saveSettingsButton?.addEventListener("click", () => call(methods, "saveSettings"));
-    els43.authSourceGroup?.addEventListener("click", (event) => call(methods, "handleAuthSourceClick", event));
-    els43.apiDirectSettingsButton?.addEventListener("click", () => call(methods, "openApiSettingsModal"));
-    els43.modelFamilyOptions?.addEventListener("click", (event) => {
-      const item = event.target?.closest?.("[data-family-id]");
-      if (item?.dataset.familyId) call(methods, "selectModelFamily", item.dataset.familyId);
-    });
-    els43.modelFamilyOptions?.addEventListener("keydown", (event) => call(methods, "handleModelFamilyOptionsKeydown", event));
-    els43.concreteModelSelect?.addEventListener("change", () => call(methods, "selectConcreteModel", els43.concreteModelSelect.value));
-    els43.generationProviderSelect?.addEventListener("change", () => call(methods, "selectGenerationProvider", els43.generationProviderSelect.value));
-    els43.generationProviderSettingsButton?.addEventListener("click", () => call(methods, "openGenerationProviderSettings"));
-    els43.apiProviderQuick?.addEventListener("change", () => {
-      call(methods, "selectApiProvider", els43.apiProviderQuick?.value || call(methods, "currentApiProviderId"));
-    });
-    els43.apiProvider?.addEventListener("change", () => {
-      call(methods, "selectApiProvider", els43.apiProvider?.value || call(methods, "currentApiProviderId"));
-    });
-    els43.apiProviderSearch?.addEventListener("input", () => call(methods, "renderApiProviderList"));
-    els43.apiProviderList?.addEventListener("click", (event) => {
-      const sortButton = event.target?.closest?.("[data-api-provider-sort]");
-      if (sortButton) {
-        call(methods, "moveApiProvider", sortButton.dataset.apiProviderId, sortButton.dataset.apiProviderSort);
-        return;
-      }
-      const button = event.target?.closest?.("[data-api-provider-id]");
-      if (!button) return;
-      call(methods, "selectApiProvider", button.dataset.apiProviderId);
-    });
-    els43.editApiProviderButton?.addEventListener("click", () => call(methods, "editApiProvider"));
-    els43.copyApiProviderButton?.addEventListener("click", () => call(methods, "copyApiProvider"));
-    els43.addApiProviderButton?.addEventListener("click", () => call(methods, "addApiProvider"));
-    els43.sortApiProvidersButton?.addEventListener("click", () => call(methods, "toggleApiProviderSortMode"));
-    els43.deleteApiProviderButton?.addEventListener("click", () => call(methods, "confirmDeleteApiProvider", els43.deleteApiProviderButton));
-    els43.cancelApiProviderEditButton?.addEventListener("click", () => call(methods, "cancelApiProviderEdit"));
-    els43.saveApiProviderEditButton?.addEventListener("click", () => call(methods, "saveApiProviderEdit"));
-    els43.addProviderBindingButton?.addEventListener("click", () => call(methods, "addProviderBinding"));
-    els43.apiProviderBindings?.addEventListener("click", (event) => {
-      const button = event.target?.closest?.("[data-remove-provider-binding]");
-      if (button?.dataset.removeProviderBinding) call(methods, "removeProviderBinding", button.dataset.removeProviderBinding);
-    });
-    els43.apiProviderBindings?.addEventListener("change", (event) => call(methods, "handleProviderBindingEditorChange", event));
-    els43.apiKeyRevealButton?.addEventListener("pointerdown", (event) => call(methods, "revealApiKeyWhilePressed", event));
-    els43.apiKeyRevealButton?.addEventListener("pointerup", () => call(methods, "hideApiKeyReveal"));
-    els43.apiKeyRevealButton?.addEventListener("pointercancel", () => call(methods, "hideApiKeyReveal"));
-    els43.apiKeyRevealButton?.addEventListener("pointerleave", () => call(methods, "hideApiKeyReveal"));
-    els43.apiKeyRevealButton?.addEventListener("blur", () => call(methods, "hideApiKeyReveal"));
-    els43.apiKeyRevealButton?.addEventListener("keydown", (event) => {
-      if (event.key === " " || event.key === "Enter") call(methods, "revealApiKeyWhilePressed", event);
-    });
-    els43.apiKeyRevealButton?.addEventListener("keyup", () => call(methods, "hideApiKeyReveal"));
-    els43.apiKey?.addEventListener("input", () => call(methods, "updateApiKeyRevealButton"));
-    els43.apiBaseUrl?.addEventListener("input", () => call(methods, "updateApiRequestEndpointPreview"));
-    call(methods, "bindOverlayPopoverEvents");
-    els43.runButton.addEventListener("click", () => call(methods, "runTask"));
-    document.addEventListener("keydown", (event) => handleRunTaskShortcut(event, els43, methods));
-    els43.refreshButton.addEventListener("click", () => {
+    els44.saveToGalleryButton?.addEventListener("click", () => call(methods, "saveUploadToGallery"));
+    bindSharedTopNavSettingsEvents(els44, methods);
+    els44.runButton.addEventListener("click", () => call(methods, "runTask"));
+    document.addEventListener("keydown", (event) => handleRunTaskShortcut(event, els44, methods));
+    els44.refreshButton.addEventListener("click", () => {
       void handleRefreshButtonClick(methods);
     });
     call(methods, "bindTaskListControlEvents");
@@ -122,8 +121,8 @@
   function call2(methods, name, ...args) {
     return methods[name]?.(...args);
   }
-  function bootWebUI(state32, els43, methods) {
-    bindWebUIEvents(state32, els43, methods);
+  function bootWebUI(state33, els44, methods) {
+    bindWebUIEvents(state33, els44, methods);
     call2(methods, "restoreThemePreference");
     call2(methods, "restoreSidebarWidth");
     call2(methods, "restoreMainModel");
@@ -144,6 +143,7 @@
     call2(methods, "updateCustomSize");
     call2(methods, "restoreOutputSettingsLock");
     call2(methods, "renderImageStrip");
+    call2(methods, "restoreCollectedReferences");
     void call2(methods, "restoreHistoryReferenceHandoff");
     void call2(methods, "restoreHistoryTaskReuseHandoff");
     call2(methods, "refreshSettings");
@@ -215,6 +215,7 @@
       taskHistoryShell: document.querySelector(".task-history-shell"),
       sidebarContent: document.querySelector(".sidebar-content"),
       taskActiveList: document.querySelector("#taskActiveList"),
+      taskQueueDragLayer: document.querySelector("#taskQueueDragLayer"),
       taskLatestButton: document.querySelector("#taskLatestButton"),
       taskLatestBadge: document.querySelector("#taskLatestBadge"),
       taskList: document.querySelector("#taskList"),
@@ -230,6 +231,7 @@
       taskPromptFidelityFilter: document.querySelector("#taskPromptFidelityFilter"),
       taskResolutionFilter: document.querySelector("#taskResolutionFilter"),
       taskHistoryTopAnchors: document.querySelector("#taskHistoryTopAnchors"),
+      taskHistoryCurrentAnchor: document.querySelector("#taskHistoryCurrentAnchor"),
       taskHistoryBottomAnchors: document.querySelector("#taskHistoryBottomAnchors"),
       taskHistoryLibrarySlot: document.querySelector("#taskHistoryLibrarySlot"),
       archiveButton: document.querySelector("#archiveButton"),
@@ -238,10 +240,10 @@
       batchToolbar: document.querySelector("#batchToolbar"),
       batchSelectedCount: document.querySelector("#batchSelectedCount"),
       batchSelectGroupButton: document.querySelector("#batchSelectGroupButton"),
+      batchSelectWaitingButton: document.querySelector("#batchSelectWaitingButton"),
       batchArchiveButton: document.querySelector("#batchArchiveButton"),
       batchCancelSelectedButton: document.querySelector("#batchCancelSelectedButton"),
       batchDeleteButton: document.querySelector("#batchDeleteButton"),
-      batchCancelButton: document.querySelector("#batchCancelButton"),
       archiveModal: document.querySelector("#archiveModal"),
       archiveModalClose: document.querySelector("#archiveModalClose"),
       archiveList: document.querySelector("#archiveList"),
@@ -260,6 +262,11 @@
       networkEgressMode: document.querySelector("#networkEgressMode"),
       networkEgressCustomProxyField: document.querySelector("#networkEgressCustomProxyField"),
       networkEgressCustomProxy: document.querySelector("#networkEgressCustomProxy"),
+      networkEgressTimeoutMinutes: document.querySelector("#networkEgressTimeoutMinutes"),
+      networkEgressRetryCount: document.querySelector("#networkEgressRetryCount"),
+      networkEgressTimeoutError: document.querySelector("#networkEgressTimeoutError"),
+      networkEgressRetryError: document.querySelector("#networkEgressRetryError"),
+      networkEgressCompatibilityNotice: document.querySelector("#networkEgressCompatibilityNotice"),
       networkEgressCurrentRoute: document.querySelector("#networkEgressCurrentRoute"),
       networkEgressStatus: document.querySelector("#networkEgressStatus"),
       testNetworkEgressButton: document.querySelector("#testNetworkEgressButton"),
@@ -333,7 +340,9 @@
       imageEditorCancel: document.querySelector("#imageEditorCancel"),
       imageEditorStatus: document.querySelector("#imageEditorStatus"),
       recentAssetDock: document.querySelector("#recentAssetDock"),
+      recentAssetStatus: document.querySelector("#recentAssetStatus"),
       recentAssetList: document.querySelector("#recentAssetList"),
+      recentAssetVisibilityToggle: document.querySelector("#recentAssetVisibilityToggle"),
       referenceCollector: document.querySelector("#referenceCollector"),
       imageStrip: document.querySelector("#imageStrip"),
       imageThumbList: document.querySelector("#imageThumbList"),
@@ -469,9 +478,9 @@
   }
 
   // codex_image/webui/frontend/src/legacy-bridge.ts
-  function installLegacyBridge(bridge39) {
-    window.__codexImageWebUI = bridge39;
-    return bridge39;
+  function installLegacyBridge(bridge40) {
+    window.__codexImageWebUI = bridge40;
+    return bridge40;
   }
   function bindBridgeMethod(name, options = {}) {
     const proxy2 = (...args) => {
@@ -489,11 +498,11 @@
 
   // codex_image/webui/frontend/src/state.ts
   function getLegacyBridge() {
-    const bridge39 = window.__codexImageWebUI;
-    if (!bridge39) {
+    const bridge40 = window.__codexImageWebUI;
+    if (!bridge40) {
       throw new Error("WebUI legacy bridge is not initialized");
     }
-    return bridge39;
+    return bridge40;
   }
   function getState() {
     return getLegacyBridge().state;
@@ -517,6 +526,7 @@
     "batch.selected": "0 selected",
     "batch.selectedCount": "{count} selected",
     "batch.selectCurrentGroup": "Select all in group",
+    "batch.selectWaiting": "Select all waiting",
     "batch.archivedCount": "Archived {count} chats",
     "batch.archiveFailed": "Batch archive failed",
     "batch.runningCannotDeleteSelected": "Selected chats are running and cannot be deleted",
@@ -530,14 +540,15 @@
     "batch.cancelSelected": "Cancel tasks",
     "batch.noActiveSelected": "The selected tasks are no longer running or waiting",
     "batch.cancelTitle": "Cancel {count} tasks?",
-    "batch.cancelMessage": "Running tasks will stop and waiting tasks will leave the queue. History will be kept.",
+    "batch.cancelMessage": "Waiting tasks will be cancelled immediately. Running provider calls may continue and may still be billed until they return. History will be kept.",
     "batch.cancelDetail": "Running {running} \xB7 waiting {waiting}",
     "batch.cancelConfirm": "Cancel tasks",
-    "batch.cancelResult": "Cancelled {cancelled}, skipped {skipped}, failed {failed}",
+    "batch.cancelResult": "Cancelled {cancelled}, cancellation requested {requested}, skipped {skipped}, failed {failed}",
     "batch.cancelFailed": "Batch cancellation failed",
     "action.archive": "Archive",
     "action.delete": "Delete",
     "action.cancel": "Cancel",
+    "action.stop": "Stop",
     "action.edit": "Edit",
     "action.clear": "Clear",
     "action.paste": "Paste",
@@ -565,7 +576,7 @@
     "queue.waitingActions": "Waiting task queue actions",
     "queue.cancelRunning": "Cancel",
     "queue.cancelRunningTitle": "Cancel running task",
-    "queue.dragWaiting": "Drag to reorder waiting task",
+    "queue.dragWaiting": "Drag card vertically to reorder",
     "queue.dragSort": "Drag to sort",
     "queue.moveUp": "Up",
     "queue.moveUpTitle": "Move waiting task up",
@@ -582,12 +593,13 @@
     "queue.queuedDeleted": "Queued task deleted",
     "queue.cancelRunningConfirm": "Cancel task",
     "queue.cancelRunningTitleConfirm": "Cancel running task?",
-    "queue.cancelRunningMessage": "The current task will stop. History will be kept.",
+    "queue.cancelRunningMessage": "A cancellation request will be sent. The provider call may continue and may still be billed until it returns. History will be kept.",
     "queue.cancelRunningFailed": "Failed to cancel task",
+    "queue.cancellationPending": "Cancellation requested. This provider call may continue and may still be billed until it returns.",
     "queue.runningCancelled": "Task cancelled",
     "queue.reorderFailed": "Failed to reorder queue",
     "queue.realtimeUpdateFailed": "Failed to update live status",
-    "queue.realtimeDisconnected": "Live status connection was lost. Refresh the page to recover.",
+    "queue.realtimeDisconnected": "Live status connection was interrupted. Reconnecting automatically\u2026",
     "queue.readFailed": "Failed to load queue",
     "status.waiting": "Waiting",
     "status.shownActiveTasks": "Showing active tasks",
@@ -595,6 +607,7 @@
     "taskStatus.submitting": "Submitting",
     "taskStatus.running": "Generating",
     "taskStatus.runningWithElapsed": "Generating \xB7 {elapsed}",
+    "taskStatus.cancelling": "Cancelling",
     "taskStatus.completed": "Completed",
     "taskStatus.partialFailed": "Partially failed",
     "taskStatus.failed": "Failed",
@@ -623,7 +636,6 @@
     "taskCard.textToImageThumb": "Text-to-image task thumbnail",
     "taskCard.imageToImageThumb": "Image-to-image task thumbnail",
     "taskCard.failedThumb": "Task failed",
-    "taskCard.textBadge": "T",
     "taskMode.edit": "Edit",
     "taskMode.generate": "Generate",
     "document.generatingQueue": "Generating \xB7 queue {total}",
@@ -637,12 +649,114 @@
     "historyLibrary.openFull": "Open full history library",
     "history.documentTitle": "History - iLab CONJURE",
     "history.back": "Back to generator",
+    "history.homeAria": "Back to iLab CONJURE generator",
+    "history.backToGenerator": "Back to generator",
     "history.title": "History",
     "history.loading": "Loading",
     "history.total": "{total} tasks \xB7 {archived} archived",
     "history.search": "Search",
     "history.searchPlaceholder": "Search prompts or task ID",
     "history.clear": "Clear",
+    "history.activeFilterCount": "Filtered \xB7 {count}",
+    "history.clearAllFilters": "Clear all",
+    "history.removeFilter": "Remove filter: {label}",
+    "history.filtersActive": "Task filters, {count} active",
+    "history.favorites": "Favorites",
+    "history.onlyFavorites": "Favorites only",
+    "history.favoriteTask": "Add to favorites",
+    "history.unfavoriteTask": "Remove from favorites",
+    "history.tags": "Tags",
+    "history.untagged": "Untagged",
+    "history.manageTags": "Manage tags",
+    "history.createTag": "Create tag",
+    "history.renameTag": "Rename",
+    "history.deleteTag": "Delete",
+    "history.deleteTagAffected": "Delete ({count} tasks)",
+    "history.addTag": "Add tag",
+    "history.removeTag": "Remove tag",
+    "history.favoriteSelected": "Favorite",
+    "history.unfavoriteSelected": "Unfavorite",
+    "history.organizeSelected": "Organize",
+    "history.exitSelection": "Exit bulk selection",
+    "history.organizationFailed": "Could not update favorites or tags",
+    "history.tagNameConflict": "This tag name already exists",
+    "history.noTags": "No tags yet",
+    "history.backendRestartRequired": "History features were updated. Restart the app and try again.",
+    "history.export": "Export",
+    "history.exportImagesOnly": "Images only",
+    "history.exportImagesWithPrompts": "Images + prompts",
+    "history.exportPreparing": "Preparing export\u2026",
+    "history.exportStarted": "Download started",
+    "history.exportSummary": "{taskCount} tasks \xB7 {imageCount} images",
+    "history.exportFailed": "Export failed",
+    "historyBackup.open": "Back up tasks",
+    "historyBackup.importOpen": "Import backup",
+    "historyBackup.mode": "Task backup",
+    "historyBackup.description": "Save task data and related files to restore in a compatible iLab CONJURE installation.",
+    "historyBackup.scopeLegend": "Backup scope",
+    "historyBackup.scopeHelp": "Filtered and all scopes are counted locally and are not limited by tasks shown on this page.",
+    "historyBackup.scopeSelected": "Selected tasks",
+    "historyBackup.scopeFiltered": "Current filtered results",
+    "historyBackup.scopeAll": "All task history",
+    "historyBackup.scopeCount": "{eligible} of {total} eligible",
+    "historyBackup.scopeCounting": "Counting\u2026",
+    "historyBackup.scopeCountUnavailable": "Count unavailable",
+    "historyBackup.scopeNoneSelected": "No tasks selected",
+    "historyBackup.willBackup": "Will back up {eligible} tasks; {excluded} unfinished tasks will be excluded.",
+    "historyBackup.selectTasksFirst": "Select at least one task first.",
+    "historyBackup.scopeLockedUnknown": "Original backup scope",
+    "historyBackup.scopeLocked": "Scope locked: {scope} \xB7 {eligible} tasks will be backed up",
+    "historyBackup.scopeLockedPending": "Scope locked: {scope} \xB7 counting eligible tasks",
+    "historyBackup.progressLabel": "Backup progress",
+    "historyBackup.start": "Start backup",
+    "historyBackup.cancel": "Cancel backup",
+    "historyBackup.download": "Download backup",
+    "historyBackup.dismiss": "Dismiss result",
+    "historyBackup.discard": "Close without downloading",
+    "historyBackup.closePanel": "Close panel",
+    "historyBackup.downloadStartedTitle": "Download started",
+    "historyBackup.idle": "Ready",
+    "historyBackup.queued": "Queued",
+    "historyBackup.planning": "Planning",
+    "historyBackup.packing": "Packing",
+    "historyBackup.ready": "Ready to download",
+    "historyBackup.readyDetail": "Backup is ready. Download it within 1 hour; closing without downloading deletes the temporary file immediately.",
+    "historyBackup.downloaded": "Confirm that your browser saved the file, then you can close this panel. The temporary file is deleted after transfer.",
+    "historyBackup.missingInputsWarning": "{tasks} tasks are missing {files} input files. Those files will be omitted; prompts and output results will still be exported.",
+    "historyBackup.failed": "Backup failed",
+    "historyBackup.cancelled": "Cancelled",
+    "historyBackup.expired": "Expired",
+    "historyBackup.interrupted": "Interrupted",
+    "historyBackup.stats": "Total {total} \xB7 eligible {eligible} \xB7 excluded {excluded} \xB7 {bytes}",
+    "historyBackup.errorDisk": "Not enough disk space.",
+    "historyBackup.errorSourceChanged": "Source data changed during backup.",
+    "historyBackup.errorEmpty": "No eligible tasks were found.",
+    "historyBackup.errorIo": "The backup could not be created.",
+    "historyImport.title": "Import task backup",
+    "historyImport.choose": "Choose ZIP backup",
+    "historyImport.uploading": "Uploading",
+    "historyImport.validating": "Validating",
+    "historyImport.validated": "Validated",
+    "historyImport.preview": "Restore preview",
+    "historyImport.restorable": "Restorable",
+    "historyImport.duplicate": "Duplicates",
+    "historyImport.conflict": "Conflicts",
+    "historyImport.invalid": "Invalid",
+    "historyImport.confirm": "Confirm restore",
+    "historyImport.restoring": "Restoring",
+    "historyImport.restored": "Restored",
+    "historyImport.failed": "Restore failed",
+    "historyImport.interrupted": "Interrupted",
+    "historyImport.cancelled": "Cancelled",
+    "historyImport.result": "Result",
+    "historyImport.thumbnailWarnings": "Thumbnail warnings",
+    "historyImport.cleanupWarnings": "Cleanup warnings",
+    "historyImport.reselect": "Choose the original ZIP again to continue.",
+    "historyImport.noOverwrite": "Existing tasks are never overwritten.",
+    "historyImport.reasonInvalid": "Invalid backup data",
+    "historyImport.reasonSensitive": "Contains protected data",
+    "historyImport.reasonMismatch": "Does not match the backup manifest",
+    "history.closeExport": "Close export choices",
     "history.type": "Type",
     "history.allTypes": "All types",
     "history.type.textToImage": "Text to image",
@@ -823,6 +937,7 @@
     "language.ru": "\u0420\u0443\u0441\u0441\u043A\u0438\u0439",
     "language.it": "Italiano",
     "language.hi": "\u0939\u093F\u0928\u094D\u0926\u0940",
+    "language.vi": "Ti\u1EBFng Vi\u1EC7t",
     "auth.label": "Auth source",
     "auth.checking": "Checking auth",
     "auth.missingCodexSession": "No Codex session detected",
@@ -849,8 +964,16 @@
     "recentAssets.defaultName": "Recent upload",
     "recentAssets.use": "Use {name}",
     "recentAssets.delete": "Delete {name}",
+    "recentAssets.inUse": "Used by {count} tasks; it cannot be permanently deleted, but it can be hidden from Recent uploads",
+    "recentAssets.hide": "Hide {name} from Recent uploads",
+    "recentAssets.hideTitle": "Hide from Recent uploads?",
+    "recentAssets.hideMessage": "This image is used by {count} tasks and cannot be permanently deleted. Hiding removes it only from Recent uploads; the original, current input, and historical tasks are preserved.",
+    "recentAssets.hideFailed": "Failed to hide recent upload",
+    "recentAssets.hidden": "Hidden from Recent uploads; the original and historical tasks were preserved",
+    "recentAssets.hidePreviews": "Hide recent upload previews",
+    "recentAssets.showPreviews": "Show recent upload previews",
     "recentAssets.deleteTitle": "Delete recent upload?",
-    "recentAssets.deleteMessage": "This will remove the image from Recent uploads. If it is currently selected as an image input, it will be removed from the current input. Historical tasks that reference this recent upload will lose that input preview. The public gallery is not affected.",
+    "recentAssets.deleteMessage": "This image is not used by any task. Its original will be permanently deleted, and the same image will be removed from the current input. The public gallery is not affected.",
     "recentAssets.loadFailed": "Failed to load recent uploads",
     "recentAssets.deleteFailed": "Failed to delete recent upload",
     "recentAssets.deleted": "Recent upload deleted",
@@ -875,11 +998,13 @@
     "referenceCollector.alreadyStaged": "Already staged as a reference",
     "referenceCollector.staged": "Staged {count} reference images",
     "referenceCollector.title": "Pending references \xB7 {count}",
-    "referenceCollector.addAll": "Add all references",
+    "referenceCollector.addAll": "Add all",
+    "referenceCollector.replaceAll": "Replace current",
     "referenceCollector.itemFallback": "Pending reference",
     "referenceCollector.remove": "Remove pending reference",
     "referenceCollector.cleared": "Pending references cleared",
     "referenceCollector.added": "Added {count} reference images",
+    "referenceCollector.replaced": "Replaced references with {count} images",
     "referenceCollector.addFailed": "Failed to add pending references",
     "referenceCollector.readFailed": "Failed to read image: {status}",
     "gallery.quick": "Quick gallery",
@@ -997,7 +1122,7 @@
     "output.promptHelpTitle": "Prompt handling",
     "output.promptHelp.responsesChannel": "Responses \xB7 main model involved",
     "output.promptHelp.imagesChannel": "Images \xB7 direct generation",
-    "output.promptHelp.responses.original": "Sends your original text to the main model and asks the image tool to preserve it; the main model may still produce a revised prompt.",
+    "output.promptHelp.responses.original": "Sends your exact original text without app-added prompt rules; the provider may still return a revised prompt or interpret the result differently.",
     "output.promptHelp.responses.strict": "Lets the main model organize or expand the prompt, while preserving hard constraints such as subjects, text, colors, and composition.",
     "output.promptHelp.responses.automatic": "Adds no extra constraints, allowing the main model to interpret and optimize the prompt before calling the image tool.",
     "output.promptHelp.images.original": "Adds no app-level prompt rules and submits your original text directly to the image endpoint.",
@@ -1092,6 +1217,16 @@
     "lightbox.close": "Close preview",
     "lightbox.previous": "Previous image",
     "lightbox.next": "Next image",
+    "lightbox.zoomControls": "Zoom controls",
+    "lightbox.zoomOut": "Zoom out",
+    "lightbox.zoomIn": "Zoom in",
+    "lightbox.fit": "Fit",
+    "lightbox.fitPage": "Fit to page",
+    "lightbox.actualSize": "100% actual size",
+    "lightbox.shortcuts": "Keyboard shortcuts",
+    "lightbox.switchImage": "Switch image",
+    "lightbox.switchTask": "Switch task",
+    "lightbox.wheelZoom": "Wheel to zoom",
     "promptPopover.title": "Prompt Comparison",
     "promptPopover.summary": "Original {original} \xB7 optimized {optimized}",
     "promptPopover.original": "Original prompt",
@@ -1255,6 +1390,7 @@
     "colors.modifyValue": "Edit color {value}",
     "colors.removeValue": "Remove color {value}",
     "taskGroup.today": "Today",
+    "taskGroup.current": "Current task",
     "taskGroup.yesterday": "Yesterday",
     "taskGroup.last7": "Last 7 days",
     "taskGroup.older": "Older",
@@ -1307,6 +1443,14 @@
     "networkEgress.direct": "Direct",
     "networkEgress.custom": "Custom",
     "networkEgress.customProxy": "Custom proxy URL",
+    "networkEgress.timeout": "Image request timeout",
+    "networkEgress.timeoutUnit": "min",
+    "networkEgress.retryCount": "Retries after failure",
+    "networkEgress.retryUnit": "times",
+    "networkEgress.requestPolicyHelp": "Applies only to image requests started later. Each automatic retry gets a new timeout window.",
+    "networkEgress.timeoutInvalid": "Enter a whole number from 1 to 30 minutes",
+    "networkEgress.retryInvalid": "Enter a whole number from 0 to 5 retries",
+    "networkEgress.environmentTimeoutActive": "The environment timeout is active: {seconds} seconds. Saving replaces it with the setting above.",
     "networkEgress.currentRoute": "Current route: {route}",
     "networkEgress.test": "Test connection",
     "networkEgress.save": "Save and apply",
@@ -1349,7 +1493,8 @@
     "apiSettings.copyProviderWithoutKeyStatus": "Provider copied. Edit the name, model, or add an API key before saving.",
     "apiSettings.sortProviders": "Sort",
     "apiSettings.finishSortProviders": "Done",
-    "apiSettings.sortProviderModeStatus": "Sorting providers",
+    "apiSettings.sortProviderModeStatus": "Drag the handles to sort, or use the arrow keys",
+    "apiSettings.sortProviderHandleAria": "Drag to reorder {provider}, or use the arrow, Home, and End keys",
     "apiSettings.sortProviderStatus": "Provider order changed. Autosaving...",
     "apiSettings.moveProviderUp": "Up",
     "apiSettings.moveProviderDown": "Down",
@@ -1602,6 +1747,7 @@
     "batch.selected": "0 ausgew\xE4hlt",
     "batch.selectedCount": "{count} ausgew\xE4hlt",
     "batch.selectCurrentGroup": "Alle in Gruppe",
+    "batch.selectWaiting": "Alle wartenden ausw\xE4hlen",
     "batch.archivedCount": "Archivierte {count}-Chats",
     "batch.archiveFailed": "Batch-Archivierung fehlgeschlagen",
     "batch.runningCannotDeleteSelected": "Ausgew\xE4hlte Chats laufen und k\xF6nnen nicht gel\xF6scht werden",
@@ -1615,14 +1761,15 @@
     "batch.cancelSelected": "Aufgaben abbrechen",
     "batch.noActiveSelected": "Die ausgew\xE4hlten Aufgaben werden nicht mehr ausgef\xFChrt oder warten",
     "batch.cancelTitle": "{count} Aufgaben abbrechen?",
-    "batch.cancelMessage": "Laufende Aufgaben werden gestoppt und wartende Aufgaben verlassen die Warteschlange. Der Verlauf bleibt erhalten.",
+    "batch.cancelMessage": "Wartende Aufgaben werden sofort abgebrochen. Laufende Anbieteraufrufe k\xF6nnen bis zur R\xFCckgabe weiterlaufen und weiterhin Kosten verursachen. Der Verlauf bleibt erhalten.",
     "batch.cancelDetail": "Laufend {running} \xB7 wartend {waiting}",
     "batch.cancelConfirm": "Aufgaben abbrechen",
-    "batch.cancelResult": "Abgebrochen {cancelled}, \xFCbersprungen {skipped}, fehlgeschlagen {failed}",
+    "batch.cancelResult": "Abgebrochen {cancelled}, Abbruch angefordert {requested}, \xFCbersprungen {skipped}, fehlgeschlagen {failed}",
     "batch.cancelFailed": "Mehrfachabbruch fehlgeschlagen",
     "action.archive": "Archiv",
     "action.delete": "L\xF6schen",
     "action.cancel": "Abbrechen",
+    "action.stop": "Stoppen",
     "action.edit": "Bearbeiten",
     "action.clear": "Klar",
     "action.paste": "Einf\xFCgen",
@@ -1667,12 +1814,13 @@
     "queue.queuedDeleted": "Aufgabe in der Warteschlange gel\xF6scht",
     "queue.cancelRunningConfirm": "Aufgabe abbrechen",
     "queue.cancelRunningTitleConfirm": "Laufende Aufgabe abbrechen?",
-    "queue.cancelRunningMessage": "Die aktuelle Aufgabe wird gestoppt. Die Geschichte bleibt erhalten.",
+    "queue.cancelRunningMessage": "Ein Abbruch wird angefordert. Der Anbieteraufruf kann bis zur R\xFCckgabe weiterlaufen und weiterhin Kosten verursachen. Der Verlauf bleibt erhalten.",
     "queue.cancelRunningFailed": "Aufgabe konnte nicht abgebrochen werden",
+    "queue.cancellationPending": "Abbruch angefordert. Der Anbieteraufruf kann bis zur R\xFCckgabe weiterlaufen und weiterhin Kosten verursachen.",
     "queue.runningCancelled": "Aufgabe abgebrochen",
     "queue.reorderFailed": "Die Warteschlange konnte nicht neu angeordnet werden",
     "queue.realtimeUpdateFailed": "Der Live-Status konnte nicht aktualisiert werden",
-    "queue.realtimeDisconnected": "Die Live-Statusverbindung wurde unterbrochen. Aktualisieren Sie die Seite, um sie wiederherzustellen.",
+    "queue.realtimeDisconnected": "Die Live-Statusverbindung wurde unterbrochen. Automatische Wiederverbindung l\xE4uft\u2026",
     "queue.readFailed": "Die Warteschlange konnte nicht geladen werden",
     "status.waiting": "Warten",
     "status.shownActiveTasks": "Aktive Aufgaben anzeigen",
@@ -1680,6 +1828,7 @@
     "taskStatus.submitting": "Einreichen",
     "taskStatus.running": "Generieren",
     "taskStatus.runningWithElapsed": "Generieren \xB7 {elapsed}",
+    "taskStatus.cancelling": "Abbruch l\xE4uft",
     "taskStatus.completed": "Abgeschlossen",
     "taskStatus.partialFailed": "Teilweise gescheitert",
     "taskStatus.failed": "Fehlgeschlagen",
@@ -1708,7 +1857,6 @@
     "taskCard.textToImageThumb": "Miniaturansicht der Text-zu-Bild-Aufgabe",
     "taskCard.imageToImageThumb": "Miniaturansicht der Bild-zu-Bild-Aufgabe",
     "taskCard.failedThumb": "Aufgabe fehlgeschlagen",
-    "taskCard.textBadge": "T",
     "taskMode.edit": "Bearbeiten",
     "taskMode.generate": "Generieren",
     "document.generatingQueue": "Generieren \xB7 Warteschlange {total}",
@@ -1722,12 +1870,114 @@
     "historyLibrary.openFull": "\xD6ffnen Sie die vollst\xE4ndige Geschichtsbibliothek",
     "history.documentTitle": "Geschichte \u2013 iLab CONJURE",
     "history.back": "Zur\xFCck zum Generator",
+    "history.homeAria": "Zur\xFCck zum iLab CONJURE Generator",
+    "history.backToGenerator": "Zur\xFCck zum Generator",
     "history.title": "Geschichte",
     "history.loading": "Laden",
     "history.total": "{total} Aufgaben \xB7 {archived} archiviert",
     "history.search": "Suchen",
     "history.searchPlaceholder": "Suchaufforderungen oder Aufgabe ID",
     "history.clear": "Klar",
+    "history.activeFilterCount": "Gefiltert \xB7 {count}",
+    "history.clearAllFilters": "Alle l\xF6schen",
+    "history.removeFilter": "Filter entfernen: {label}",
+    "history.filtersActive": "Aufgabenfilter, {count} aktiv",
+    "history.favorites": "Favoriten",
+    "history.onlyFavorites": "Nur Favoriten",
+    "history.favoriteTask": "Zu Favoriten hinzuf\xFCgen",
+    "history.unfavoriteTask": "Aus Favoriten entfernen",
+    "history.tags": "Tags",
+    "history.untagged": "Ohne Tag",
+    "history.manageTags": "Tags verwalten",
+    "history.createTag": "Tag erstellen",
+    "history.renameTag": "Umbenennen",
+    "history.deleteTag": "L\xF6schen",
+    "history.deleteTagAffected": "L\xF6schen ({count} Aufgaben)",
+    "history.addTag": "Tag hinzuf\xFCgen",
+    "history.removeTag": "Tag entfernen",
+    "history.favoriteSelected": "Favorisieren",
+    "history.unfavoriteSelected": "Favorit entfernen",
+    "history.organizeSelected": "Organisieren",
+    "history.exitSelection": "Mehrfachauswahl beenden",
+    "history.organizationFailed": "Favoriten oder Tags konnten nicht aktualisiert werden",
+    "history.tagNameConflict": "Dieser Tag-Name ist bereits vorhanden",
+    "history.noTags": "Noch keine Tags",
+    "history.backendRestartRequired": "Die Verlaufsfunktionen wurden aktualisiert. Starte die App neu und versuche es erneut.",
+    "history.export": "Exportieren",
+    "history.exportImagesOnly": "Nur Bilder",
+    "history.exportImagesWithPrompts": "Bilder + Prompts",
+    "history.exportPreparing": "Export wird vorbereitet\u2026",
+    "history.exportStarted": "Download gestartet",
+    "history.exportSummary": "{taskCount} Aufgaben \xB7 {imageCount} Bilder",
+    "history.exportFailed": "Export fehlgeschlagen",
+    "historyBackup.open": "Aufgaben sichern",
+    "historyBackup.importOpen": "Sicherung importieren",
+    "historyBackup.mode": "Aufgabensicherung",
+    "historyBackup.description": "Speichert Aufgabendaten und zugeh\xF6rige Dateien zur Wiederherstellung in einer kompatiblen iLab-CONJURE-Installation.",
+    "historyBackup.scopeLegend": "Sicherungsumfang",
+    "historyBackup.scopeHelp": "Gefilterte und alle Aufgaben werden lokal gez\xE4hlt und sind nicht auf die hier angezeigten Aufgaben begrenzt.",
+    "historyBackup.scopeSelected": "Ausgew\xE4hlte Aufgaben",
+    "historyBackup.scopeFiltered": "Aktuelle Filterergebnisse",
+    "historyBackup.scopeAll": "Gesamter Verlauf",
+    "historyBackup.scopeCount": "{eligible} von {total} geeignet",
+    "historyBackup.scopeCounting": "Wird gez\xE4hlt\u2026",
+    "historyBackup.scopeCountUnavailable": "Anzahl nicht verf\xFCgbar",
+    "historyBackup.scopeNoneSelected": "Keine Aufgaben ausgew\xE4hlt",
+    "historyBackup.willBackup": "{eligible} Aufgaben werden gesichert; {excluded} unfertige Aufgaben werden ausgeschlossen.",
+    "historyBackup.selectTasksFirst": "W\xE4hlen Sie zuerst mindestens eine Aufgabe aus.",
+    "historyBackup.scopeLockedUnknown": "Urspr\xFCnglicher Sicherungsumfang",
+    "historyBackup.scopeLocked": "Umfang gesperrt: {scope} \xB7 {eligible} Aufgaben werden gesichert",
+    "historyBackup.scopeLockedPending": "Umfang gesperrt: {scope} \xB7 geeignete Aufgaben werden gez\xE4hlt",
+    "historyBackup.progressLabel": "Sicherungsfortschritt",
+    "historyBackup.start": "Sicherung starten",
+    "historyBackup.cancel": "Sicherung abbrechen",
+    "historyBackup.download": "Sicherung herunterladen",
+    "historyBackup.dismiss": "Ergebnis schlie\xDFen",
+    "historyBackup.discard": "Ohne Download schlie\xDFen",
+    "historyBackup.closePanel": "Fenster schlie\xDFen",
+    "historyBackup.downloadStartedTitle": "Download gestartet",
+    "historyBackup.idle": "Bereit",
+    "historyBackup.queued": "In Warteschlange",
+    "historyBackup.planning": "Planung l\xE4uft",
+    "historyBackup.packing": "Paket wird erstellt",
+    "historyBackup.ready": "Bereit zum Download",
+    "historyBackup.readyDetail": "Die Sicherung ist bereit. Laden Sie sie innerhalb von 1 Stunde herunter; beim Schlie\xDFen ohne Download wird die tempor\xE4re Datei sofort gel\xF6scht.",
+    "historyBackup.downloaded": "Pr\xFCfen Sie, ob der Browser die Datei gespeichert hat. Danach k\xF6nnen Sie dieses Fenster schlie\xDFen. Die tempor\xE4re Datei wird nach der \xDCbertragung gel\xF6scht.",
+    "historyBackup.missingInputsWarning": "Bei {tasks} Aufgaben fehlen {files} Eingabedateien. Diese Dateien werden ausgelassen; Prompts und Ausgaben werden weiterhin exportiert.",
+    "historyBackup.failed": "Sicherung fehlgeschlagen",
+    "historyBackup.cancelled": "Abgebrochen",
+    "historyBackup.expired": "Abgelaufen",
+    "historyBackup.interrupted": "Unterbrochen",
+    "historyBackup.stats": "Gesamt {total} \xB7 geeignet {eligible} \xB7 ausgeschlossen {excluded} \xB7 {bytes}",
+    "historyBackup.errorDisk": "Nicht gen\xFCgend Speicherplatz.",
+    "historyBackup.errorSourceChanged": "Quelldaten wurden w\xE4hrend der Sicherung ge\xE4ndert.",
+    "historyBackup.errorEmpty": "Keine geeigneten Aufgaben gefunden.",
+    "historyBackup.errorIo": "Sicherung konnte nicht erstellt werden.",
+    "historyImport.title": "Sicherung importieren",
+    "historyImport.choose": "ZIP-Sicherung ausw\xE4hlen",
+    "historyImport.uploading": "Wird hochgeladen",
+    "historyImport.validating": "Wird gepr\xFCft",
+    "historyImport.validated": "Gepr\xFCft",
+    "historyImport.preview": "Wiederherstellungsvorschau",
+    "historyImport.restorable": "Wiederherstellbar",
+    "historyImport.duplicate": "Duplikate",
+    "historyImport.conflict": "Konflikte",
+    "historyImport.invalid": "Ung\xFCltig",
+    "historyImport.confirm": "Wiederherstellung best\xE4tigen",
+    "historyImport.restoring": "Wiederherstellung l\xE4uft",
+    "historyImport.restored": "Wiederhergestellt",
+    "historyImport.failed": "Wiederherstellung fehlgeschlagen",
+    "historyImport.interrupted": "Unterbrochen",
+    "historyImport.cancelled": "Abgebrochen",
+    "historyImport.result": "Ergebnis",
+    "historyImport.thumbnailWarnings": "Vorschaubild-Warnungen",
+    "historyImport.cleanupWarnings": "Bereinigungswarnungen",
+    "historyImport.reselect": "Bitte w\xE4hlen Sie das urspr\xFCngliche ZIP erneut aus.",
+    "historyImport.noOverwrite": "Vorhandene Aufgaben werden niemals \xFCberschrieben.",
+    "historyImport.reasonInvalid": "Ung\xFCltige Sicherungsdaten",
+    "historyImport.reasonSensitive": "Enth\xE4lt gesch\xFCtzte Daten",
+    "historyImport.reasonMismatch": "Stimmt nicht mit dem Sicherungsmanifest \xFCberein",
+    "history.closeExport": "Exportauswahl schlie\xDFen",
     "history.type": "Typ",
     "history.allTypes": "Alle Typen",
     "history.type.textToImage": "Text zu Bild",
@@ -1898,6 +2148,7 @@
     "language.ru": "\u0420\u0443\u0441\u0441\u043A\u0438\u0439",
     "language.it": "Italiano",
     "language.hi": "\u0939\u093F\u0928\u094D\u0926\u0940",
+    "language.vi": "Ti\u1EBFng Vi\u1EC7t",
     "auth.label": "Authentifizierungsquelle",
     "auth.checking": "Authentifizierung pr\xFCfen",
     "auth.missingCodexSession": "Keine Codex-Sitzung erkannt",
@@ -1924,8 +2175,16 @@
     "recentAssets.defaultName": "K\xFCrzlich hochgeladen",
     "recentAssets.use": "Verwenden Sie {name}",
     "recentAssets.delete": "{name} l\xF6schen",
+    "recentAssets.inUse": "Von {count} Aufgaben verwendet; dauerhaftes L\xF6schen ist nicht m\xF6glich, aber der Eintrag kann aus den letzten Uploads ausgeblendet werden",
+    "recentAssets.hide": "{name} aus den letzten Uploads ausblenden",
+    "recentAssets.hideTitle": "Aus den letzten Uploads ausblenden?",
+    "recentAssets.hideMessage": "Dieses Bild wird von {count} Aufgaben verwendet und kann nicht dauerhaft gel\xF6scht werden. Beim Ausblenden wird es nur aus den letzten Uploads entfernt; Original, aktuelle Eingabe und historische Aufgaben bleiben erhalten.",
+    "recentAssets.hideFailed": "Der letzte Upload konnte nicht ausgeblendet werden",
+    "recentAssets.hidden": "Aus den letzten Uploads ausgeblendet; Original und historische Aufgaben bleiben erhalten",
+    "recentAssets.hidePreviews": "Bilder der letzten Uploads ausblenden",
+    "recentAssets.showPreviews": "Bilder der letzten Uploads anzeigen",
     "recentAssets.deleteTitle": "Letzten Upload l\xF6schen?",
-    "recentAssets.deleteMessage": "Dadurch wird das Bild aus den letzten Uploads entfernt. Wenn es derzeit als Bildeingabe ausgew\xE4hlt ist, wird es aus der aktuellen Eingabe entfernt. Bei historischen Aufgaben, die auf diesen letzten Upload verweisen, geht die Eingabevorschau verloren. Die \xF6ffentliche Galerie ist nicht betroffen.",
+    "recentAssets.deleteMessage": "Dieses Bild wird von keiner Aufgabe verwendet. Das Original wird dauerhaft gel\xF6scht und dasselbe Bild aus der aktuellen Eingabe entfernt. Die \xF6ffentliche Galerie ist nicht betroffen.",
     "recentAssets.loadFailed": "Die letzten Uploads konnten nicht geladen werden",
     "recentAssets.deleteFailed": "Der letzte Upload konnte nicht gel\xF6scht werden",
     "recentAssets.deleted": "Letzter Upload gel\xF6scht",
@@ -1950,11 +2209,13 @@
     "referenceCollector.alreadyStaged": "Bereits als Referenz inszeniert",
     "referenceCollector.staged": "Inszenierte {count}-Referenzbilder",
     "referenceCollector.title": "Ausstehende Referenzen \xB7 {count}",
-    "referenceCollector.addAll": "F\xFCgen Sie alle Referenzen hinzu",
+    "referenceCollector.addAll": "Alle hinzuf\xFCgen",
+    "referenceCollector.replaceAll": "Aktuelle ersetzen",
     "referenceCollector.itemFallback": "Ausstehende Referenz",
     "referenceCollector.remove": "Ausstehende Referenz entfernen",
     "referenceCollector.cleared": "Ausstehende Referenzen gel\xF6scht",
     "referenceCollector.added": "{count}-Referenzbilder hinzugef\xFCgt",
+    "referenceCollector.replaced": "Referenzen durch {count} Bilder ersetzt",
     "referenceCollector.addFailed": "Ausstehende Referenzen konnten nicht hinzugef\xFCgt werden",
     "referenceCollector.readFailed": "Bild konnte nicht gelesen werden: {status}",
     "gallery.quick": "Schnelle Galerie",
@@ -2072,7 +2333,7 @@
     "output.promptHelpTitle": "Prompt-Verarbeitung",
     "output.promptHelp.responsesChannel": "Responses \xB7 Hauptmodell beteiligt",
     "output.promptHelp.imagesChannel": "Images \xB7 direkte Generierung",
-    "output.promptHelp.responses.original": "Sendet den Originaltext an das Hauptmodell und verlangt eine m\xF6glichst w\xF6rtliche Nutzung im Bildwerkzeug; ein revised prompt kann dennoch entstehen.",
+    "output.promptHelp.responses.original": "Sendet den exakten Originaltext ohne zus\xE4tzliche App-Regeln; der Anbieter kann dennoch einen revised prompt zur\xFCckgeben oder das Ergebnis anders interpretieren.",
     "output.promptHelp.responses.strict": "Das Hauptmodell darf ordnen oder erweitern, muss aber feste Vorgaben wie Motive, Text, Farben und Komposition erhalten.",
     "output.promptHelp.responses.automatic": "F\xFCgt keine zus\xE4tzlichen Vorgaben hinzu; das Hauptmodell interpretiert und optimiert vor dem Aufruf des Bildwerkzeugs.",
     "output.promptHelp.images.original": "F\xFCgt keine App-Regeln hinzu und sendet den Originaltext direkt an die Bild-API.",
@@ -2167,6 +2428,16 @@
     "lightbox.close": "Vorschau schlie\xDFen",
     "lightbox.previous": "Vorheriges Bild",
     "lightbox.next": "N\xE4chstes Bild",
+    "lightbox.zoomControls": "Zoomsteuerung",
+    "lightbox.zoomOut": "Verkleinern",
+    "lightbox.zoomIn": "Vergr\xF6\xDFern",
+    "lightbox.fit": "Einpassen",
+    "lightbox.fitPage": "An Seite anpassen",
+    "lightbox.actualSize": "100% Originalgr\xF6\xDFe",
+    "lightbox.shortcuts": "Tastenk\xFCrzel",
+    "lightbox.switchImage": "Bild wechseln",
+    "lightbox.switchTask": "Aufgabe wechseln",
+    "lightbox.wheelZoom": "Mausrad zoomt",
     "promptPopover.title": "Schneller Vergleich",
     "promptPopover.summary": "Original {original} \xB7 optimiert {optimized}",
     "promptPopover.original": "Urspr\xFCngliche Aufforderung",
@@ -2330,6 +2601,7 @@
     "colors.modifyValue": "Farbe bearbeiten {value}",
     "colors.removeValue": "Farbe entfernen {value}",
     "taskGroup.today": "Heute",
+    "taskGroup.current": "Aktuell angezeigt",
     "taskGroup.yesterday": "Gestern",
     "taskGroup.last7": "Letzte 7 Tage",
     "taskGroup.older": "\xC4lter",
@@ -2382,6 +2654,14 @@
     "networkEgress.direct": "Direkt",
     "networkEgress.custom": "Benutzerdefiniert",
     "networkEgress.customProxy": "Benutzerdefinierte Proxy-URL",
+    "networkEgress.timeout": "Zeitlimit f\xFCr Bildanfragen",
+    "networkEgress.timeoutUnit": "Min.",
+    "networkEgress.retryCount": "Wiederholungen nach Fehler",
+    "networkEgress.retryUnit": "Mal",
+    "networkEgress.requestPolicyHelp": "Gilt nur f\xFCr sp\xE4ter gestartete Bildanfragen. Jeder automatische Wiederholungsversuch erh\xE4lt ein neues Zeitfenster.",
+    "networkEgress.timeoutInvalid": "Geben Sie eine ganze Zahl zwischen 1 und 30 Minuten ein",
+    "networkEgress.retryInvalid": "Geben Sie eine ganze Zahl zwischen 0 und 5 Wiederholungen ein",
+    "networkEgress.environmentTimeoutActive": "Das Zeitlimit der Umgebungsvariable ist aktiv: {seconds} Sekunden. Beim Speichern wird es durch die obige Einstellung ersetzt.",
     "networkEgress.currentRoute": "Aktuelle Route: {route}",
     "networkEgress.test": "Verbindung testen",
     "networkEgress.save": "Speichern und anwenden",
@@ -2424,7 +2704,8 @@
     "apiSettings.copyProviderWithoutKeyStatus": "Anbieter kopiert. Bearbeiten Sie vor dem Speichern den Namen und das Modell oder f\xFCgen Sie einen API-Schl\xFCssel hinzu.",
     "apiSettings.sortProviders": "Sortieren",
     "apiSettings.finishSortProviders": "Fertig",
-    "apiSettings.sortProviderModeStatus": "Sortieranbieter",
+    "apiSettings.sortProviderModeStatus": "Zum Sortieren am Griff ziehen oder die Pfeiltasten verwenden",
+    "apiSettings.sortProviderHandleAria": "{provider} durch Ziehen oder mit Pfeil-, Pos1- und Ende-Taste verschieben",
     "apiSettings.sortProviderStatus": "Anbieterreihenfolge ge\xE4ndert. Wird automatisch gespeichert...",
     "apiSettings.moveProviderUp": "Auf",
     "apiSettings.moveProviderDown": "Runter",
@@ -2677,6 +2958,7 @@
     "batch.selected": "0 seleccionado",
     "batch.selectedCount": "{count} seleccionado",
     "batch.selectCurrentGroup": "Seleccionar todo el grupo",
+    "batch.selectWaiting": "Seleccionar todas en espera",
     "batch.archivedCount": "Chats {count} archivados",
     "batch.archiveFailed": "Error al archivar por lotes",
     "batch.runningCannotDeleteSelected": "Los chats seleccionados se est\xE1n ejecutando y no se pueden eliminar",
@@ -2690,14 +2972,15 @@
     "batch.cancelSelected": "Cancelar tareas",
     "batch.noActiveSelected": "Las tareas seleccionadas ya no est\xE1n en ejecuci\xF3n ni en espera",
     "batch.cancelTitle": "\xBFCancelar {count} tareas?",
-    "batch.cancelMessage": "Las tareas en ejecuci\xF3n se detendr\xE1n y las que esperan saldr\xE1n de la cola. Se conservar\xE1 el historial.",
+    "batch.cancelMessage": "Las tareas en espera se cancelar\xE1n de inmediato. Las llamadas al proveedor en curso pueden continuar y seguir generando cargos hasta que respondan. Se conservar\xE1 el historial.",
     "batch.cancelDetail": "En ejecuci\xF3n {running} \xB7 en espera {waiting}",
     "batch.cancelConfirm": "Cancelar tareas",
-    "batch.cancelResult": "Canceladas {cancelled}, omitidas {skipped}, fallidas {failed}",
+    "batch.cancelResult": "Canceladas {cancelled}, cancelaci\xF3n solicitada {requested}, omitidas {skipped}, fallidas {failed}",
     "batch.cancelFailed": "Error en la cancelaci\xF3n por lotes",
     "action.archive": "Archivo",
     "action.delete": "Eliminar",
     "action.cancel": "Cancelar",
+    "action.stop": "Detener",
     "action.edit": "Editar",
     "action.clear": "Borrar",
     "action.paste": "Pegar",
@@ -2742,12 +3025,13 @@
     "queue.queuedDeleted": "Tarea en cola eliminada",
     "queue.cancelRunningConfirm": "Cancelar tarea",
     "queue.cancelRunningTitleConfirm": "\xBFCancelar tarea en ejecuci\xF3n?",
-    "queue.cancelRunningMessage": "La tarea actual se detendr\xE1. La historia se mantendr\xE1.",
+    "queue.cancelRunningMessage": "Se solicitar\xE1 la cancelaci\xF3n. La llamada al proveedor puede continuar y seguir generando cargos hasta que responda. Se conservar\xE1 el historial.",
     "queue.cancelRunningFailed": "No se pudo cancelar la tarea",
+    "queue.cancellationPending": "Cancelaci\xF3n solicitada. La llamada al proveedor puede continuar y seguir generando cargos hasta que responda.",
     "queue.runningCancelled": "Tarea cancelada",
     "queue.reorderFailed": "No se pudo reordenar la cola",
     "queue.realtimeUpdateFailed": "No se pudo actualizar el estado en vivo",
-    "queue.realtimeDisconnected": "Se perdi\xF3 la conexi\xF3n del estado en vivo. Actualiza la p\xE1gina para recuperarla.",
+    "queue.realtimeDisconnected": "Se interrumpi\xF3 la conexi\xF3n del estado en tiempo real. Reconectando autom\xE1ticamente\u2026",
     "queue.readFailed": "No se pudo cargar la cola",
     "status.waiting": "esperando",
     "status.shownActiveTasks": "Mostrando tareas activas",
@@ -2755,6 +3039,7 @@
     "taskStatus.submitting": "Presentando",
     "taskStatus.running": "generando",
     "taskStatus.runningWithElapsed": "Generando \xB7 {elapsed}",
+    "taskStatus.cancelling": "Cancelando",
     "taskStatus.completed": "Completado",
     "taskStatus.partialFailed": "Parcialmente fallido",
     "taskStatus.failed": "Fallido",
@@ -2783,7 +3068,6 @@
     "taskCard.textToImageThumb": "Miniatura de tarea de conversi\xF3n de texto a imagen",
     "taskCard.imageToImageThumb": "Miniatura de tarea de imagen a imagen",
     "taskCard.failedThumb": "Tarea fallida",
-    "taskCard.textBadge": "t",
     "taskMode.edit": "Editar",
     "taskMode.generate": "generar",
     "document.generatingQueue": "Generando \xB7 cola {total}",
@@ -2797,12 +3081,114 @@
     "historyLibrary.openFull": "Abrir biblioteca de historia completa",
     "history.documentTitle": "Historia - iLab CONJURE",
     "history.back": "Volver al generador",
+    "history.homeAria": "Volver al generador iLab CONJURE",
+    "history.backToGenerator": "Volver al generador",
     "history.title": "Historia",
     "history.loading": "Cargando",
     "history.total": "{total} tareas \xB7 {archived} archivado",
     "history.search": "Buscar",
     "history.searchPlaceholder": "Mensajes de b\xFAsqueda o tarea ID",
     "history.clear": "Borrar",
+    "history.activeFilterCount": "Filtrado \xB7 {count}",
+    "history.clearAllFilters": "Borrar todo",
+    "history.removeFilter": "Quitar filtro: {label}",
+    "history.filtersActive": "Filtros de tareas, {count} activos",
+    "history.favorites": "Favoritos",
+    "history.onlyFavorites": "Solo favoritos",
+    "history.favoriteTask": "A\xF1adir a favoritos",
+    "history.unfavoriteTask": "Quitar de favoritos",
+    "history.tags": "Etiquetas",
+    "history.untagged": "Sin etiqueta",
+    "history.manageTags": "Gestionar etiquetas",
+    "history.createTag": "Crear etiqueta",
+    "history.renameTag": "Renombrar",
+    "history.deleteTag": "Eliminar",
+    "history.deleteTagAffected": "Eliminar ({count} tareas)",
+    "history.addTag": "A\xF1adir etiqueta",
+    "history.removeTag": "Quitar etiqueta",
+    "history.favoriteSelected": "Marcar favorito",
+    "history.unfavoriteSelected": "Quitar favorito",
+    "history.organizeSelected": "Organizar",
+    "history.exitSelection": "Salir de la selecci\xF3n m\xFAltiple",
+    "history.organizationFailed": "No se pudieron actualizar favoritos o etiquetas",
+    "history.tagNameConflict": "Este nombre de etiqueta ya existe",
+    "history.noTags": "A\xFAn no hay etiquetas",
+    "history.backendRestartRequired": "Las funciones del historial se actualizaron. Reinicia la aplicaci\xF3n e int\xE9ntalo de nuevo.",
+    "history.export": "Exportar",
+    "history.exportImagesOnly": "Solo im\xE1genes",
+    "history.exportImagesWithPrompts": "Im\xE1genes + prompts",
+    "history.exportPreparing": "Preparando exportaci\xF3n\u2026",
+    "history.exportStarted": "Descarga iniciada",
+    "history.exportSummary": "{taskCount} tareas \xB7 {imageCount} im\xE1genes",
+    "history.exportFailed": "Error al exportar",
+    "historyBackup.open": "Crear copia de tareas",
+    "historyBackup.importOpen": "Importar copia",
+    "historyBackup.mode": "Copia de tareas",
+    "historyBackup.description": "Guarda los datos y archivos relacionados para restaurarlos en una instalaci\xF3n compatible de iLab CONJURE.",
+    "historyBackup.scopeLegend": "Alcance de la copia",
+    "historyBackup.scopeHelp": "Los resultados filtrados y todo el historial se cuentan localmente sin limitarse a lo mostrado en esta p\xE1gina.",
+    "historyBackup.scopeSelected": "Tareas seleccionadas",
+    "historyBackup.scopeFiltered": "Resultados filtrados actuales",
+    "historyBackup.scopeAll": "Todo el historial",
+    "historyBackup.scopeCount": "{eligible} de {total} aptas",
+    "historyBackup.scopeCounting": "Contando\u2026",
+    "historyBackup.scopeCountUnavailable": "Recuento no disponible",
+    "historyBackup.scopeNoneSelected": "No hay tareas seleccionadas",
+    "historyBackup.willBackup": "Se copiar\xE1n {eligible} tareas; se excluir\xE1n {excluded} tareas sin terminar.",
+    "historyBackup.selectTasksFirst": "Selecciona al menos una tarea.",
+    "historyBackup.scopeLockedUnknown": "Alcance original de la copia",
+    "historyBackup.scopeLocked": "Alcance bloqueado: {scope} \xB7 se copiar\xE1n {eligible} tareas",
+    "historyBackup.scopeLockedPending": "Alcance bloqueado: {scope} \xB7 contando tareas aptas",
+    "historyBackup.progressLabel": "Progreso de la copia",
+    "historyBackup.start": "Iniciar copia",
+    "historyBackup.cancel": "Cancelar copia",
+    "historyBackup.download": "Descargar copia",
+    "historyBackup.dismiss": "Cerrar resultado",
+    "historyBackup.discard": "Cerrar sin descargar",
+    "historyBackup.closePanel": "Cerrar panel",
+    "historyBackup.downloadStartedTitle": "Descarga iniciada",
+    "historyBackup.idle": "Listo",
+    "historyBackup.queued": "En cola",
+    "historyBackup.planning": "Planificando",
+    "historyBackup.packing": "Empaquetando",
+    "historyBackup.ready": "Lista para descargar",
+    "historyBackup.readyDetail": "La copia est\xE1 lista. Desc\xE1rgala en 1 hora; cerrar sin descargar elimina el archivo temporal de inmediato.",
+    "historyBackup.downloaded": "Confirma que el navegador guard\xF3 el archivo y luego podr\xE1s cerrar este panel. El archivo temporal se elimina al terminar la transferencia.",
+    "historyBackup.missingInputsWarning": "A {tasks} tareas les faltan {files} archivos de entrada. Esos archivos se omitir\xE1n; los prompts y resultados se exportar\xE1n normalmente.",
+    "historyBackup.failed": "Fall\xF3 la copia",
+    "historyBackup.cancelled": "Cancelada",
+    "historyBackup.expired": "Caducada",
+    "historyBackup.interrupted": "Interrumpida",
+    "historyBackup.stats": "Total {total} \xB7 aptas {eligible} \xB7 excluidas {excluded} \xB7 {bytes}",
+    "historyBackup.errorDisk": "No hay espacio suficiente.",
+    "historyBackup.errorSourceChanged": "Los datos de origen cambiaron durante la copia.",
+    "historyBackup.errorEmpty": "No se encontraron tareas aptas.",
+    "historyBackup.errorIo": "No se pudo crear la copia.",
+    "historyImport.title": "Importar copia de tareas",
+    "historyImport.choose": "Elegir copia ZIP",
+    "historyImport.uploading": "Subiendo",
+    "historyImport.validating": "Validando",
+    "historyImport.validated": "Validada",
+    "historyImport.preview": "Vista previa de restauraci\xF3n",
+    "historyImport.restorable": "Restaurables",
+    "historyImport.duplicate": "Duplicadas",
+    "historyImport.conflict": "Conflictos",
+    "historyImport.invalid": "No v\xE1lidas",
+    "historyImport.confirm": "Confirmar restauraci\xF3n",
+    "historyImport.restoring": "Restaurando",
+    "historyImport.restored": "Restauradas",
+    "historyImport.failed": "Fall\xF3 la restauraci\xF3n",
+    "historyImport.interrupted": "Interrumpida",
+    "historyImport.cancelled": "Cancelada",
+    "historyImport.result": "Resultado",
+    "historyImport.thumbnailWarnings": "Avisos de miniaturas",
+    "historyImport.cleanupWarnings": "Avisos de limpieza",
+    "historyImport.reselect": "Vuelve a elegir el ZIP original para continuar.",
+    "historyImport.noOverwrite": "Las tareas existentes nunca se sobrescriben.",
+    "historyImport.reasonInvalid": "Datos de copia no v\xE1lidos",
+    "historyImport.reasonSensitive": "Contiene datos protegidos",
+    "historyImport.reasonMismatch": "No coincide con el manifiesto de copia",
+    "history.closeExport": "Cerrar opciones de exportaci\xF3n",
     "history.type": "Tipo",
     "history.allTypes": "Todos los tipos",
     "history.type.textToImage": "Texto a imagen",
@@ -2973,6 +3359,7 @@
     "language.ru": "\u0420\u0443\u0441\u0441\u043A\u0438\u0439",
     "language.it": "Italiano",
     "language.hi": "\u0939\u093F\u0928\u094D\u0926\u0940",
+    "language.vi": "Ti\u1EBFng Vi\u1EC7t",
     "auth.label": "Fuente de autenticaci\xF3n",
     "auth.checking": "Comprobando autenticaci\xF3n",
     "auth.missingCodexSession": "No se detect\xF3 ninguna sesi\xF3n Codex",
@@ -2999,8 +3386,16 @@
     "recentAssets.defaultName": "Carga reciente",
     "recentAssets.use": "Utilice {name}",
     "recentAssets.delete": "Eliminar {name}",
+    "recentAssets.inUse": "Usada por {count} tareas; no se puede eliminar de forma permanente, pero se puede ocultar de Cargas recientes",
+    "recentAssets.hide": "Ocultar {name} de Cargas recientes",
+    "recentAssets.hideTitle": "\xBFOcultar de Cargas recientes?",
+    "recentAssets.hideMessage": "Esta imagen se usa en {count} tareas y no se puede eliminar de forma permanente. Ocultarla solo la quita de Cargas recientes; se conservan el original, la entrada actual y las tareas hist\xF3ricas.",
+    "recentAssets.hideFailed": "No se pudo ocultar la carga reciente",
+    "recentAssets.hidden": "Ocultada de Cargas recientes; se conservaron el original y las tareas hist\xF3ricas",
+    "recentAssets.hidePreviews": "Ocultar im\xE1genes de cargas recientes",
+    "recentAssets.showPreviews": "Mostrar im\xE1genes de cargas recientes",
     "recentAssets.deleteTitle": "\xBFEliminar carga reciente?",
-    "recentAssets.deleteMessage": "Esto eliminar\xE1 la imagen de Cargas recientes. Si actualmente est\xE1 seleccionado como entrada de imagen, se eliminar\xE1 de la entrada actual. Las tareas hist\xF3ricas que hacen referencia a esta carga reciente perder\xE1n esa vista previa de entrada. La galer\xEDa p\xFAblica no se ve afectada.",
+    "recentAssets.deleteMessage": "Ninguna tarea usa esta imagen. El original se eliminar\xE1 de forma permanente y la misma imagen se quitar\xE1 de la entrada actual. La galer\xEDa p\xFAblica no se ve afectada.",
     "recentAssets.loadFailed": "No se pudieron cargar las cargas recientes",
     "recentAssets.deleteFailed": "No se pudo eliminar la carga reciente",
     "recentAssets.deleted": "Carga reciente eliminada",
@@ -3025,11 +3420,13 @@
     "referenceCollector.alreadyStaged": "Ya puesto en escena como referencia.",
     "referenceCollector.staged": "Im\xE1genes de referencia preparadas {count}",
     "referenceCollector.title": "Referencias pendientes \xB7 {count}",
-    "referenceCollector.addAll": "Agregar todas las referencias",
+    "referenceCollector.addAll": "Agregar todo",
+    "referenceCollector.replaceAll": "Reemplazar actuales",
     "referenceCollector.itemFallback": "Referencia pendiente",
     "referenceCollector.remove": "Eliminar referencia pendiente",
     "referenceCollector.cleared": "Referencias pendientes borradas",
     "referenceCollector.added": "Se agregaron im\xE1genes de referencia {count}",
+    "referenceCollector.replaced": "Referencias reemplazadas por {count} im\xE1genes",
     "referenceCollector.addFailed": "No se pudieron agregar referencias pendientes",
     "referenceCollector.readFailed": "No se pudo leer la imagen: {status}",
     "gallery.quick": "galer\xEDa r\xE1pida",
@@ -3147,7 +3544,7 @@
     "output.promptHelpTitle": "Tratamiento del prompt",
     "output.promptHelp.responsesChannel": "Responses \xB7 interviene el modelo principal",
     "output.promptHelp.imagesChannel": "Images \xB7 generaci\xF3n directa",
-    "output.promptHelp.responses.original": "Env\xEDa el texto original al modelo principal y pide conservarlo en la herramienta de imagen; aun as\xED puede generar un revised prompt.",
+    "output.promptHelp.responses.original": "Env\xEDa el texto original exacto sin reglas a\xF1adidas por la aplicaci\xF3n; el proveedor a\xFAn puede devolver un revised prompt o interpretar el resultado de otra forma.",
     "output.promptHelp.responses.strict": "Permite ordenar o ampliar el prompt, pero conserva restricciones como sujetos, texto, colores y composici\xF3n.",
     "output.promptHelp.responses.automatic": "No a\xF1ade restricciones; el modelo principal interpreta y optimiza antes de llamar a la herramienta de imagen.",
     "output.promptHelp.images.original": "No a\xF1ade reglas de la aplicaci\xF3n y env\xEDa el texto original directamente a la API de im\xE1genes.",
@@ -3242,6 +3639,16 @@
     "lightbox.close": "Cerrar vista previa",
     "lightbox.previous": "Imagen anterior",
     "lightbox.next": "Siguiente imagen",
+    "lightbox.zoomControls": "Controles de zoom",
+    "lightbox.zoomOut": "Alejar",
+    "lightbox.zoomIn": "Acercar",
+    "lightbox.fit": "Ajustar",
+    "lightbox.fitPage": "Ajustar a la p\xE1gina",
+    "lightbox.actualSize": "100% tama\xF1o real",
+    "lightbox.shortcuts": "Atajos de teclado",
+    "lightbox.switchImage": "Cambiar imagen",
+    "lightbox.switchTask": "Cambiar tarea",
+    "lightbox.wheelZoom": "Rueda para ampliar",
     "promptPopover.title": "Comparaci\xF3n r\xE1pida",
     "promptPopover.summary": "Original {original} \xB7 optimizado {optimized}",
     "promptPopover.original": "Aviso original",
@@ -3405,6 +3812,7 @@
     "colors.modifyValue": "Editar color {value}",
     "colors.removeValue": "Quitar color {value}",
     "taskGroup.today": "hoy",
+    "taskGroup.current": "Tarea actual",
     "taskGroup.yesterday": "ayer",
     "taskGroup.last7": "\xFAltimos 7 d\xEDas",
     "taskGroup.older": "mayor",
@@ -3457,6 +3865,14 @@
     "networkEgress.direct": "Directa",
     "networkEgress.custom": "Personalizada",
     "networkEgress.customProxy": "URL de proxy personalizada",
+    "networkEgress.timeout": "Tiempo de espera de la solicitud de imagen",
+    "networkEgress.timeoutUnit": "min",
+    "networkEgress.retryCount": "Reintentos tras un fallo",
+    "networkEgress.retryUnit": "veces",
+    "networkEgress.requestPolicyHelp": "Solo se aplica a las solicitudes de imagen que se inicien despu\xE9s. Cada reintento autom\xE1tico dispone de un nuevo tiempo de espera.",
+    "networkEgress.timeoutInvalid": "Introduce un n\xFAmero entero de 1 a 30 minutos",
+    "networkEgress.retryInvalid": "Introduce un n\xFAmero entero de 0 a 5 reintentos",
+    "networkEgress.environmentTimeoutActive": "Est\xE1 activo el tiempo de espera de la variable de entorno: {seconds} segundos. Al guardar se sustituir\xE1 por el ajuste anterior.",
     "networkEgress.currentRoute": "Ruta actual: {route}",
     "networkEgress.test": "Probar conexi\xF3n",
     "networkEgress.save": "Guardar y aplicar",
@@ -3499,7 +3915,8 @@
     "apiSettings.copyProviderWithoutKeyStatus": "Proveedor copiado. Edite el nombre, modelo o agregue una clave API antes de guardar.",
     "apiSettings.sortProviders": "ordenar",
     "apiSettings.finishSortProviders": "hecho",
-    "apiSettings.sortProviderModeStatus": "Clasificaci\xF3n de proveedores",
+    "apiSettings.sortProviderModeStatus": "Arrastra los tiradores para ordenar o usa las flechas",
+    "apiSettings.sortProviderHandleAria": "Arrastra para reordenar {provider} o usa las flechas, Inicio y Fin",
     "apiSettings.sortProviderStatus": "El orden del proveedor cambi\xF3. Guardando autom\xE1ticamente...",
     "apiSettings.moveProviderUp": "arriba",
     "apiSettings.moveProviderDown": "abajo",
@@ -3752,6 +4169,7 @@
     "batch.selected": "0 s\xE9lectionn\xE9",
     "batch.selectedCount": "{count} s\xE9lectionn\xE9",
     "batch.selectCurrentGroup": "Tout s\xE9lectionner",
+    "batch.selectWaiting": "S\xE9lectionner toutes les t\xE2ches en attente",
     "batch.archivedCount": "Discussions {count} archiv\xE9es",
     "batch.archiveFailed": "L'archivage par lots a \xE9chou\xE9",
     "batch.runningCannotDeleteSelected": "Les discussions s\xE9lectionn\xE9es sont en cours et ne peuvent pas \xEAtre supprim\xE9es",
@@ -3765,14 +4183,15 @@
     "batch.cancelSelected": "Annuler les t\xE2ches",
     "batch.noActiveSelected": "Les t\xE2ches s\xE9lectionn\xE9es ne sont plus en cours ni en attente",
     "batch.cancelTitle": "Annuler {count} t\xE2ches ?",
-    "batch.cancelMessage": "Les t\xE2ches en cours seront arr\xEAt\xE9es et celles en attente quitteront la file. L\u2019historique sera conserv\xE9.",
+    "batch.cancelMessage": "Les t\xE2ches en attente seront annul\xE9es imm\xE9diatement. Les appels fournisseur en cours peuvent continuer et rester factur\xE9s jusqu\u2019\xE0 leur retour. L\u2019historique sera conserv\xE9.",
     "batch.cancelDetail": "En cours {running} \xB7 en attente {waiting}",
     "batch.cancelConfirm": "Annuler les t\xE2ches",
-    "batch.cancelResult": "Annul\xE9es {cancelled}, ignor\xE9es {skipped}, \xE9chou\xE9es {failed}",
+    "batch.cancelResult": "Annul\xE9es {cancelled}, annulation demand\xE9e {requested}, ignor\xE9es {skipped}, \xE9chou\xE9es {failed}",
     "batch.cancelFailed": "\xC9chec de l\u2019annulation par lot",
     "action.archive": "Archiver",
     "action.delete": "Supprimer",
     "action.cancel": "Annuler",
+    "action.stop": "Arr\xEAter",
     "action.edit": "Modifier",
     "action.clear": "Effacer",
     "action.paste": "Coller",
@@ -3817,12 +4236,13 @@
     "queue.queuedDeleted": "T\xE2che en file d'attente supprim\xE9e",
     "queue.cancelRunningConfirm": "Annuler la t\xE2che",
     "queue.cancelRunningTitleConfirm": "Annuler la t\xE2che en cours?",
-    "queue.cancelRunningMessage": "La t\xE2che en cours s'arr\xEAtera. L'histoire sera conserv\xE9e.",
+    "queue.cancelRunningMessage": "Une annulation sera demand\xE9e. L\u2019appel au fournisseur peut continuer et rester factur\xE9 jusqu\u2019\xE0 son retour. L\u2019historique sera conserv\xE9.",
     "queue.cancelRunningFailed": "\xC9chec de l'annulation de la t\xE2che",
+    "queue.cancellationPending": "Annulation demand\xE9e. L\u2019appel au fournisseur peut continuer et rester factur\xE9 jusqu\u2019\xE0 son retour.",
     "queue.runningCancelled": "T\xE2che annul\xE9e",
     "queue.reorderFailed": "\xC9chec de la r\xE9organisation de la file d'attente",
     "queue.realtimeUpdateFailed": "\xC9chec de la mise \xE0 jour du statut en direct",
-    "queue.realtimeDisconnected": "La connexion avec l'\xE9tat en direct a \xE9t\xE9 perdue. Actualisez la page pour r\xE9cup\xE9rer.",
+    "queue.realtimeDisconnected": "La connexion au statut en direct a \xE9t\xE9 interrompue. Reconnexion automatique\u2026",
     "queue.readFailed": "\xC9chec du chargement de la file d'attente",
     "status.waiting": "En attente",
     "status.shownActiveTasks": "Afficher les t\xE2ches actives",
@@ -3830,6 +4250,7 @@
     "taskStatus.submitting": "Soumission",
     "taskStatus.running": "G\xE9n\xE9ration",
     "taskStatus.runningWithElapsed": "G\xE9n\xE9ration \xB7 {elapsed}",
+    "taskStatus.cancelling": "Annulation en cours",
     "taskStatus.completed": "Termin\xE9",
     "taskStatus.partialFailed": "Partiellement \xE9chou\xE9",
     "taskStatus.failed": "\xC9chec",
@@ -3858,7 +4279,6 @@
     "taskCard.textToImageThumb": "Miniature de la t\xE2che de conversion texte-image",
     "taskCard.imageToImageThumb": "Vignette de la t\xE2che image \xE0 image",
     "taskCard.failedThumb": "La t\xE2che a \xE9chou\xE9",
-    "taskCard.textBadge": "T",
     "taskMode.edit": "Modifier",
     "taskMode.generate": "G\xE9n\xE9rer",
     "document.generatingQueue": "G\xE9n\xE9ration \xB7 file d'attente {total}",
@@ -3872,12 +4292,114 @@
     "historyLibrary.openFull": "Ouvrir la biblioth\xE8que d'historique compl\xE8te",
     "history.documentTitle": "Histoire - iLab CONJURE",
     "history.back": "Retour au g\xE9n\xE9rateur",
+    "history.homeAria": "Retour au g\xE9n\xE9rateur iLab CONJURE",
+    "history.backToGenerator": "Retour au g\xE9n\xE9rateur",
     "history.title": "Histoire",
     "history.loading": "Chargement",
     "history.total": "{total} t\xE2ches \xB7 {archived} archiv\xE9",
     "history.search": "Rechercher",
     "history.searchPlaceholder": "Rechercher des invites ou une t\xE2che ID",
     "history.clear": "Effacer",
+    "history.activeFilterCount": "Filtr\xE9 \xB7 {count}",
+    "history.clearAllFilters": "Tout effacer",
+    "history.removeFilter": "Retirer le filtre : {label}",
+    "history.filtersActive": "Filtres de t\xE2ches, {count} actifs",
+    "history.favorites": "Favoris",
+    "history.onlyFavorites": "Favoris uniquement",
+    "history.favoriteTask": "Ajouter aux favoris",
+    "history.unfavoriteTask": "Retirer des favoris",
+    "history.tags": "\xC9tiquettes",
+    "history.untagged": "Sans \xE9tiquette",
+    "history.manageTags": "G\xE9rer les \xE9tiquettes",
+    "history.createTag": "Cr\xE9er une \xE9tiquette",
+    "history.renameTag": "Renommer",
+    "history.deleteTag": "Supprimer",
+    "history.deleteTagAffected": "Supprimer ({count} t\xE2ches)",
+    "history.addTag": "Ajouter une \xE9tiquette",
+    "history.removeTag": "Retirer l\u2019\xE9tiquette",
+    "history.favoriteSelected": "Ajouter aux favoris",
+    "history.unfavoriteSelected": "Retirer des favoris",
+    "history.organizeSelected": "Organiser",
+    "history.exitSelection": "Quitter la s\xE9lection multiple",
+    "history.organizationFailed": "Impossible de mettre \xE0 jour les favoris ou les \xE9tiquettes",
+    "history.tagNameConflict": "Ce nom d\u2019\xE9tiquette existe d\xE9j\xE0",
+    "history.noTags": "Aucune \xE9tiquette",
+    "history.backendRestartRequired": "Les fonctions d\u2019historique ont \xE9t\xE9 mises \xE0 jour. Red\xE9marrez l\u2019application puis r\xE9essayez.",
+    "history.export": "Exporter",
+    "history.exportImagesOnly": "Images uniquement",
+    "history.exportImagesWithPrompts": "Images + prompts",
+    "history.exportPreparing": "Pr\xE9paration de l\u2019export\u2026",
+    "history.exportStarted": "T\xE9l\xE9chargement lanc\xE9",
+    "history.exportSummary": "{taskCount} t\xE2ches \xB7 {imageCount} images",
+    "history.exportFailed": "\xC9chec de l\u2019export",
+    "historyBackup.open": "Sauvegarder les t\xE2ches",
+    "historyBackup.importOpen": "Importer une sauvegarde",
+    "historyBackup.mode": "Sauvegarde des t\xE2ches",
+    "historyBackup.description": "Enregistrez les donn\xE9es et fichiers associ\xE9s pour les restaurer dans une installation compatible d\u2019iLab CONJURE.",
+    "historyBackup.scopeLegend": "\xC9tendue de la sauvegarde",
+    "historyBackup.scopeHelp": "Les r\xE9sultats filtr\xE9s et tout l\u2019historique sont compt\xE9s localement, sans d\xE9pendre des t\xE2ches affich\xE9es sur cette page.",
+    "historyBackup.scopeSelected": "T\xE2ches s\xE9lectionn\xE9es",
+    "historyBackup.scopeFiltered": "R\xE9sultats filtr\xE9s actuels",
+    "historyBackup.scopeAll": "Tout l\u2019historique",
+    "historyBackup.scopeCount": "{eligible} sur {total} \xE9ligibles",
+    "historyBackup.scopeCounting": "Comptage\u2026",
+    "historyBackup.scopeCountUnavailable": "Comptage indisponible",
+    "historyBackup.scopeNoneSelected": "Aucune t\xE2che s\xE9lectionn\xE9e",
+    "historyBackup.willBackup": "{eligible} t\xE2ches seront sauvegard\xE9es ; {excluded} t\xE2ches inachev\xE9es seront exclues.",
+    "historyBackup.selectTasksFirst": "S\xE9lectionnez d\u2019abord au moins une t\xE2che.",
+    "historyBackup.scopeLockedUnknown": "\xC9tendue initiale de la sauvegarde",
+    "historyBackup.scopeLocked": "\xC9tendue verrouill\xE9e : {scope} \xB7 {eligible} t\xE2ches seront sauvegard\xE9es",
+    "historyBackup.scopeLockedPending": "\xC9tendue verrouill\xE9e : {scope} \xB7 comptage des t\xE2ches \xE9ligibles",
+    "historyBackup.progressLabel": "Progression de la sauvegarde",
+    "historyBackup.start": "D\xE9marrer la sauvegarde",
+    "historyBackup.cancel": "Annuler la sauvegarde",
+    "historyBackup.download": "T\xE9l\xE9charger la sauvegarde",
+    "historyBackup.dismiss": "Fermer le r\xE9sultat",
+    "historyBackup.discard": "Fermer sans t\xE9l\xE9charger",
+    "historyBackup.closePanel": "Fermer le panneau",
+    "historyBackup.downloadStartedTitle": "T\xE9l\xE9chargement lanc\xE9",
+    "historyBackup.idle": "Pr\xEAt",
+    "historyBackup.queued": "En attente",
+    "historyBackup.planning": "Planification",
+    "historyBackup.packing": "Cr\xE9ation du paquet",
+    "historyBackup.ready": "Pr\xEAte \xE0 t\xE9l\xE9charger",
+    "historyBackup.readyDetail": "La sauvegarde est pr\xEAte. T\xE9l\xE9chargez-la sous 1 heure ; fermer sans t\xE9l\xE9charger supprime imm\xE9diatement le fichier temporaire.",
+    "historyBackup.downloaded": "V\xE9rifiez que le navigateur a enregistr\xE9 le fichier, puis vous pourrez fermer ce panneau. Le fichier temporaire sera supprim\xE9 apr\xE8s le transfert.",
+    "historyBackup.missingInputsWarning": "Il manque {files} fichiers d\u2019entr\xE9e dans {tasks} t\xE2ches. Ils seront omis ; les prompts et r\xE9sultats seront tout de m\xEAme export\xE9s.",
+    "historyBackup.failed": "\xC9chec de la sauvegarde",
+    "historyBackup.cancelled": "Annul\xE9e",
+    "historyBackup.expired": "Expir\xE9e",
+    "historyBackup.interrupted": "Interrompue",
+    "historyBackup.stats": "Total {total} \xB7 \xE9ligibles {eligible} \xB7 exclues {excluded} \xB7 {bytes}",
+    "historyBackup.errorDisk": "Espace disque insuffisant.",
+    "historyBackup.errorSourceChanged": "Les donn\xE9es source ont chang\xE9 pendant la sauvegarde.",
+    "historyBackup.errorEmpty": "Aucune t\xE2che \xE9ligible.",
+    "historyBackup.errorIo": "Impossible de cr\xE9er la sauvegarde.",
+    "historyImport.title": "Importer une sauvegarde de t\xE2ches",
+    "historyImport.choose": "Choisir la sauvegarde ZIP",
+    "historyImport.uploading": "T\xE9l\xE9versement",
+    "historyImport.validating": "Validation",
+    "historyImport.validated": "Valid\xE9e",
+    "historyImport.preview": "Aper\xE7u de restauration",
+    "historyImport.restorable": "Restaurables",
+    "historyImport.duplicate": "Doublons",
+    "historyImport.conflict": "Conflits",
+    "historyImport.invalid": "Invalides",
+    "historyImport.confirm": "Confirmer la restauration",
+    "historyImport.restoring": "Restauration",
+    "historyImport.restored": "Restaur\xE9es",
+    "historyImport.failed": "\xC9chec de la restauration",
+    "historyImport.interrupted": "Interrompue",
+    "historyImport.cancelled": "Annul\xE9e",
+    "historyImport.result": "R\xE9sultat",
+    "historyImport.thumbnailWarnings": "Alertes de miniatures",
+    "historyImport.cleanupWarnings": "Alertes de nettoyage",
+    "historyImport.reselect": "S\xE9lectionnez \xE0 nouveau le ZIP d\u2019origine.",
+    "historyImport.noOverwrite": "Les t\xE2ches existantes ne sont jamais remplac\xE9es.",
+    "historyImport.reasonInvalid": "Donn\xE9es de sauvegarde invalides",
+    "historyImport.reasonSensitive": "Contient des donn\xE9es prot\xE9g\xE9es",
+    "historyImport.reasonMismatch": "Ne correspond pas au manifeste de sauvegarde",
+    "history.closeExport": "Fermer les choix d\u2019export",
     "history.type": "Type",
     "history.allTypes": "Tous les types",
     "history.type.textToImage": "Texte vers image",
@@ -4048,6 +4570,7 @@
     "language.ru": "\u0420\u0443\u0441\u0441\u043A\u0438\u0439",
     "language.it": "Italiano",
     "language.hi": "\u0939\u093F\u0928\u094D\u0926\u0940",
+    "language.vi": "Ti\u1EBFng Vi\u1EC7t",
     "auth.label": "Source d'authentification",
     "auth.checking": "V\xE9rification de l'authentification",
     "auth.missingCodexSession": "Aucune session Codex d\xE9tect\xE9e",
@@ -4074,8 +4597,16 @@
     "recentAssets.defaultName": "T\xE9l\xE9chargement r\xE9cent",
     "recentAssets.use": "Utilisez {name}",
     "recentAssets.delete": "Supprimer {name}",
+    "recentAssets.inUse": "Utilis\xE9e par {count} t\xE2ches\xA0; elle ne peut pas \xEAtre supprim\xE9e d\xE9finitivement, mais peut \xEAtre masqu\xE9e des t\xE9l\xE9chargements r\xE9cents",
+    "recentAssets.hide": "Masquer {name} des t\xE9l\xE9chargements r\xE9cents",
+    "recentAssets.hideTitle": "Masquer des t\xE9l\xE9chargements r\xE9cents\xA0?",
+    "recentAssets.hideMessage": "Cette image est utilis\xE9e par {count} t\xE2ches et ne peut pas \xEAtre supprim\xE9e d\xE9finitivement. La masquer la retire uniquement des t\xE9l\xE9chargements r\xE9cents\xA0; l\u2019original, l\u2019entr\xE9e actuelle et les t\xE2ches historiques sont conserv\xE9s.",
+    "recentAssets.hideFailed": "Impossible de masquer le t\xE9l\xE9chargement r\xE9cent",
+    "recentAssets.hidden": "Masqu\xE9e des t\xE9l\xE9chargements r\xE9cents\xA0; l\u2019original et les t\xE2ches historiques ont \xE9t\xE9 conserv\xE9s",
+    "recentAssets.hidePreviews": "Masquer les images r\xE9cemment t\xE9l\xE9vers\xE9es",
+    "recentAssets.showPreviews": "Afficher les images r\xE9cemment t\xE9l\xE9vers\xE9es",
     "recentAssets.deleteTitle": "Supprimer le t\xE9l\xE9chargement r\xE9cent?",
-    "recentAssets.deleteMessage": "Cela supprimera l'image des t\xE9l\xE9chargements r\xE9cents. S'il est actuellement s\xE9lectionn\xE9 comme entr\xE9e d'image, il sera supprim\xE9 de l'entr\xE9e actuelle. Les t\xE2ches historiques qui font r\xE9f\xE9rence \xE0 ce t\xE9l\xE9chargement r\xE9cent perdront cet aper\xE7u d\u2019entr\xE9e. La galerie publique n\u2019est pas concern\xE9e.",
+    "recentAssets.deleteMessage": "Cette image n\u2019est utilis\xE9e par aucune t\xE2che. L\u2019original sera supprim\xE9 d\xE9finitivement et la m\xEAme image sera retir\xE9e de l\u2019entr\xE9e actuelle. La galerie publique n\u2019est pas concern\xE9e.",
     "recentAssets.loadFailed": "\xC9chec du chargement des t\xE9l\xE9chargements r\xE9cents",
     "recentAssets.deleteFailed": "\xC9chec de la suppression du t\xE9l\xE9chargement r\xE9cent",
     "recentAssets.deleted": "T\xE9l\xE9chargement r\xE9cent supprim\xE9",
@@ -4100,11 +4631,13 @@
     "referenceCollector.alreadyStaged": "D\xE9j\xE0 mis en sc\xE8ne comme r\xE9f\xE9rence",
     "referenceCollector.staged": "Images de r\xE9f\xE9rence {count} mises en sc\xE8ne",
     "referenceCollector.title": "R\xE9f\xE9rences en attente \xB7 {count}",
-    "referenceCollector.addAll": "Ajouter toutes les r\xE9f\xE9rences",
+    "referenceCollector.addAll": "Tout ajouter",
+    "referenceCollector.replaceAll": "Remplacer l\u2019existant",
     "referenceCollector.itemFallback": "R\xE9f\xE9rence en attente",
     "referenceCollector.remove": "Supprimer la r\xE9f\xE9rence en attente",
     "referenceCollector.cleared": "R\xE9f\xE9rences en attente effac\xE9es",
     "referenceCollector.added": "Ajout d'images de r\xE9f\xE9rence {count}",
+    "referenceCollector.replaced": "R\xE9f\xE9rences remplac\xE9es par {count} images",
     "referenceCollector.addFailed": "\xC9chec de l'ajout de r\xE9f\xE9rences en attente",
     "referenceCollector.readFailed": "\xC9chec de la lecture de l'image: {status}",
     "gallery.quick": "Galerie rapide",
@@ -4222,7 +4755,7 @@
     "output.promptHelpTitle": "Traitement du prompt",
     "output.promptHelp.responsesChannel": "Responses \xB7 mod\xE8le principal impliqu\xE9",
     "output.promptHelp.imagesChannel": "Images \xB7 g\xE9n\xE9ration directe",
-    "output.promptHelp.responses.original": "Envoie le texte original au mod\xE8le principal et demande \xE0 l\u2019outil d\u2019image de le conserver ; un revised prompt peut malgr\xE9 tout \xEAtre produit.",
+    "output.promptHelp.responses.original": "Envoie le texte original exact sans r\xE8gle ajout\xE9e par l\u2019application ; le fournisseur peut n\xE9anmoins renvoyer un revised prompt ou interpr\xE9ter le r\xE9sultat autrement.",
     "output.promptHelp.responses.strict": "Autorise le mod\xE8le principal \xE0 organiser ou d\xE9velopper le prompt tout en pr\xE9servant les contraintes de sujet, texte, couleur et composition.",
     "output.promptHelp.responses.automatic": "N\u2019ajoute aucune contrainte ; le mod\xE8le principal interpr\xE8te et optimise avant d\u2019appeler l\u2019outil d\u2019image.",
     "output.promptHelp.images.original": "N\u2019ajoute aucune r\xE8gle applicative et envoie le texte original directement \xE0 l\u2019API d\u2019images.",
@@ -4317,6 +4850,16 @@
     "lightbox.close": "Fermer l'aper\xE7u",
     "lightbox.previous": "Image pr\xE9c\xE9dente",
     "lightbox.next": "Image suivante",
+    "lightbox.zoomControls": "Commandes de zoom",
+    "lightbox.zoomOut": "R\xE9duire",
+    "lightbox.zoomIn": "Agrandir",
+    "lightbox.fit": "Adapter",
+    "lightbox.fitPage": "Adapter \xE0 la page",
+    "lightbox.actualSize": "100% taille r\xE9elle",
+    "lightbox.shortcuts": "Raccourcis clavier",
+    "lightbox.switchImage": "Changer d'image",
+    "lightbox.switchTask": "Changer de t\xE2che",
+    "lightbox.wheelZoom": "Molette pour zoomer",
     "promptPopover.title": "Comparaison rapide",
     "promptPopover.summary": "Original {original} \xB7 optimis\xE9 {optimized}",
     "promptPopover.original": "Invite d'origine",
@@ -4480,6 +5023,7 @@
     "colors.modifyValue": "Modifier la couleur {value}",
     "colors.removeValue": "Supprimer la couleur {value}",
     "taskGroup.today": "Aujourd'hui",
+    "taskGroup.current": "T\xE2che actuelle",
     "taskGroup.yesterday": "Hier",
     "taskGroup.last7": "7 derniers jours",
     "taskGroup.older": "Plus \xE2g\xE9",
@@ -4532,6 +5076,14 @@
     "networkEgress.direct": "Directe",
     "networkEgress.custom": "Personnalis\xE9e",
     "networkEgress.customProxy": "URL de proxy personnalis\xE9e",
+    "networkEgress.timeout": "D\xE9lai d\u2019attente de la requ\xEAte d\u2019image",
+    "networkEgress.timeoutUnit": "min",
+    "networkEgress.retryCount": "Nouvelles tentatives apr\xE8s \xE9chec",
+    "networkEgress.retryUnit": "fois",
+    "networkEgress.requestPolicyHelp": "S\u2019applique uniquement aux requ\xEAtes d\u2019image lanc\xE9es ensuite. Chaque nouvelle tentative automatique b\xE9n\xE9ficie d\u2019un nouveau d\xE9lai.",
+    "networkEgress.timeoutInvalid": "Saisissez un nombre entier de 1 \xE0 30 minutes",
+    "networkEgress.retryInvalid": "Saisissez un nombre entier de 0 \xE0 5 nouvelles tentatives",
+    "networkEgress.environmentTimeoutActive": "Le d\xE9lai d\xE9fini par la variable d\u2019environnement est actif : {seconds} secondes. L\u2019enregistrement le remplacera par le r\xE9glage ci-dessus.",
     "networkEgress.currentRoute": "Route actuelle : {route}",
     "networkEgress.test": "Tester la connexion",
     "networkEgress.save": "Enregistrer et appliquer",
@@ -4574,7 +5126,8 @@
     "apiSettings.copyProviderWithoutKeyStatus": "Fournisseur copi\xE9. Modifiez le nom, le mod\xE8le ou ajoutez une cl\xE9 API avant d'enregistrer.",
     "apiSettings.sortProviders": "Trier",
     "apiSettings.finishSortProviders": "Termin\xE9",
-    "apiSettings.sortProviderModeStatus": "Fournisseurs de tri",
+    "apiSettings.sortProviderModeStatus": "Faites glisser les poign\xE9es ou utilisez les fl\xE8ches pour trier",
+    "apiSettings.sortProviderHandleAria": "Faites glisser pour r\xE9ordonner {provider}, ou utilisez les fl\xE8ches, D\xE9but et Fin",
     "apiSettings.sortProviderStatus": "L'ordre des fournisseurs a \xE9t\xE9 modifi\xE9. Enregistrement automatique...",
     "apiSettings.moveProviderUp": "Vers le haut",
     "apiSettings.moveProviderDown": "Vers le bas",
@@ -4827,6 +5380,7 @@
     "batch.selected": "0 \u500B\u304C\u9078\u629E\u3055\u308C\u307E\u3057\u305F",
     "batch.selectedCount": "{count} \u4EF6\u3092\u9078\u629E\u4E2D",
     "batch.selectCurrentGroup": "\u30B0\u30EB\u30FC\u30D7\u3092\u3059\u3079\u3066\u9078\u629E",
+    "batch.selectWaiting": "\u5F85\u6A5F\u4E2D\u3092\u3059\u3079\u3066\u9078\u629E",
     "batch.archivedCount": "{count} \u4EF6\u306E\u30C1\u30E3\u30C3\u30C8\u3092\u30A2\u30FC\u30AB\u30A4\u30D6\u3057\u307E\u3057\u305F",
     "batch.archiveFailed": "\u30D0\u30C3\u30C1 \u30A2\u30FC\u30AB\u30A4\u30D6\u306B\u5931\u6557\u3057\u307E\u3057\u305F",
     "batch.runningCannotDeleteSelected": "\u9078\u629E\u3057\u305F\u30C1\u30E3\u30C3\u30C8\u306F\u5B9F\u884C\u4E2D\u306E\u305F\u3081\u524A\u9664\u3067\u304D\u307E\u305B\u3093",
@@ -4840,14 +5394,15 @@
     "batch.cancelSelected": "\u30BF\u30B9\u30AF\u3092\u30AD\u30E3\u30F3\u30BB\u30EB",
     "batch.noActiveSelected": "\u9078\u629E\u3057\u305F\u30BF\u30B9\u30AF\u306F\u5B9F\u884C\u4E2D\u307E\u305F\u306F\u5F85\u6A5F\u4E2D\u3067\u306F\u3042\u308A\u307E\u305B\u3093",
     "batch.cancelTitle": "{count} \u4EF6\u306E\u30BF\u30B9\u30AF\u3092\u30AD\u30E3\u30F3\u30BB\u30EB\u3057\u307E\u3059\u304B\uFF1F",
-    "batch.cancelMessage": "\u5B9F\u884C\u4E2D\u306E\u30BF\u30B9\u30AF\u306F\u505C\u6B62\u3057\u3001\u5F85\u6A5F\u4E2D\u306E\u30BF\u30B9\u30AF\u306F\u30AD\u30E5\u30FC\u304B\u3089\u5916\u308C\u307E\u3059\u3002\u5C65\u6B74\u306F\u4FDD\u6301\u3055\u308C\u307E\u3059\u3002",
+    "batch.cancelMessage": "\u5F85\u6A5F\u4E2D\u306E\u30BF\u30B9\u30AF\u306F\u76F4\u3061\u306B\u30AD\u30E3\u30F3\u30BB\u30EB\u3055\u308C\u307E\u3059\u3002\u5B9F\u884C\u4E2D\u306E\u30D7\u30ED\u30D0\u30A4\u30C0\u30FC\u547C\u3073\u51FA\u3057\u306F\u5FDC\u7B54\u3059\u308B\u307E\u3067\u7D99\u7D9A\u3057\u3001\u6599\u91D1\u304C\u767A\u751F\u3059\u308B\u5834\u5408\u304C\u3042\u308A\u307E\u3059\u3002\u5C65\u6B74\u306F\u4FDD\u6301\u3055\u308C\u307E\u3059\u3002",
     "batch.cancelDetail": "\u5B9F\u884C\u4E2D {running} \xB7 \u5F85\u6A5F\u4E2D {waiting}",
     "batch.cancelConfirm": "\u30AD\u30E3\u30F3\u30BB\u30EB\u3059\u308B",
-    "batch.cancelResult": "\u30AD\u30E3\u30F3\u30BB\u30EB {cancelled}\u3001\u30B9\u30AD\u30C3\u30D7 {skipped}\u3001\u5931\u6557 {failed}",
+    "batch.cancelResult": "\u30AD\u30E3\u30F3\u30BB\u30EB\u6E08\u307F {cancelled}\u3001\u30AD\u30E3\u30F3\u30BB\u30EB\u8981\u6C42\u6E08\u307F {requested}\u3001\u30B9\u30AD\u30C3\u30D7 {skipped}\u3001\u5931\u6557 {failed}",
     "batch.cancelFailed": "\u4E00\u62EC\u30AD\u30E3\u30F3\u30BB\u30EB\u306B\u5931\u6557\u3057\u307E\u3057\u305F",
     "action.archive": "\u30A2\u30FC\u30AB\u30A4\u30D6",
     "action.delete": "\u524A\u9664",
     "action.cancel": "\u30AD\u30E3\u30F3\u30BB\u30EB",
+    "action.stop": "\u505C\u6B62",
     "action.edit": "\u7DE8\u96C6",
     "action.clear": "\u30AF\u30EA\u30A2",
     "action.paste": "\u8CBC\u308A\u4ED8\u3051",
@@ -4892,12 +5447,13 @@
     "queue.queuedDeleted": "\u30AD\u30E5\u30FC\u306B\u767B\u9332\u3055\u308C\u305F\u30BF\u30B9\u30AF\u304C\u524A\u9664\u3055\u308C\u307E\u3057\u305F",
     "queue.cancelRunningConfirm": "\u30BF\u30B9\u30AF\u3092\u30AD\u30E3\u30F3\u30BB\u30EB",
     "queue.cancelRunningTitleConfirm": "\u5B9F\u884C\u4E2D\u306E\u30BF\u30B9\u30AF\u3092\u30AD\u30E3\u30F3\u30BB\u30EB\u3057\u307E\u3059\u304B?",
-    "queue.cancelRunningMessage": "\u73FE\u5728\u306E\u30BF\u30B9\u30AF\u306F\u505C\u6B62\u3057\u307E\u3059\u3002\u5C65\u6B74\u306F\u6B8B\u308A\u307E\u3059\u3002",
+    "queue.cancelRunningMessage": "\u30AD\u30E3\u30F3\u30BB\u30EB\u3092\u8981\u6C42\u3057\u307E\u3059\u3002\u30D7\u30ED\u30D0\u30A4\u30C0\u30FC\u306E\u547C\u3073\u51FA\u3057\u306F\u5FDC\u7B54\u3059\u308B\u307E\u3067\u7D99\u7D9A\u3057\u3001\u6599\u91D1\u304C\u767A\u751F\u3059\u308B\u5834\u5408\u304C\u3042\u308A\u307E\u3059\u3002\u5C65\u6B74\u306F\u4FDD\u6301\u3055\u308C\u307E\u3059\u3002",
     "queue.cancelRunningFailed": "\u30BF\u30B9\u30AF\u306E\u30AD\u30E3\u30F3\u30BB\u30EB\u306B\u5931\u6557\u3057\u307E\u3057\u305F",
+    "queue.cancellationPending": "\u30AD\u30E3\u30F3\u30BB\u30EB\u3092\u8981\u6C42\u3057\u307E\u3057\u305F\u3002\u30D7\u30ED\u30D0\u30A4\u30C0\u30FC\u306E\u547C\u3073\u51FA\u3057\u306F\u5FDC\u7B54\u3059\u308B\u307E\u3067\u7D99\u7D9A\u3057\u3001\u6599\u91D1\u304C\u767A\u751F\u3059\u308B\u5834\u5408\u304C\u3042\u308A\u307E\u3059\u3002",
     "queue.runningCancelled": "\u30BF\u30B9\u30AF\u304C\u30AD\u30E3\u30F3\u30BB\u30EB\u3055\u308C\u307E\u3057\u305F",
     "queue.reorderFailed": "\u30AD\u30E5\u30FC\u306E\u4E26\u3079\u66FF\u3048\u306B\u5931\u6557\u3057\u307E\u3057\u305F",
     "queue.realtimeUpdateFailed": "\u30E9\u30A4\u30D6\u30B9\u30C6\u30FC\u30BF\u30B9\u3092\u66F4\u65B0\u3067\u304D\u307E\u305B\u3093\u3067\u3057\u305F",
-    "queue.realtimeDisconnected": "\u30E9\u30A4\u30D6 \u30B9\u30C6\u30FC\u30BF\u30B9\u63A5\u7D9A\u304C\u5931\u308F\u308C\u307E\u3057\u305F\u3002\u56DE\u5FA9\u3059\u308B\u306B\u306F\u30DA\u30FC\u30B8\u3092\u66F4\u65B0\u3057\u3066\u304F\u3060\u3055\u3044\u3002",
+    "queue.realtimeDisconnected": "\u30E9\u30A4\u30D6\u30B9\u30C6\u30FC\u30BF\u30B9\u63A5\u7D9A\u304C\u4E2D\u65AD\u3055\u308C\u307E\u3057\u305F\u3002\u81EA\u52D5\u7684\u306B\u518D\u63A5\u7D9A\u3057\u3066\u3044\u307E\u3059\u2026",
     "queue.readFailed": "\u30AD\u30E5\u30FC\u306E\u30ED\u30FC\u30C9\u306B\u5931\u6557\u3057\u307E\u3057\u305F",
     "status.waiting": "\u30BF\u30B9\u30AF\u5F85\u6A5F\u4E2D",
     "status.shownActiveTasks": "\u30A2\u30AF\u30C6\u30A3\u30D6\u306A\u30BF\u30B9\u30AF\u3092\u8868\u793A\u3057\u3066\u3044\u307E\u3059",
@@ -4905,6 +5461,7 @@
     "taskStatus.submitting": "\u9001\u4FE1\u4E2D",
     "taskStatus.running": "\u751F\u6210\u4E2D",
     "taskStatus.runningWithElapsed": "\u751F\u6210\u4E2D \xB7{elapsed}",
+    "taskStatus.cancelling": "\u30AD\u30E3\u30F3\u30BB\u30EB\u4E2D",
     "taskStatus.completed": "\u5B8C\u4E86",
     "taskStatus.partialFailed": "\u90E8\u5206\u7684\u306B\u5931\u6557\u3057\u307E\u3057\u305F",
     "taskStatus.failed": "\u5931\u6557\u3057\u307E\u3057\u305F",
@@ -4933,7 +5490,6 @@
     "taskCard.textToImageThumb": "\u30C6\u30AD\u30B9\u30C8\u304B\u3089\u753B\u50CF\u3078\u306E\u30BF\u30B9\u30AF\u306E\u30B5\u30E0\u30CD\u30A4\u30EB",
     "taskCard.imageToImageThumb": "\u753B\u50CF\u304B\u3089\u753B\u50CF\u3078\u306E\u30BF\u30B9\u30AF\u306E\u30B5\u30E0\u30CD\u30A4\u30EB",
     "taskCard.failedThumb": "\u30BF\u30B9\u30AF\u304C\u5931\u6557\u3057\u307E\u3057\u305F",
-    "taskCard.textBadge": "T",
     "taskMode.edit": "\u7DE8\u96C6",
     "taskMode.generate": "\u751F\u6210",
     "document.generatingQueue": "\u30AD\u30E5\u30FC{total}\u3092\u751F\u6210\u4E2D",
@@ -4947,12 +5503,114 @@
     "historyLibrary.openFull": "\u5C65\u6B74\u30E9\u30A4\u30D6\u30E9\u30EA\u5168\u4F53\u3092\u958B\u304F",
     "history.documentTitle": "\u5C65\u6B74 - iLab CONJURE",
     "history.back": "\u30B8\u30A7\u30CD\u30EC\u30FC\u30BF\u30FC\u306B\u623B\u308B",
+    "history.homeAria": "iLab CONJURE \u30B8\u30A7\u30CD\u30EC\u30FC\u30BF\u30FC\u306B\u623B\u308B",
+    "history.backToGenerator": "\u751F\u6210\u753B\u9762\u306B\u623B\u308B",
     "history.title": "\u5C65\u6B74",
     "history.loading": "\u8AAD\u307F\u8FBC\u307F\u4E2D",
     "history.total": "{total}\u30BF\u30B9\u30AF \xB7{archived}\u304C\u30A2\u30FC\u30AB\u30A4\u30D6\u3055\u308C\u307E\u3057\u305F",
     "history.search": "\u691C\u7D22",
     "history.searchPlaceholder": "\u30D7\u30ED\u30F3\u30D7\u30C8\u307E\u305F\u306F\u30BF\u30B9\u30AF ID \u3092\u691C\u7D22",
     "history.clear": "\u30AF\u30EA\u30A2",
+    "history.activeFilterCount": "\u9069\u7528\u4E2D\u306E\u30D5\u30A3\u30EB\u30BF\u30FC \xB7 {count}\u4EF6",
+    "history.clearAllFilters": "\u3059\u3079\u3066\u89E3\u9664",
+    "history.removeFilter": "\u30D5\u30A3\u30EB\u30BF\u30FC\u3092\u524A\u9664\uFF1A{label}",
+    "history.filtersActive": "\u30BF\u30B9\u30AF\u30D5\u30A3\u30EB\u30BF\u30FC\u3001{count}\u4EF6\u9069\u7528\u4E2D",
+    "history.favorites": "\u304A\u6C17\u306B\u5165\u308A",
+    "history.onlyFavorites": "\u304A\u6C17\u306B\u5165\u308A\u306E\u307F",
+    "history.favoriteTask": "\u304A\u6C17\u306B\u5165\u308A\u306B\u8FFD\u52A0",
+    "history.unfavoriteTask": "\u304A\u6C17\u306B\u5165\u308A\u304B\u3089\u524A\u9664",
+    "history.tags": "\u30BF\u30B0",
+    "history.untagged": "\u30BF\u30B0\u306A\u3057",
+    "history.manageTags": "\u30BF\u30B0\u3092\u7BA1\u7406",
+    "history.createTag": "\u30BF\u30B0\u3092\u4F5C\u6210",
+    "history.renameTag": "\u540D\u524D\u3092\u5909\u66F4",
+    "history.deleteTag": "\u524A\u9664",
+    "history.deleteTagAffected": "\u524A\u9664\uFF08{count}\u4EF6\uFF09",
+    "history.addTag": "\u30BF\u30B0\u3092\u8FFD\u52A0",
+    "history.removeTag": "\u30BF\u30B0\u3092\u524A\u9664",
+    "history.favoriteSelected": "\u304A\u6C17\u306B\u5165\u308A",
+    "history.unfavoriteSelected": "\u304A\u6C17\u306B\u5165\u308A\u89E3\u9664",
+    "history.organizeSelected": "\u6574\u7406",
+    "history.exitSelection": "\u8907\u6570\u9078\u629E\u3092\u7D42\u4E86",
+    "history.organizationFailed": "\u304A\u6C17\u306B\u5165\u308A\u307E\u305F\u306F\u30BF\u30B0\u3092\u66F4\u65B0\u3067\u304D\u307E\u305B\u3093\u3067\u3057\u305F",
+    "history.tagNameConflict": "\u540C\u3058\u30BF\u30B0\u540D\u304C\u3059\u3067\u306B\u3042\u308A\u307E\u3059",
+    "history.noTags": "\u30BF\u30B0\u306F\u307E\u3060\u3042\u308A\u307E\u305B\u3093",
+    "history.backendRestartRequired": "\u5C65\u6B74\u6A5F\u80FD\u304C\u66F4\u65B0\u3055\u308C\u307E\u3057\u305F\u3002\u30A2\u30D7\u30EA\u3092\u518D\u8D77\u52D5\u3057\u3066\u3001\u3082\u3046\u4E00\u5EA6\u304A\u8A66\u3057\u304F\u3060\u3055\u3044\u3002",
+    "history.export": "\u66F8\u304D\u51FA\u3057",
+    "history.exportImagesOnly": "\u753B\u50CF\u306E\u307F",
+    "history.exportImagesWithPrompts": "\u753B\u50CF\uFF0B\u30D7\u30ED\u30F3\u30D7\u30C8",
+    "history.exportPreparing": "\u66F8\u304D\u51FA\u3057\u3092\u6E96\u5099\u4E2D\u2026",
+    "history.exportStarted": "\u30C0\u30A6\u30F3\u30ED\u30FC\u30C9\u3092\u958B\u59CB\u3057\u307E\u3057\u305F",
+    "history.exportSummary": "{taskCount}\u4EF6\u306E\u30BF\u30B9\u30AF \xB7 {imageCount}\u679A\u306E\u753B\u50CF",
+    "history.exportFailed": "\u66F8\u304D\u51FA\u3057\u306B\u5931\u6557\u3057\u307E\u3057\u305F",
+    "historyBackup.open": "\u30BF\u30B9\u30AF\u3092\u30D0\u30C3\u30AF\u30A2\u30C3\u30D7",
+    "historyBackup.importOpen": "\u30D0\u30C3\u30AF\u30A2\u30C3\u30D7\u3092\u8AAD\u307F\u8FBC\u3080",
+    "historyBackup.mode": "\u30BF\u30B9\u30AF\u30D0\u30C3\u30AF\u30A2\u30C3\u30D7",
+    "historyBackup.description": "\u30BF\u30B9\u30AF\u30C7\u30FC\u30BF\u3068\u95A2\u9023\u30D5\u30A1\u30A4\u30EB\u3092\u4FDD\u5B58\u3057\u3001\u4E92\u63DB\u6027\u306E\u3042\u308B iLab CONJURE \u306B\u5FA9\u5143\u3067\u304D\u307E\u3059\u3002",
+    "historyBackup.scopeLegend": "\u30D0\u30C3\u30AF\u30A2\u30C3\u30D7\u7BC4\u56F2",
+    "historyBackup.scopeHelp": "\u7D5E\u308A\u8FBC\u307F\u7D50\u679C\u3068\u5168\u5C65\u6B74\u306F\u30ED\u30FC\u30AB\u30EB\u3067\u96C6\u8A08\u3055\u308C\u3001\u3053\u306E\u30DA\u30FC\u30B8\u306E\u8868\u793A\u4EF6\u6570\u306B\u306F\u5236\u9650\u3055\u308C\u307E\u305B\u3093\u3002",
+    "historyBackup.scopeSelected": "\u9078\u629E\u3057\u305F\u30BF\u30B9\u30AF",
+    "historyBackup.scopeFiltered": "\u73FE\u5728\u306E\u7D5E\u308A\u8FBC\u307F\u7D50\u679C",
+    "historyBackup.scopeAll": "\u3059\u3079\u3066\u306E\u5C65\u6B74",
+    "historyBackup.scopeCount": "{total} \u4EF6\u4E2D {eligible} \u4EF6\u304C\u5BFE\u8C61",
+    "historyBackup.scopeCounting": "\u96C6\u8A08\u4E2D\u2026",
+    "historyBackup.scopeCountUnavailable": "\u4EF6\u6570\u3092\u53D6\u5F97\u3067\u304D\u307E\u305B\u3093",
+    "historyBackup.scopeNoneSelected": "\u30BF\u30B9\u30AF\u304C\u9078\u629E\u3055\u308C\u3066\u3044\u307E\u305B\u3093",
+    "historyBackup.willBackup": "{eligible} \u4EF6\u3092\u30D0\u30C3\u30AF\u30A2\u30C3\u30D7\u3057\u3001\u672A\u5B8C\u4E86\u306E {excluded} \u4EF6\u306F\u9664\u5916\u3057\u307E\u3059\u3002",
+    "historyBackup.selectTasksFirst": "\u5148\u306B 1 \u4EF6\u4EE5\u4E0A\u306E\u30BF\u30B9\u30AF\u3092\u9078\u629E\u3057\u3066\u304F\u3060\u3055\u3044\u3002",
+    "historyBackup.scopeLockedUnknown": "\u5143\u306E\u30D0\u30C3\u30AF\u30A2\u30C3\u30D7\u7BC4\u56F2",
+    "historyBackup.scopeLocked": "\u7BC4\u56F2\u3092\u56FA\u5B9A\uFF1A{scope} \xB7 {eligible} \u4EF6\u3092\u30D0\u30C3\u30AF\u30A2\u30C3\u30D7",
+    "historyBackup.scopeLockedPending": "\u7BC4\u56F2\u3092\u56FA\u5B9A\uFF1A{scope} \xB7 \u5BFE\u8C61\u30BF\u30B9\u30AF\u3092\u96C6\u8A08\u4E2D",
+    "historyBackup.progressLabel": "\u30D0\u30C3\u30AF\u30A2\u30C3\u30D7\u306E\u9032\u884C\u72B6\u6CC1",
+    "historyBackup.start": "\u30D0\u30C3\u30AF\u30A2\u30C3\u30D7\u958B\u59CB",
+    "historyBackup.cancel": "\u30D0\u30C3\u30AF\u30A2\u30C3\u30D7\u3092\u30AD\u30E3\u30F3\u30BB\u30EB",
+    "historyBackup.download": "\u30D0\u30C3\u30AF\u30A2\u30C3\u30D7\u3092\u30C0\u30A6\u30F3\u30ED\u30FC\u30C9",
+    "historyBackup.dismiss": "\u7D50\u679C\u3092\u9589\u3058\u308B",
+    "historyBackup.discard": "\u30C0\u30A6\u30F3\u30ED\u30FC\u30C9\u305B\u305A\u9589\u3058\u308B",
+    "historyBackup.closePanel": "\u30D1\u30CD\u30EB\u3092\u9589\u3058\u308B",
+    "historyBackup.downloadStartedTitle": "\u30C0\u30A6\u30F3\u30ED\u30FC\u30C9\u3092\u958B\u59CB\u3057\u307E\u3057\u305F",
+    "historyBackup.idle": "\u6E96\u5099\u5B8C\u4E86",
+    "historyBackup.queued": "\u5F85\u6A5F\u4E2D",
+    "historyBackup.planning": "\u8A08\u753B\u4E2D",
+    "historyBackup.packing": "\u30D1\u30C3\u30B1\u30FC\u30B8\u4F5C\u6210\u4E2D",
+    "historyBackup.ready": "\u30C0\u30A6\u30F3\u30ED\u30FC\u30C9\u53EF\u80FD",
+    "historyBackup.readyDetail": "\u30D0\u30C3\u30AF\u30A2\u30C3\u30D7\u306E\u6E96\u5099\u304C\u3067\u304D\u307E\u3057\u305F\u30021 \u6642\u9593\u4EE5\u5185\u306B\u30C0\u30A6\u30F3\u30ED\u30FC\u30C9\u3057\u3066\u304F\u3060\u3055\u3044\u3002\u30C0\u30A6\u30F3\u30ED\u30FC\u30C9\u305B\u305A\u9589\u3058\u308B\u3068\u4E00\u6642\u30D5\u30A1\u30A4\u30EB\u306F\u3059\u3050\u306B\u524A\u9664\u3055\u308C\u307E\u3059\u3002",
+    "historyBackup.downloaded": "\u30D6\u30E9\u30A6\u30B6\u306B\u30D5\u30A1\u30A4\u30EB\u304C\u4FDD\u5B58\u3055\u308C\u305F\u3053\u3068\u3092\u78BA\u8A8D\u3057\u305F\u3089\u3001\u3053\u306E\u30D1\u30CD\u30EB\u3092\u9589\u3058\u3089\u308C\u307E\u3059\u3002\u4E00\u6642\u30D5\u30A1\u30A4\u30EB\u306F\u8EE2\u9001\u5F8C\u306B\u524A\u9664\u3055\u308C\u307E\u3059\u3002",
+    "historyBackup.missingInputsWarning": "{tasks} \u4EF6\u306E\u30BF\u30B9\u30AF\u3067 {files} \u500B\u306E\u5165\u529B\u30D5\u30A1\u30A4\u30EB\u304C\u898B\u3064\u304B\u308A\u307E\u305B\u3093\u3002\u3053\u308C\u3089\u306F\u30D0\u30C3\u30AF\u30A2\u30C3\u30D7\u306B\u542B\u307E\u308C\u307E\u305B\u3093\u304C\u3001\u30D7\u30ED\u30F3\u30D7\u30C8\u3068\u51FA\u529B\u7D50\u679C\u306F\u901A\u5E38\u3069\u304A\u308A\u4FDD\u5B58\u3055\u308C\u307E\u3059\u3002",
+    "historyBackup.failed": "\u30D0\u30C3\u30AF\u30A2\u30C3\u30D7\u5931\u6557",
+    "historyBackup.cancelled": "\u30AD\u30E3\u30F3\u30BB\u30EB\u6E08\u307F",
+    "historyBackup.expired": "\u671F\u9650\u5207\u308C",
+    "historyBackup.interrupted": "\u4E2D\u65AD",
+    "historyBackup.stats": "\u5408\u8A08 {total} \xB7 \u5BFE\u8C61 {eligible} \xB7 \u9664\u5916 {excluded} \xB7 {bytes}",
+    "historyBackup.errorDisk": "\u30C7\u30A3\u30B9\u30AF\u5BB9\u91CF\u304C\u4E0D\u8DB3\u3057\u3066\u3044\u307E\u3059\u3002",
+    "historyBackup.errorSourceChanged": "\u30D0\u30C3\u30AF\u30A2\u30C3\u30D7\u4E2D\u306B\u5143\u30C7\u30FC\u30BF\u304C\u5909\u66F4\u3055\u308C\u307E\u3057\u305F\u3002",
+    "historyBackup.errorEmpty": "\u5FA9\u5143\u5BFE\u8C61\u306E\u30BF\u30B9\u30AF\u304C\u3042\u308A\u307E\u305B\u3093\u3002",
+    "historyBackup.errorIo": "\u30D0\u30C3\u30AF\u30A2\u30C3\u30D7\u3092\u4F5C\u6210\u3067\u304D\u307E\u305B\u3093\u3067\u3057\u305F\u3002",
+    "historyImport.title": "\u30BF\u30B9\u30AF\u30D0\u30C3\u30AF\u30A2\u30C3\u30D7\u3092\u8AAD\u307F\u8FBC\u3080",
+    "historyImport.choose": "ZIP \u30D0\u30C3\u30AF\u30A2\u30C3\u30D7\u3092\u9078\u629E",
+    "historyImport.uploading": "\u30A2\u30C3\u30D7\u30ED\u30FC\u30C9\u4E2D",
+    "historyImport.validating": "\u691C\u8A3C\u4E2D",
+    "historyImport.validated": "\u691C\u8A3C\u6E08\u307F",
+    "historyImport.preview": "\u5FA9\u5143\u30D7\u30EC\u30D3\u30E5\u30FC",
+    "historyImport.restorable": "\u5FA9\u5143\u53EF\u80FD",
+    "historyImport.duplicate": "\u91CD\u8907",
+    "historyImport.conflict": "\u7AF6\u5408",
+    "historyImport.invalid": "\u7121\u52B9",
+    "historyImport.confirm": "\u5FA9\u5143\u3092\u78BA\u5B9A",
+    "historyImport.restoring": "\u5FA9\u5143\u4E2D",
+    "historyImport.restored": "\u5FA9\u5143\u6E08\u307F",
+    "historyImport.failed": "\u5FA9\u5143\u5931\u6557",
+    "historyImport.interrupted": "\u4E2D\u65AD",
+    "historyImport.cancelled": "\u30AD\u30E3\u30F3\u30BB\u30EB\u6E08\u307F",
+    "historyImport.result": "\u7D50\u679C",
+    "historyImport.thumbnailWarnings": "\u30B5\u30E0\u30CD\u30A4\u30EB\u8B66\u544A",
+    "historyImport.cleanupWarnings": "\u30AF\u30EA\u30FC\u30F3\u30A2\u30C3\u30D7\u8B66\u544A",
+    "historyImport.reselect": "\u7D9A\u884C\u3059\u308B\u306B\u306F\u5143\u306E ZIP \u3092\u9078\u3073\u76F4\u3057\u3066\u304F\u3060\u3055\u3044\u3002",
+    "historyImport.noOverwrite": "\u65E2\u5B58\u306E\u30BF\u30B9\u30AF\u306F\u4E0A\u66F8\u304D\u3055\u308C\u307E\u305B\u3093\u3002",
+    "historyImport.reasonInvalid": "\u30D0\u30C3\u30AF\u30A2\u30C3\u30D7\u30C7\u30FC\u30BF\u304C\u7121\u52B9\u3067\u3059",
+    "historyImport.reasonSensitive": "\u4FDD\u8B77\u5BFE\u8C61\u30C7\u30FC\u30BF\u304C\u542B\u307E\u308C\u3066\u3044\u307E\u3059",
+    "historyImport.reasonMismatch": "\u30D0\u30C3\u30AF\u30A2\u30C3\u30D7\u30DE\u30CB\u30D5\u30A7\u30B9\u30C8\u3068\u4E00\u81F4\u3057\u307E\u305B\u3093",
+    "history.closeExport": "\u66F8\u304D\u51FA\u3057\u9078\u629E\u3092\u9589\u3058\u308B",
     "history.type": "\u7A2E\u985E",
     "history.allTypes": "\u3059\u3079\u3066\u306E\u7A2E\u985E",
     "history.type.textToImage": "\u30C6\u30AD\u30B9\u30C8\u304B\u3089\u753B\u50CF",
@@ -5123,6 +5781,7 @@
     "language.ru": "\u0420\u0443\u0441\u0441\u043A\u0438\u0439",
     "language.it": "Italiano",
     "language.hi": "\u0939\u093F\u0928\u094D\u0926\u0940",
+    "language.vi": "Ti\u1EBFng Vi\u1EC7t",
     "auth.label": "\u8A8D\u8A3C\u5143",
     "auth.checking": "\u8A8D\u8A3C\u3092\u78BA\u8A8D\u3057\u3066\u3044\u307E\u3059",
     "auth.missingCodexSession": "Codex \u30BB\u30C3\u30B7\u30E7\u30F3\u304C\u691C\u51FA\u3055\u308C\u307E\u305B\u3093\u3067\u3057\u305F",
@@ -5149,8 +5808,16 @@
     "recentAssets.defaultName": "\u6700\u8FD1\u306E\u30A2\u30C3\u30D7\u30ED\u30FC\u30C9",
     "recentAssets.use": "{name}\u3092\u4F7F\u7528\u3057\u3066\u304F\u3060\u3055\u3044",
     "recentAssets.delete": "{name}\u3092\u524A\u9664",
+    "recentAssets.inUse": "{count} \u4EF6\u306E\u30BF\u30B9\u30AF\u3067\u4F7F\u7528\u4E2D\u306E\u305F\u3081\u5B8C\u5168\u306B\u306F\u524A\u9664\u3067\u304D\u307E\u305B\u3093\u304C\u3001\u6700\u8FD1\u306E\u30A2\u30C3\u30D7\u30ED\u30FC\u30C9\u304B\u3089\u975E\u8868\u793A\u306B\u3067\u304D\u307E\u3059",
+    "recentAssets.hide": "{name}\u3092\u6700\u8FD1\u306E\u30A2\u30C3\u30D7\u30ED\u30FC\u30C9\u304B\u3089\u975E\u8868\u793A",
+    "recentAssets.hideTitle": "\u6700\u8FD1\u306E\u30A2\u30C3\u30D7\u30ED\u30FC\u30C9\u304B\u3089\u975E\u8868\u793A\u306B\u3057\u307E\u3059\u304B?",
+    "recentAssets.hideMessage": "\u3053\u306E\u753B\u50CF\u306F {count} \u4EF6\u306E\u30BF\u30B9\u30AF\u3067\u4F7F\u7528\u3055\u308C\u3066\u3044\u308B\u305F\u3081\u3001\u5B8C\u5168\u306B\u306F\u524A\u9664\u3067\u304D\u307E\u305B\u3093\u3002\u975E\u8868\u793A\u306B\u3059\u308B\u3068\u6700\u8FD1\u306E\u30A2\u30C3\u30D7\u30ED\u30FC\u30C9\u304B\u3089\u306E\u307F\u9664\u304B\u308C\u3001\u539F\u672C\u3001\u73FE\u5728\u306E\u5165\u529B\u3001\u5C65\u6B74\u30BF\u30B9\u30AF\u306F\u4FDD\u6301\u3055\u308C\u307E\u3059\u3002",
+    "recentAssets.hideFailed": "\u6700\u8FD1\u306E\u30A2\u30C3\u30D7\u30ED\u30FC\u30C9\u3092\u975E\u8868\u793A\u306B\u3067\u304D\u307E\u305B\u3093\u3067\u3057\u305F",
+    "recentAssets.hidden": "\u6700\u8FD1\u306E\u30A2\u30C3\u30D7\u30ED\u30FC\u30C9\u304B\u3089\u975E\u8868\u793A\u306B\u3057\u307E\u3057\u305F\u3002\u539F\u672C\u3068\u5C65\u6B74\u30BF\u30B9\u30AF\u306F\u4FDD\u6301\u3055\u308C\u3066\u3044\u307E\u3059",
+    "recentAssets.hidePreviews": "\u6700\u8FD1\u306E\u30A2\u30C3\u30D7\u30ED\u30FC\u30C9\u753B\u50CF\u3092\u96A0\u3059",
+    "recentAssets.showPreviews": "\u6700\u8FD1\u306E\u30A2\u30C3\u30D7\u30ED\u30FC\u30C9\u753B\u50CF\u3092\u8868\u793A",
     "recentAssets.deleteTitle": "\u6700\u8FD1\u306E\u30A2\u30C3\u30D7\u30ED\u30FC\u30C9\u3092\u524A\u9664\u3057\u307E\u3059\u304B?",
-    "recentAssets.deleteMessage": "\u3053\u308C\u306B\u3088\u308A\u3001\u6700\u8FD1\u306E\u30A2\u30C3\u30D7\u30ED\u30FC\u30C9\u304B\u3089\u753B\u50CF\u304C\u524A\u9664\u3055\u308C\u307E\u3059\u3002\u73FE\u5728\u753B\u50CF\u5165\u529B\u3068\u3057\u3066\u9078\u629E\u3055\u308C\u3066\u3044\u308B\u5834\u5408\u306F\u3001\u73FE\u5728\u306E\u5165\u529B\u304B\u3089\u524A\u9664\u3055\u308C\u307E\u3059\u3002\u3053\u306E\u6700\u8FD1\u306E\u30A2\u30C3\u30D7\u30ED\u30FC\u30C9\u3092\u53C2\u7167\u3059\u308B\u5C65\u6B74\u30BF\u30B9\u30AF\u306F\u3001\u305D\u306E\u5165\u529B\u30D7\u30EC\u30D3\u30E5\u30FC\u3092\u5931\u3044\u307E\u3059\u3002\u516C\u958B\u30AE\u30E3\u30E9\u30EA\u30FC\u306F\u5F71\u97FF\u3092\u53D7\u3051\u307E\u305B\u3093\u3002",
+    "recentAssets.deleteMessage": "\u3053\u306E\u753B\u50CF\u306F\u3069\u306E\u30BF\u30B9\u30AF\u3067\u3082\u4F7F\u7528\u3055\u308C\u3066\u3044\u307E\u305B\u3093\u3002\u539F\u672C\u3092\u5B8C\u5168\u306B\u524A\u9664\u3057\u3001\u73FE\u5728\u306E\u5165\u529B\u304B\u3089\u540C\u3058\u753B\u50CF\u3092\u53D6\u308A\u9664\u304D\u307E\u3059\u3002\u516C\u958B\u30AE\u30E3\u30E9\u30EA\u30FC\u306F\u5F71\u97FF\u3092\u53D7\u3051\u307E\u305B\u3093\u3002",
     "recentAssets.loadFailed": "\u6700\u8FD1\u306E\u30A2\u30C3\u30D7\u30ED\u30FC\u30C9\u3092\u30ED\u30FC\u30C9\u3067\u304D\u307E\u305B\u3093\u3067\u3057\u305F",
     "recentAssets.deleteFailed": "\u6700\u8FD1\u306E\u30A2\u30C3\u30D7\u30ED\u30FC\u30C9\u3092\u524A\u9664\u3067\u304D\u307E\u305B\u3093\u3067\u3057\u305F",
     "recentAssets.deleted": "\u6700\u8FD1\u306E\u30A2\u30C3\u30D7\u30ED\u30FC\u30C9\u304C\u524A\u9664\u3055\u308C\u307E\u3057\u305F",
@@ -5175,11 +5842,13 @@
     "referenceCollector.alreadyStaged": "\u3059\u3067\u306B\u4E00\u6642\u53C2\u7167\u306B\u8FFD\u52A0\u3055\u308C\u3066\u3044\u307E\u3059",
     "referenceCollector.staged": "\u53C2\u7167\u753B\u50CF {count} \u679A\u3092\u4E00\u6642\u8FFD\u52A0\u3057\u307E\u3057\u305F",
     "referenceCollector.title": "\u4E00\u6642\u53C2\u7167 \xB7 {count}",
-    "referenceCollector.addAll": "\u3059\u3079\u3066\u306E\u53C2\u7167\u3092\u8FFD\u52A0",
+    "referenceCollector.addAll": "\u3059\u3079\u3066\u8FFD\u52A0",
+    "referenceCollector.replaceAll": "\u73FE\u5728\u3092\u7F6E\u63DB",
     "referenceCollector.itemFallback": "\u4E00\u6642\u53C2\u7167",
     "referenceCollector.remove": "\u4E00\u6642\u53C2\u7167\u3092\u524A\u9664",
     "referenceCollector.cleared": "\u4E00\u6642\u53C2\u7167\u3092\u30AF\u30EA\u30A2\u3057\u307E\u3057\u305F",
     "referenceCollector.added": "\u53C2\u7167\u753B\u50CF {count} \u679A\u3092\u8FFD\u52A0\u3057\u307E\u3057\u305F",
+    "referenceCollector.replaced": "\u53C2\u7167\u753B\u50CF\u3092 {count} \u679A\u306B\u7F6E\u304D\u63DB\u3048\u307E\u3057\u305F",
     "referenceCollector.addFailed": "\u4E00\u6642\u53C2\u7167\u3092\u8FFD\u52A0\u3067\u304D\u307E\u305B\u3093\u3067\u3057\u305F",
     "referenceCollector.readFailed": "\u753B\u50CF\u306E\u8AAD\u307F\u53D6\u308A\u306B\u5931\u6557\u3057\u307E\u3057\u305F:{status}",
     "gallery.quick": "\u30AF\u30A4\u30C3\u30AF\u30AE\u30E3\u30E9\u30EA\u30FC",
@@ -5297,7 +5966,7 @@
     "output.promptHelpTitle": "\u30D7\u30ED\u30F3\u30D7\u30C8\u51E6\u7406",
     "output.promptHelp.responsesChannel": "Responses \xB7 \u30E1\u30A4\u30F3\u30E2\u30C7\u30EB\u304C\u95A2\u4E0E",
     "output.promptHelp.imagesChannel": "Images \xB7 \u76F4\u63A5\u751F\u6210",
-    "output.promptHelp.responses.original": "\u539F\u6587\u3092\u30E1\u30A4\u30F3\u30E2\u30C7\u30EB\u306B\u6E21\u3057\u3001\u753B\u50CF\u30C4\u30FC\u30EB\u3067\u3067\u304D\u308B\u9650\u308A\u305D\u306E\u307E\u307E\u4F7F\u3046\u3088\u3046\u6C42\u3081\u307E\u3059\u3002\u305F\u3060\u3057 revised prompt \u304C\u751F\u6210\u3055\u308C\u308B\u5834\u5408\u304C\u3042\u308A\u307E\u3059\u3002",
+    "output.promptHelp.responses.original": "\u30A2\u30D7\u30EA\u5074\u306E\u30D7\u30ED\u30F3\u30D7\u30C8\u898F\u5247\u3092\u8FFD\u52A0\u305B\u305A\u3001\u5143\u306E\u6587\u9762\u3092\u305D\u306E\u307E\u307E\u9001\u4FE1\u3057\u307E\u3059\u3002\u30D7\u30ED\u30D0\u30A4\u30C0\u30FC\u304C revised prompt \u3092\u8FD4\u3057\u305F\u308A\u3001\u7D50\u679C\u3092\u7570\u306A\u308B\u5F62\u3067\u89E3\u91C8\u3057\u305F\u308A\u3059\u308B\u5834\u5408\u304C\u3042\u308A\u307E\u3059\u3002",
     "output.promptHelp.responses.strict": "\u30E1\u30A4\u30F3\u30E2\u30C7\u30EB\u306B\u3088\u308B\u6574\u7406\u3084\u62E1\u5F35\u3092\u8A31\u53EF\u3057\u3064\u3064\u3001\u88AB\u5199\u4F53\u3001\u6587\u5B57\u3001\u8272\u3001\u69CB\u56F3\u306A\u3069\u306E\u5FC5\u9808\u6761\u4EF6\u3092\u4FDD\u6301\u3057\u307E\u3059\u3002",
     "output.promptHelp.responses.automatic": "\u8FFD\u52A0\u5236\u7D04\u3092\u4ED8\u3051\u305A\u3001\u30E1\u30A4\u30F3\u30E2\u30C7\u30EB\u304C\u89E3\u91C8\u30FB\u6700\u9069\u5316\u3057\u3066\u304B\u3089\u753B\u50CF\u30C4\u30FC\u30EB\u3092\u547C\u3073\u51FA\u3057\u307E\u3059\u3002",
     "output.promptHelp.images.original": "\u30A2\u30D7\u30EA\u5074\u306E\u30EB\u30FC\u30EB\u3092\u8FFD\u52A0\u305B\u305A\u3001\u539F\u6587\u3092\u753B\u50CF API \u306B\u76F4\u63A5\u9001\u4FE1\u3057\u307E\u3059\u3002",
@@ -5392,6 +6061,16 @@
     "lightbox.close": "\u30D7\u30EC\u30D3\u30E5\u30FC\u3092\u9589\u3058\u308B",
     "lightbox.previous": "\u524D\u306E\u753B\u50CF",
     "lightbox.next": "\u6B21\u306E\u753B\u50CF",
+    "lightbox.zoomControls": "\u30BA\u30FC\u30E0\u64CD\u4F5C",
+    "lightbox.zoomOut": "\u7E2E\u5C0F",
+    "lightbox.zoomIn": "\u62E1\u5927",
+    "lightbox.fit": "\u5168\u4F53\u8868\u793A",
+    "lightbox.fitPage": "\u30DA\u30FC\u30B8\u306B\u5408\u308F\u305B\u308B",
+    "lightbox.actualSize": "100% \u5B9F\u5BF8",
+    "lightbox.shortcuts": "\u30AD\u30FC\u30DC\u30FC\u30C9\u30B7\u30E7\u30FC\u30C8\u30AB\u30C3\u30C8",
+    "lightbox.switchImage": "\u753B\u50CF\u3092\u5207\u308A\u66FF\u3048",
+    "lightbox.switchTask": "\u30BF\u30B9\u30AF\u3092\u5207\u308A\u66FF\u3048",
+    "lightbox.wheelZoom": "\u30DB\u30A4\u30FC\u30EB\u3067\u30BA\u30FC\u30E0",
     "promptPopover.title": "\u5373\u6642\u6BD4\u8F03",
     "promptPopover.summary": "\u30AA\u30EA\u30B8\u30CA\u30EB{original}\xB7 \u6700\u9069\u5316\u3055\u308C\u305F{optimized}",
     "promptPopover.original": "\u5143\u306E\u30D7\u30ED\u30F3\u30D7\u30C8",
@@ -5555,6 +6234,7 @@
     "colors.modifyValue": "\u30AB\u30E9\u30FC\u3092\u7DE8\u96C6{value}",
     "colors.removeValue": "\u30AB\u30E9\u30FC\u3092\u524A\u9664{value}",
     "taskGroup.today": "\u4ECA\u65E5",
+    "taskGroup.current": "\u73FE\u5728\u8868\u793A\u4E2D",
     "taskGroup.yesterday": "\u6628\u65E5",
     "taskGroup.last7": "\u904E\u53BB 7 \u65E5\u9593",
     "taskGroup.older": "\u5E74\u4E0A",
@@ -5607,6 +6287,14 @@
     "networkEgress.direct": "\u76F4\u63A5\u63A5\u7D9A",
     "networkEgress.custom": "\u30AB\u30B9\u30BF\u30E0",
     "networkEgress.customProxy": "\u30AB\u30B9\u30BF\u30E0\u30D7\u30ED\u30AD\u30B7 URL",
+    "networkEgress.timeout": "\u753B\u50CF\u30EA\u30AF\u30A8\u30B9\u30C8\u306E\u30BF\u30A4\u30E0\u30A2\u30A6\u30C8",
+    "networkEgress.timeoutUnit": "\u5206",
+    "networkEgress.retryCount": "\u5931\u6557\u5F8C\u306E\u518D\u8A66\u884C",
+    "networkEgress.retryUnit": "\u56DE",
+    "networkEgress.requestPolicyHelp": "\u4ECA\u5F8C\u958B\u59CB\u3059\u308B\u753B\u50CF\u30EA\u30AF\u30A8\u30B9\u30C8\u306B\u306E\u307F\u9069\u7528\u3055\u308C\u307E\u3059\u3002\u81EA\u52D5\u518D\u8A66\u884C\u3054\u3068\u306B\u30BF\u30A4\u30E0\u30A2\u30A6\u30C8\u6642\u9593\u304C\u518D\u8A08\u7B97\u3055\u308C\u307E\u3059\u3002",
+    "networkEgress.timeoutInvalid": "1\uFF5E30 \u306E\u6574\u6570\uFF08\u5206\uFF09\u3092\u5165\u529B\u3057\u3066\u304F\u3060\u3055\u3044",
+    "networkEgress.retryInvalid": "0\uFF5E5 \u306E\u6574\u6570\uFF08\u56DE\uFF09\u3092\u5165\u529B\u3057\u3066\u304F\u3060\u3055\u3044",
+    "networkEgress.environmentTimeoutActive": "\u73FE\u5728\u3001\u74B0\u5883\u5909\u6570\u306E\u30BF\u30A4\u30E0\u30A2\u30A6\u30C8\uFF08{seconds} \u79D2\uFF09\u304C\u6709\u52B9\u3067\u3059\u3002\u4FDD\u5B58\u3059\u308B\u3068\u4E0A\u306E\u8A2D\u5B9A\u306B\u7F6E\u304D\u63DB\u308F\u308A\u307E\u3059\u3002",
     "networkEgress.currentRoute": "\u73FE\u5728\u306E\u7D4C\u8DEF\uFF1A{route}",
     "networkEgress.test": "\u63A5\u7D9A\u3092\u30C6\u30B9\u30C8",
     "networkEgress.save": "\u4FDD\u5B58\u3057\u3066\u9069\u7528",
@@ -5649,7 +6337,8 @@
     "apiSettings.copyProviderWithoutKeyStatus": "\u30D7\u30ED\u30D0\u30A4\u30C0\u30FC\u3092\u30B3\u30D4\u30FC\u3057\u307E\u3057\u305F\u3002\u4FDD\u5B58\u3059\u308B\u524D\u306B\u3001\u540D\u524D\u3084\u30E2\u30C7\u30EB\u3092\u7DE8\u96C6\u3059\u308B\u304B\u3001API Key \u3092\u8FFD\u52A0\u3057\u3066\u304F\u3060\u3055\u3044\u3002",
     "apiSettings.sortProviders": "\u4E26\u3079\u66FF\u3048",
     "apiSettings.finishSortProviders": "\u5B8C\u4E86",
-    "apiSettings.sortProviderModeStatus": "\u30D7\u30ED\u30D0\u30A4\u30C0\u30FC\u306E\u4E26\u3079\u66FF\u3048",
+    "apiSettings.sortProviderModeStatus": "\u30CF\u30F3\u30C9\u30EB\u3092\u30C9\u30E9\u30C3\u30B0\u3059\u308B\u304B\u77E2\u5370\u30AD\u30FC\u3067\u4E26\u3079\u66FF\u3048\u307E\u3059",
+    "apiSettings.sortProviderHandleAria": "{provider}\u3092\u30C9\u30E9\u30C3\u30B0\u3001\u77E2\u5370\u3001Home\u3001End\u30AD\u30FC\u3067\u4E26\u3079\u66FF\u3048",
     "apiSettings.sortProviderStatus": "\u30D7\u30ED\u30D0\u30A4\u30C0\u30FC\u306E\u9806\u5E8F\u304C\u5909\u66F4\u3055\u308C\u307E\u3057\u305F\u3002\u81EA\u52D5\u4FDD\u5B58\u4E2D...",
     "apiSettings.moveProviderUp": "\u4E0A",
     "apiSettings.moveProviderDown": "\u4E0B\u3078",
@@ -5902,6 +6591,7 @@
     "batch.selected": "0 \uC120\uD0DD\uB428",
     "batch.selectedCount": "{count}\uAC1C \uC120\uD0DD\uB428",
     "batch.selectCurrentGroup": "\uADF8\uB8F9 \uC804\uCCB4 \uC120\uD0DD",
+    "batch.selectWaiting": "\uB300\uAE30 \uC911 \uBAA8\uB450 \uC120\uD0DD",
     "batch.archivedCount": "\uCC44\uD305 {count}\uAC1C \uBCF4\uAD00\uB428",
     "batch.archiveFailed": "\uC77C\uAD04 \uBCF4\uAD00 \uC2E4\uD328",
     "batch.runningCannotDeleteSelected": "\uC120\uD0DD\uD55C \uCC44\uD305\uC774 \uC2E4\uD589 \uC911\uC774\uBBC0\uB85C \uC0AD\uC81C\uD560 \uC218 \uC5C6\uC2B5\uB2C8\uB2E4.",
@@ -5915,14 +6605,15 @@
     "batch.cancelSelected": "\uC791\uC5C5 \uCDE8\uC18C",
     "batch.noActiveSelected": "\uC120\uD0DD\uD55C \uC791\uC5C5\uC774 \uB354 \uC774\uC0C1 \uC2E4\uD589 \uC911\uC774\uAC70\uB098 \uB300\uAE30 \uC911\uC774 \uC544\uB2D9\uB2C8\uB2E4",
     "batch.cancelTitle": "{count}\uAC1C \uC791\uC5C5\uC744 \uCDE8\uC18C\uD560\uAE4C\uC694?",
-    "batch.cancelMessage": "\uC2E4\uD589 \uC911\uC778 \uC791\uC5C5\uC740 \uC911\uC9C0\uB418\uACE0 \uB300\uAE30 \uC911\uC778 \uC791\uC5C5\uC740 \uB300\uAE30\uC5F4\uC5D0\uC11C \uC81C\uAC70\uB429\uB2C8\uB2E4. \uAE30\uB85D\uC740 \uC720\uC9C0\uB429\uB2C8\uB2E4.",
+    "batch.cancelMessage": "\uB300\uAE30 \uC911\uC778 \uC791\uC5C5\uC740 \uC989\uC2DC \uCDE8\uC18C\uB429\uB2C8\uB2E4. \uC2E4\uD589 \uC911\uC778 \uACF5\uAE09\uC790 \uD638\uCD9C\uC740 \uC751\uB2F5\uD560 \uB54C\uAE4C\uC9C0 \uACC4\uC18D\uB420 \uC218 \uC788\uC73C\uBA70 \uC694\uAE08\uC774 \uBD80\uACFC\uB420 \uC218 \uC788\uC2B5\uB2C8\uB2E4. \uAE30\uB85D\uC740 \uC720\uC9C0\uB429\uB2C8\uB2E4.",
     "batch.cancelDetail": "\uC2E4\uD589 {running} \xB7 \uB300\uAE30 {waiting}",
     "batch.cancelConfirm": "\uC791\uC5C5 \uCDE8\uC18C",
-    "batch.cancelResult": "\uCDE8\uC18C {cancelled}, \uAC74\uB108\uB700 {skipped}, \uC2E4\uD328 {failed}",
+    "batch.cancelResult": "\uCDE8\uC18C\uB428 {cancelled}, \uCDE8\uC18C \uC694\uCCAD\uB428 {requested}, \uAC74\uB108\uB700 {skipped}, \uC2E4\uD328 {failed}",
     "batch.cancelFailed": "\uC77C\uAD04 \uCDE8\uC18C \uC2E4\uD328",
     "action.archive": "\uBCF4\uAD00",
     "action.delete": "\uC0AD\uC81C",
     "action.cancel": "\uCDE8\uC18C",
+    "action.stop": "\uC911\uC9C0",
     "action.edit": "\uD3B8\uC9D1",
     "action.clear": "\uC9C0\uC6B0\uAE30",
     "action.paste": "\uBD99\uC5EC\uB123\uAE30",
@@ -5967,12 +6658,13 @@
     "queue.queuedDeleted": "\uB300\uAE30 \uC911\uC778 \uC791\uC5C5\uC774 \uC0AD\uC81C\uB418\uC5C8\uC2B5\uB2C8\uB2E4.",
     "queue.cancelRunningConfirm": "\uC791\uC5C5 \uCDE8\uC18C",
     "queue.cancelRunningTitleConfirm": "\uC2E4\uD589 \uC911\uC778 \uC791\uC5C5\uC744 \uCDE8\uC18C\uD558\uC2DC\uACA0\uC2B5\uB2C8\uAE4C?",
-    "queue.cancelRunningMessage": "\uD604\uC7AC \uC791\uC5C5\uC774 \uC911\uC9C0\uB429\uB2C8\uB2E4. \uAE30\uB85D\uC740 \uC720\uC9C0\uB429\uB2C8\uB2E4.",
+    "queue.cancelRunningMessage": "\uCDE8\uC18C \uC694\uCCAD\uC744 \uBCF4\uB0C5\uB2C8\uB2E4. \uACF5\uAE09\uC790 \uD638\uCD9C\uC740 \uC751\uB2F5\uD560 \uB54C\uAE4C\uC9C0 \uACC4\uC18D\uB420 \uC218 \uC788\uC73C\uBA70 \uC694\uAE08\uC774 \uBD80\uACFC\uB420 \uC218 \uC788\uC2B5\uB2C8\uB2E4. \uAE30\uB85D\uC740 \uC720\uC9C0\uB429\uB2C8\uB2E4.",
     "queue.cancelRunningFailed": "\uC791\uC5C5\uC744 \uCDE8\uC18C\uD558\uC9C0 \uBABB\uD588\uC2B5\uB2C8\uB2E4.",
+    "queue.cancellationPending": "\uCDE8\uC18C\uB97C \uC694\uCCAD\uD588\uC2B5\uB2C8\uB2E4. \uACF5\uAE09\uC790 \uD638\uCD9C\uC740 \uC751\uB2F5\uD560 \uB54C\uAE4C\uC9C0 \uACC4\uC18D\uB420 \uC218 \uC788\uC73C\uBA70 \uC694\uAE08\uC774 \uBD80\uACFC\uB420 \uC218 \uC788\uC2B5\uB2C8\uB2E4.",
     "queue.runningCancelled": "\uC791\uC5C5\uC774 \uCDE8\uC18C\uB418\uC5C8\uC2B5\uB2C8\uB2E4.",
     "queue.reorderFailed": "\uB300\uAE30\uC5F4\uC744 \uC7AC\uC815\uB82C\uD558\uC9C0 \uBABB\uD588\uC2B5\uB2C8\uB2E4.",
     "queue.realtimeUpdateFailed": "\uB77C\uC774\uBE0C \uC0C1\uD0DC\uB97C \uC5C5\uB370\uC774\uD2B8\uD558\uC9C0 \uBABB\uD588\uC2B5\uB2C8\uB2E4.",
-    "queue.realtimeDisconnected": "\uB77C\uC774\uBE0C \uC0C1\uD0DC \uC5F0\uACB0\uC774 \uB04A\uC5B4\uC84C\uC2B5\uB2C8\uB2E4. \uBCF5\uAD6C\uD558\uB824\uBA74 \uD398\uC774\uC9C0\uB97C \uC0C8\uB85C \uACE0\uCE58\uC138\uC694.",
+    "queue.realtimeDisconnected": "\uC2E4\uC2DC\uAC04 \uC0C1\uD0DC \uC5F0\uACB0\uC774 \uB04A\uC5B4\uC84C\uC2B5\uB2C8\uB2E4. \uC790\uB3D9\uC73C\uB85C \uB2E4\uC2DC \uC5F0\uACB0\uD558\uB294 \uC911\uC785\uB2C8\uB2E4\u2026",
     "queue.readFailed": "\uB300\uAE30\uC5F4\uC744 \uB85C\uB4DC\uD558\uC9C0 \uBABB\uD588\uC2B5\uB2C8\uB2E4.",
     "status.waiting": "\uC791\uC5C5 \uB300\uAE30 \uC911",
     "status.shownActiveTasks": "\uD65C\uC131 \uC791\uC5C5 \uD45C\uC2DC \uC911",
@@ -5980,6 +6672,7 @@
     "taskStatus.submitting": "\uC81C\uCD9C \uC911",
     "taskStatus.running": "\uC0DD\uC131 \uC911",
     "taskStatus.runningWithElapsed": "\uC0DD\uC131 \uC911 \xB7{elapsed}",
+    "taskStatus.cancelling": "\uCDE8\uC18C \uC911",
     "taskStatus.completed": "\uC644\uB8CC\uB428",
     "taskStatus.partialFailed": "\uBD80\uBD84\uC801\uC73C\uB85C \uC2E4\uD328\uD568",
     "taskStatus.failed": "\uC2E4\uD328",
@@ -6008,7 +6701,6 @@
     "taskCard.textToImageThumb": "\uD14D\uC2A4\uD2B8-\uC774\uBBF8\uC9C0 \uC791\uC5C5 \uCD95\uC18C\uD310",
     "taskCard.imageToImageThumb": "\uC774\uBBF8\uC9C0 \uB300 \uC774\uBBF8\uC9C0 \uC791\uC5C5 \uC378\uB124\uC77C",
     "taskCard.failedThumb": "\uC791\uC5C5\uC774 \uC2E4\uD328\uD588\uC2B5\uB2C8\uB2E4.",
-    "taskCard.textBadge": "T",
     "taskMode.edit": "\uD3B8\uC9D1",
     "taskMode.generate": "\uC0DD\uC131",
     "document.generatingQueue": "\uC0DD\uC131 \uC911 \xB7 \uB300\uAE30\uC5F4 {total}",
@@ -6022,12 +6714,114 @@
     "historyLibrary.openFull": "\uC804\uCCB4 \uAE30\uB85D \uB77C\uC774\uBE0C\uB7EC\uB9AC \uC5F4\uAE30",
     "history.documentTitle": "\uAE30\uB85D - iLab CONJURE",
     "history.back": "\uC0DD\uC131\uAE30\uB85C \uB3CC\uC544\uAC00\uAE30",
+    "history.homeAria": "iLab CONJURE \uC0DD\uC131\uAE30\uB85C \uB3CC\uC544\uAC00\uAE30",
+    "history.backToGenerator": "\uC0DD\uC131 \uD654\uBA74\uC73C\uB85C \uB3CC\uC544\uAC00\uAE30",
     "history.title": "\uAE30\uB85D",
     "history.loading": "\uB85C\uB4DC \uC911",
     "history.total": "{total}\uAC1C \uC791\uC5C5 \xB7 {archived}\uAC1C \uBCF4\uAD00\uB428",
     "history.search": "\uAC80\uC0C9",
     "history.searchPlaceholder": "\uD504\uB86C\uD504\uD2B8 \uB610\uB294 \uC791\uC5C5 ID \uAC80\uC0C9",
     "history.clear": "\uC9C0\uC6B0\uAE30",
+    "history.activeFilterCount": "\uD544\uD130 \uC801\uC6A9 \xB7 {count}\uAC1C",
+    "history.clearAllFilters": "\uBAA8\uB450 \uC9C0\uC6B0\uAE30",
+    "history.removeFilter": "\uD544\uD130 \uC81C\uAC70: {label}",
+    "history.filtersActive": "\uC791\uC5C5 \uD544\uD130, {count}\uAC1C \uC801\uC6A9\uB428",
+    "history.favorites": "\uC990\uACA8\uCC3E\uAE30",
+    "history.onlyFavorites": "\uC990\uACA8\uCC3E\uAE30\uB9CC",
+    "history.favoriteTask": "\uC990\uACA8\uCC3E\uAE30\uC5D0 \uCD94\uAC00",
+    "history.unfavoriteTask": "\uC990\uACA8\uCC3E\uAE30\uC5D0\uC11C \uC81C\uAC70",
+    "history.tags": "\uD0DC\uADF8",
+    "history.untagged": "\uD0DC\uADF8 \uC5C6\uC74C",
+    "history.manageTags": "\uD0DC\uADF8 \uAD00\uB9AC",
+    "history.createTag": "\uD0DC\uADF8 \uB9CC\uB4E4\uAE30",
+    "history.renameTag": "\uC774\uB984 \uBCC0\uACBD",
+    "history.deleteTag": "\uC0AD\uC81C",
+    "history.deleteTagAffected": "\uC0AD\uC81C ({count}\uAC1C \uC791\uC5C5)",
+    "history.addTag": "\uD0DC\uADF8 \uCD94\uAC00",
+    "history.removeTag": "\uD0DC\uADF8 \uC81C\uAC70",
+    "history.favoriteSelected": "\uC990\uACA8\uCC3E\uAE30",
+    "history.unfavoriteSelected": "\uC990\uACA8\uCC3E\uAE30 \uD574\uC81C",
+    "history.organizeSelected": "\uC815\uB9AC",
+    "history.exitSelection": "\uB2E4\uC911 \uC120\uD0DD \uC885\uB8CC",
+    "history.organizationFailed": "\uC990\uACA8\uCC3E\uAE30 \uB610\uB294 \uD0DC\uADF8\uB97C \uC5C5\uB370\uC774\uD2B8\uD558\uC9C0 \uBABB\uD588\uC2B5\uB2C8\uB2E4",
+    "history.tagNameConflict": "\uAC19\uC740 \uD0DC\uADF8 \uC774\uB984\uC774 \uC774\uBBF8 \uC788\uC2B5\uB2C8\uB2E4",
+    "history.noTags": "\uC544\uC9C1 \uD0DC\uADF8\uAC00 \uC5C6\uC2B5\uB2C8\uB2E4",
+    "history.backendRestartRequired": "\uAE30\uB85D \uAE30\uB2A5\uC774 \uC5C5\uB370\uC774\uD2B8\uB418\uC5C8\uC2B5\uB2C8\uB2E4. \uC571\uC744 \uB2E4\uC2DC \uC2DC\uC791\uD55C \uD6C4 \uB2E4\uC2DC \uC2DC\uB3C4\uD558\uC138\uC694.",
+    "history.export": "\uB0B4\uBCF4\uB0B4\uAE30",
+    "history.exportImagesOnly": "\uC774\uBBF8\uC9C0\uB9CC",
+    "history.exportImagesWithPrompts": "\uC774\uBBF8\uC9C0 + \uD504\uB86C\uD504\uD2B8",
+    "history.exportPreparing": "\uB0B4\uBCF4\uB0B4\uAE30 \uC900\uBE44 \uC911\u2026",
+    "history.exportStarted": "\uB2E4\uC6B4\uB85C\uB4DC \uC2DC\uC791\uB428",
+    "history.exportSummary": "\uC791\uC5C5 {taskCount}\uAC1C \xB7 \uC774\uBBF8\uC9C0 {imageCount}\uAC1C",
+    "history.exportFailed": "\uB0B4\uBCF4\uB0B4\uAE30 \uC2E4\uD328",
+    "historyBackup.open": "\uC791\uC5C5 \uBC31\uC5C5",
+    "historyBackup.importOpen": "\uBC31\uC5C5 \uAC00\uC838\uC624\uAE30",
+    "historyBackup.mode": "\uC791\uC5C5 \uBC31\uC5C5",
+    "historyBackup.description": "\uC791\uC5C5 \uB370\uC774\uD130\uC640 \uAD00\uB828 \uD30C\uC77C\uC744 \uC800\uC7A5\uD558\uC5EC \uD638\uD658\uB418\uB294 iLab CONJURE\uC5D0\uC11C \uBCF5\uC6D0\uD569\uB2C8\uB2E4.",
+    "historyBackup.scopeLegend": "\uBC31\uC5C5 \uBC94\uC704",
+    "historyBackup.scopeHelp": "\uD544\uD130 \uACB0\uACFC\uC640 \uC804\uCCB4 \uAE30\uB85D\uC740 \uB85C\uCEEC\uC5D0\uC11C \uC9D1\uACC4\uB418\uBA70 \uC774 \uD398\uC774\uC9C0\uC5D0 \uD45C\uC2DC\uB41C \uC791\uC5C5 \uC218\uC758 \uC81C\uD55C\uC744 \uBC1B\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4.",
+    "historyBackup.scopeSelected": "\uC120\uD0DD\uD55C \uC791\uC5C5",
+    "historyBackup.scopeFiltered": "\uD604\uC7AC \uD544\uD130 \uACB0\uACFC",
+    "historyBackup.scopeAll": "\uC804\uCCB4 \uC791\uC5C5 \uAE30\uB85D",
+    "historyBackup.scopeCount": "\uC804\uCCB4 {total}\uAC1C \uC911 {eligible}\uAC1C \uAC00\uB2A5",
+    "historyBackup.scopeCounting": "\uC9D1\uACC4 \uC911\u2026",
+    "historyBackup.scopeCountUnavailable": "\uAC1C\uC218\uB97C \uD655\uC778\uD560 \uC218 \uC5C6\uC74C",
+    "historyBackup.scopeNoneSelected": "\uC120\uD0DD\uD55C \uC791\uC5C5 \uC5C6\uC74C",
+    "historyBackup.willBackup": "{eligible}\uAC1C \uC791\uC5C5\uC744 \uBC31\uC5C5\uD558\uBA70 \uC644\uB8CC\uB418\uC9C0 \uC54A\uC740 {excluded}\uAC1C\uB294 \uC81C\uC678\uD569\uB2C8\uB2E4.",
+    "historyBackup.selectTasksFirst": "\uBA3C\uC800 \uC791\uC5C5\uC744 \uD558\uB098 \uC774\uC0C1 \uC120\uD0DD\uD558\uC138\uC694.",
+    "historyBackup.scopeLockedUnknown": "\uC6D0\uB798 \uBC31\uC5C5 \uBC94\uC704",
+    "historyBackup.scopeLocked": "\uBC94\uC704 \uC7A0\uAE40: {scope} \xB7 {eligible}\uAC1C \uC791\uC5C5 \uBC31\uC5C5",
+    "historyBackup.scopeLockedPending": "\uBC94\uC704 \uC7A0\uAE40: {scope} \xB7 \uBC31\uC5C5 \uAC00\uB2A5\uD55C \uC791\uC5C5 \uC9D1\uACC4 \uC911",
+    "historyBackup.progressLabel": "\uBC31\uC5C5 \uC9C4\uD589\uB960",
+    "historyBackup.start": "\uBC31\uC5C5 \uC2DC\uC791",
+    "historyBackup.cancel": "\uBC31\uC5C5 \uCDE8\uC18C",
+    "historyBackup.download": "\uBC31\uC5C5 \uB2E4\uC6B4\uB85C\uB4DC",
+    "historyBackup.dismiss": "\uACB0\uACFC \uB2EB\uAE30",
+    "historyBackup.discard": "\uB2E4\uC6B4\uB85C\uB4DC\uD558\uC9C0 \uC54A\uACE0 \uB2EB\uAE30",
+    "historyBackup.closePanel": "\uD328\uB110 \uB2EB\uAE30",
+    "historyBackup.downloadStartedTitle": "\uB2E4\uC6B4\uB85C\uB4DC \uC2DC\uC791\uB428",
+    "historyBackup.idle": "\uC900\uBE44\uB428",
+    "historyBackup.queued": "\uB300\uAE30 \uC911",
+    "historyBackup.planning": "\uACC4\uD68D \uC911",
+    "historyBackup.packing": "\uD328\uD0A4\uC9C0 \uC0DD\uC131 \uC911",
+    "historyBackup.ready": "\uB2E4\uC6B4\uB85C\uB4DC \uC900\uBE44\uB428",
+    "historyBackup.readyDetail": "\uBC31\uC5C5\uC774 \uC900\uBE44\uB418\uC5C8\uC2B5\uB2C8\uB2E4. 1\uC2DC\uAC04 \uC548\uC5D0 \uB2E4\uC6B4\uB85C\uB4DC\uD558\uC138\uC694. \uB2E4\uC6B4\uB85C\uB4DC\uD558\uC9C0 \uC54A\uACE0 \uB2EB\uC73C\uBA74 \uC784\uC2DC \uD30C\uC77C\uC774 \uC989\uC2DC \uC0AD\uC81C\uB429\uB2C8\uB2E4.",
+    "historyBackup.downloaded": "\uBE0C\uB77C\uC6B0\uC800\uC5D0 \uD30C\uC77C\uC774 \uC800\uC7A5\uB418\uC5C8\uB294\uC9C0 \uD655\uC778\uD55C \uB4A4 \uC774 \uD328\uB110\uC744 \uB2EB\uC744 \uC218 \uC788\uC2B5\uB2C8\uB2E4. \uC784\uC2DC \uD30C\uC77C\uC740 \uC804\uC1A1 \uD6C4 \uC0AD\uC81C\uB429\uB2C8\uB2E4.",
+    "historyBackup.missingInputsWarning": "{tasks}\uAC1C \uC791\uC5C5\uC5D0\uC11C \uC785\uB825 \uD30C\uC77C {files}\uAC1C\uAC00 \uB204\uB77D\uB418\uC5C8\uC2B5\uB2C8\uB2E4. \uD574\uB2F9 \uD30C\uC77C\uC740 \uC81C\uC678\uB418\uC9C0\uB9CC \uD504\uB86C\uD504\uD2B8\uC640 \uCD9C\uB825 \uACB0\uACFC\uB294 \uC815\uC0C1\uC801\uC73C\uB85C \uB0B4\uBCF4\uB0C5\uB2C8\uB2E4.",
+    "historyBackup.failed": "\uBC31\uC5C5 \uC2E4\uD328",
+    "historyBackup.cancelled": "\uCDE8\uC18C\uB428",
+    "historyBackup.expired": "\uB9CC\uB8CC\uB428",
+    "historyBackup.interrupted": "\uC911\uB2E8\uB428",
+    "historyBackup.stats": "\uC804\uCCB4 {total} \xB7 \uAC00\uB2A5 {eligible} \xB7 \uC81C\uC678 {excluded} \xB7 {bytes}",
+    "historyBackup.errorDisk": "\uB514\uC2A4\uD06C \uACF5\uAC04\uC774 \uBD80\uC871\uD569\uB2C8\uB2E4.",
+    "historyBackup.errorSourceChanged": "\uBC31\uC5C5 \uC911 \uC6D0\uBCF8 \uB370\uC774\uD130\uAC00 \uBCC0\uACBD\uB418\uC5C8\uC2B5\uB2C8\uB2E4.",
+    "historyBackup.errorEmpty": "\uBC31\uC5C5 \uAC00\uB2A5\uD55C \uC791\uC5C5\uC774 \uC5C6\uC2B5\uB2C8\uB2E4.",
+    "historyBackup.errorIo": "\uBC31\uC5C5\uC744 \uB9CC\uB4E4 \uC218 \uC5C6\uC2B5\uB2C8\uB2E4.",
+    "historyImport.title": "\uC791\uC5C5 \uBC31\uC5C5 \uAC00\uC838\uC624\uAE30",
+    "historyImport.choose": "ZIP \uBC31\uC5C5 \uC120\uD0DD",
+    "historyImport.uploading": "\uC5C5\uB85C\uB4DC \uC911",
+    "historyImport.validating": "\uAC80\uC99D \uC911",
+    "historyImport.validated": "\uAC80\uC99D\uB428",
+    "historyImport.preview": "\uBCF5\uC6D0 \uBBF8\uB9AC\uBCF4\uAE30",
+    "historyImport.restorable": "\uBCF5\uC6D0 \uAC00\uB2A5",
+    "historyImport.duplicate": "\uC911\uBCF5",
+    "historyImport.conflict": "\uCDA9\uB3CC",
+    "historyImport.invalid": "\uC720\uD6A8\uD558\uC9C0 \uC54A\uC74C",
+    "historyImport.confirm": "\uBCF5\uC6D0 \uD655\uC778",
+    "historyImport.restoring": "\uBCF5\uC6D0 \uC911",
+    "historyImport.restored": "\uBCF5\uC6D0\uB428",
+    "historyImport.failed": "\uBCF5\uC6D0 \uC2E4\uD328",
+    "historyImport.interrupted": "\uC911\uB2E8\uB428",
+    "historyImport.cancelled": "\uCDE8\uC18C\uB428",
+    "historyImport.result": "\uACB0\uACFC",
+    "historyImport.thumbnailWarnings": "\uC378\uB124\uC77C \uACBD\uACE0",
+    "historyImport.cleanupWarnings": "\uC815\uB9AC \uACBD\uACE0",
+    "historyImport.reselect": "\uACC4\uC18D\uD558\uB824\uBA74 \uC6D0\uBCF8 ZIP\uC744 \uB2E4\uC2DC \uC120\uD0DD\uD558\uC138\uC694.",
+    "historyImport.noOverwrite": "\uAE30\uC874 \uC791\uC5C5\uC740 \uC808\uB300 \uB36E\uC5B4\uC4F0\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4.",
+    "historyImport.reasonInvalid": "\uBC31\uC5C5 \uB370\uC774\uD130\uAC00 \uC62C\uBC14\uB974\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4",
+    "historyImport.reasonSensitive": "\uBCF4\uD638\uB41C \uB370\uC774\uD130\uAC00 \uD3EC\uD568\uB418\uC5B4 \uC788\uC2B5\uB2C8\uB2E4",
+    "historyImport.reasonMismatch": "\uBC31\uC5C5 \uB9E4\uB2C8\uD398\uC2A4\uD2B8\uC640 \uC77C\uCE58\uD558\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4",
+    "history.closeExport": "\uB0B4\uBCF4\uB0B4\uAE30 \uC120\uD0DD \uB2EB\uAE30",
     "history.type": "\uC720\uD615",
     "history.allTypes": "\uBAA8\uB4E0 \uC720\uD615",
     "history.type.textToImage": "\uD14D\uC2A4\uD2B8\u2192\uC774\uBBF8\uC9C0",
@@ -6198,6 +6992,7 @@
     "language.ru": "\u0420\u0443\u0441\u0441\u043A\u0438\u0439",
     "language.it": "Italiano",
     "language.hi": "\u0939\u093F\u0928\u094D\u0926\u0940",
+    "language.vi": "Ti\u1EBFng Vi\u1EC7t",
     "auth.label": "\uC778\uC99D \uC18C\uC2A4",
     "auth.checking": "\uC778\uC99D \uD655\uC778 \uC911",
     "auth.missingCodexSession": "Codex \uC138\uC158\uC774 \uAC10\uC9C0\uB418\uC9C0 \uC54A\uC558\uC2B5\uB2C8\uB2E4.",
@@ -6224,8 +7019,16 @@
     "recentAssets.defaultName": "\uCD5C\uADFC \uC5C5\uB85C\uB4DC",
     "recentAssets.use": "{name}\uC0AC\uC6A9",
     "recentAssets.delete": "{name}\uC0AD\uC81C",
+    "recentAssets.inUse": "{count}\uAC1C \uC791\uC5C5\uC5D0\uC11C \uC0AC\uC6A9 \uC911\uC774\uBBC0\uB85C \uC601\uAD6C \uC0AD\uC81C\uD560 \uC218 \uC5C6\uC9C0\uB9CC \uCD5C\uADFC \uC5C5\uB85C\uB4DC\uC5D0\uC11C \uC228\uAE38 \uC218 \uC788\uC2B5\uB2C8\uB2E4",
+    "recentAssets.hide": "\uCD5C\uADFC \uC5C5\uB85C\uB4DC\uC5D0\uC11C {name} \uC228\uAE30\uAE30",
+    "recentAssets.hideTitle": "\uCD5C\uADFC \uC5C5\uB85C\uB4DC\uC5D0\uC11C \uC228\uAE30\uC2DC\uACA0\uC2B5\uB2C8\uAE4C?",
+    "recentAssets.hideMessage": "\uC774 \uC774\uBBF8\uC9C0\uB294 {count}\uAC1C \uC791\uC5C5\uC5D0\uC11C \uC0AC\uC6A9 \uC911\uC774\uBBC0\uB85C \uC601\uAD6C \uC0AD\uC81C\uD560 \uC218 \uC5C6\uC2B5\uB2C8\uB2E4. \uC228\uAE30\uBA74 \uCD5C\uADFC \uC5C5\uB85C\uB4DC \uBAA9\uB85D\uC5D0\uC11C\uB9CC \uC81C\uAC70\uB418\uBA70 \uC6D0\uBCF8, \uD604\uC7AC \uC785\uB825 \uBC0F \uAE30\uB85D \uC791\uC5C5\uC740 \uC720\uC9C0\uB429\uB2C8\uB2E4.",
+    "recentAssets.hideFailed": "\uCD5C\uADFC \uC5C5\uB85C\uB4DC\uB97C \uC228\uAE30\uC9C0 \uBABB\uD588\uC2B5\uB2C8\uB2E4.",
+    "recentAssets.hidden": "\uCD5C\uADFC \uC5C5\uB85C\uB4DC\uC5D0\uC11C \uC228\uACBC\uC2B5\uB2C8\uB2E4. \uC6D0\uBCF8\uACFC \uAE30\uB85D \uC791\uC5C5\uC740 \uC720\uC9C0\uB429\uB2C8\uB2E4.",
+    "recentAssets.hidePreviews": "\uCD5C\uADFC \uC5C5\uB85C\uB4DC \uC774\uBBF8\uC9C0 \uC228\uAE30\uAE30",
+    "recentAssets.showPreviews": "\uCD5C\uADFC \uC5C5\uB85C\uB4DC \uC774\uBBF8\uC9C0 \uD45C\uC2DC",
     "recentAssets.deleteTitle": "\uCD5C\uADFC \uC5C5\uB85C\uB4DC\uB97C \uC0AD\uC81C\uD558\uC2DC\uACA0\uC2B5\uB2C8\uAE4C?",
-    "recentAssets.deleteMessage": "\uCD5C\uADFC \uC5C5\uB85C\uB4DC\uC5D0\uC11C \uC774\uBBF8\uC9C0\uAC00 \uC81C\uAC70\uB429\uB2C8\uB2E4. \uD604\uC7AC \uC774\uBBF8\uC9C0 \uC785\uB825\uC73C\uB85C \uC120\uD0DD\uB41C \uACBD\uC6B0 \uD604\uC7AC \uC785\uB825\uC5D0\uC11C \uC81C\uAC70\uB429\uB2C8\uB2E4. \uC774 \uCD5C\uADFC \uC5C5\uB85C\uB4DC\uB97C \uCC38\uC870\uD558\uB294 \uAE30\uB85D \uC791\uC5C5\uC740 \uD574\uB2F9 \uC785\uB825 \uBBF8\uB9AC \uBCF4\uAE30\uB97C \uC783\uAC8C \uB429\uB2C8\uB2E4. \uACF5\uAC1C \uAC24\uB7EC\uB9AC\uB294 \uC601\uD5A5\uC744 \uBC1B\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4.",
+    "recentAssets.deleteMessage": "\uC5B4\uB5A4 \uC791\uC5C5\uC5D0\uC11C\uB3C4 \uC0AC\uC6A9\uD558\uC9C0 \uC54A\uB294 \uC774\uBBF8\uC9C0\uC785\uB2C8\uB2E4. \uC6D0\uBCF8\uC744 \uC601\uAD6C \uC0AD\uC81C\uD558\uACE0 \uD604\uC7AC \uC785\uB825\uC5D0\uC11C\uB3C4 \uAC19\uC740 \uC774\uBBF8\uC9C0\uB97C \uC81C\uAC70\uD569\uB2C8\uB2E4. \uACF5\uAC1C \uAC24\uB7EC\uB9AC\uB294 \uC601\uD5A5\uC744 \uBC1B\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4.",
     "recentAssets.loadFailed": "\uCD5C\uADFC \uC5C5\uB85C\uB4DC\uB97C \uB85C\uB4DC\uD558\uC9C0 \uBABB\uD588\uC2B5\uB2C8\uB2E4.",
     "recentAssets.deleteFailed": "\uCD5C\uADFC \uC5C5\uB85C\uB4DC\uB97C \uC0AD\uC81C\uD558\uC9C0 \uBABB\uD588\uC2B5\uB2C8\uB2E4.",
     "recentAssets.deleted": "\uCD5C\uADFC \uC5C5\uB85C\uB4DC\uAC00 \uC0AD\uC81C\uB418\uC5C8\uC2B5\uB2C8\uB2E4.",
@@ -6250,11 +7053,13 @@
     "referenceCollector.alreadyStaged": "\uC774\uBBF8 \uC784\uC2DC \uCC38\uC870\uB85C \uCD94\uAC00\uB418\uC5C8\uC2B5\uB2C8\uB2E4",
     "referenceCollector.staged": "\uCC38\uC870 \uC774\uBBF8\uC9C0 {count}\uAC1C\uB97C \uC784\uC2DC \uCD94\uAC00\uD588\uC2B5\uB2C8\uB2E4",
     "referenceCollector.title": "\uC784\uC2DC \uCC38\uC870 \xB7 {count}",
-    "referenceCollector.addAll": "\uBAA8\uB4E0 \uCC38\uC870 \uCD94\uAC00",
+    "referenceCollector.addAll": "\uBAA8\uB450 \uCD94\uAC00",
+    "referenceCollector.replaceAll": "\uAE30\uC874 \uD56D\uBAA9 \uAD50\uCCB4",
     "referenceCollector.itemFallback": "\uC784\uC2DC \uCC38\uC870",
     "referenceCollector.remove": "\uC784\uC2DC \uCC38\uC870 \uC81C\uAC70",
     "referenceCollector.cleared": "\uC784\uC2DC \uCC38\uC870\uB97C \uC9C0\uC6E0\uC2B5\uB2C8\uB2E4",
     "referenceCollector.added": "\uCC38\uC870 \uC774\uBBF8\uC9C0 {count}\uAC1C\uB97C \uCD94\uAC00\uD588\uC2B5\uB2C8\uB2E4",
+    "referenceCollector.replaced": "\uCC38\uC870 \uC774\uBBF8\uC9C0\uB97C {count}\uAC1C\uB85C \uAD50\uCCB4\uD588\uC2B5\uB2C8\uB2E4",
     "referenceCollector.addFailed": "\uC784\uC2DC \uCC38\uC870\uB97C \uCD94\uAC00\uD558\uC9C0 \uBABB\uD588\uC2B5\uB2C8\uB2E4",
     "referenceCollector.readFailed": "\uC774\uBBF8\uC9C0\uB97C \uC77D\uC9C0 \uBABB\uD588\uC2B5\uB2C8\uB2E4:{status}",
     "gallery.quick": "\uBE60\uB978 \uAC24\uB7EC\uB9AC",
@@ -6372,7 +7177,7 @@
     "output.promptHelpTitle": "\uD504\uB86C\uD504\uD2B8 \uCC98\uB9AC",
     "output.promptHelp.responsesChannel": "Responses \xB7 \uBA54\uC778 \uBAA8\uB378 \uCC38\uC5EC",
     "output.promptHelp.imagesChannel": "Images \xB7 \uC9C1\uC811 \uC0DD\uC131",
-    "output.promptHelp.responses.original": "\uC6D0\uBB38\uC744 \uBA54\uC778 \uBAA8\uB378\uC5D0 \uC804\uB2EC\uD558\uACE0 \uC774\uBBF8\uC9C0 \uB3C4\uAD6C\uAC00 \uAC00\uB2A5\uD55C \uD55C \uADF8\uB300\uB85C \uC0AC\uC6A9\uD558\uB3C4\uB85D \uC694\uCCAD\uD569\uB2C8\uB2E4. \uB2E8, revised prompt\uAC00 \uC0DD\uC131\uB420 \uC218 \uC788\uC2B5\uB2C8\uB2E4.",
+    "output.promptHelp.responses.original": "\uC571 \uC218\uC900\uC758 \uD504\uB86C\uD504\uD2B8 \uADDC\uCE59\uC744 \uCD94\uAC00\uD558\uC9C0 \uC54A\uACE0 \uC6D0\uBB38\uC744 \uADF8\uB300\uB85C \uC804\uC1A1\uD569\uB2C8\uB2E4. \uACF5\uAE09\uC790\uAC00 revised prompt\uB97C \uBC18\uD658\uD558\uAC70\uB098 \uACB0\uACFC\uB97C \uB2E4\uB974\uAC8C \uD574\uC11D\uD560 \uC218 \uC788\uC2B5\uB2C8\uB2E4.",
     "output.promptHelp.responses.strict": "\uBA54\uC778 \uBAA8\uB378\uC774 \uC815\uB9AC\uD558\uAC70\uB098 \uD655\uC7A5\uD560 \uC218 \uC788\uC9C0\uB9CC \uD53C\uC0AC\uCCB4, \uD14D\uC2A4\uD2B8, \uC0C9\uC0C1, \uAD6C\uB3C4 \uAC19\uC740 \uD544\uC218 \uC870\uAC74\uC740 \uC720\uC9C0\uD569\uB2C8\uB2E4.",
     "output.promptHelp.responses.automatic": "\uCD94\uAC00 \uC81C\uC57D \uC5C6\uC774 \uBA54\uC778 \uBAA8\uB378\uC774 \uD574\uC11D\uD558\uACE0 \uCD5C\uC801\uD654\uD55C \uB4A4 \uC774\uBBF8\uC9C0 \uB3C4\uAD6C\uB97C \uD638\uCD9C\uD569\uB2C8\uB2E4.",
     "output.promptHelp.images.original": "\uC571 \uC218\uC900\uC758 \uADDC\uCE59\uC744 \uCD94\uAC00\uD558\uC9C0 \uC54A\uACE0 \uC6D0\uBB38\uC744 \uC774\uBBF8\uC9C0 API\uC5D0 \uC9C1\uC811 \uC81C\uCD9C\uD569\uB2C8\uB2E4.",
@@ -6467,6 +7272,16 @@
     "lightbox.close": "\uBBF8\uB9AC\uBCF4\uAE30 \uB2EB\uAE30",
     "lightbox.previous": "\uC774\uC804 \uC774\uBBF8\uC9C0",
     "lightbox.next": "\uB2E4\uC74C \uC774\uBBF8\uC9C0",
+    "lightbox.zoomControls": "\uD655\uB300/\uCD95\uC18C \uCEE8\uD2B8\uB864",
+    "lightbox.zoomOut": "\uCD95\uC18C",
+    "lightbox.zoomIn": "\uD655\uB300",
+    "lightbox.fit": "\uB9DE\uCDA4",
+    "lightbox.fitPage": "\uD398\uC774\uC9C0\uC5D0 \uB9DE\uCDA4",
+    "lightbox.actualSize": "100% \uC2E4\uC81C \uD06C\uAE30",
+    "lightbox.shortcuts": "\uD0A4\uBCF4\uB4DC \uB2E8\uCD95\uD0A4",
+    "lightbox.switchImage": "\uC774\uBBF8\uC9C0 \uC804\uD658",
+    "lightbox.switchTask": "\uC791\uC5C5 \uC804\uD658",
+    "lightbox.wheelZoom": "\uD720\uB85C \uD655\uB300/\uCD95\uC18C",
     "promptPopover.title": "\uD504\uB86C\uD504\uD2B8 \uBE44\uAD50",
     "promptPopover.summary": "\uC6D0\uBCF8{original}\xB7 \uCD5C\uC801\uD654{optimized}",
     "promptPopover.original": "\uC6D0\uB798 \uD504\uB86C\uD504\uD2B8",
@@ -6630,6 +7445,7 @@
     "colors.modifyValue": "\uC0C9\uC0C1 \uC218\uC815{value}",
     "colors.removeValue": "\uC0C9\uC0C1 \uC81C\uAC70{value}",
     "taskGroup.today": "\uC624\uB298",
+    "taskGroup.current": "\uD604\uC7AC \uC791\uC5C5",
     "taskGroup.yesterday": "\uC5B4\uC81C",
     "taskGroup.last7": "\uC9C0\uB09C 7\uC77C",
     "taskGroup.older": "\uC774\uC804",
@@ -6682,6 +7498,14 @@
     "networkEgress.direct": "\uC9C1\uC811 \uC5F0\uACB0",
     "networkEgress.custom": "\uC0AC\uC6A9\uC790 \uC9C0\uC815",
     "networkEgress.customProxy": "\uC0AC\uC6A9\uC790 \uC9C0\uC815 \uD504\uB85D\uC2DC URL",
+    "networkEgress.timeout": "\uC774\uBBF8\uC9C0 \uC694\uCCAD \uC2DC\uAC04 \uC81C\uD55C",
+    "networkEgress.timeoutUnit": "\uBD84",
+    "networkEgress.retryCount": "\uC2E4\uD328 \uD6C4 \uC7AC\uC2DC\uB3C4",
+    "networkEgress.retryUnit": "\uD68C",
+    "networkEgress.requestPolicyHelp": "\uC774\uD6C4 \uC2DC\uC791\uB418\uB294 \uC774\uBBF8\uC9C0 \uC694\uCCAD\uC5D0\uB9CC \uC801\uC6A9\uB429\uB2C8\uB2E4. \uC790\uB3D9 \uC7AC\uC2DC\uB3C4\uB9C8\uB2E4 \uC2DC\uAC04 \uC81C\uD55C\uC744 \uC0C8\uB85C \uACC4\uC0B0\uD569\uB2C8\uB2E4.",
+    "networkEgress.timeoutInvalid": "1~30 \uC0AC\uC774\uC758 \uC815\uC218(\uBD84)\uB97C \uC785\uB825\uD558\uC138\uC694",
+    "networkEgress.retryInvalid": "0~5 \uC0AC\uC774\uC758 \uC815\uC218(\uD68C)\uB97C \uC785\uB825\uD558\uC138\uC694",
+    "networkEgress.environmentTimeoutActive": "\uD604\uC7AC \uD658\uACBD \uBCC0\uC218 \uC2DC\uAC04 \uC81C\uD55C({seconds}\uCD08)\uC774 \uC801\uC6A9 \uC911\uC785\uB2C8\uB2E4. \uC800\uC7A5\uD558\uBA74 \uC704 \uC124\uC815\uC73C\uB85C \uB300\uCCB4\uB429\uB2C8\uB2E4.",
     "networkEgress.currentRoute": "\uD604\uC7AC \uACBD\uB85C: {route}",
     "networkEgress.test": "\uC5F0\uACB0 \uD14C\uC2A4\uD2B8",
     "networkEgress.save": "\uC800\uC7A5 \uBC0F \uC801\uC6A9",
@@ -6724,7 +7548,8 @@
     "apiSettings.copyProviderWithoutKeyStatus": "\uACF5\uAE09\uC790\uAC00 \uBCF5\uC0AC\uB418\uC5C8\uC2B5\uB2C8\uB2E4. \uC800\uC7A5\uD558\uAE30 \uC804\uC5D0 \uC774\uB984, \uBAA8\uB378\uC744 \uD3B8\uC9D1\uD558\uAC70\uB098 API \uD0A4\uB97C \uCD94\uAC00\uD558\uC138\uC694.",
     "apiSettings.sortProviders": "\uC815\uB82C",
     "apiSettings.finishSortProviders": "\uC644\uB8CC",
-    "apiSettings.sortProviderModeStatus": "\uACF5\uAE09\uC790 \uC815\uB82C \uC911",
+    "apiSettings.sortProviderModeStatus": "\uD578\uB4E4\uC744 \uB4DC\uB798\uADF8\uD558\uAC70\uB098 \uBC29\uD5A5\uD0A4\uB85C \uC815\uB82C\uD558\uC138\uC694",
+    "apiSettings.sortProviderHandleAria": "{provider}\uC744(\uB97C) \uB4DC\uB798\uADF8\uD558\uAC70\uB098 \uBC29\uD5A5\uD0A4, Home, End \uD0A4\uB85C \uC21C\uC11C \uBCC0\uACBD",
     "apiSettings.sortProviderStatus": "\uACF5\uAE09\uC790 \uC21C\uC11C\uAC00 \uBCC0\uACBD\uB418\uC5C8\uC2B5\uB2C8\uB2E4. \uC790\uB3D9 \uC800\uC7A5 \uC911...",
     "apiSettings.moveProviderUp": "\uC704\uB85C",
     "apiSettings.moveProviderDown": "\uC544\uB798\uB85C",
@@ -6977,6 +7802,7 @@
     "batch.selected": "0 selecionado",
     "batch.selectedCount": "{count} selecionado",
     "batch.selectCurrentGroup": "Selecionar todo o grupo",
+    "batch.selectWaiting": "Selecionar todas em espera",
     "batch.archivedCount": "Bate-papos {count} arquivados",
     "batch.archiveFailed": "Falha no arquivamento em lote",
     "batch.runningCannotDeleteSelected": "Os bate-papos selecionados est\xE3o em execu\xE7\xE3o e n\xE3o podem ser exclu\xEDdos",
@@ -6990,14 +7816,15 @@
     "batch.cancelSelected": "Cancelar tarefas",
     "batch.noActiveSelected": "As tarefas selecionadas j\xE1 n\xE3o est\xE3o em execu\xE7\xE3o nem em espera",
     "batch.cancelTitle": "Cancelar {count} tarefas?",
-    "batch.cancelMessage": "As tarefas em execu\xE7\xE3o ser\xE3o interrompidas e as tarefas em espera sair\xE3o da fila. O hist\xF3rico ser\xE1 mantido.",
+    "batch.cancelMessage": "As tarefas em espera ser\xE3o canceladas imediatamente. As chamadas ao provedor em execu\xE7\xE3o podem continuar e ainda gerar cobran\xE7a at\xE9 retornar. O hist\xF3rico ser\xE1 mantido.",
     "batch.cancelDetail": "Em execu\xE7\xE3o {running} \xB7 em espera {waiting}",
     "batch.cancelConfirm": "Cancelar tarefas",
-    "batch.cancelResult": "Canceladas {cancelled}, ignoradas {skipped}, falhas {failed}",
+    "batch.cancelResult": "Canceladas {cancelled}, cancelamento solicitado {requested}, ignoradas {skipped}, falhas {failed}",
     "batch.cancelFailed": "Falha no cancelamento em lote",
     "action.archive": "Arquivo",
     "action.delete": "Excluir",
     "action.cancel": "Cancelar",
+    "action.stop": "Parar",
     "action.edit": "Editar",
     "action.clear": "Limpar",
     "action.paste": "Colar",
@@ -7042,12 +7869,13 @@
     "queue.queuedDeleted": "Tarefa na fila exclu\xEDda",
     "queue.cancelRunningConfirm": "Cancelar tarefa",
     "queue.cancelRunningTitleConfirm": "Cancelar tarefa em execu\xE7\xE3o?",
-    "queue.cancelRunningMessage": "A tarefa atual ser\xE1 interrompida. A hist\xF3ria ser\xE1 mantida.",
+    "queue.cancelRunningMessage": "O cancelamento ser\xE1 solicitado. A chamada ao provedor pode continuar e ainda gerar cobran\xE7a at\xE9 retornar. O hist\xF3rico ser\xE1 mantido.",
     "queue.cancelRunningFailed": "Falha ao cancelar tarefa",
+    "queue.cancellationPending": "Cancelamento solicitado. A chamada ao provedor pode continuar e ainda gerar cobran\xE7a at\xE9 retornar.",
     "queue.runningCancelled": "Tarefa cancelada",
     "queue.reorderFailed": "Falha ao reordenar a fila",
     "queue.realtimeUpdateFailed": "Falha ao atualizar o status ativo",
-    "queue.realtimeDisconnected": "A conex\xE3o de status ao vivo foi perdida. Atualize a p\xE1gina para recuperar.",
+    "queue.realtimeDisconnected": "A conex\xE3o de status ao vivo foi interrompida. Reconectando automaticamente\u2026",
     "queue.readFailed": "Falha ao carregar a fila",
     "status.waiting": "Esperando",
     "status.shownActiveTasks": "Mostrando tarefas ativas",
@@ -7055,6 +7883,7 @@
     "taskStatus.submitting": "Enviando",
     "taskStatus.running": "Gerando",
     "taskStatus.runningWithElapsed": "Gerando \xB7 {elapsed}",
+    "taskStatus.cancelling": "Cancelando",
     "taskStatus.completed": "Conclu\xEDdo",
     "taskStatus.partialFailed": "Falha parcial",
     "taskStatus.failed": "Falha",
@@ -7083,7 +7912,6 @@
     "taskCard.textToImageThumb": "Miniatura da tarefa de texto para imagem",
     "taskCard.imageToImageThumb": "Miniatura da tarefa imagem a imagem",
     "taskCard.failedThumb": "Falha na tarefa",
-    "taskCard.textBadge": "T",
     "taskMode.edit": "Editar",
     "taskMode.generate": "Gerar",
     "document.generatingQueue": "Gerando \xB7 fila {total}",
@@ -7097,12 +7925,114 @@
     "historyLibrary.openFull": "Abra a biblioteca de hist\xF3rico completa",
     "history.documentTitle": "Hist\xF3ria - iLab CONJURE",
     "history.back": "Voltar ao gerador",
+    "history.homeAria": "Voltar ao gerador iLab CONJURE",
+    "history.backToGenerator": "Voltar ao gerador",
     "history.title": "Hist\xF3ria",
     "history.loading": "Carregando",
     "history.total": "Tarefas {total} \xB7 {archived} arquivadas",
     "history.search": "Pesquisar",
     "history.searchPlaceholder": "Solicita\xE7\xF5es de pesquisa ou tarefa ID",
     "history.clear": "Limpar",
+    "history.activeFilterCount": "Filtrado \xB7 {count}",
+    "history.clearAllFilters": "Limpar tudo",
+    "history.removeFilter": "Remover filtro: {label}",
+    "history.filtersActive": "Filtros de tarefas, {count} ativos",
+    "history.favorites": "Favoritos",
+    "history.onlyFavorites": "Somente favoritos",
+    "history.favoriteTask": "Adicionar aos favoritos",
+    "history.unfavoriteTask": "Remover dos favoritos",
+    "history.tags": "Etiquetas",
+    "history.untagged": "Sem etiqueta",
+    "history.manageTags": "Gerenciar etiquetas",
+    "history.createTag": "Criar etiqueta",
+    "history.renameTag": "Renomear",
+    "history.deleteTag": "Excluir",
+    "history.deleteTagAffected": "Excluir ({count} tarefas)",
+    "history.addTag": "Adicionar etiqueta",
+    "history.removeTag": "Remover etiqueta",
+    "history.favoriteSelected": "Favoritar",
+    "history.unfavoriteSelected": "Desfavoritar",
+    "history.organizeSelected": "Organizar",
+    "history.exitSelection": "Sair da sele\xE7\xE3o m\xFAltipla",
+    "history.organizationFailed": "N\xE3o foi poss\xEDvel atualizar favoritos ou etiquetas",
+    "history.tagNameConflict": "Este nome de etiqueta j\xE1 existe",
+    "history.noTags": "Ainda n\xE3o h\xE1 etiquetas",
+    "history.backendRestartRequired": "Os recursos do hist\xF3rico foram atualizados. Reinicie o app e tente novamente.",
+    "history.export": "Exportar",
+    "history.exportImagesOnly": "Somente imagens",
+    "history.exportImagesWithPrompts": "Imagens + prompts",
+    "history.exportPreparing": "Preparando exporta\xE7\xE3o\u2026",
+    "history.exportStarted": "Download iniciado",
+    "history.exportSummary": "{taskCount} tarefas \xB7 {imageCount} imagens",
+    "history.exportFailed": "Falha na exporta\xE7\xE3o",
+    "historyBackup.open": "Fazer backup das tarefas",
+    "historyBackup.importOpen": "Importar backup",
+    "historyBackup.mode": "Backup de tarefas",
+    "historyBackup.description": "Salve os dados e arquivos relacionados para restaur\xE1-los em uma instala\xE7\xE3o compat\xEDvel do iLab CONJURE.",
+    "historyBackup.scopeLegend": "Escopo do backup",
+    "historyBackup.scopeHelp": "Os resultados filtrados e todo o hist\xF3rico s\xE3o contados localmente, sem limite pelas tarefas exibidas nesta p\xE1gina.",
+    "historyBackup.scopeSelected": "Tarefas selecionadas",
+    "historyBackup.scopeFiltered": "Resultados filtrados atuais",
+    "historyBackup.scopeAll": "Todo o hist\xF3rico",
+    "historyBackup.scopeCount": "{eligible} de {total} eleg\xEDveis",
+    "historyBackup.scopeCounting": "Contando\u2026",
+    "historyBackup.scopeCountUnavailable": "Contagem indispon\xEDvel",
+    "historyBackup.scopeNoneSelected": "Nenhuma tarefa selecionada",
+    "historyBackup.willBackup": "Ser\xE3o salvas {eligible} tarefas; {excluded} tarefas inacabadas ser\xE3o exclu\xEDdas.",
+    "historyBackup.selectTasksFirst": "Selecione primeiro pelo menos uma tarefa.",
+    "historyBackup.scopeLockedUnknown": "Escopo original do backup",
+    "historyBackup.scopeLocked": "Escopo bloqueado: {scope} \xB7 {eligible} tarefas ser\xE3o salvas",
+    "historyBackup.scopeLockedPending": "Escopo bloqueado: {scope} \xB7 contando tarefas eleg\xEDveis",
+    "historyBackup.progressLabel": "Progresso do backup",
+    "historyBackup.start": "Iniciar backup",
+    "historyBackup.cancel": "Cancelar backup",
+    "historyBackup.download": "Baixar backup",
+    "historyBackup.dismiss": "Fechar resultado",
+    "historyBackup.discard": "Fechar sem baixar",
+    "historyBackup.closePanel": "Fechar painel",
+    "historyBackup.downloadStartedTitle": "Download iniciado",
+    "historyBackup.idle": "Pronto",
+    "historyBackup.queued": "Na fila",
+    "historyBackup.planning": "Planejando",
+    "historyBackup.packing": "Criando pacote",
+    "historyBackup.ready": "Pronto para baixar",
+    "historyBackup.readyDetail": "O backup est\xE1 pronto. Baixe em at\xE9 1 hora; fechar sem baixar exclui o arquivo tempor\xE1rio imediatamente.",
+    "historyBackup.downloaded": "Confirme que o navegador salvou o arquivo e ent\xE3o feche este painel. O arquivo tempor\xE1rio ser\xE1 exclu\xEDdo ap\xF3s a transfer\xEAncia.",
+    "historyBackup.missingInputsWarning": "H\xE1 {files} arquivos de entrada ausentes em {tasks} tarefas. Eles ser\xE3o omitidos; prompts e resultados ainda ser\xE3o exportados.",
+    "historyBackup.failed": "Falha no backup",
+    "historyBackup.cancelled": "Cancelado",
+    "historyBackup.expired": "Expirado",
+    "historyBackup.interrupted": "Interrompido",
+    "historyBackup.stats": "Total {total} \xB7 eleg\xEDveis {eligible} \xB7 exclu\xEDdas {excluded} \xB7 {bytes}",
+    "historyBackup.errorDisk": "Espa\xE7o em disco insuficiente.",
+    "historyBackup.errorSourceChanged": "Os dados de origem mudaram durante o backup.",
+    "historyBackup.errorEmpty": "Nenhuma tarefa eleg\xEDvel.",
+    "historyBackup.errorIo": "N\xE3o foi poss\xEDvel criar o backup.",
+    "historyImport.title": "Importar backup de tarefas",
+    "historyImport.choose": "Escolher backup ZIP",
+    "historyImport.uploading": "Enviando",
+    "historyImport.validating": "Validando",
+    "historyImport.validated": "Validado",
+    "historyImport.preview": "Pr\xE9via da restaura\xE7\xE3o",
+    "historyImport.restorable": "Restaur\xE1veis",
+    "historyImport.duplicate": "Duplicadas",
+    "historyImport.conflict": "Conflitos",
+    "historyImport.invalid": "Inv\xE1lidas",
+    "historyImport.confirm": "Confirmar restaura\xE7\xE3o",
+    "historyImport.restoring": "Restaurando",
+    "historyImport.restored": "Restauradas",
+    "historyImport.failed": "Falha na restaura\xE7\xE3o",
+    "historyImport.interrupted": "Interrompida",
+    "historyImport.cancelled": "Cancelada",
+    "historyImport.result": "Resultado",
+    "historyImport.thumbnailWarnings": "Avisos de miniatura",
+    "historyImport.cleanupWarnings": "Avisos de limpeza",
+    "historyImport.reselect": "Escolha novamente o ZIP original.",
+    "historyImport.noOverwrite": "As tarefas existentes nunca s\xE3o sobrescritas.",
+    "historyImport.reasonInvalid": "Dados de backup inv\xE1lidos",
+    "historyImport.reasonSensitive": "Cont\xE9m dados protegidos",
+    "historyImport.reasonMismatch": "N\xE3o corresponde ao manifesto do backup",
+    "history.closeExport": "Fechar op\xE7\xF5es de exporta\xE7\xE3o",
     "history.type": "Tipo",
     "history.allTypes": "Todos os tipos",
     "history.type.textToImage": "Texto para imagem",
@@ -7273,6 +8203,7 @@
     "language.ru": "\u0420\u0443\u0441\u0441\u043A\u0438\u0439",
     "language.it": "Italiano",
     "language.hi": "\u0939\u093F\u0928\u094D\u0926\u0940",
+    "language.vi": "Ti\u1EBFng Vi\u1EC7t",
     "auth.label": "Fonte de autentica\xE7\xE3o",
     "auth.checking": "Verificando autentica\xE7\xE3o",
     "auth.missingCodexSession": "Nenhuma sess\xE3o Codex detectada",
@@ -7299,8 +8230,16 @@
     "recentAssets.defaultName": "Carregamento recente",
     "recentAssets.use": "Usar {name}",
     "recentAssets.delete": "Excluir {name}",
+    "recentAssets.inUse": "Usada por {count} tarefas; n\xE3o pode ser exclu\xEDda permanentemente, mas pode ser ocultada dos uploads recentes",
+    "recentAssets.hide": "Ocultar {name} dos uploads recentes",
+    "recentAssets.hideTitle": "Ocultar dos uploads recentes?",
+    "recentAssets.hideMessage": "Esta imagem \xE9 usada por {count} tarefas e n\xE3o pode ser exclu\xEDda permanentemente. Ocultar remove apenas dos uploads recentes; o original, a entrada atual e as tarefas hist\xF3ricas s\xE3o preservados.",
+    "recentAssets.hideFailed": "Falha ao ocultar upload recente",
+    "recentAssets.hidden": "Ocultada dos uploads recentes; o original e as tarefas hist\xF3ricas foram preservados",
+    "recentAssets.hidePreviews": "Ocultar imagens de uploads recentes",
+    "recentAssets.showPreviews": "Mostrar imagens de uploads recentes",
     "recentAssets.deleteTitle": "Excluir upload recente?",
-    "recentAssets.deleteMessage": "Isso remover\xE1 a imagem dos uploads recentes. Se estiver atualmente selecionado como entrada de imagem, ser\xE1 removido da entrada atual. As tarefas hist\xF3ricas que fazem refer\xEAncia a este upload recente perder\xE3o a visualiza\xE7\xE3o da entrada. A galeria p\xFAblica n\xE3o \xE9 afetada.",
+    "recentAssets.deleteMessage": "Esta imagem n\xE3o \xE9 usada por nenhuma tarefa. O original ser\xE1 exclu\xEDdo permanentemente e a mesma imagem ser\xE1 removida da entrada atual. A galeria p\xFAblica n\xE3o \xE9 afetada.",
     "recentAssets.loadFailed": "Falha ao carregar uploads recentes",
     "recentAssets.deleteFailed": "Falha ao excluir upload recente",
     "recentAssets.deleted": "Upload recente exclu\xEDdo",
@@ -7325,11 +8264,13 @@
     "referenceCollector.alreadyStaged": "J\xE1 encenado como refer\xEAncia",
     "referenceCollector.staged": "Imagens de refer\xEAncia {count} encenadas",
     "referenceCollector.title": "Refer\xEAncias pendentes \xB7 {count}",
-    "referenceCollector.addAll": "Adicione todas as refer\xEAncias",
+    "referenceCollector.addAll": "Adicionar tudo",
+    "referenceCollector.replaceAll": "Substituir atuais",
     "referenceCollector.itemFallback": "Refer\xEAncia pendente",
     "referenceCollector.remove": "Remover refer\xEAncia pendente",
     "referenceCollector.cleared": "Refer\xEAncias pendentes apagadas",
     "referenceCollector.added": "Adicionadas imagens de refer\xEAncia {count}",
+    "referenceCollector.replaced": "Refer\xEAncias substitu\xEDdas por {count} imagens",
     "referenceCollector.addFailed": "Falha ao adicionar refer\xEAncias pendentes",
     "referenceCollector.readFailed": "Falha ao ler a imagem: {status}",
     "gallery.quick": "Galeria r\xE1pida",
@@ -7447,7 +8388,7 @@
     "output.promptHelpTitle": "Tratamento do prompt",
     "output.promptHelp.responsesChannel": "Responses \xB7 modelo principal envolvido",
     "output.promptHelp.imagesChannel": "Images \xB7 gera\xE7\xE3o direta",
-    "output.promptHelp.responses.original": "Envia o texto original ao modelo principal e pede que a ferramenta de imagem o preserve; ainda assim pode gerar um revised prompt.",
+    "output.promptHelp.responses.original": "Envia o texto original exato sem regras adicionadas pelo aplicativo; o provedor ainda pode retornar um revised prompt ou interpretar o resultado de outra forma.",
     "output.promptHelp.responses.strict": "Permite que o modelo principal organize ou expanda o prompt, preservando restri\xE7\xF5es como temas, texto, cores e composi\xE7\xE3o.",
     "output.promptHelp.responses.automatic": "N\xE3o adiciona restri\xE7\xF5es; o modelo principal interpreta e otimiza antes de chamar a ferramenta de imagem.",
     "output.promptHelp.images.original": "N\xE3o adiciona regras do aplicativo e envia o texto original diretamente \xE0 API de imagens.",
@@ -7542,6 +8483,16 @@
     "lightbox.close": "Fechar visualiza\xE7\xE3o",
     "lightbox.previous": "Imagem anterior",
     "lightbox.next": "Pr\xF3xima imagem",
+    "lightbox.zoomControls": "Controles de zoom",
+    "lightbox.zoomOut": "Diminuir",
+    "lightbox.zoomIn": "Aumentar",
+    "lightbox.fit": "Ajustar",
+    "lightbox.fitPage": "Ajustar \xE0 p\xE1gina",
+    "lightbox.actualSize": "100% tamanho real",
+    "lightbox.shortcuts": "Atalhos do teclado",
+    "lightbox.switchImage": "Trocar imagem",
+    "lightbox.switchTask": "Trocar tarefa",
+    "lightbox.wheelZoom": "Roda para ampliar",
     "promptPopover.title": "Compara\xE7\xE3o imediata",
     "promptPopover.summary": "{original} original \xB7 {optimized} otimizado",
     "promptPopover.original": "Solicita\xE7\xE3o original",
@@ -7705,6 +8656,7 @@
     "colors.modifyValue": "Editar cor {value}",
     "colors.removeValue": "Remover cor {value}",
     "taskGroup.today": "Hoje",
+    "taskGroup.current": "Tarefa atual",
     "taskGroup.yesterday": "Ontem",
     "taskGroup.last7": "\xDAltimos 7 dias",
     "taskGroup.older": "Mais velho",
@@ -7757,6 +8709,14 @@
     "networkEgress.direct": "Direta",
     "networkEgress.custom": "Personalizada",
     "networkEgress.customProxy": "URL de proxy personalizada",
+    "networkEgress.timeout": "Tempo limite da solicita\xE7\xE3o de imagem",
+    "networkEgress.timeoutUnit": "min",
+    "networkEgress.retryCount": "Novas tentativas ap\xF3s falha",
+    "networkEgress.retryUnit": "vezes",
+    "networkEgress.requestPolicyHelp": "Aplica-se apenas \xE0s solicita\xE7\xF5es de imagem iniciadas depois. Cada nova tentativa autom\xE1tica recebe um novo tempo limite.",
+    "networkEgress.timeoutInvalid": "Insira um n\xFAmero inteiro de 1 a 30 minutos",
+    "networkEgress.retryInvalid": "Insira um n\xFAmero inteiro de 0 a 5 novas tentativas",
+    "networkEgress.environmentTimeoutActive": "O tempo limite da vari\xE1vel de ambiente est\xE1 ativo: {seconds} segundos. Ao salvar, ele ser\xE1 substitu\xEDdo pela configura\xE7\xE3o acima.",
     "networkEgress.currentRoute": "Rota atual: {route}",
     "networkEgress.test": "Testar conex\xE3o",
     "networkEgress.save": "Salvar e aplicar",
@@ -7799,7 +8759,8 @@
     "apiSettings.copyProviderWithoutKeyStatus": "Provedor copiado. Edite o nome, modelo ou adicione uma chave API antes de salvar.",
     "apiSettings.sortProviders": "Classificar",
     "apiSettings.finishSortProviders": "Conclu\xEDdo",
-    "apiSettings.sortProviderModeStatus": "Classificando provedores",
+    "apiSettings.sortProviderModeStatus": "Arraste as al\xE7as para ordenar ou use as setas",
+    "apiSettings.sortProviderHandleAria": "Arraste para reordenar {provider} ou use as setas, Home e End",
     "apiSettings.sortProviderStatus": "Ordem do provedor alterada. Salvando automaticamente...",
     "apiSettings.moveProviderUp": "Acima",
     "apiSettings.moveProviderDown": "Para baixo",
@@ -8052,6 +9013,7 @@
     "batch.selected": "0 \u0432\u044B\u0431\u0440\u0430\u043D\u043E",
     "batch.selectedCount": "{count} \u0432\u044B\u0431\u0440\u0430\u043D\u043E",
     "batch.selectCurrentGroup": "\u0412\u044B\u0431\u0440\u0430\u0442\u044C \u0432\u0441\u044E \u0433\u0440\u0443\u043F\u043F\u0443",
+    "batch.selectWaiting": "\u0412\u044B\u0431\u0440\u0430\u0442\u044C \u0432\u0441\u0435 \u043E\u0436\u0438\u0434\u0430\u044E\u0449\u0438\u0435",
     "batch.archivedCount": "\u0410\u0440\u0445\u0438\u0432\u0438\u0440\u043E\u0432\u0430\u043D\u043D\u044B\u0435 \u0447\u0430\u0442\u044B {count}",
     "batch.archiveFailed": "\u041F\u0430\u043A\u0435\u0442\u043D\u044B\u0439 \u0430\u0440\u0445\u0438\u0432 \u043D\u0435 \u0432\u044B\u043F\u043E\u043B\u043D\u0435\u043D",
     "batch.runningCannotDeleteSelected": "\u0412\u044B\u0431\u0440\u0430\u043D\u043D\u044B\u0435 \u0447\u0430\u0442\u044B \u0430\u043A\u0442\u0438\u0432\u043D\u044B \u0438 \u043D\u0435 \u043C\u043E\u0433\u0443\u0442 \u0431\u044B\u0442\u044C \u0443\u0434\u0430\u043B\u0435\u043D\u044B.",
@@ -8065,14 +9027,15 @@
     "batch.cancelSelected": "\u041E\u0442\u043C\u0435\u043D\u0438\u0442\u044C \u0437\u0430\u0434\u0430\u0447\u0438",
     "batch.noActiveSelected": "\u0412\u044B\u0431\u0440\u0430\u043D\u043D\u044B\u0435 \u0437\u0430\u0434\u0430\u0447\u0438 \u0431\u043E\u043B\u044C\u0448\u0435 \u043D\u0435 \u0432\u044B\u043F\u043E\u043B\u043D\u044F\u044E\u0442\u0441\u044F \u0438 \u043D\u0435 \u043E\u0436\u0438\u0434\u0430\u044E\u0442",
     "batch.cancelTitle": "\u041E\u0442\u043C\u0435\u043D\u0438\u0442\u044C \u0437\u0430\u0434\u0430\u0447\u0438: {count}?",
-    "batch.cancelMessage": "\u0412\u044B\u043F\u043E\u043B\u043D\u044F\u0435\u043C\u044B\u0435 \u0437\u0430\u0434\u0430\u0447\u0438 \u0431\u0443\u0434\u0443\u0442 \u043E\u0441\u0442\u0430\u043D\u043E\u0432\u043B\u0435\u043D\u044B, \u0430 \u043E\u0436\u0438\u0434\u0430\u044E\u0449\u0438\u0435 \u0443\u0434\u0430\u043B\u0435\u043D\u044B \u0438\u0437 \u043E\u0447\u0435\u0440\u0435\u0434\u0438. \u0418\u0441\u0442\u043E\u0440\u0438\u044F \u0441\u043E\u0445\u0440\u0430\u043D\u0438\u0442\u0441\u044F.",
+    "batch.cancelMessage": "\u041E\u0436\u0438\u0434\u0430\u044E\u0449\u0438\u0435 \u0437\u0430\u0434\u0430\u0447\u0438 \u0431\u0443\u0434\u0443\u0442 \u043E\u0442\u043C\u0435\u043D\u0435\u043D\u044B \u0441\u0440\u0430\u0437\u0443. \u0412\u044B\u043F\u043E\u043B\u043D\u044F\u0435\u043C\u044B\u0435 \u0432\u044B\u0437\u043E\u0432\u044B \u043F\u0440\u043E\u0432\u0430\u0439\u0434\u0435\u0440\u0430 \u043C\u043E\u0433\u0443\u0442 \u043F\u0440\u043E\u0434\u043E\u043B\u0436\u0430\u0442\u044C\u0441\u044F \u0438 \u0442\u0430\u0440\u0438\u0444\u0438\u0446\u0438\u0440\u043E\u0432\u0430\u0442\u044C\u0441\u044F \u0434\u043E \u043F\u043E\u043B\u0443\u0447\u0435\u043D\u0438\u044F \u043E\u0442\u0432\u0435\u0442\u0430. \u0418\u0441\u0442\u043E\u0440\u0438\u044F \u0441\u043E\u0445\u0440\u0430\u043D\u0438\u0442\u0441\u044F.",
     "batch.cancelDetail": "\u0412\u044B\u043F\u043E\u043B\u043D\u044F\u0435\u0442\u0441\u044F {running} \xB7 \u043E\u0436\u0438\u0434\u0430\u0435\u0442 {waiting}",
     "batch.cancelConfirm": "\u041E\u0442\u043C\u0435\u043D\u0438\u0442\u044C \u0437\u0430\u0434\u0430\u0447\u0438",
-    "batch.cancelResult": "\u041E\u0442\u043C\u0435\u043D\u0435\u043D\u043E {cancelled}, \u043F\u0440\u043E\u043F\u0443\u0449\u0435\u043D\u043E {skipped}, \u043E\u0448\u0438\u0431\u043E\u043A {failed}",
+    "batch.cancelResult": "\u041E\u0442\u043C\u0435\u043D\u0435\u043D\u043E {cancelled}, \u043E\u0442\u043C\u0435\u043D\u0430 \u0437\u0430\u043F\u0440\u043E\u0448\u0435\u043D\u0430 {requested}, \u043F\u0440\u043E\u043F\u0443\u0449\u0435\u043D\u043E {skipped}, \u043E\u0448\u0438\u0431\u043E\u043A {failed}",
     "batch.cancelFailed": "\u041D\u0435 \u0443\u0434\u0430\u043B\u043E\u0441\u044C \u043E\u0442\u043C\u0435\u043D\u0438\u0442\u044C \u0437\u0430\u0434\u0430\u0447\u0438",
     "action.archive": "\u0410\u0440\u0445\u0438\u0432",
     "action.delete": "\u0423\u0434\u0430\u043B\u0438\u0442\u044C",
     "action.cancel": "\u041E\u0442\u043C\u0435\u043D\u0430",
+    "action.stop": "\u041E\u0441\u0442\u0430\u043D\u043E\u0432\u0438\u0442\u044C",
     "action.edit": "\u0420\u0435\u0434\u0430\u043A\u0442\u0438\u0440\u043E\u0432\u0430\u0442\u044C",
     "action.clear": "\u041E\u0447\u0438\u0441\u0442\u0438\u0442\u044C",
     "action.paste": "\u0412\u0441\u0442\u0430\u0432\u0438\u0442\u044C",
@@ -8117,12 +9080,13 @@
     "queue.queuedDeleted": "\u0417\u0430\u0434\u0430\u0447\u0430 \u0432 \u043E\u0447\u0435\u0440\u0435\u0434\u0438 \u0443\u0434\u0430\u043B\u0435\u043D\u0430",
     "queue.cancelRunningConfirm": "\u041E\u0442\u043C\u0435\u043D\u0438\u0442\u044C \u0437\u0430\u0434\u0430\u0447\u0443",
     "queue.cancelRunningTitleConfirm": "\u041E\u0442\u043C\u0435\u043D\u0438\u0442\u044C \u0432\u044B\u043F\u043E\u043B\u043D\u0435\u043D\u0438\u0435 \u0437\u0430\u0434\u0430\u0447\u0438?",
-    "queue.cancelRunningMessage": "\u0422\u0435\u043A\u0443\u0449\u0430\u044F \u0437\u0430\u0434\u0430\u0447\u0430 \u0431\u0443\u0434\u0435\u0442 \u043E\u0441\u0442\u0430\u043D\u043E\u0432\u043B\u0435\u043D\u0430. \u0418\u0441\u0442\u043E\u0440\u0438\u044F \u0431\u0443\u0434\u0435\u0442 \u0441\u043E\u0445\u0440\u0430\u043D\u0435\u043D\u0430.",
+    "queue.cancelRunningMessage": "\u0411\u0443\u0434\u0435\u0442 \u0437\u0430\u043F\u0440\u043E\u0448\u0435\u043D\u0430 \u043E\u0442\u043C\u0435\u043D\u0430. \u0412\u044B\u0437\u043E\u0432 \u043F\u0440\u043E\u0432\u0430\u0439\u0434\u0435\u0440\u0430 \u043C\u043E\u0436\u0435\u0442 \u043F\u0440\u043E\u0434\u043E\u043B\u0436\u0430\u0442\u044C\u0441\u044F \u0438 \u0442\u0430\u0440\u0438\u0444\u0438\u0446\u0438\u0440\u043E\u0432\u0430\u0442\u044C\u0441\u044F \u0434\u043E \u043F\u043E\u043B\u0443\u0447\u0435\u043D\u0438\u044F \u043E\u0442\u0432\u0435\u0442\u0430. \u0418\u0441\u0442\u043E\u0440\u0438\u044F \u0441\u043E\u0445\u0440\u0430\u043D\u0438\u0442\u0441\u044F.",
     "queue.cancelRunningFailed": "\u041D\u0435 \u0443\u0434\u0430\u043B\u043E\u0441\u044C \u043E\u0442\u043C\u0435\u043D\u0438\u0442\u044C \u0437\u0430\u0434\u0430\u0447\u0443.",
+    "queue.cancellationPending": "\u041E\u0442\u043C\u0435\u043D\u0430 \u0437\u0430\u043F\u0440\u043E\u0448\u0435\u043D\u0430. \u0412\u044B\u0437\u043E\u0432 \u043F\u0440\u043E\u0432\u0430\u0439\u0434\u0435\u0440\u0430 \u043C\u043E\u0436\u0435\u0442 \u043F\u0440\u043E\u0434\u043E\u043B\u0436\u0430\u0442\u044C\u0441\u044F \u0438 \u0442\u0430\u0440\u0438\u0444\u0438\u0446\u0438\u0440\u043E\u0432\u0430\u0442\u044C\u0441\u044F \u0434\u043E \u043F\u043E\u043B\u0443\u0447\u0435\u043D\u0438\u044F \u043E\u0442\u0432\u0435\u0442\u0430.",
     "queue.runningCancelled": "\u0417\u0430\u0434\u0430\u0447\u0430 \u043E\u0442\u043C\u0435\u043D\u0435\u043D\u0430",
     "queue.reorderFailed": "\u041D\u0435 \u0443\u0434\u0430\u043B\u043E\u0441\u044C \u0438\u0437\u043C\u0435\u043D\u0438\u0442\u044C \u043F\u043E\u0440\u044F\u0434\u043E\u043A \u043E\u0447\u0435\u0440\u0435\u0434\u0438.",
     "queue.realtimeUpdateFailed": "\u041D\u0435 \u0443\u0434\u0430\u043B\u043E\u0441\u044C \u043E\u0431\u043D\u043E\u0432\u0438\u0442\u044C \u0442\u0435\u043A\u0443\u0449\u0438\u0439 \u0441\u0442\u0430\u0442\u0443\u0441.",
-    "queue.realtimeDisconnected": "\u0421\u043E\u0435\u0434\u0438\u043D\u0435\u043D\u0438\u0435 \u0441\u043E \u0441\u0442\u0430\u0442\u0443\u0441\u043E\u043C Live \u0431\u044B\u043B\u043E \u043F\u043E\u0442\u0435\u0440\u044F\u043D\u043E. \u041E\u0431\u043D\u043E\u0432\u0438\u0442\u0435 \u0441\u0442\u0440\u0430\u043D\u0438\u0446\u0443 \u0434\u043B\u044F \u0432\u043E\u0441\u0441\u0442\u0430\u043D\u043E\u0432\u043B\u0435\u043D\u0438\u044F.",
+    "queue.realtimeDisconnected": "\u0421\u043E\u0435\u0434\u0438\u043D\u0435\u043D\u0438\u0435 \u0441\u043E \u0441\u0442\u0430\u0442\u0443\u0441\u043E\u043C \u0432 \u0440\u0435\u0430\u043B\u044C\u043D\u043E\u043C \u0432\u0440\u0435\u043C\u0435\u043D\u0438 \u043F\u0440\u0435\u0440\u0432\u0430\u043D\u043E. \u0412\u044B\u043F\u043E\u043B\u043D\u044F\u0435\u0442\u0441\u044F \u0430\u0432\u0442\u043E\u043C\u0430\u0442\u0438\u0447\u0435\u0441\u043A\u043E\u0435 \u043F\u0435\u0440\u0435\u043F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u0438\u0435\u2026",
     "queue.readFailed": "\u041D\u0435 \u0443\u0434\u0430\u043B\u043E\u0441\u044C \u0437\u0430\u0433\u0440\u0443\u0437\u0438\u0442\u044C \u043E\u0447\u0435\u0440\u0435\u0434\u044C",
     "status.waiting": "\u041E\u0436\u0438\u0434\u0430\u043D\u0438\u0435",
     "status.shownActiveTasks": "\u041F\u043E\u043A\u0430\u0437 \u0430\u043A\u0442\u0438\u0432\u043D\u044B\u0445 \u0437\u0430\u0434\u0430\u0447",
@@ -8130,6 +9094,7 @@
     "taskStatus.submitting": "\u041E\u0442\u043F\u0440\u0430\u0432\u043A\u0430",
     "taskStatus.running": "\u0421\u043E\u0437\u0434\u0430\u043D\u0438\u0435",
     "taskStatus.runningWithElapsed": "\u0413\u0435\u043D\u0435\u0440\u0430\u0446\u0438\u044F \xB7 {elapsed}",
+    "taskStatus.cancelling": "\u041E\u0442\u043C\u0435\u043D\u0430",
     "taskStatus.completed": "\u0417\u0430\u0432\u0435\u0440\u0448\u0435\u043D\u043E",
     "taskStatus.partialFailed": "\u0427\u0430\u0441\u0442\u0438\u0447\u043D\u043E \u043D\u0435 \u0443\u0434\u0430\u043B\u043E\u0441\u044C",
     "taskStatus.failed": "\u041D\u0435 \u0443\u0434\u0430\u043B\u043E\u0441\u044C",
@@ -8158,7 +9123,6 @@
     "taskCard.textToImageThumb": "\u041C\u0438\u043D\u0438\u0430\u0442\u044E\u0440\u0430 \u0437\u0430\u0434\u0430\u0447\u0438 \u043F\u0440\u0435\u043E\u0431\u0440\u0430\u0437\u043E\u0432\u0430\u043D\u0438\u044F \u0442\u0435\u043A\u0441\u0442\u0430 \u0432 image",
     "taskCard.imageToImageThumb": "\u041C\u0438\u043D\u0438\u0430\u0442\u044E\u0440\u0430 \u0437\u0430\u0434\u0430\u0447\u0438 \u043E\u0442 Image \u0434\u043E image",
     "taskCard.failedThumb": "\u0417\u0430\u0434\u0430\u0447\u0430 \u043D\u0435 \u0432\u044B\u043F\u043E\u043B\u043D\u0435\u043D\u0430",
-    "taskCard.textBadge": "\u0422",
     "taskMode.edit": "\u0420\u0435\u0434\u0430\u043A\u0442\u0438\u0440\u043E\u0432\u0430\u0442\u044C",
     "taskMode.generate": "\u0413\u0435\u043D\u0435\u0440\u0438\u0440\u043E\u0432\u0430\u0442\u044C",
     "document.generatingQueue": "\u0421\u043E\u0437\u0434\u0430\u043D\u0438\u0435 \xB7 \u043E\u0447\u0435\u0440\u0435\u0434\u0438 {total}",
@@ -8172,12 +9136,114 @@
     "historyLibrary.openFull": "\u041E\u0442\u043A\u0440\u044B\u0442\u044C \u043F\u043E\u043B\u043D\u0443\u044E \u0431\u0438\u0431\u043B\u0438\u043E\u0442\u0435\u043A\u0443 \u0438\u0441\u0442\u043E\u0440\u0438\u0438",
     "history.documentTitle": "\u0418\u0441\u0442\u043E\u0440\u0438\u044F - iLab CONJURE",
     "history.back": "\u0412\u0435\u0440\u043D\u0443\u0442\u044C\u0441\u044F \u043A \u0433\u0435\u043D\u0435\u0440\u0430\u0442\u043E\u0440\u0443",
+    "history.homeAria": "\u0412\u0435\u0440\u043D\u0443\u0442\u044C\u0441\u044F \u043A \u0433\u0435\u043D\u0435\u0440\u0430\u0442\u043E\u0440\u0443 iLab CONJURE",
+    "history.backToGenerator": "\u0412\u0435\u0440\u043D\u0443\u0442\u044C\u0441\u044F \u043A \u0433\u0435\u043D\u0435\u0440\u0430\u0442\u043E\u0440\u0443",
     "history.title": "\u0418\u0441\u0442\u043E\u0440\u0438\u044F",
     "history.loading": "\u0417\u0430\u0433\u0440\u0443\u0437\u043A\u0430",
     "history.total": "{total} \u0437\u0430\u0434\u0430\u0447 \xB7 {archived} \u0432 \u0430\u0440\u0445\u0438\u0432\u0435",
     "history.search": "\u041F\u043E\u0438\u0441\u043A",
     "history.searchPlaceholder": "\u041F\u043E\u0438\u0441\u043A\u043E\u0432\u044B\u0435 \u0437\u0430\u043F\u0440\u043E\u0441\u044B \u0438\u043B\u0438 \u0437\u0430\u0434\u0430\u0447\u0430 ID",
     "history.clear": "\u041E\u0447\u0438\u0441\u0442\u0438\u0442\u044C",
+    "history.activeFilterCount": "\u0424\u0438\u043B\u044C\u0442\u0440\u044B \xB7 {count}",
+    "history.clearAllFilters": "\u041E\u0447\u0438\u0441\u0442\u0438\u0442\u044C \u0432\u0441\u0435",
+    "history.removeFilter": "\u0423\u0434\u0430\u043B\u0438\u0442\u044C \u0444\u0438\u043B\u044C\u0442\u0440: {label}",
+    "history.filtersActive": "\u0424\u0438\u043B\u044C\u0442\u0440\u044B \u0437\u0430\u0434\u0430\u0447: \u0430\u043A\u0442\u0438\u0432\u043D\u043E {count}",
+    "history.favorites": "\u0418\u0437\u0431\u0440\u0430\u043D\u043D\u043E\u0435",
+    "history.onlyFavorites": "\u0422\u043E\u043B\u044C\u043A\u043E \u0438\u0437\u0431\u0440\u0430\u043D\u043D\u043E\u0435",
+    "history.favoriteTask": "\u0414\u043E\u0431\u0430\u0432\u0438\u0442\u044C \u0432 \u0438\u0437\u0431\u0440\u0430\u043D\u043D\u043E\u0435",
+    "history.unfavoriteTask": "\u0423\u0431\u0440\u0430\u0442\u044C \u0438\u0437 \u0438\u0437\u0431\u0440\u0430\u043D\u043D\u043E\u0433\u043E",
+    "history.tags": "\u0422\u0435\u0433\u0438",
+    "history.untagged": "\u0411\u0435\u0437 \u0442\u0435\u0433\u043E\u0432",
+    "history.manageTags": "\u0423\u043F\u0440\u0430\u0432\u043B\u0435\u043D\u0438\u0435 \u0442\u0435\u0433\u0430\u043C\u0438",
+    "history.createTag": "\u0421\u043E\u0437\u0434\u0430\u0442\u044C \u0442\u0435\u0433",
+    "history.renameTag": "\u041F\u0435\u0440\u0435\u0438\u043C\u0435\u043D\u043E\u0432\u0430\u0442\u044C",
+    "history.deleteTag": "\u0423\u0434\u0430\u043B\u0438\u0442\u044C",
+    "history.deleteTagAffected": "\u0423\u0434\u0430\u043B\u0438\u0442\u044C ({count} \u0437\u0430\u0434\u0430\u0447)",
+    "history.addTag": "\u0414\u043E\u0431\u0430\u0432\u0438\u0442\u044C \u0442\u0435\u0433",
+    "history.removeTag": "\u0423\u0434\u0430\u043B\u0438\u0442\u044C \u0442\u0435\u0433",
+    "history.favoriteSelected": "\u0412 \u0438\u0437\u0431\u0440\u0430\u043D\u043D\u043E\u0435",
+    "history.unfavoriteSelected": "\u0423\u0431\u0440\u0430\u0442\u044C \u0438\u0437 \u0438\u0437\u0431\u0440\u0430\u043D\u043D\u043E\u0433\u043E",
+    "history.organizeSelected": "\u0423\u043F\u043E\u0440\u044F\u0434\u043E\u0447\u0438\u0442\u044C",
+    "history.exitSelection": "\u0412\u044B\u0439\u0442\u0438 \u0438\u0437 \u043C\u043D\u043E\u0436\u0435\u0441\u0442\u0432\u0435\u043D\u043D\u043E\u0433\u043E \u0432\u044B\u0431\u043E\u0440\u0430",
+    "history.organizationFailed": "\u041D\u0435 \u0443\u0434\u0430\u043B\u043E\u0441\u044C \u043E\u0431\u043D\u043E\u0432\u0438\u0442\u044C \u0438\u0437\u0431\u0440\u0430\u043D\u043D\u043E\u0435 \u0438\u043B\u0438 \u0442\u0435\u0433\u0438",
+    "history.tagNameConflict": "\u0422\u0430\u043A\u043E\u0435 \u0438\u043C\u044F \u0442\u0435\u0433\u0430 \u0443\u0436\u0435 \u0441\u0443\u0449\u0435\u0441\u0442\u0432\u0443\u0435\u0442",
+    "history.noTags": "\u0422\u0435\u0433\u043E\u0432 \u043F\u043E\u043A\u0430 \u043D\u0435\u0442",
+    "history.backendRestartRequired": "\u0424\u0443\u043D\u043A\u0446\u0438\u0438 \u0438\u0441\u0442\u043E\u0440\u0438\u0438 \u043E\u0431\u043D\u043E\u0432\u043B\u0435\u043D\u044B. \u041F\u0435\u0440\u0435\u0437\u0430\u043F\u0443\u0441\u0442\u0438\u0442\u0435 \u043F\u0440\u0438\u043B\u043E\u0436\u0435\u043D\u0438\u0435 \u0438 \u043F\u043E\u043F\u0440\u043E\u0431\u0443\u0439\u0442\u0435 \u0441\u043D\u043E\u0432\u0430.",
+    "history.export": "\u042D\u043A\u0441\u043F\u043E\u0440\u0442",
+    "history.exportImagesOnly": "\u0422\u043E\u043B\u044C\u043A\u043E \u0438\u0437\u043E\u0431\u0440\u0430\u0436\u0435\u043D\u0438\u044F",
+    "history.exportImagesWithPrompts": "\u0418\u0437\u043E\u0431\u0440\u0430\u0436\u0435\u043D\u0438\u044F + \u043F\u0440\u043E\u043C\u043F\u0442\u044B",
+    "history.exportPreparing": "\u041F\u043E\u0434\u0433\u043E\u0442\u043E\u0432\u043A\u0430 \u044D\u043A\u0441\u043F\u043E\u0440\u0442\u0430\u2026",
+    "history.exportStarted": "\u0417\u0430\u0433\u0440\u0443\u0437\u043A\u0430 \u043D\u0430\u0447\u0430\u043B\u0430\u0441\u044C",
+    "history.exportSummary": "{taskCount} \u0437\u0430\u0434\u0430\u0447 \xB7 {imageCount} \u0438\u0437\u043E\u0431\u0440\u0430\u0436\u0435\u043D\u0438\u0439",
+    "history.exportFailed": "\u041D\u0435 \u0443\u0434\u0430\u043B\u043E\u0441\u044C \u044D\u043A\u0441\u043F\u043E\u0440\u0442\u0438\u0440\u043E\u0432\u0430\u0442\u044C",
+    "historyBackup.open": "\u0421\u043E\u0437\u0434\u0430\u0442\u044C \u0440\u0435\u0437\u0435\u0440\u0432\u043D\u0443\u044E \u043A\u043E\u043F\u0438\u044E",
+    "historyBackup.importOpen": "\u0418\u043C\u043F\u043E\u0440\u0442\u0438\u0440\u043E\u0432\u0430\u0442\u044C \u043A\u043E\u043F\u0438\u044E",
+    "historyBackup.mode": "\u0420\u0435\u0437\u0435\u0440\u0432\u043D\u0430\u044F \u043A\u043E\u043F\u0438\u044F \u0437\u0430\u0434\u0430\u0447",
+    "historyBackup.description": "\u0421\u043E\u0445\u0440\u0430\u043D\u0438\u0442\u0435 \u0434\u0430\u043D\u043D\u044B\u0435 \u0437\u0430\u0434\u0430\u0447 \u0438 \u0441\u0432\u044F\u0437\u0430\u043D\u043D\u044B\u0435 \u0444\u0430\u0439\u043B\u044B \u0434\u043B\u044F \u0432\u043E\u0441\u0441\u0442\u0430\u043D\u043E\u0432\u043B\u0435\u043D\u0438\u044F \u0432 \u0441\u043E\u0432\u043C\u0435\u0441\u0442\u0438\u043C\u043E\u0439 \u0432\u0435\u0440\u0441\u0438\u0438 iLab CONJURE.",
+    "historyBackup.scopeLegend": "\u041E\u0431\u043B\u0430\u0441\u0442\u044C \u043A\u043E\u043F\u0438\u0438",
+    "historyBackup.scopeHelp": "\u0420\u0435\u0437\u0443\u043B\u044C\u0442\u0430\u0442\u044B \u0444\u0438\u043B\u044C\u0442\u0440\u0430 \u0438 \u0432\u0441\u044F \u0438\u0441\u0442\u043E\u0440\u0438\u044F \u043F\u043E\u0434\u0441\u0447\u0438\u0442\u044B\u0432\u0430\u044E\u0442\u0441\u044F \u043B\u043E\u043A\u0430\u043B\u044C\u043D\u043E \u0438 \u043D\u0435 \u043E\u0433\u0440\u0430\u043D\u0438\u0447\u0435\u043D\u044B \u0437\u0430\u0434\u0430\u0447\u0430\u043C\u0438 \u043D\u0430 \u044D\u0442\u043E\u0439 \u0441\u0442\u0440\u0430\u043D\u0438\u0446\u0435.",
+    "historyBackup.scopeSelected": "\u0412\u044B\u0431\u0440\u0430\u043D\u043D\u044B\u0435 \u0437\u0430\u0434\u0430\u0447\u0438",
+    "historyBackup.scopeFiltered": "\u0422\u0435\u043A\u0443\u0449\u0438\u0435 \u0440\u0435\u0437\u0443\u043B\u044C\u0442\u0430\u0442\u044B \u0444\u0438\u043B\u044C\u0442\u0440\u0430",
+    "historyBackup.scopeAll": "\u0412\u0441\u044F \u0438\u0441\u0442\u043E\u0440\u0438\u044F",
+    "historyBackup.scopeCount": "\u0414\u043E\u0441\u0442\u0443\u043F\u043D\u043E {eligible} \u0438\u0437 {total}",
+    "historyBackup.scopeCounting": "\u041F\u043E\u0434\u0441\u0447\u0451\u0442\u2026",
+    "historyBackup.scopeCountUnavailable": "\u041A\u043E\u043B\u0438\u0447\u0435\u0441\u0442\u0432\u043E \u043D\u0435\u0434\u043E\u0441\u0442\u0443\u043F\u043D\u043E",
+    "historyBackup.scopeNoneSelected": "\u0417\u0430\u0434\u0430\u0447\u0438 \u043D\u0435 \u0432\u044B\u0431\u0440\u0430\u043D\u044B",
+    "historyBackup.willBackup": "\u0411\u0443\u0434\u0435\u0442 \u0441\u043E\u0445\u0440\u0430\u043D\u0435\u043D\u043E {eligible} \u0437\u0430\u0434\u0430\u0447; {excluded} \u043D\u0435\u0437\u0430\u0432\u0435\u0440\u0448\u0451\u043D\u043D\u044B\u0445 \u0437\u0430\u0434\u0430\u0447 \u0431\u0443\u0434\u0443\u0442 \u0438\u0441\u043A\u043B\u044E\u0447\u0435\u043D\u044B.",
+    "historyBackup.selectTasksFirst": "\u0421\u043D\u0430\u0447\u0430\u043B\u0430 \u0432\u044B\u0431\u0435\u0440\u0438\u0442\u0435 \u0445\u043E\u0442\u044F \u0431\u044B \u043E\u0434\u043D\u0443 \u0437\u0430\u0434\u0430\u0447\u0443.",
+    "historyBackup.scopeLockedUnknown": "\u0418\u0441\u0445\u043E\u0434\u043D\u0430\u044F \u043E\u0431\u043B\u0430\u0441\u0442\u044C \u043A\u043E\u043F\u0438\u0438",
+    "historyBackup.scopeLocked": "\u041E\u0431\u043B\u0430\u0441\u0442\u044C \u0437\u0430\u0444\u0438\u043A\u0441\u0438\u0440\u043E\u0432\u0430\u043D\u0430: {scope} \xB7 \u0431\u0443\u0434\u0435\u0442 \u0441\u043E\u0445\u0440\u0430\u043D\u0435\u043D\u043E {eligible} \u0437\u0430\u0434\u0430\u0447",
+    "historyBackup.scopeLockedPending": "\u041E\u0431\u043B\u0430\u0441\u0442\u044C \u0437\u0430\u0444\u0438\u043A\u0441\u0438\u0440\u043E\u0432\u0430\u043D\u0430: {scope} \xB7 \u043F\u043E\u0434\u0441\u0447\u0438\u0442\u044B\u0432\u0430\u044E\u0442\u0441\u044F \u0434\u043E\u0441\u0442\u0443\u043F\u043D\u044B\u0435 \u0437\u0430\u0434\u0430\u0447\u0438",
+    "historyBackup.progressLabel": "\u0425\u043E\u0434 \u0440\u0435\u0437\u0435\u0440\u0432\u043D\u043E\u0433\u043E \u043A\u043E\u043F\u0438\u0440\u043E\u0432\u0430\u043D\u0438\u044F",
+    "historyBackup.start": "\u041D\u0430\u0447\u0430\u0442\u044C \u043A\u043E\u043F\u0438\u0440\u043E\u0432\u0430\u043D\u0438\u0435",
+    "historyBackup.cancel": "\u041E\u0442\u043C\u0435\u043D\u0438\u0442\u044C \u043A\u043E\u043F\u0438\u0440\u043E\u0432\u0430\u043D\u0438\u0435",
+    "historyBackup.download": "\u0421\u043A\u0430\u0447\u0430\u0442\u044C \u043A\u043E\u043F\u0438\u044E",
+    "historyBackup.dismiss": "\u0417\u0430\u043A\u0440\u044B\u0442\u044C \u0440\u0435\u0437\u0443\u043B\u044C\u0442\u0430\u0442",
+    "historyBackup.discard": "\u0417\u0430\u043A\u0440\u044B\u0442\u044C \u0431\u0435\u0437 \u0441\u043A\u0430\u0447\u0438\u0432\u0430\u043D\u0438\u044F",
+    "historyBackup.closePanel": "\u0417\u0430\u043A\u0440\u044B\u0442\u044C \u043F\u0430\u043D\u0435\u043B\u044C",
+    "historyBackup.downloadStartedTitle": "\u0421\u043A\u0430\u0447\u0438\u0432\u0430\u043D\u0438\u0435 \u043D\u0430\u0447\u0430\u043B\u043E\u0441\u044C",
+    "historyBackup.idle": "\u0413\u043E\u0442\u043E\u0432\u043E",
+    "historyBackup.queued": "\u0412 \u043E\u0447\u0435\u0440\u0435\u0434\u0438",
+    "historyBackup.planning": "\u041F\u043B\u0430\u043D\u0438\u0440\u043E\u0432\u0430\u043D\u0438\u0435",
+    "historyBackup.packing": "\u0421\u043E\u0437\u0434\u0430\u043D\u0438\u0435 \u043F\u0430\u043A\u0435\u0442\u0430",
+    "historyBackup.ready": "\u0413\u043E\u0442\u043E\u0432\u043E \u043A \u0441\u043A\u0430\u0447\u0438\u0432\u0430\u043D\u0438\u044E",
+    "historyBackup.readyDetail": "\u041A\u043E\u043F\u0438\u044F \u0433\u043E\u0442\u043E\u0432\u0430. \u0421\u043A\u0430\u0447\u0430\u0439\u0442\u0435 \u0435\u0451 \u0432 \u0442\u0435\u0447\u0435\u043D\u0438\u0435 1 \u0447\u0430\u0441\u0430; \u0437\u0430\u043A\u0440\u044B\u0442\u0438\u0435 \u0431\u0435\u0437 \u0441\u043A\u0430\u0447\u0438\u0432\u0430\u043D\u0438\u044F \u043D\u0435\u043C\u0435\u0434\u043B\u0435\u043D\u043D\u043E \u0443\u0434\u0430\u043B\u0438\u0442 \u0432\u0440\u0435\u043C\u0435\u043D\u043D\u044B\u0439 \u0444\u0430\u0439\u043B.",
+    "historyBackup.downloaded": "\u0423\u0431\u0435\u0434\u0438\u0442\u0435\u0441\u044C, \u0447\u0442\u043E \u0431\u0440\u0430\u0443\u0437\u0435\u0440 \u0441\u043E\u0445\u0440\u0430\u043D\u0438\u043B \u0444\u0430\u0439\u043B, \u043F\u043E\u0441\u043B\u0435 \u0447\u0435\u0433\u043E \u044D\u0442\u0443 \u043F\u0430\u043D\u0435\u043B\u044C \u043C\u043E\u0436\u043D\u043E \u0437\u0430\u043A\u0440\u044B\u0442\u044C. \u0412\u0440\u0435\u043C\u0435\u043D\u043D\u044B\u0439 \u0444\u0430\u0439\u043B \u0431\u0443\u0434\u0435\u0442 \u0443\u0434\u0430\u043B\u0451\u043D \u043F\u043E\u0441\u043B\u0435 \u043F\u0435\u0440\u0435\u0434\u0430\u0447\u0438.",
+    "historyBackup.missingInputsWarning": "\u0412 {tasks} \u0437\u0430\u0434\u0430\u0447\u0430\u0445 \u043E\u0442\u0441\u0443\u0442\u0441\u0442\u0432\u0443\u044E\u0442 {files} \u0432\u0445\u043E\u0434\u043D\u044B\u0445 \u0444\u0430\u0439\u043B\u043E\u0432. \u041E\u043D\u0438 \u043D\u0435 \u0432\u043E\u0439\u0434\u0443\u0442 \u0432 \u043A\u043E\u043F\u0438\u044E, \u043D\u043E \u043F\u0440\u043E\u043C\u043F\u0442\u044B \u0438 \u0440\u0435\u0437\u0443\u043B\u044C\u0442\u0430\u0442\u044B \u0431\u0443\u0434\u0443\u0442 \u044D\u043A\u0441\u043F\u043E\u0440\u0442\u0438\u0440\u043E\u0432\u0430\u043D\u044B.",
+    "historyBackup.failed": "\u041E\u0448\u0438\u0431\u043A\u0430 \u043A\u043E\u043F\u0438\u0440\u043E\u0432\u0430\u043D\u0438\u044F",
+    "historyBackup.cancelled": "\u041E\u0442\u043C\u0435\u043D\u0435\u043D\u043E",
+    "historyBackup.expired": "\u0418\u0441\u0442\u0435\u043A\u043B\u043E",
+    "historyBackup.interrupted": "\u041F\u0440\u0435\u0440\u0432\u0430\u043D\u043E",
+    "historyBackup.stats": "\u0412\u0441\u0435\u0433\u043E {total} \xB7 \u0434\u043E\u0441\u0442\u0443\u043F\u043D\u043E {eligible} \xB7 \u0438\u0441\u043A\u043B\u044E\u0447\u0435\u043D\u043E {excluded} \xB7 {bytes}",
+    "historyBackup.errorDisk": "\u041D\u0435\u0434\u043E\u0441\u0442\u0430\u0442\u043E\u0447\u043D\u043E \u043C\u0435\u0441\u0442\u0430 \u043D\u0430 \u0434\u0438\u0441\u043A\u0435.",
+    "historyBackup.errorSourceChanged": "\u0418\u0441\u0445\u043E\u0434\u043D\u044B\u0435 \u0434\u0430\u043D\u043D\u044B\u0435 \u0438\u0437\u043C\u0435\u043D\u0438\u043B\u0438\u0441\u044C \u0432\u043E \u0432\u0440\u0435\u043C\u044F \u043A\u043E\u043F\u0438\u0440\u043E\u0432\u0430\u043D\u0438\u044F.",
+    "historyBackup.errorEmpty": "\u041D\u0435\u0442 \u043F\u043E\u0434\u0445\u043E\u0434\u044F\u0449\u0438\u0445 \u0437\u0430\u0434\u0430\u0447.",
+    "historyBackup.errorIo": "\u041D\u0435 \u0443\u0434\u0430\u043B\u043E\u0441\u044C \u0441\u043E\u0437\u0434\u0430\u0442\u044C \u043A\u043E\u043F\u0438\u044E.",
+    "historyImport.title": "\u0418\u043C\u043F\u043E\u0440\u0442 \u0440\u0435\u0437\u0435\u0440\u0432\u043D\u043E\u0439 \u043A\u043E\u043F\u0438\u0438",
+    "historyImport.choose": "\u0412\u044B\u0431\u0440\u0430\u0442\u044C ZIP-\u043A\u043E\u043F\u0438\u044E",
+    "historyImport.uploading": "\u0417\u0430\u0433\u0440\u0443\u0437\u043A\u0430",
+    "historyImport.validating": "\u041F\u0440\u043E\u0432\u0435\u0440\u043A\u0430",
+    "historyImport.validated": "\u041F\u0440\u043E\u0432\u0435\u0440\u0435\u043D\u043E",
+    "historyImport.preview": "\u041F\u0440\u0435\u0434\u043F\u0440\u043E\u0441\u043C\u043E\u0442\u0440 \u0432\u043E\u0441\u0441\u0442\u0430\u043D\u043E\u0432\u043B\u0435\u043D\u0438\u044F",
+    "historyImport.restorable": "\u041C\u043E\u0436\u043D\u043E \u0432\u043E\u0441\u0441\u0442\u0430\u043D\u043E\u0432\u0438\u0442\u044C",
+    "historyImport.duplicate": "\u0414\u0443\u0431\u043B\u0438\u043A\u0430\u0442\u044B",
+    "historyImport.conflict": "\u041A\u043E\u043D\u0444\u043B\u0438\u043A\u0442\u044B",
+    "historyImport.invalid": "\u041D\u0435\u0434\u0435\u0439\u0441\u0442\u0432\u0438\u0442\u0435\u043B\u044C\u043D\u044B\u0435",
+    "historyImport.confirm": "\u041F\u043E\u0434\u0442\u0432\u0435\u0440\u0434\u0438\u0442\u044C \u0432\u043E\u0441\u0441\u0442\u0430\u043D\u043E\u0432\u043B\u0435\u043D\u0438\u0435",
+    "historyImport.restoring": "\u0412\u043E\u0441\u0441\u0442\u0430\u043D\u043E\u0432\u043B\u0435\u043D\u0438\u0435",
+    "historyImport.restored": "\u0412\u043E\u0441\u0441\u0442\u0430\u043D\u043E\u0432\u043B\u0435\u043D\u043E",
+    "historyImport.failed": "\u041E\u0448\u0438\u0431\u043A\u0430 \u0432\u043E\u0441\u0441\u0442\u0430\u043D\u043E\u0432\u043B\u0435\u043D\u0438\u044F",
+    "historyImport.interrupted": "\u041F\u0440\u0435\u0440\u0432\u0430\u043D\u043E",
+    "historyImport.cancelled": "\u041E\u0442\u043C\u0435\u043D\u0435\u043D\u043E",
+    "historyImport.result": "\u0420\u0435\u0437\u0443\u043B\u044C\u0442\u0430\u0442",
+    "historyImport.thumbnailWarnings": "\u041F\u0440\u0435\u0434\u0443\u043F\u0440\u0435\u0436\u0434\u0435\u043D\u0438\u044F \u043C\u0438\u043D\u0438\u0430\u0442\u044E\u0440",
+    "historyImport.cleanupWarnings": "\u041F\u0440\u0435\u0434\u0443\u043F\u0440\u0435\u0436\u0434\u0435\u043D\u0438\u044F \u043E\u0447\u0438\u0441\u0442\u043A\u0438",
+    "historyImport.reselect": "\u0421\u043D\u043E\u0432\u0430 \u0432\u044B\u0431\u0435\u0440\u0438\u0442\u0435 \u0438\u0441\u0445\u043E\u0434\u043D\u044B\u0439 ZIP.",
+    "historyImport.noOverwrite": "\u0421\u0443\u0449\u0435\u0441\u0442\u0432\u0443\u044E\u0449\u0438\u0435 \u0437\u0430\u0434\u0430\u0447\u0438 \u043D\u0438\u043A\u043E\u0433\u0434\u0430 \u043D\u0435 \u043F\u0435\u0440\u0435\u0437\u0430\u043F\u0438\u0441\u044B\u0432\u0430\u044E\u0442\u0441\u044F.",
+    "historyImport.reasonInvalid": "\u041D\u0435\u0434\u043E\u043F\u0443\u0441\u0442\u0438\u043C\u044B\u0435 \u0434\u0430\u043D\u043D\u044B\u0435 \u0440\u0435\u0437\u0435\u0440\u0432\u043D\u043E\u0439 \u043A\u043E\u043F\u0438\u0438",
+    "historyImport.reasonSensitive": "\u0421\u043E\u0434\u0435\u0440\u0436\u0438\u0442 \u0437\u0430\u0449\u0438\u0449\u0451\u043D\u043D\u044B\u0435 \u0434\u0430\u043D\u043D\u044B\u0435",
+    "historyImport.reasonMismatch": "\u041D\u0435 \u0441\u043E\u043E\u0442\u0432\u0435\u0442\u0441\u0442\u0432\u0443\u0435\u0442 \u043C\u0430\u043D\u0438\u0444\u0435\u0441\u0442\u0443 \u0440\u0435\u0437\u0435\u0440\u0432\u043D\u043E\u0439 \u043A\u043E\u043F\u0438\u0438",
+    "history.closeExport": "\u0417\u0430\u043A\u0440\u044B\u0442\u044C \u0432\u044B\u0431\u043E\u0440 \u044D\u043A\u0441\u043F\u043E\u0440\u0442\u0430",
     "history.type": "\u0422\u0438\u043F",
     "history.allTypes": "\u0412\u0441\u0435 \u0442\u0438\u043F\u044B",
     "history.type.textToImage": "\u0422\u0435\u043A\u0441\u0442 \u0432 \u0438\u0437\u043E\u0431\u0440\u0430\u0436\u0435\u043D\u0438\u0435",
@@ -8348,6 +9414,7 @@
     "language.ru": "\u0420\u0443\u0441\u0441\u043A\u0438\u0439",
     "language.it": "Italiano",
     "language.hi": "\u0939\u093F\u0928\u094D\u0926\u0940",
+    "language.vi": "Ti\u1EBFng Vi\u1EC7t",
     "auth.label": "\u0418\u0441\u0442\u043E\u0447\u043D\u0438\u043A \u0430\u0443\u0442\u0435\u043D\u0442\u0438\u0444\u0438\u043A\u0430\u0446\u0438\u0438",
     "auth.checking": "\u041F\u0440\u043E\u0432\u0435\u0440\u043A\u0430 \u0430\u0432\u0442\u043E\u0440\u0438\u0437\u0430\u0446\u0438\u0438",
     "auth.missingCodexSession": "\u0421\u0435\u0430\u043D\u0441 Codex \u043D\u0435 \u043E\u0431\u043D\u0430\u0440\u0443\u0436\u0435\u043D",
@@ -8374,8 +9441,16 @@
     "recentAssets.defaultName": "\u041F\u043E\u0441\u043B\u0435\u0434\u043D\u044F\u044F \u0437\u0430\u0433\u0440\u0443\u0437\u043A\u0430",
     "recentAssets.use": "\u0418\u0441\u043F\u043E\u043B\u044C\u0437\u0443\u0439\u0442\u0435 {name}",
     "recentAssets.delete": "\u0423\u0434\u0430\u043B\u0438\u0442\u044C {name}",
+    "recentAssets.inUse": "\u0418\u0441\u043F\u043E\u043B\u044C\u0437\u0443\u0435\u0442\u0441\u044F \u0432 {count} \u0437\u0430\u0434\u0430\u0447\u0430\u0445; \u043D\u0435\u043B\u044C\u0437\u044F \u0443\u0434\u0430\u043B\u0438\u0442\u044C \u043D\u0430\u0432\u0441\u0435\u0433\u0434\u0430, \u043D\u043E \u043C\u043E\u0436\u043D\u043E \u0441\u043A\u0440\u044B\u0442\u044C \u0438\u0437 \u043F\u043E\u0441\u043B\u0435\u0434\u043D\u0438\u0445 \u0437\u0430\u0433\u0440\u0443\u0437\u043E\u043A",
+    "recentAssets.hide": "\u0421\u043A\u0440\u044B\u0442\u044C {name} \u0438\u0437 \u043F\u043E\u0441\u043B\u0435\u0434\u043D\u0438\u0445 \u0437\u0430\u0433\u0440\u0443\u0437\u043E\u043A",
+    "recentAssets.hideTitle": "\u0421\u043A\u0440\u044B\u0442\u044C \u0438\u0437 \u043F\u043E\u0441\u043B\u0435\u0434\u043D\u0438\u0445 \u0437\u0430\u0433\u0440\u0443\u0437\u043E\u043A?",
+    "recentAssets.hideMessage": "\u042D\u0442\u043E \u0438\u0437\u043E\u0431\u0440\u0430\u0436\u0435\u043D\u0438\u0435 \u0438\u0441\u043F\u043E\u043B\u044C\u0437\u0443\u0435\u0442\u0441\u044F \u0432 {count} \u0437\u0430\u0434\u0430\u0447\u0430\u0445 \u0438 \u043D\u0435 \u043C\u043E\u0436\u0435\u0442 \u0431\u044B\u0442\u044C \u0443\u0434\u0430\u043B\u0435\u043D\u043E \u043D\u0430\u0432\u0441\u0435\u0433\u0434\u0430. \u0421\u043A\u0440\u044B\u0442\u0438\u0435 \u0443\u0431\u0435\u0440\u0451\u0442 \u0435\u0433\u043E \u0442\u043E\u043B\u044C\u043A\u043E \u0438\u0437 \u043F\u043E\u0441\u043B\u0435\u0434\u043D\u0438\u0445 \u0437\u0430\u0433\u0440\u0443\u0437\u043E\u043A; \u043E\u0440\u0438\u0433\u0438\u043D\u0430\u043B, \u0442\u0435\u043A\u0443\u0449\u0438\u0439 \u0432\u0432\u043E\u0434 \u0438 \u0438\u0441\u0442\u043E\u0440\u0438\u0447\u0435\u0441\u043A\u0438\u0435 \u0437\u0430\u0434\u0430\u0447\u0438 \u0441\u043E\u0445\u0440\u0430\u043D\u044F\u0442\u0441\u044F.",
+    "recentAssets.hideFailed": "\u041D\u0435 \u0443\u0434\u0430\u043B\u043E\u0441\u044C \u0441\u043A\u0440\u044B\u0442\u044C \u043D\u0435\u0434\u0430\u0432\u043D\u044E\u044E \u0437\u0430\u0433\u0440\u0443\u0437\u043A\u0443",
+    "recentAssets.hidden": "\u0421\u043A\u0440\u044B\u0442\u043E \u0438\u0437 \u043F\u043E\u0441\u043B\u0435\u0434\u043D\u0438\u0445 \u0437\u0430\u0433\u0440\u0443\u0437\u043E\u043A; \u043E\u0440\u0438\u0433\u0438\u043D\u0430\u043B \u0438 \u0438\u0441\u0442\u043E\u0440\u0438\u0447\u0435\u0441\u043A\u0438\u0435 \u0437\u0430\u0434\u0430\u0447\u0438 \u0441\u043E\u0445\u0440\u0430\u043D\u0435\u043D\u044B",
+    "recentAssets.hidePreviews": "\u0421\u043A\u0440\u044B\u0442\u044C \u0438\u0437\u043E\u0431\u0440\u0430\u0436\u0435\u043D\u0438\u044F \u043F\u043E\u0441\u043B\u0435\u0434\u043D\u0438\u0445 \u0437\u0430\u0433\u0440\u0443\u0437\u043E\u043A",
+    "recentAssets.showPreviews": "\u041F\u043E\u043A\u0430\u0437\u0430\u0442\u044C \u0438\u0437\u043E\u0431\u0440\u0430\u0436\u0435\u043D\u0438\u044F \u043F\u043E\u0441\u043B\u0435\u0434\u043D\u0438\u0445 \u0437\u0430\u0433\u0440\u0443\u0437\u043E\u043A",
     "recentAssets.deleteTitle": "\u0423\u0434\u0430\u043B\u0438\u0442\u044C \u043D\u0435\u0434\u0430\u0432\u043D\u044E\u044E \u0437\u0430\u0433\u0440\u0443\u0437\u043A\u0443?",
-    "recentAssets.deleteMessage": "\u042D\u0442\u043E \u043F\u0440\u0438\u0432\u0435\u0434\u0435\u0442 \u043A \u0443\u0434\u0430\u043B\u0435\u043D\u0438\u044E image \u0438\u0437 \u043F\u043E\u0441\u043B\u0435\u0434\u043D\u0438\u0445 \u0437\u0430\u0433\u0440\u0443\u0437\u043E\u043A. \u0415\u0441\u043B\u0438 \u0432 \u0434\u0430\u043D\u043D\u044B\u0439 \u043C\u043E\u043C\u0435\u043D\u0442 \u043E\u043D \u0432\u044B\u0431\u0440\u0430\u043D \u0432 \u043A\u0430\u0447\u0435\u0441\u0442\u0432\u0435 \u0432\u0445\u043E\u0434\u0430 image, \u043E\u043D \u0431\u0443\u0434\u0435\u0442 \u0443\u0434\u0430\u043B\u0435\u043D \u0438\u0437 \u0442\u0435\u043A\u0443\u0449\u0435\u0433\u043E \u0432\u0445\u043E\u0434\u0430. \u0418\u0441\u0442\u043E\u0440\u0438\u0447\u0435\u0441\u043A\u0438\u0435 \u0437\u0430\u0434\u0430\u0447\u0438, \u0441\u0441\u044B\u043B\u0430\u044E\u0449\u0438\u0435\u0441\u044F \u043D\u0430 \u044D\u0442\u0443 \u043D\u0435\u0434\u0430\u0432\u043D\u044E\u044E \u0437\u0430\u0433\u0440\u0443\u0437\u043A\u0443, \u043F\u043E\u0442\u0435\u0440\u044F\u044E\u0442 \u043F\u0440\u0435\u0434\u0432\u0430\u0440\u0438\u0442\u0435\u043B\u044C\u043D\u044B\u0439 \u043F\u0440\u043E\u0441\u043C\u043E\u0442\u0440 \u0432\u0445\u043E\u0434\u043D\u044B\u0445 \u0434\u0430\u043D\u043D\u044B\u0445. \u041F\u0443\u0431\u043B\u0438\u0447\u043D\u0430\u044F \u0433\u0430\u043B\u0435\u0440\u0435\u044F \u043D\u0435 \u0437\u0430\u0442\u0440\u043E\u043D\u0443\u0442\u0430.",
+    "recentAssets.deleteMessage": "\u042D\u0442\u043E \u0438\u0437\u043E\u0431\u0440\u0430\u0436\u0435\u043D\u0438\u0435 \u043D\u0435 \u0438\u0441\u043F\u043E\u043B\u044C\u0437\u0443\u0435\u0442\u0441\u044F \u043D\u0438 \u0432 \u043E\u0434\u043D\u043E\u0439 \u0437\u0430\u0434\u0430\u0447\u0435. \u041E\u0440\u0438\u0433\u0438\u043D\u0430\u043B \u0431\u0443\u0434\u0435\u0442 \u0443\u0434\u0430\u043B\u0451\u043D \u043D\u0430\u0432\u0441\u0435\u0433\u0434\u0430, \u0430 \u0442\u0430\u043A\u043E\u0435 \u0436\u0435 \u0438\u0437\u043E\u0431\u0440\u0430\u0436\u0435\u043D\u0438\u0435 \u2014 \u0438\u0437 \u0442\u0435\u043A\u0443\u0449\u0435\u0433\u043E \u0432\u0432\u043E\u0434\u0430. \u041F\u0443\u0431\u043B\u0438\u0447\u043D\u0430\u044F \u0433\u0430\u043B\u0435\u0440\u0435\u044F \u043D\u0435 \u0437\u0430\u0442\u0440\u043E\u043D\u0443\u0442\u0430.",
     "recentAssets.loadFailed": "\u041D\u0435 \u0443\u0434\u0430\u043B\u043E\u0441\u044C \u0437\u0430\u0433\u0440\u0443\u0437\u0438\u0442\u044C \u043F\u043E\u0441\u043B\u0435\u0434\u043D\u0438\u0435 \u0437\u0430\u0433\u0440\u0443\u0437\u043A\u0438.",
     "recentAssets.deleteFailed": "\u041D\u0435 \u0443\u0434\u0430\u043B\u043E\u0441\u044C \u0443\u0434\u0430\u043B\u0438\u0442\u044C \u043D\u0435\u0434\u0430\u0432\u043D\u044E\u044E \u0437\u0430\u0433\u0440\u0443\u0437\u043A\u0443.",
     "recentAssets.deleted": "\u041F\u043E\u0441\u043B\u0435\u0434\u043D\u044F\u044F \u0437\u0430\u0433\u0440\u0443\u0437\u043A\u0430 \u0443\u0434\u0430\u043B\u0435\u043D\u0430",
@@ -8400,11 +9475,13 @@
     "referenceCollector.alreadyStaged": "\u0423\u0436\u0435 \u043F\u043E\u0441\u0442\u0430\u0432\u043B\u0435\u043D \u0432 \u043A\u0430\u0447\u0435\u0441\u0442\u0432\u0435 \u0440\u0435\u0444\u0435\u0440\u0435\u043D\u0441\u0430",
     "referenceCollector.staged": "\u041F\u043E\u044D\u0442\u0430\u043F\u043D\u0430\u044F \u0441\u0441\u044B\u043B\u043A\u0430 {count} images",
     "referenceCollector.title": "\u041E\u0436\u0438\u0434\u0430\u0435\u043C\u044B\u0435 \u0441\u0441\u044B\u043B\u043A\u0438 \xB7 {count}",
-    "referenceCollector.addAll": "\u0414\u043E\u0431\u0430\u0432\u0438\u0442\u044C \u0432\u0441\u0435 \u0441\u0441\u044B\u043B\u043A\u0438",
+    "referenceCollector.addAll": "\u0414\u043E\u0431\u0430\u0432\u0438\u0442\u044C \u0432\u0441\u0435",
+    "referenceCollector.replaceAll": "\u0417\u0430\u043C\u0435\u043D\u0438\u0442\u044C \u0442\u0435\u043A\u0443\u0449\u0438\u0435",
     "referenceCollector.itemFallback": "\u041E\u0436\u0438\u0434\u0430\u0435\u0442\u0441\u044F \u0441\u0441\u044B\u043B\u043A\u0430",
     "referenceCollector.remove": "\u0423\u0434\u0430\u043B\u0438\u0442\u044C \u043E\u0436\u0438\u0434\u0430\u044E\u0449\u0443\u044E \u0441\u0441\u044B\u043B\u043A\u0443",
     "referenceCollector.cleared": "\u041E\u0436\u0438\u0434\u0430\u044E\u0449\u0438\u0435 \u0441\u0441\u044B\u043B\u043A\u0438 \u0443\u0434\u0430\u043B\u0435\u043D\u044B",
     "referenceCollector.added": "\u0414\u043E\u0431\u0430\u0432\u043B\u0435\u043D\u0430 \u0441\u0441\u044B\u043B\u043A\u0430 {count} images.",
+    "referenceCollector.replaced": "\u0420\u0435\u0444\u0435\u0440\u0435\u043D\u0441\u044B \u0437\u0430\u043C\u0435\u043D\u0435\u043D\u044B: {count} \u0438\u0437\u043E\u0431\u0440.",
     "referenceCollector.addFailed": "\u041D\u0435 \u0443\u0434\u0430\u043B\u043E\u0441\u044C \u0434\u043E\u0431\u0430\u0432\u0438\u0442\u044C \u043E\u0436\u0438\u0434\u0430\u044E\u0449\u0438\u0435 \u0441\u0441\u044B\u043B\u043A\u0438.",
     "referenceCollector.readFailed": "\u041D\u0435 \u0443\u0434\u0430\u043B\u043E\u0441\u044C \u043F\u0440\u043E\u0447\u0438\u0442\u0430\u0442\u044C image: {status}.",
     "gallery.quick": "\u0411\u044B\u0441\u0442\u0440\u0430\u044F \u0433\u0430\u043B\u0435\u0440\u0435\u044F",
@@ -8522,7 +9599,7 @@
     "output.promptHelpTitle": "\u041E\u0431\u0440\u0430\u0431\u043E\u0442\u043A\u0430 \u043F\u0440\u043E\u043C\u043F\u0442\u0430",
     "output.promptHelp.responsesChannel": "Responses \xB7 \u0443\u0447\u0430\u0441\u0442\u0432\u0443\u0435\u0442 \u043E\u0441\u043D\u043E\u0432\u043D\u0430\u044F \u043C\u043E\u0434\u0435\u043B\u044C",
     "output.promptHelp.imagesChannel": "Images \xB7 \u043F\u0440\u044F\u043C\u0430\u044F \u0433\u0435\u043D\u0435\u0440\u0430\u0446\u0438\u044F",
-    "output.promptHelp.responses.original": "\u041F\u0435\u0440\u0435\u0434\u0430\u0451\u0442 \u0438\u0441\u0445\u043E\u0434\u043D\u044B\u0439 \u0442\u0435\u043A\u0441\u0442 \u043E\u0441\u043D\u043E\u0432\u043D\u043E\u0439 \u043C\u043E\u0434\u0435\u043B\u0438 \u0438 \u043F\u0440\u043E\u0441\u0438\u0442 \u0441\u043E\u0445\u0440\u0430\u043D\u0438\u0442\u044C \u0435\u0433\u043E \u0432 \u0438\u043D\u0441\u0442\u0440\u0443\u043C\u0435\u043D\u0442\u0435 \u0438\u0437\u043E\u0431\u0440\u0430\u0436\u0435\u043D\u0438\u0439; revised prompt \u0432\u0441\u0451 \u0440\u0430\u0432\u043D\u043E \u043C\u043E\u0436\u0435\u0442 \u0431\u044B\u0442\u044C \u0441\u043E\u0437\u0434\u0430\u043D.",
+    "output.promptHelp.responses.original": "\u041F\u0435\u0440\u0435\u0434\u0430\u0451\u0442 \u0442\u043E\u0447\u043D\u044B\u0439 \u0438\u0441\u0445\u043E\u0434\u043D\u044B\u0439 \u0442\u0435\u043A\u0441\u0442 \u0431\u0435\u0437 \u0434\u043E\u0431\u0430\u0432\u043B\u0435\u043D\u043D\u044B\u0445 \u043F\u0440\u0438\u043B\u043E\u0436\u0435\u043D\u0438\u0435\u043C \u043F\u0440\u0430\u0432\u0438\u043B; \u043F\u0440\u043E\u0432\u0430\u0439\u0434\u0435\u0440 \u0432\u0441\u0451 \u0440\u0430\u0432\u043D\u043E \u043C\u043E\u0436\u0435\u0442 \u0432\u0435\u0440\u043D\u0443\u0442\u044C revised prompt \u0438\u043B\u0438 \u0438\u043D\u0430\u0447\u0435 \u0438\u043D\u0442\u0435\u0440\u043F\u0440\u0435\u0442\u0438\u0440\u043E\u0432\u0430\u0442\u044C \u0440\u0435\u0437\u0443\u043B\u044C\u0442\u0430\u0442.",
     "output.promptHelp.responses.strict": "\u0420\u0430\u0437\u0440\u0435\u0448\u0430\u0435\u0442 \u043E\u0441\u043D\u043E\u0432\u043D\u043E\u0439 \u043C\u043E\u0434\u0435\u043B\u0438 \u0443\u043F\u043E\u0440\u044F\u0434\u043E\u0447\u0438\u0442\u044C \u0438\u043B\u0438 \u0440\u0430\u0441\u0448\u0438\u0440\u0438\u0442\u044C \u043F\u0440\u043E\u043C\u043F\u0442, \u0441\u043E\u0445\u0440\u0430\u043D\u044F\u044F \u043E\u0431\u044F\u0437\u0430\u0442\u0435\u043B\u044C\u043D\u044B\u0435 \u0443\u0441\u043B\u043E\u0432\u0438\u044F: \u043E\u0431\u044A\u0435\u043A\u0442\u044B, \u0442\u0435\u043A\u0441\u0442, \u0446\u0432\u0435\u0442\u0430 \u0438 \u043A\u043E\u043C\u043F\u043E\u0437\u0438\u0446\u0438\u044E.",
     "output.promptHelp.responses.automatic": "\u041D\u0435 \u0434\u043E\u0431\u0430\u0432\u043B\u044F\u0435\u0442 \u043E\u0433\u0440\u0430\u043D\u0438\u0447\u0435\u043D\u0438\u0439; \u043E\u0441\u043D\u043E\u0432\u043D\u0430\u044F \u043C\u043E\u0434\u0435\u043B\u044C \u0438\u043D\u0442\u0435\u0440\u043F\u0440\u0435\u0442\u0438\u0440\u0443\u0435\u0442 \u0438 \u043E\u043F\u0442\u0438\u043C\u0438\u0437\u0438\u0440\u0443\u0435\u0442 \u0437\u0430\u043F\u0440\u043E\u0441 \u043F\u0435\u0440\u0435\u0434 \u0432\u044B\u0437\u043E\u0432\u043E\u043C \u0438\u043D\u0441\u0442\u0440\u0443\u043C\u0435\u043D\u0442\u0430 \u0438\u0437\u043E\u0431\u0440\u0430\u0436\u0435\u043D\u0438\u0439.",
     "output.promptHelp.images.original": "\u041D\u0435 \u0434\u043E\u0431\u0430\u0432\u043B\u044F\u0435\u0442 \u043F\u0440\u0430\u0432\u0438\u043B \u043F\u0440\u0438\u043B\u043E\u0436\u0435\u043D\u0438\u044F \u0438 \u043E\u0442\u043F\u0440\u0430\u0432\u043B\u044F\u0435\u0442 \u0438\u0441\u0445\u043E\u0434\u043D\u044B\u0439 \u0442\u0435\u043A\u0441\u0442 \u043D\u0430\u043F\u0440\u044F\u043C\u0443\u044E \u0432 API \u0438\u0437\u043E\u0431\u0440\u0430\u0436\u0435\u043D\u0438\u0439.",
@@ -8617,6 +9694,16 @@
     "lightbox.close": "\u0417\u0430\u043A\u0440\u044B\u0442\u044C \u043F\u0440\u0435\u0434\u0432\u0430\u0440\u0438\u0442\u0435\u043B\u044C\u043D\u044B\u0439 \u043F\u0440\u043E\u0441\u043C\u043E\u0442\u0440",
     "lightbox.previous": "\u041F\u0440\u0435\u0434\u044B\u0434\u0443\u0449\u0438\u0439 image",
     "lightbox.next": "\u0421\u043B\u0435\u0434\u0443\u044E\u0449\u0438\u0439 image",
+    "lightbox.zoomControls": "\u0423\u043F\u0440\u0430\u0432\u043B\u0435\u043D\u0438\u0435 \u043C\u0430\u0441\u0448\u0442\u0430\u0431\u043E\u043C",
+    "lightbox.zoomOut": "\u0423\u043C\u0435\u043D\u044C\u0448\u0438\u0442\u044C",
+    "lightbox.zoomIn": "\u0423\u0432\u0435\u043B\u0438\u0447\u0438\u0442\u044C",
+    "lightbox.fit": "\u0412\u043F\u0438\u0441\u0430\u0442\u044C",
+    "lightbox.fitPage": "\u0412\u043F\u0438\u0441\u0430\u0442\u044C \u0432 \u0441\u0442\u0440\u0430\u043D\u0438\u0446\u0443",
+    "lightbox.actualSize": "100% \u0438\u0441\u0445\u043E\u0434\u043D\u044B\u0439 \u0440\u0430\u0437\u043C\u0435\u0440",
+    "lightbox.shortcuts": "\u0421\u043E\u0447\u0435\u0442\u0430\u043D\u0438\u044F \u043A\u043B\u0430\u0432\u0438\u0448",
+    "lightbox.switchImage": "\u0421\u043C\u0435\u043D\u0438\u0442\u044C \u0438\u0437\u043E\u0431\u0440\u0430\u0436\u0435\u043D\u0438\u0435",
+    "lightbox.switchTask": "\u0421\u043C\u0435\u043D\u0438\u0442\u044C \u0437\u0430\u0434\u0430\u0447\u0443",
+    "lightbox.wheelZoom": "\u041C\u0430\u0441\u0448\u0442\u0430\u0431 \u043A\u043E\u043B\u0435\u0441\u043E\u043C",
     "promptPopover.title": "\u0411\u044B\u0441\u0442\u0440\u043E\u0435 \u0441\u0440\u0430\u0432\u043D\u0435\u043D\u0438\u0435",
     "promptPopover.summary": "\u0418\u0441\u0445\u043E\u0434\u043D\u044B\u0439 {original} \xB7 \u043E\u043F\u0442\u0438\u043C\u0438\u0437\u0438\u0440\u043E\u0432\u0430\u043D\u043D\u044B\u0439 {optimized}",
     "promptPopover.original": "\u041E\u0440\u0438\u0433\u0438\u043D\u0430\u043B\u044C\u043D\u0430\u044F \u043F\u043E\u0434\u0441\u043A\u0430\u0437\u043A\u0430",
@@ -8780,6 +9867,7 @@
     "colors.modifyValue": "\u0418\u0437\u043C\u0435\u043D\u0438\u0442\u044C \u0446\u0432\u0435\u0442 {value}",
     "colors.removeValue": "\u0423\u0434\u0430\u043B\u0438\u0442\u044C \u0446\u0432\u0435\u0442 {value}",
     "taskGroup.today": "\u0421\u0435\u0433\u043E\u0434\u043D\u044F",
+    "taskGroup.current": "\u0422\u0435\u043A\u0443\u0449\u0430\u044F \u0437\u0430\u0434\u0430\u0447\u0430",
     "taskGroup.yesterday": "\u0412\u0447\u0435\u0440\u0430",
     "taskGroup.last7": "\u041F\u043E\u0441\u043B\u0435\u0434\u043D\u0438\u0435 7\xA0\u0434\u043D\u0435\u0439",
     "taskGroup.older": "\u0421\u0442\u0430\u0440\u0448\u0435",
@@ -8832,6 +9920,14 @@
     "networkEgress.direct": "\u041F\u0440\u044F\u043C\u043E\u0439",
     "networkEgress.custom": "\u041F\u043E\u043B\u044C\u0437\u043E\u0432\u0430\u0442\u0435\u043B\u044C\u0441\u043A\u0438\u0439",
     "networkEgress.customProxy": "URL \u043F\u043E\u043B\u044C\u0437\u043E\u0432\u0430\u0442\u0435\u043B\u044C\u0441\u043A\u043E\u0433\u043E \u043F\u0440\u043E\u043A\u0441\u0438",
+    "networkEgress.timeout": "\u0422\u0430\u0439\u043C-\u0430\u0443\u0442 \u0437\u0430\u043F\u0440\u043E\u0441\u0430 \u0438\u0437\u043E\u0431\u0440\u0430\u0436\u0435\u043D\u0438\u044F",
+    "networkEgress.timeoutUnit": "\u043C\u0438\u043D",
+    "networkEgress.retryCount": "\u041F\u043E\u0432\u0442\u043E\u0440\u044B \u043F\u043E\u0441\u043B\u0435 \u0441\u0431\u043E\u044F",
+    "networkEgress.retryUnit": "\u0440\u0430\u0437",
+    "networkEgress.requestPolicyHelp": "\u041F\u0440\u0438\u043C\u0435\u043D\u044F\u0435\u0442\u0441\u044F \u0442\u043E\u043B\u044C\u043A\u043E \u043A \u0437\u0430\u043F\u0440\u043E\u0441\u0430\u043C \u0438\u0437\u043E\u0431\u0440\u0430\u0436\u0435\u043D\u0438\u0439, \u0437\u0430\u043F\u0443\u0449\u0435\u043D\u043D\u044B\u043C \u043F\u043E\u0437\u0434\u043D\u0435\u0435. \u0414\u043B\u044F \u043A\u0430\u0436\u0434\u043E\u0433\u043E \u0430\u0432\u0442\u043E\u043C\u0430\u0442\u0438\u0447\u0435\u0441\u043A\u043E\u0433\u043E \u043F\u043E\u0432\u0442\u043E\u0440\u0430 \u043E\u0442\u0441\u0447\u0451\u0442 \u0442\u0430\u0439\u043C-\u0430\u0443\u0442\u0430 \u043D\u0430\u0447\u0438\u043D\u0430\u0435\u0442\u0441\u044F \u0437\u0430\u043D\u043E\u0432\u043E.",
+    "networkEgress.timeoutInvalid": "\u0412\u0432\u0435\u0434\u0438\u0442\u0435 \u0446\u0435\u043B\u043E\u0435 \u0447\u0438\u0441\u043B\u043E \u043E\u0442 1 \u0434\u043E 30 \u043C\u0438\u043D\u0443\u0442",
+    "networkEgress.retryInvalid": "\u0412\u0432\u0435\u0434\u0438\u0442\u0435 \u0446\u0435\u043B\u043E\u0435 \u0447\u0438\u0441\u043B\u043E \u043F\u043E\u0432\u0442\u043E\u0440\u043E\u0432 \u043E\u0442 0 \u0434\u043E 5",
+    "networkEgress.environmentTimeoutActive": "\u0421\u0435\u0439\u0447\u0430\u0441 \u0434\u0435\u0439\u0441\u0442\u0432\u0443\u0435\u0442 \u0442\u0430\u0439\u043C-\u0430\u0443\u0442 \u0438\u0437 \u043F\u0435\u0440\u0435\u043C\u0435\u043D\u043D\u043E\u0439 \u043E\u043A\u0440\u0443\u0436\u0435\u043D\u0438\u044F: {seconds} \u0441\u0435\u043A\u0443\u043D\u0434. \u041F\u043E\u0441\u043B\u0435 \u0441\u043E\u0445\u0440\u0430\u043D\u0435\u043D\u0438\u044F \u0435\u0433\u043E \u0437\u0430\u043C\u0435\u043D\u0438\u0442 \u043D\u0430\u0441\u0442\u0440\u043E\u0439\u043A\u0430 \u0432\u044B\u0448\u0435.",
     "networkEgress.currentRoute": "\u0422\u0435\u043A\u0443\u0449\u0438\u0439 \u043C\u0430\u0440\u0448\u0440\u0443\u0442: {route}",
     "networkEgress.test": "\u041F\u0440\u043E\u0432\u0435\u0440\u0438\u0442\u044C \u0441\u043E\u0435\u0434\u0438\u043D\u0435\u043D\u0438\u0435",
     "networkEgress.save": "\u0421\u043E\u0445\u0440\u0430\u043D\u0438\u0442\u044C \u0438 \u043F\u0440\u0438\u043C\u0435\u043D\u0438\u0442\u044C",
@@ -8874,7 +9970,8 @@
     "apiSettings.copyProviderWithoutKeyStatus": "\u041F\u0440\u043E\u0432\u0430\u0439\u0434\u0435\u0440 \u0441\u043A\u043E\u043F\u0438\u0440\u043E\u0432\u0430\u043B. \u041F\u0435\u0440\u0435\u0434 \u0441\u043E\u0445\u0440\u0430\u043D\u0435\u043D\u0438\u0435\u043C \u043E\u0442\u0440\u0435\u0434\u0430\u043A\u0442\u0438\u0440\u0443\u0439\u0442\u0435 \u0438\u043C\u044F, \u043C\u043E\u0434\u0435\u043B\u044C \u0438\u043B\u0438 \u0434\u043E\u0431\u0430\u0432\u044C\u0442\u0435 \u043A\u043B\u044E\u0447 API.",
     "apiSettings.sortProviders": "\u0421\u043E\u0440\u0442\u0438\u0440\u043E\u0432\u0430\u0442\u044C",
     "apiSettings.finishSortProviders": "\u0413\u043E\u0442\u043E\u0432\u043E",
-    "apiSettings.sortProviderModeStatus": "\u0421\u043E\u0440\u0442\u0438\u0440\u043E\u0432\u043A\u0430 \u043F\u043E\u0441\u0442\u0430\u0432\u0449\u0438\u043A\u043E\u0432",
+    "apiSettings.sortProviderModeStatus": "\u041F\u0435\u0440\u0435\u0442\u0430\u0441\u043A\u0438\u0432\u0430\u0439\u0442\u0435 \u043C\u0430\u0440\u043A\u0435\u0440\u044B \u0438\u043B\u0438 \u0438\u0441\u043F\u043E\u043B\u044C\u0437\u0443\u0439\u0442\u0435 \u0441\u0442\u0440\u0435\u043B\u043A\u0438 \u0434\u043B\u044F \u0441\u043E\u0440\u0442\u0438\u0440\u043E\u0432\u043A\u0438",
+    "apiSettings.sortProviderHandleAria": "\u041F\u0435\u0440\u0435\u0442\u0430\u0449\u0438\u0442\u0435 {provider} \u0438\u043B\u0438 \u0438\u0441\u043F\u043E\u043B\u044C\u0437\u0443\u0439\u0442\u0435 \u0441\u0442\u0440\u0435\u043B\u043A\u0438, Home \u0438 End",
     "apiSettings.sortProviderStatus": "\u041F\u043E\u0440\u044F\u0434\u043E\u043A \u043F\u0440\u043E\u0432\u0430\u0439\u0434\u0435\u0440\u043E\u0432 \u0438\u0437\u043C\u0435\u043D\u0435\u043D. \u0410\u0432\u0442\u043E\u0441\u043E\u0445\u0440\u0430\u043D\u0435\u043D\u0438\u0435...",
     "apiSettings.moveProviderUp": "\u0412\u0432\u0435\u0440\u0445",
     "apiSettings.moveProviderDown": "\u0412\u043D\u0438\u0437",
@@ -9127,6 +10224,7 @@
     "batch.selected": "0 selezionato",
     "batch.selectedCount": "{count} selezionato",
     "batch.selectCurrentGroup": "Seleziona tutto il gruppo",
+    "batch.selectWaiting": "Seleziona tutte in attesa",
     "batch.archivedCount": "Chat {count} archiviate",
     "batch.archiveFailed": "L'archiviazione batch non \xE8 riuscita",
     "batch.runningCannotDeleteSelected": "Le chat selezionate sono in esecuzione e non possono essere eliminate",
@@ -9140,14 +10238,15 @@
     "batch.cancelSelected": "Annulla attivit\xE0",
     "batch.noActiveSelected": "Le attivit\xE0 selezionate non sono pi\xF9 in esecuzione o in attesa",
     "batch.cancelTitle": "Annullare {count} attivit\xE0?",
-    "batch.cancelMessage": "Le attivit\xE0 in esecuzione verranno interrotte e quelle in attesa usciranno dalla coda. La cronologia verr\xE0 conservata.",
+    "batch.cancelMessage": "Le attivit\xE0 in attesa verranno annullate subito. Le chiamate al provider in corso possono continuare ed essere comunque addebitate fino alla risposta. La cronologia verr\xE0 conservata.",
     "batch.cancelDetail": "In esecuzione {running} \xB7 in attesa {waiting}",
     "batch.cancelConfirm": "Annulla attivit\xE0",
-    "batch.cancelResult": "Annullate {cancelled}, ignorate {skipped}, non riuscite {failed}",
+    "batch.cancelResult": "Annullate {cancelled}, annullamento richiesto {requested}, ignorate {skipped}, non riuscite {failed}",
     "batch.cancelFailed": "Annullamento multiplo non riuscito",
     "action.archive": "Archivio",
     "action.delete": "Elimina",
     "action.cancel": "Annulla",
+    "action.stop": "Ferma",
     "action.edit": "Modifica",
     "action.clear": "Chiaro",
     "action.paste": "Incolla",
@@ -9192,12 +10291,13 @@
     "queue.queuedDeleted": "Attivit\xE0 in coda eliminata",
     "queue.cancelRunningConfirm": "Annulla attivit\xE0",
     "queue.cancelRunningTitleConfirm": "Annullare l'attivit\xE0 in esecuzione?",
-    "queue.cancelRunningMessage": "L'attivit\xE0 corrente verr\xE0 interrotta. La storia verr\xE0 mantenuta.",
+    "queue.cancelRunningMessage": "Verr\xE0 richiesto l\u2019annullamento. La chiamata al provider pu\xF2 continuare ed essere comunque addebitata fino alla risposta. La cronologia verr\xE0 conservata.",
     "queue.cancelRunningFailed": "Impossibile annullare l'attivit\xE0",
+    "queue.cancellationPending": "Annullamento richiesto. La chiamata al provider pu\xF2 continuare ed essere comunque addebitata fino alla risposta.",
     "queue.runningCancelled": "Attivit\xE0 annullata",
     "queue.reorderFailed": "Impossibile riordinare la coda",
     "queue.realtimeUpdateFailed": "Impossibile aggiornare lo stato in tempo reale",
-    "queue.realtimeDisconnected": "La connessione allo stato in tempo reale \xE8 stata interrotta. Aggiorna la pagina per ripristinare.",
+    "queue.realtimeDisconnected": "La connessione allo stato in tempo reale \xE8 stata interrotta. Riconnessione automatica in corso\u2026",
     "queue.readFailed": "Impossibile caricare la coda",
     "status.waiting": "In attesa",
     "status.shownActiveTasks": "Visualizzazione delle attivit\xE0 attive",
@@ -9205,6 +10305,7 @@
     "taskStatus.submitting": "Invio",
     "taskStatus.running": "Generazione",
     "taskStatus.runningWithElapsed": "Generazione \xB7 {elapsed}",
+    "taskStatus.cancelling": "Annullamento in corso",
     "taskStatus.completed": "Completato",
     "taskStatus.partialFailed": "Parzialmente fallito",
     "taskStatus.failed": "Fallito",
@@ -9233,7 +10334,6 @@
     "taskCard.textToImageThumb": "Miniatura dell'attivit\xE0 Text-to-image",
     "taskCard.imageToImageThumb": "Miniatura dell'attivit\xE0 Image-to-image",
     "taskCard.failedThumb": "Attivit\xE0 fallita",
-    "taskCard.textBadge": "t",
     "taskMode.edit": "Modifica",
     "taskMode.generate": "Genera",
     "document.generatingQueue": "Generazione \xB7 coda {total}",
@@ -9247,12 +10347,114 @@
     "historyLibrary.openFull": "Apri la libreria della cronologia completa",
     "history.documentTitle": "Storia - iLab CONJURE",
     "history.back": "Torniamo al generatore",
+    "history.homeAria": "Torna al generatore iLab CONJURE",
+    "history.backToGenerator": "Torna al generatore",
     "history.title": "Storia",
     "history.loading": "Caricamento in corso",
     "history.total": "{total} attivit\xE0 \xB7 {archived} archiviate",
     "history.search": "Cerca",
     "history.searchPlaceholder": "Richieste di ricerca o attivit\xE0 ID",
     "history.clear": "Chiaro",
+    "history.activeFilterCount": "Filtrato \xB7 {count}",
+    "history.clearAllFilters": "Cancella tutto",
+    "history.removeFilter": "Rimuovi filtro: {label}",
+    "history.filtersActive": "Filtri attivit\xE0, {count} attivi",
+    "history.favorites": "Preferiti",
+    "history.onlyFavorites": "Solo preferiti",
+    "history.favoriteTask": "Aggiungi ai preferiti",
+    "history.unfavoriteTask": "Rimuovi dai preferiti",
+    "history.tags": "Tag",
+    "history.untagged": "Senza tag",
+    "history.manageTags": "Gestisci tag",
+    "history.createTag": "Crea tag",
+    "history.renameTag": "Rinomina",
+    "history.deleteTag": "Elimina",
+    "history.deleteTagAffected": "Elimina ({count} attivit\xE0)",
+    "history.addTag": "Aggiungi tag",
+    "history.removeTag": "Rimuovi tag",
+    "history.favoriteSelected": "Aggiungi ai preferiti",
+    "history.unfavoriteSelected": "Rimuovi dai preferiti",
+    "history.organizeSelected": "Organizza",
+    "history.exitSelection": "Esci dalla selezione multipla",
+    "history.organizationFailed": "Impossibile aggiornare preferiti o tag",
+    "history.tagNameConflict": "Questo nome di tag esiste gi\xE0",
+    "history.noTags": "Nessun tag",
+    "history.backendRestartRequired": "Le funzioni della cronologia sono state aggiornate. Riavvia l\u2019app e riprova.",
+    "history.export": "Esporta",
+    "history.exportImagesOnly": "Solo immagini",
+    "history.exportImagesWithPrompts": "Immagini + prompt",
+    "history.exportPreparing": "Preparazione esportazione\u2026",
+    "history.exportStarted": "Download avviato",
+    "history.exportSummary": "{taskCount} attivit\xE0 \xB7 {imageCount} immagini",
+    "history.exportFailed": "Esportazione non riuscita",
+    "historyBackup.open": "Backup delle attivit\xE0",
+    "historyBackup.importOpen": "Importa backup",
+    "historyBackup.mode": "Backup attivit\xE0",
+    "historyBackup.description": "Salva i dati e i file correlati per ripristinarli in un\u2019installazione compatibile di iLab CONJURE.",
+    "historyBackup.scopeLegend": "Ambito del backup",
+    "historyBackup.scopeHelp": "I risultati filtrati e l\u2019intera cronologia vengono conteggiati localmente senza limiti dovuti alle attivit\xE0 mostrate in questa pagina.",
+    "historyBackup.scopeSelected": "Attivit\xE0 selezionate",
+    "historyBackup.scopeFiltered": "Risultati filtrati correnti",
+    "historyBackup.scopeAll": "Tutta la cronologia",
+    "historyBackup.scopeCount": "{eligible} di {total} idonee",
+    "historyBackup.scopeCounting": "Conteggio\u2026",
+    "historyBackup.scopeCountUnavailable": "Conteggio non disponibile",
+    "historyBackup.scopeNoneSelected": "Nessuna attivit\xE0 selezionata",
+    "historyBackup.willBackup": "Verranno salvate {eligible} attivit\xE0; {excluded} attivit\xE0 incomplete saranno escluse.",
+    "historyBackup.selectTasksFirst": "Seleziona prima almeno un\u2019attivit\xE0.",
+    "historyBackup.scopeLockedUnknown": "Ambito originale del backup",
+    "historyBackup.scopeLocked": "Ambito bloccato: {scope} \xB7 verranno salvate {eligible} attivit\xE0",
+    "historyBackup.scopeLockedPending": "Ambito bloccato: {scope} \xB7 conteggio delle attivit\xE0 idonee",
+    "historyBackup.progressLabel": "Avanzamento backup",
+    "historyBackup.start": "Avvia backup",
+    "historyBackup.cancel": "Annulla backup",
+    "historyBackup.download": "Scarica backup",
+    "historyBackup.dismiss": "Chiudi risultato",
+    "historyBackup.discard": "Chiudi senza scaricare",
+    "historyBackup.closePanel": "Chiudi pannello",
+    "historyBackup.downloadStartedTitle": "Download avviato",
+    "historyBackup.idle": "Pronto",
+    "historyBackup.queued": "In coda",
+    "historyBackup.planning": "Pianificazione",
+    "historyBackup.packing": "Creazione pacchetto",
+    "historyBackup.ready": "Pronto per il download",
+    "historyBackup.readyDetail": "Il backup \xE8 pronto. Scaricalo entro 1 ora; chiudere senza scaricare elimina subito il file temporaneo.",
+    "historyBackup.downloaded": "Verifica che il browser abbia salvato il file, quindi puoi chiudere questo pannello. Il file temporaneo verr\xE0 eliminato al termine del trasferimento.",
+    "historyBackup.missingInputsWarning": "In {tasks} attivit\xE0 mancano {files} file di input. Saranno omessi; prompt e risultati verranno comunque esportati.",
+    "historyBackup.failed": "Backup non riuscito",
+    "historyBackup.cancelled": "Annullato",
+    "historyBackup.expired": "Scaduto",
+    "historyBackup.interrupted": "Interrotto",
+    "historyBackup.stats": "Totale {total} \xB7 idonee {eligible} \xB7 escluse {excluded} \xB7 {bytes}",
+    "historyBackup.errorDisk": "Spazio su disco insufficiente.",
+    "historyBackup.errorSourceChanged": "I dati sorgente sono cambiati durante il backup.",
+    "historyBackup.errorEmpty": "Nessuna attivit\xE0 idonea.",
+    "historyBackup.errorIo": "Impossibile creare il backup.",
+    "historyImport.title": "Importa backup attivit\xE0",
+    "historyImport.choose": "Scegli backup ZIP",
+    "historyImport.uploading": "Caricamento",
+    "historyImport.validating": "Convalida",
+    "historyImport.validated": "Convalidato",
+    "historyImport.preview": "Anteprima ripristino",
+    "historyImport.restorable": "Ripristinabili",
+    "historyImport.duplicate": "Duplicati",
+    "historyImport.conflict": "Conflitti",
+    "historyImport.invalid": "Non validi",
+    "historyImport.confirm": "Conferma ripristino",
+    "historyImport.restoring": "Ripristino",
+    "historyImport.restored": "Ripristinati",
+    "historyImport.failed": "Ripristino non riuscito",
+    "historyImport.interrupted": "Interrotto",
+    "historyImport.cancelled": "Annullato",
+    "historyImport.result": "Risultato",
+    "historyImport.thumbnailWarnings": "Avvisi miniature",
+    "historyImport.cleanupWarnings": "Avvisi pulizia",
+    "historyImport.reselect": "Seleziona di nuovo lo ZIP originale.",
+    "historyImport.noOverwrite": "Le attivit\xE0 esistenti non vengono mai sovrascritte.",
+    "historyImport.reasonInvalid": "Dati di backup non validi",
+    "historyImport.reasonSensitive": "Contiene dati protetti",
+    "historyImport.reasonMismatch": "Non corrisponde al manifesto del backup",
+    "history.closeExport": "Chiudi opzioni di esportazione",
     "history.type": "Tipo",
     "history.allTypes": "Tutti i tipi",
     "history.type.textToImage": "Testo in immagine",
@@ -9423,6 +10625,7 @@
     "language.ru": "\u0420\u0443\u0441\u0441\u043A\u0438\u0439",
     "language.it": "Italiano",
     "language.hi": "\u0939\u093F\u0928\u094D\u0926\u0940",
+    "language.vi": "Ti\u1EBFng Vi\u1EC7t",
     "auth.label": "Origine autenticazione",
     "auth.checking": "Verifica autenticazione",
     "auth.missingCodexSession": "Nessuna sessione Codex rilevata",
@@ -9449,8 +10652,16 @@
     "recentAssets.defaultName": "Caricamento recente",
     "recentAssets.use": "Utilizza {name}",
     "recentAssets.delete": "Elimina {name}",
+    "recentAssets.inUse": "Usata da {count} attivit\xE0; non pu\xF2 essere eliminata definitivamente, ma pu\xF2 essere nascosta dai caricamenti recenti",
+    "recentAssets.hide": "Nascondi {name} dai caricamenti recenti",
+    "recentAssets.hideTitle": "Nascondere dai caricamenti recenti?",
+    "recentAssets.hideMessage": "Questa immagine \xE8 usata da {count} attivit\xE0 e non pu\xF2 essere eliminata definitivamente. Nasconderla la rimuove solo dai caricamenti recenti; l\u2019originale, l\u2019input corrente e le attivit\xE0 storiche restano disponibili.",
+    "recentAssets.hideFailed": "Impossibile nascondere il caricamento recente",
+    "recentAssets.hidden": "Nascosta dai caricamenti recenti; l\u2019originale e le attivit\xE0 storiche sono stati conservati",
+    "recentAssets.hidePreviews": "Nascondi le immagini caricate di recente",
+    "recentAssets.showPreviews": "Mostra le immagini caricate di recente",
     "recentAssets.deleteTitle": "Eliminare il caricamento recente?",
-    "recentAssets.deleteMessage": "Ci\xF2 rimuover\xE0 image dai caricamenti recenti. Se \xE8 attualmente selezionato come ingresso image, verr\xE0 rimosso dall'ingresso corrente. Le attivit\xE0 storiche che fanno riferimento a questo caricamento recente perderanno l'anteprima dell'input. La galleria pubblica non \xE8 interessata.",
+    "recentAssets.deleteMessage": "Questa immagine non \xE8 usata da alcuna attivit\xE0. L\u2019originale verr\xE0 eliminato definitivamente e la stessa immagine sar\xE0 rimossa dall\u2019input corrente. La galleria pubblica non \xE8 interessata.",
     "recentAssets.loadFailed": "Impossibile caricare i caricamenti recenti",
     "recentAssets.deleteFailed": "Impossibile eliminare il caricamento recente",
     "recentAssets.deleted": "Caricamento recente eliminato",
@@ -9475,11 +10686,13 @@
     "referenceCollector.alreadyStaged": "Gi\xE0 messo in scena come riferimento",
     "referenceCollector.staged": "Stage {count} riferimento images",
     "referenceCollector.title": "Riferimenti in sospeso \xB7 {count}",
-    "referenceCollector.addAll": "Aggiungi tutti i riferimenti",
+    "referenceCollector.addAll": "Aggiungi tutto",
+    "referenceCollector.replaceAll": "Sostituisci attuali",
     "referenceCollector.itemFallback": "Riferimento in attesa",
     "referenceCollector.remove": "Rimuovere il riferimento in sospeso",
     "referenceCollector.cleared": "I riferimenti in sospeso sono stati cancellati",
     "referenceCollector.added": "Aggiunto {count} riferimento images",
+    "referenceCollector.replaced": "Riferimenti sostituiti con {count} immagini",
     "referenceCollector.addFailed": "Impossibile aggiungere riferimenti in sospeso",
     "referenceCollector.readFailed": "Impossibile leggere image: {status}",
     "gallery.quick": "Galleria veloce",
@@ -9597,7 +10810,7 @@
     "output.promptHelpTitle": "Gestione del prompt",
     "output.promptHelp.responsesChannel": "Responses \xB7 modello principale coinvolto",
     "output.promptHelp.imagesChannel": "Images \xB7 generazione diretta",
-    "output.promptHelp.responses.original": "Invia il testo originale al modello principale e chiede allo strumento immagine di conservarlo; pu\xF2 comunque produrre un revised prompt.",
+    "output.promptHelp.responses.original": "Invia il testo originale esatto senza regole aggiunte dall\u2019app; il provider pu\xF2 comunque restituire un revised prompt o interpretare diversamente il risultato.",
     "output.promptHelp.responses.strict": "Consente al modello principale di organizzare o ampliare il prompt, preservando vincoli come soggetti, testo, colori e composizione.",
     "output.promptHelp.responses.automatic": "Non aggiunge vincoli; il modello principale interpreta e ottimizza prima di chiamare lo strumento immagine.",
     "output.promptHelp.images.original": "Non aggiunge regole dell\u2019app e invia il testo originale direttamente all\u2019API immagini.",
@@ -9692,6 +10905,16 @@
     "lightbox.close": "Chiudi l'anteprima",
     "lightbox.previous": "Precedente image",
     "lightbox.next": "Successivo image",
+    "lightbox.zoomControls": "Controlli zoom",
+    "lightbox.zoomOut": "Riduci",
+    "lightbox.zoomIn": "Ingrandisci",
+    "lightbox.fit": "Adatta",
+    "lightbox.fitPage": "Adatta alla pagina",
+    "lightbox.actualSize": "100% dimensione reale",
+    "lightbox.shortcuts": "Scorciatoie da tastiera",
+    "lightbox.switchImage": "Cambia immagine",
+    "lightbox.switchTask": "Cambia attivit\xE0",
+    "lightbox.wheelZoom": "Rotella per zoomare",
     "promptPopover.title": "Confronto immediato",
     "promptPopover.summary": "Originale {original} \xB7 ottimizzato {optimized}",
     "promptPopover.original": "Richiesta originale",
@@ -9855,6 +11078,7 @@
     "colors.modifyValue": "Modifica colore {value}",
     "colors.removeValue": "Rimuovi colore {value}",
     "taskGroup.today": "Oggi",
+    "taskGroup.current": "Attivit\xE0 corrente",
     "taskGroup.yesterday": "Ieri",
     "taskGroup.last7": "Ultimi 7 giorni",
     "taskGroup.older": "Pi\xF9 vecchio",
@@ -9907,6 +11131,14 @@
     "networkEgress.direct": "Diretto",
     "networkEgress.custom": "Personalizzato",
     "networkEgress.customProxy": "URL proxy personalizzato",
+    "networkEgress.timeout": "Timeout della richiesta immagine",
+    "networkEgress.timeoutUnit": "min",
+    "networkEgress.retryCount": "Tentativi dopo un errore",
+    "networkEgress.retryUnit": "volte",
+    "networkEgress.requestPolicyHelp": "Si applica solo alle richieste di immagini avviate in seguito. Ogni tentativo automatico riceve una nuova finestra di timeout.",
+    "networkEgress.timeoutInvalid": "Inserisci un numero intero da 1 a 30 minuti",
+    "networkEgress.retryInvalid": "Inserisci un numero intero da 0 a 5 tentativi",
+    "networkEgress.environmentTimeoutActive": "\xC8 attivo il timeout della variabile di ambiente: {seconds} secondi. Il salvataggio lo sostituir\xE0 con l\u2019impostazione precedente.",
     "networkEgress.currentRoute": "Instradamento attuale: {route}",
     "networkEgress.test": "Verifica connessione",
     "networkEgress.save": "Salva e applica",
@@ -9949,7 +11181,8 @@
     "apiSettings.copyProviderWithoutKeyStatus": "Fornitore copiato. Modifica il nome, il modello o aggiungi una chiave API prima di salvare.",
     "apiSettings.sortProviders": "Ordina",
     "apiSettings.finishSortProviders": "Fatto",
-    "apiSettings.sortProviderModeStatus": "Ordinamento dei fornitori",
+    "apiSettings.sortProviderModeStatus": "Trascina le maniglie per ordinare o usa i tasti freccia",
+    "apiSettings.sortProviderHandleAria": "Trascina per riordinare {provider} o usa frecce, Home e Fine",
     "apiSettings.sortProviderStatus": "L'ordine dei fornitori \xE8 cambiato. Salvataggio automatico...",
     "apiSettings.moveProviderUp": "Su",
     "apiSettings.moveProviderDown": "Gi\xF9",
@@ -10202,6 +11435,7 @@
     "batch.selected": "0 \u091A\u092F\u0928\u093F\u0924",
     "batch.selectedCount": "{count} \u091A\u092F\u0928\u093F\u0924",
     "batch.selectCurrentGroup": "\u0938\u092E\u0942\u0939 \u092E\u0947\u0902 \u0938\u092D\u0940 \u091A\u0941\u0928\u0947\u0902",
+    "batch.selectWaiting": "\u0938\u092D\u0940 \u092A\u094D\u0930\u0924\u0940\u0915\u094D\u0937\u093E\u0930\u0924 \u091A\u0941\u0928\u0947\u0902",
     "batch.archivedCount": "\u0938\u0902\u0917\u094D\u0930\u0939\u0940\u0924 {count} \u091A\u0948\u091F",
     "batch.archiveFailed": "\u092C\u0948\u091A \u0938\u0902\u0917\u094D\u0930\u0939 \u0935\u093F\u092B\u0932 \u0930\u0939\u093E",
     "batch.runningCannotDeleteSelected": "\u091A\u092F\u0928\u093F\u0924 \u091A\u0948\u091F \u091A\u0932 \u0930\u0939\u0940 \u0939\u0948\u0902 \u0914\u0930 \u0909\u0928\u094D\u0939\u0947\u0902 \u0939\u091F\u093E\u092F\u093E \u0928\u0939\u0940\u0902 \u091C\u093E \u0938\u0915\u0924\u093E",
@@ -10215,14 +11449,15 @@
     "batch.cancelSelected": "\u0915\u093E\u0930\u094D\u092F \u0930\u0926\u094D\u0926 \u0915\u0930\u0947\u0902",
     "batch.noActiveSelected": "\u091A\u0941\u0928\u0947 \u0917\u090F \u0915\u093E\u0930\u094D\u092F \u0905\u092C \u091A\u0932 \u092F\u093E \u092A\u094D\u0930\u0924\u0940\u0915\u094D\u0937\u093E \u0928\u0939\u0940\u0902 \u0915\u0930 \u0930\u0939\u0947 \u0939\u0948\u0902",
     "batch.cancelTitle": "{count} \u0915\u093E\u0930\u094D\u092F \u0930\u0926\u094D\u0926 \u0915\u0930\u0947\u0902?",
-    "batch.cancelMessage": "\u091A\u0932 \u0930\u0939\u0947 \u0915\u093E\u0930\u094D\u092F \u0930\u0941\u0915 \u091C\u093E\u090F\u0902\u0917\u0947 \u0914\u0930 \u092A\u094D\u0930\u0924\u0940\u0915\u094D\u0937\u093E\u0930\u0924 \u0915\u093E\u0930\u094D\u092F \u0915\u0924\u093E\u0930 \u0938\u0947 \u0939\u091F \u091C\u093E\u090F\u0902\u0917\u0947\u0964 \u0907\u0924\u093F\u0939\u093E\u0938 \u0938\u0941\u0930\u0915\u094D\u0937\u093F\u0924 \u0930\u0939\u0947\u0917\u093E\u0964",
+    "batch.cancelMessage": "\u092A\u094D\u0930\u0924\u0940\u0915\u094D\u0937\u093E\u0930\u0924 \u0915\u093E\u0930\u094D\u092F \u0924\u0941\u0930\u0902\u0924 \u0930\u0926\u094D\u0926 \u0939\u094B\u0902\u0917\u0947\u0964 \u091A\u0932 \u0930\u0939\u0940 \u092A\u094D\u0930\u0926\u093E\u0924\u093E \u0915\u0949\u0932 \u0932\u094C\u091F\u0928\u0947 \u0924\u0915 \u091C\u093E\u0930\u0940 \u0930\u0939 \u0938\u0915\u0924\u0940 \u0939\u0948\u0902 \u0914\u0930 \u0936\u0941\u0932\u094D\u0915 \u0932\u0917 \u0938\u0915\u0924\u093E \u0939\u0948\u0964 \u0907\u0924\u093F\u0939\u093E\u0938 \u0938\u0941\u0930\u0915\u094D\u0937\u093F\u0924 \u0930\u0939\u0947\u0917\u093E\u0964",
     "batch.cancelDetail": "\u091A\u0932 \u0930\u0939\u0947 {running} \xB7 \u092A\u094D\u0930\u0924\u0940\u0915\u094D\u0937\u093E\u0930\u0924 {waiting}",
     "batch.cancelConfirm": "\u0915\u093E\u0930\u094D\u092F \u0930\u0926\u094D\u0926 \u0915\u0930\u0947\u0902",
-    "batch.cancelResult": "\u0930\u0926\u094D\u0926 {cancelled}, \u091B\u094B\u0921\u093C\u0947 {skipped}, \u0935\u093F\u092B\u0932 {failed}",
+    "batch.cancelResult": "\u0930\u0926\u094D\u0926 {cancelled}, \u0930\u0926\u094D\u0926 \u0915\u0930\u0928\u0947 \u0915\u093E \u0905\u0928\u0941\u0930\u094B\u0927 {requested}, \u091B\u094B\u0921\u093C\u0947 {skipped}, \u0935\u093F\u092B\u0932 {failed}",
     "batch.cancelFailed": "\u090F\u0915 \u0938\u093E\u0925 \u0930\u0926\u094D\u0926 \u0915\u0930\u0928\u093E \u0935\u093F\u092B\u0932",
     "action.archive": "\u0938\u0902\u0917\u094D\u0930\u0939\u093F\u0924 \u0915\u0930\u0947\u0902",
     "action.delete": "\u0939\u091F\u093E\u090F\u0901",
     "action.cancel": "\u0930\u0926\u094D\u0926 \u0915\u0930\u0947\u0902",
+    "action.stop": "\u0930\u094B\u0915\u0947\u0902",
     "action.edit": "\u0938\u0902\u092A\u093E\u0926\u093F\u0924 \u0915\u0930\u0947\u0902",
     "action.clear": "\u0938\u093E\u092B\u093C \u0915\u0930\u0947\u0902",
     "action.paste": "\u091A\u093F\u092A\u0915\u093E\u090F\u0901",
@@ -10267,12 +11502,13 @@
     "queue.queuedDeleted": "\u0915\u0924\u093E\u0930\u092C\u0926\u094D\u0927 \u0915\u093E\u0930\u094D\u092F \u0939\u091F\u093E \u0926\u093F\u092F\u093E \u0917\u092F\u093E",
     "queue.cancelRunningConfirm": "\u0915\u093E\u0930\u094D\u092F \u0930\u0926\u094D\u0926 \u0915\u0930\u0947\u0902",
     "queue.cancelRunningTitleConfirm": "\u091A\u0932 \u0930\u0939\u093E \u0915\u093E\u0930\u094D\u092F \u0930\u0926\u094D\u0926 \u0915\u0930\u0947\u0902?",
-    "queue.cancelRunningMessage": "\u0935\u0930\u094D\u0924\u092E\u093E\u0928 \u0915\u093E\u0930\u094D\u092F \u0930\u0941\u0915 \u091C\u093E\u092F\u0947\u0917\u093E. \u0907\u0924\u093F\u0939\u093E\u0938 \u0930\u0916\u093E \u091C\u093E\u090F\u0917\u093E.",
+    "queue.cancelRunningMessage": "\u0930\u0926\u094D\u0926 \u0915\u0930\u0928\u0947 \u0915\u093E \u0905\u0928\u0941\u0930\u094B\u0927 \u092D\u0947\u091C\u093E \u091C\u093E\u090F\u0917\u093E\u0964 \u092A\u094D\u0930\u0926\u093E\u0924\u093E \u0915\u0949\u0932 \u0932\u094C\u091F\u0928\u0947 \u0924\u0915 \u091C\u093E\u0930\u0940 \u0930\u0939 \u0938\u0915\u0924\u0940 \u0939\u0948 \u0914\u0930 \u0936\u0941\u0932\u094D\u0915 \u0932\u0917 \u0938\u0915\u0924\u093E \u0939\u0948\u0964 \u0907\u0924\u093F\u0939\u093E\u0938 \u0938\u0941\u0930\u0915\u094D\u0937\u093F\u0924 \u0930\u0939\u0947\u0917\u093E\u0964",
     "queue.cancelRunningFailed": "\u0915\u093E\u0930\u094D\u092F \u0930\u0926\u094D\u0926 \u0915\u0930\u0928\u0947 \u092E\u0947\u0902 \u0935\u093F\u092B\u0932",
+    "queue.cancellationPending": "\u0930\u0926\u094D\u0926 \u0915\u0930\u0928\u0947 \u0915\u093E \u0905\u0928\u0941\u0930\u094B\u0927 \u092D\u0947\u091C \u0926\u093F\u092F\u093E \u0917\u092F\u093E \u0939\u0948\u0964 \u092A\u094D\u0930\u0926\u093E\u0924\u093E \u0915\u0949\u0932 \u0932\u094C\u091F\u0928\u0947 \u0924\u0915 \u091C\u093E\u0930\u0940 \u0930\u0939 \u0938\u0915\u0924\u0940 \u0939\u0948 \u0914\u0930 \u0936\u0941\u0932\u094D\u0915 \u0932\u0917 \u0938\u0915\u0924\u093E \u0939\u0948\u0964",
     "queue.runningCancelled": "\u0915\u093E\u0930\u094D\u092F \u0930\u0926\u094D\u0926 \u0915\u0930 \u0926\u093F\u092F\u093E \u0917\u092F\u093E",
     "queue.reorderFailed": "\u0915\u0924\u093E\u0930 \u0915\u094B \u092A\u0941\u0928: \u0935\u094D\u092F\u0935\u0938\u094D\u0925\u093F\u0924 \u0915\u0930\u0928\u0947 \u092E\u0947\u0902 \u0935\u093F\u092B\u0932",
     "queue.realtimeUpdateFailed": "\u0932\u093E\u0907\u0935 \u0938\u094D\u0925\u093F\u0924\u093F \u0905\u092A\u0921\u0947\u091F \u0915\u0930\u0928\u0947 \u092E\u0947\u0902 \u0935\u093F\u092B\u0932",
-    "queue.realtimeDisconnected": "\u0932\u093E\u0907\u0935 \u0938\u094D\u0925\u093F\u0924\u093F \u0915\u0928\u0947\u0915\u094D\u0936\u0928 \u0916\u094B \u0917\u092F\u093E \u0925\u093E. \u092A\u0941\u0928\u0930\u094D\u092A\u094D\u0930\u093E\u092A\u094D\u0924 \u0915\u0930\u0928\u0947 \u0915\u0947 \u0932\u093F\u090F \u092A\u0943\u0937\u094D\u0920 \u0915\u094B \u0924\u093E\u091C\u093C\u093E \u0915\u0930\u0947\u0902.",
+    "queue.realtimeDisconnected": "\u0932\u093E\u0907\u0935 \u0938\u094D\u0925\u093F\u0924\u093F \u0915\u0928\u0947\u0915\u094D\u0936\u0928 \u091F\u0942\u091F \u0917\u092F\u093E\u0964 \u0905\u092A\u0928\u0947 \u0906\u092A \u092B\u093F\u0930 \u0938\u0947 \u0915\u0928\u0947\u0915\u094D\u091F \u0915\u093F\u092F\u093E \u091C\u093E \u0930\u0939\u093E \u0939\u0948\u2026",
     "queue.readFailed": "\u0915\u0924\u093E\u0930 \u0932\u094B\u0921 \u0915\u0930\u0928\u0947 \u092E\u0947\u0902 \u0935\u093F\u092B\u0932",
     "status.waiting": "\u092A\u094D\u0930\u0924\u0940\u0915\u094D\u0937\u093E \u092E\u0947\u0902",
     "status.shownActiveTasks": "\u0938\u0915\u094D\u0930\u093F\u092F \u0915\u093E\u0930\u094D\u092F \u0926\u093F\u0916\u093E \u0930\u0939\u093E \u0939\u0948",
@@ -10280,6 +11516,7 @@
     "taskStatus.submitting": "\u0938\u092C\u092E\u093F\u091F \u0915\u0930\u0928\u093E",
     "taskStatus.running": "\u091C\u0928\u0930\u0947\u091F \u0939\u094B \u0930\u0939\u093E \u0939\u0948",
     "taskStatus.runningWithElapsed": "\u091C\u0928\u0930\u0947\u091F \u0939\u094B \u0930\u0939\u093E \u0939\u0948 \xB7 {elapsed}",
+    "taskStatus.cancelling": "\u0930\u0926\u094D\u0926 \u0915\u093F\u092F\u093E \u091C\u093E \u0930\u0939\u093E \u0939\u0948",
     "taskStatus.completed": "\u092A\u0942\u0930\u093E \u0939\u0941\u0906",
     "taskStatus.partialFailed": "\u0906\u0902\u0936\u093F\u0915 \u0930\u0942\u092A \u0938\u0947 \u0905\u0938\u092B\u0932",
     "taskStatus.failed": "\u0905\u0938\u092B\u0932",
@@ -10308,7 +11545,6 @@
     "taskCard.textToImageThumb": "\u091F\u0947\u0915\u094D\u0938\u094D\u091F-\u0938\u0947-\u091A\u093F\u0924\u094D\u0930 \u0915\u093E\u0930\u094D\u092F \u0925\u0902\u092C\u0928\u0947\u0932",
     "taskCard.imageToImageThumb": "\u091A\u093F\u0924\u094D\u0930-\u0938\u0947-\u091A\u093F\u0924\u094D\u0930 \u0915\u093E\u0930\u094D\u092F \u0925\u0902\u092C\u0928\u0947\u0932",
     "taskCard.failedThumb": "\u0915\u093E\u0930\u094D\u092F \u0935\u093F\u092B\u0932",
-    "taskCard.textBadge": "\u091F\u0940",
     "taskMode.edit": "\u0938\u0902\u092A\u093E\u0926\u093F\u0924 \u0915\u0930\u0947\u0902",
     "taskMode.generate": "\u091C\u0928\u0930\u0947\u091F \u0915\u0930\u0947\u0902",
     "document.generatingQueue": "\u091C\u0928\u0930\u0947\u091F \u0939\u094B \u0930\u0939\u093E \u0939\u0948 \xB7 \u0915\u0924\u093E\u0930 {total}",
@@ -10322,12 +11558,114 @@
     "historyLibrary.openFull": "\u092A\u0942\u0930\u094D\u0923 \u0907\u0924\u093F\u0939\u093E\u0938 \u092A\u0941\u0938\u094D\u0924\u0915\u093E\u0932\u092F \u0916\u094B\u0932\u0947\u0902",
     "history.documentTitle": "\u0907\u0924\u093F\u0939\u093E\u0938 - iLab CONJURE",
     "history.back": "\u091C\u0947\u0928\u0930\u0947\u091F\u0930 \u0915\u094B \u0932\u094C\u091F\u0947\u0902",
+    "history.homeAria": "iLab CONJURE \u091C\u0947\u0928\u0930\u0947\u091F\u0930 \u092A\u0930 \u0932\u094C\u091F\u0947\u0902",
+    "history.backToGenerator": "\u091C\u0947\u0928\u0930\u0947\u091F\u0930 \u092A\u0930 \u0932\u094C\u091F\u0947\u0902",
     "history.title": "\u0907\u0924\u093F\u0939\u093E\u0938",
     "history.loading": "\u0932\u094B\u0921 \u0939\u094B \u0930\u0939\u093E \u0939\u0948",
     "history.total": "{total} \u0915\u093E\u0930\u094D\u092F \xB7 {archived} \u0938\u0902\u0917\u094D\u0930\u0939\u0940\u0924",
     "history.search": "\u0916\u094B\u091C\u0947\u0902",
     "history.searchPlaceholder": "\u092A\u094D\u0930\u0949\u092E\u094D\u092A\u094D\u091F \u092F\u093E \u0915\u093E\u0930\u094D\u092F ID \u0916\u094B\u091C\u0947\u0902",
     "history.clear": "\u0938\u093E\u092B\u093C \u0915\u0930\u0947\u0902",
+    "history.activeFilterCount": "\u092B\u093C\u093F\u0932\u094D\u091F\u0930 \u0932\u093E\u0917\u0942 \xB7 {count}",
+    "history.clearAllFilters": "\u0938\u092D\u0940 \u0938\u093E\u092B\u093C \u0915\u0930\u0947\u0902",
+    "history.removeFilter": "\u092B\u093C\u093F\u0932\u094D\u091F\u0930 \u0939\u091F\u093E\u090F\u0901: {label}",
+    "history.filtersActive": "\u0915\u093E\u0930\u094D\u092F \u092B\u093C\u093F\u0932\u094D\u091F\u0930, {count} \u0938\u0915\u094D\u0930\u093F\u092F",
+    "history.favorites": "\u092A\u0938\u0902\u0926\u0940\u0926\u093E",
+    "history.onlyFavorites": "\u0915\u0947\u0935\u0932 \u092A\u0938\u0902\u0926\u0940\u0926\u093E",
+    "history.favoriteTask": "\u092A\u0938\u0902\u0926\u0940\u0926\u093E \u092E\u0947\u0902 \u091C\u094B\u0921\u093C\u0947\u0902",
+    "history.unfavoriteTask": "\u092A\u0938\u0902\u0926\u0940\u0926\u093E \u0938\u0947 \u0939\u091F\u093E\u090F\u0901",
+    "history.tags": "\u091F\u0948\u0917",
+    "history.untagged": "\u092C\u093F\u0928\u093E \u091F\u0948\u0917",
+    "history.manageTags": "\u091F\u0948\u0917 \u092A\u094D\u0930\u092C\u0902\u0927\u093F\u0924 \u0915\u0930\u0947\u0902",
+    "history.createTag": "\u091F\u0948\u0917 \u092C\u0928\u093E\u090F\u0901",
+    "history.renameTag": "\u0928\u093E\u092E \u092C\u0926\u0932\u0947\u0902",
+    "history.deleteTag": "\u0939\u091F\u093E\u090F\u0901",
+    "history.deleteTagAffected": "\u0939\u091F\u093E\u090F\u0901 ({count} \u0915\u093E\u0930\u094D\u092F)",
+    "history.addTag": "\u091F\u0948\u0917 \u091C\u094B\u0921\u093C\u0947\u0902",
+    "history.removeTag": "\u091F\u0948\u0917 \u0939\u091F\u093E\u090F\u0901",
+    "history.favoriteSelected": "\u092A\u0938\u0902\u0926\u0940\u0926\u093E \u092C\u0928\u093E\u090F\u0901",
+    "history.unfavoriteSelected": "\u092A\u0938\u0902\u0926\u0940\u0926\u093E \u0939\u091F\u093E\u090F\u0901",
+    "history.organizeSelected": "\u0935\u094D\u092F\u0935\u0938\u094D\u0925\u093F\u0924 \u0915\u0930\u0947\u0902",
+    "history.exitSelection": "\u092C\u0939\u0941-\u091A\u092F\u0928 \u0938\u0947 \u092C\u093E\u0939\u0930 \u0928\u093F\u0915\u0932\u0947\u0902",
+    "history.organizationFailed": "\u092A\u0938\u0902\u0926\u0940\u0926\u093E \u092F\u093E \u091F\u0948\u0917 \u0905\u092A\u0921\u0947\u091F \u0928\u0939\u0940\u0902 \u0939\u094B \u0938\u0915\u0947",
+    "history.tagNameConflict": "\u092F\u0939 \u091F\u0948\u0917 \u0928\u093E\u092E \u092A\u0939\u0932\u0947 \u0938\u0947 \u092E\u094C\u091C\u0942\u0926 \u0939\u0948",
+    "history.noTags": "\u0905\u092D\u0940 \u0915\u094B\u0908 \u091F\u0948\u0917 \u0928\u0939\u0940\u0902",
+    "history.backendRestartRequired": "\u0907\u0924\u093F\u0939\u093E\u0938 \u0938\u0941\u0935\u093F\u0927\u093E\u090F\u0901 \u0905\u092A\u0921\u0947\u091F \u0939\u0941\u0908 \u0939\u0948\u0902\u0964 \u0910\u092A \u0915\u094B \u092B\u093F\u0930 \u0938\u0947 \u0936\u0941\u0930\u0942 \u0915\u0930\u0915\u0947 \u0926\u094B\u092C\u093E\u0930\u093E \u0915\u094B\u0936\u093F\u0936 \u0915\u0930\u0947\u0902\u0964",
+    "history.export": "\u0928\u093F\u0930\u094D\u092F\u093E\u0924",
+    "history.exportImagesOnly": "\u0915\u0947\u0935\u0932 \u091A\u093F\u0924\u094D\u0930",
+    "history.exportImagesWithPrompts": "\u091A\u093F\u0924\u094D\u0930 + \u092A\u094D\u0930\u0949\u092E\u094D\u092A\u094D\u091F",
+    "history.exportPreparing": "\u0928\u093F\u0930\u094D\u092F\u093E\u0924 \u0924\u0948\u092F\u093E\u0930 \u0939\u094B \u0930\u0939\u093E \u0939\u0948\u2026",
+    "history.exportStarted": "\u0921\u093E\u0909\u0928\u0932\u094B\u0921 \u0936\u0941\u0930\u0942 \u0939\u0941\u0906",
+    "history.exportSummary": "{taskCount} \u0915\u093E\u0930\u094D\u092F \xB7 {imageCount} \u091A\u093F\u0924\u094D\u0930",
+    "history.exportFailed": "\u0928\u093F\u0930\u094D\u092F\u093E\u0924 \u0935\u093F\u092B\u0932",
+    "historyBackup.open": "\u0915\u093E\u0930\u094D\u092F \u092C\u0948\u0915\u0905\u092A \u0915\u0930\u0947\u0902",
+    "historyBackup.importOpen": "\u092C\u0948\u0915\u0905\u092A \u0906\u092F\u093E\u0924 \u0915\u0930\u0947\u0902",
+    "historyBackup.mode": "\u0915\u093E\u0930\u094D\u092F \u092C\u0948\u0915\u0905\u092A",
+    "historyBackup.description": "\u0915\u093E\u0930\u094D\u092F \u0921\u0947\u091F\u093E \u0914\u0930 \u0938\u0902\u092C\u0902\u0927\u093F\u0924 \u092B\u093C\u093E\u0907\u0932\u0947\u0902 \u0938\u0939\u0947\u091C\u0947\u0902 \u0924\u093E\u0915\u093F \u0909\u0928\u094D\u0939\u0947\u0902 iLab CONJURE \u0915\u0947 \u0938\u0902\u0917\u0924 \u0938\u0902\u0938\u094D\u0915\u0930\u0923 \u092E\u0947\u0902 \u092A\u0941\u0928\u0930\u094D\u0938\u094D\u0925\u093E\u092A\u093F\u0924 \u0915\u093F\u092F\u093E \u091C\u093E \u0938\u0915\u0947\u0964",
+    "historyBackup.scopeLegend": "\u092C\u0948\u0915\u0905\u092A \u0926\u093E\u092F\u0930\u093E",
+    "historyBackup.scopeHelp": "\u092B\u093C\u093F\u0932\u094D\u091F\u0930 \u092A\u0930\u093F\u0923\u093E\u092E \u0914\u0930 \u092A\u0942\u0930\u093E \u0907\u0924\u093F\u0939\u093E\u0938 \u0938\u094D\u0925\u093E\u0928\u0940\u092F \u0930\u0942\u092A \u0938\u0947 \u0917\u093F\u0928\u0947 \u091C\u093E\u0924\u0947 \u0939\u0948\u0902; \u092F\u0939 \u0907\u0938 \u092A\u0943\u0937\u094D\u0920 \u092A\u0930 \u0926\u093F\u0916\u0947 \u0915\u093E\u0930\u094D\u092F\u094B\u0902 \u0924\u0915 \u0938\u0940\u092E\u093F\u0924 \u0928\u0939\u0940\u0902 \u0939\u0948\u0964",
+    "historyBackup.scopeSelected": "\u091A\u0941\u0928\u0947 \u0917\u090F \u0915\u093E\u0930\u094D\u092F",
+    "historyBackup.scopeFiltered": "\u0935\u0930\u094D\u0924\u092E\u093E\u0928 \u092B\u093C\u093F\u0932\u094D\u091F\u0930 \u092A\u0930\u093F\u0923\u093E\u092E",
+    "historyBackup.scopeAll": "\u092A\u0942\u0930\u093E \u0907\u0924\u093F\u0939\u093E\u0938",
+    "historyBackup.scopeCount": "{total} \u092E\u0947\u0902 \u0938\u0947 {eligible} \u092F\u094B\u0917\u094D\u092F",
+    "historyBackup.scopeCounting": "\u0917\u093F\u0928\u0924\u0940 \u091C\u093E\u0930\u0940\u2026",
+    "historyBackup.scopeCountUnavailable": "\u0917\u093F\u0928\u0924\u0940 \u0909\u092A\u0932\u092C\u094D\u0927 \u0928\u0939\u0940\u0902",
+    "historyBackup.scopeNoneSelected": "\u0915\u094B\u0908 \u0915\u093E\u0930\u094D\u092F \u0928\u0939\u0940\u0902 \u091A\u0941\u0928\u093E",
+    "historyBackup.willBackup": "{eligible} \u0915\u093E\u0930\u094D\u092F\u094B\u0902 \u0915\u093E \u092C\u0948\u0915\u0905\u092A \u0939\u094B\u0917\u093E; {excluded} \u0905\u0927\u0942\u0930\u0947 \u0915\u093E\u0930\u094D\u092F \u092C\u093E\u0939\u0930 \u0930\u0939\u0947\u0902\u0917\u0947\u0964",
+    "historyBackup.selectTasksFirst": "\u092A\u0939\u0932\u0947 \u0915\u092E \u0938\u0947 \u0915\u092E \u090F\u0915 \u0915\u093E\u0930\u094D\u092F \u091A\u0941\u0928\u0947\u0902\u0964",
+    "historyBackup.scopeLockedUnknown": "\u092E\u0942\u0932 \u092C\u0948\u0915\u0905\u092A \u0926\u093E\u092F\u0930\u093E",
+    "historyBackup.scopeLocked": "\u0926\u093E\u092F\u0930\u093E \u0932\u0949\u0915: {scope} \xB7 {eligible} \u0915\u093E\u0930\u094D\u092F\u094B\u0902 \u0915\u093E \u092C\u0948\u0915\u0905\u092A \u0939\u094B\u0917\u093E",
+    "historyBackup.scopeLockedPending": "\u0926\u093E\u092F\u0930\u093E \u0932\u0949\u0915: {scope} \xB7 \u092F\u094B\u0917\u094D\u092F \u0915\u093E\u0930\u094D\u092F \u0917\u093F\u0928\u0947 \u091C\u093E \u0930\u0939\u0947 \u0939\u0948\u0902",
+    "historyBackup.progressLabel": "\u092C\u0948\u0915\u0905\u092A \u092A\u094D\u0930\u0917\u0924\u093F",
+    "historyBackup.start": "\u092C\u0948\u0915\u0905\u092A \u0936\u0941\u0930\u0942 \u0915\u0930\u0947\u0902",
+    "historyBackup.cancel": "\u092C\u0948\u0915\u0905\u092A \u0930\u0926\u094D\u0926 \u0915\u0930\u0947\u0902",
+    "historyBackup.download": "\u092C\u0948\u0915\u0905\u092A \u0921\u093E\u0909\u0928\u0932\u094B\u0921 \u0915\u0930\u0947\u0902",
+    "historyBackup.dismiss": "\u092A\u0930\u093F\u0923\u093E\u092E \u092C\u0902\u0926 \u0915\u0930\u0947\u0902",
+    "historyBackup.discard": "\u0921\u093E\u0909\u0928\u0932\u094B\u0921 \u0915\u093F\u090F \u092C\u093F\u0928\u093E \u092C\u0902\u0926 \u0915\u0930\u0947\u0902",
+    "historyBackup.closePanel": "\u092A\u0948\u0928\u0932 \u092C\u0902\u0926 \u0915\u0930\u0947\u0902",
+    "historyBackup.downloadStartedTitle": "\u0921\u093E\u0909\u0928\u0932\u094B\u0921 \u0936\u0941\u0930\u0942 \u0939\u0941\u0906",
+    "historyBackup.idle": "\u0924\u0948\u092F\u093E\u0930",
+    "historyBackup.queued": "\u0915\u0924\u093E\u0930 \u092E\u0947\u0902",
+    "historyBackup.planning": "\u092F\u094B\u091C\u0928\u093E \u092C\u0928 \u0930\u0939\u0940 \u0939\u0948",
+    "historyBackup.packing": "\u092A\u0948\u0915\u0947\u091C \u092C\u0928 \u0930\u0939\u093E \u0939\u0948",
+    "historyBackup.ready": "\u0921\u093E\u0909\u0928\u0932\u094B\u0921 \u0915\u0947 \u0932\u093F\u090F \u0924\u0948\u092F\u093E\u0930",
+    "historyBackup.readyDetail": "\u092C\u0948\u0915\u0905\u092A \u0924\u0948\u092F\u093E\u0930 \u0939\u0948\u0964 \u0907\u0938\u0947 1 \u0918\u0902\u091F\u0947 \u0915\u0947 \u092D\u0940\u0924\u0930 \u0921\u093E\u0909\u0928\u0932\u094B\u0921 \u0915\u0930\u0947\u0902; \u0921\u093E\u0909\u0928\u0932\u094B\u0921 \u0915\u093F\u090F \u092C\u093F\u0928\u093E \u092C\u0902\u0926 \u0915\u0930\u0928\u0947 \u092A\u0930 \u0905\u0938\u094D\u0925\u093E\u092F\u0940 \u092B\u093C\u093E\u0907\u0932 \u0924\u0941\u0930\u0902\u0924 \u092E\u093F\u091F \u091C\u093E\u090F\u0917\u0940\u0964",
+    "historyBackup.downloaded": "\u092A\u0941\u0937\u094D\u091F\u093F \u0915\u0930\u0947\u0902 \u0915\u093F \u092C\u094D\u0930\u093E\u0909\u091C\u093C\u0930 \u0928\u0947 \u092B\u093C\u093E\u0907\u0932 \u0938\u0939\u0947\u091C \u0932\u0940 \u0939\u0948, \u092B\u093F\u0930 \u092F\u0939 \u092A\u0948\u0928\u0932 \u092C\u0902\u0926 \u0915\u093F\u092F\u093E \u091C\u093E \u0938\u0915\u0924\u093E \u0939\u0948\u0964 \u0905\u0938\u094D\u0925\u093E\u092F\u0940 \u092B\u093C\u093E\u0907\u0932 \u0938\u094D\u0925\u093E\u0928\u093E\u0902\u0924\u0930\u0923 \u0915\u0947 \u092C\u093E\u0926 \u092E\u093F\u091F\u093E \u0926\u0940 \u091C\u093E\u090F\u0917\u0940\u0964",
+    "historyBackup.missingInputsWarning": "{tasks} \u0915\u093E\u0930\u094D\u092F\u094B\u0902 \u092E\u0947\u0902 {files} \u0907\u0928\u092A\u0941\u091F \u092B\u093C\u093E\u0907\u0932\u0947\u0902 \u0928\u0939\u0940\u0902 \u092E\u093F\u0932\u0940\u0902\u0964 \u0935\u0947 \u092B\u093C\u093E\u0907\u0932\u0947\u0902 \u091B\u094B\u0921\u093C \u0926\u0940 \u091C\u093E\u090F\u0901\u0917\u0940; \u092A\u094D\u0930\u0949\u092E\u094D\u092A\u094D\u091F \u0914\u0930 \u0906\u0909\u091F\u092A\u0941\u091F \u092A\u0930\u093F\u0923\u093E\u092E \u092B\u093F\u0930 \u092D\u0940 \u0928\u093F\u0930\u094D\u092F\u093E\u0924 \u0939\u094B\u0902\u0917\u0947\u0964",
+    "historyBackup.failed": "\u092C\u0948\u0915\u0905\u092A \u0935\u093F\u092B\u0932",
+    "historyBackup.cancelled": "\u0930\u0926\u094D\u0926",
+    "historyBackup.expired": "\u0938\u092E\u092F \u0938\u092E\u093E\u092A\u094D\u0924",
+    "historyBackup.interrupted": "\u092C\u093E\u0927\u093F\u0924",
+    "historyBackup.stats": "\u0915\u0941\u0932 {total} \xB7 \u092F\u094B\u0917\u094D\u092F {eligible} \xB7 \u092C\u093E\u0939\u0930 {excluded} \xB7 {bytes}",
+    "historyBackup.errorDisk": "\u0921\u093F\u0938\u094D\u0915 \u092E\u0947\u0902 \u092A\u0930\u094D\u092F\u093E\u092A\u094D\u0924 \u0938\u094D\u0925\u093E\u0928 \u0928\u0939\u0940\u0902 \u0939\u0948\u0964",
+    "historyBackup.errorSourceChanged": "\u092C\u0948\u0915\u0905\u092A \u0915\u0947 \u0926\u094C\u0930\u093E\u0928 \u0938\u094D\u0930\u094B\u0924 \u0921\u0947\u091F\u093E \u092C\u0926\u0932 \u0917\u092F\u093E\u0964",
+    "historyBackup.errorEmpty": "\u0915\u094B\u0908 \u092F\u094B\u0917\u094D\u092F \u0915\u093E\u0930\u094D\u092F \u0928\u0939\u0940\u0902 \u092E\u093F\u0932\u093E\u0964",
+    "historyBackup.errorIo": "\u092C\u0948\u0915\u0905\u092A \u0928\u0939\u0940\u0902 \u092C\u0928\u093E\u092F\u093E \u091C\u093E \u0938\u0915\u093E\u0964",
+    "historyImport.title": "\u0915\u093E\u0930\u094D\u092F \u092C\u0948\u0915\u0905\u092A \u0906\u092F\u093E\u0924 \u0915\u0930\u0947\u0902",
+    "historyImport.choose": "ZIP \u092C\u0948\u0915\u0905\u092A \u091A\u0941\u0928\u0947\u0902",
+    "historyImport.uploading": "\u0905\u092A\u0932\u094B\u0921 \u0939\u094B \u0930\u0939\u093E \u0939\u0948",
+    "historyImport.validating": "\u0938\u0924\u094D\u092F\u093E\u092A\u0928 \u0939\u094B \u0930\u0939\u093E \u0939\u0948",
+    "historyImport.validated": "\u0938\u0924\u094D\u092F\u093E\u092A\u093F\u0924",
+    "historyImport.preview": "\u092A\u0941\u0928\u0930\u094D\u0938\u094D\u0925\u093E\u092A\u0928\u093E \u092A\u0942\u0930\u094D\u0935\u093E\u0935\u0932\u094B\u0915\u0928",
+    "historyImport.restorable": "\u092A\u0941\u0928\u0930\u094D\u0938\u094D\u0925\u093E\u092A\u093F\u0924 \u092F\u094B\u0917\u094D\u092F",
+    "historyImport.duplicate": "\u0921\u0941\u092A\u094D\u0932\u093F\u0915\u0947\u091F",
+    "historyImport.conflict": "\u091F\u0915\u0930\u093E\u0935",
+    "historyImport.invalid": "\u0905\u092E\u093E\u0928\u094D\u092F",
+    "historyImport.confirm": "\u092A\u0941\u0928\u0930\u094D\u0938\u094D\u0925\u093E\u092A\u0928\u093E \u0915\u0940 \u092A\u0941\u0937\u094D\u091F\u093F \u0915\u0930\u0947\u0902",
+    "historyImport.restoring": "\u092A\u0941\u0928\u0930\u094D\u0938\u094D\u0925\u093E\u092A\u093F\u0924 \u0939\u094B \u0930\u0939\u093E \u0939\u0948",
+    "historyImport.restored": "\u092A\u0941\u0928\u0930\u094D\u0938\u094D\u0925\u093E\u092A\u093F\u0924",
+    "historyImport.failed": "\u092A\u0941\u0928\u0930\u094D\u0938\u094D\u0925\u093E\u092A\u0928\u093E \u0935\u093F\u092B\u0932",
+    "historyImport.interrupted": "\u092C\u093E\u0927\u093F\u0924",
+    "historyImport.cancelled": "\u0930\u0926\u094D\u0926",
+    "historyImport.result": "\u092A\u0930\u093F\u0923\u093E\u092E",
+    "historyImport.thumbnailWarnings": "\u0925\u0902\u092C\u0928\u0947\u0932 \u091A\u0947\u0924\u093E\u0935\u0928\u093F\u092F\u093E\u0901",
+    "historyImport.cleanupWarnings": "\u0938\u092B\u093C\u093E\u0908 \u091A\u0947\u0924\u093E\u0935\u0928\u093F\u092F\u093E\u0901",
+    "historyImport.reselect": "\u091C\u093E\u0930\u0940 \u0930\u0916\u0928\u0947 \u0915\u0947 \u0932\u093F\u090F \u092E\u0942\u0932 ZIP \u092B\u093F\u0930 \u091A\u0941\u0928\u0947\u0902\u0964",
+    "historyImport.noOverwrite": "\u092E\u094C\u091C\u0942\u0926\u093E \u0915\u093E\u0930\u094D\u092F \u0915\u092D\u0940 \u0913\u0935\u0930\u0930\u093E\u0907\u091F \u0928\u0939\u0940\u0902 \u0939\u094B\u0924\u0947\u0964",
+    "historyImport.reasonInvalid": "\u092C\u0948\u0915\u0905\u092A \u0921\u0947\u091F\u093E \u0905\u092E\u093E\u0928\u094D\u092F \u0939\u0948",
+    "historyImport.reasonSensitive": "\u0907\u0938\u092E\u0947\u0902 \u0938\u0941\u0930\u0915\u094D\u0937\u093F\u0924 \u0921\u0947\u091F\u093E \u0939\u0948",
+    "historyImport.reasonMismatch": "\u092C\u0948\u0915\u0905\u092A \u092E\u0948\u0928\u093F\u092B\u093C\u0947\u0938\u094D\u091F \u0938\u0947 \u092E\u0947\u0932 \u0928\u0939\u0940\u0902 \u0916\u093E\u0924\u093E",
+    "history.closeExport": "\u0928\u093F\u0930\u094D\u092F\u093E\u0924 \u0935\u093F\u0915\u0932\u094D\u092A \u092C\u0902\u0926 \u0915\u0930\u0947\u0902",
     "history.type": "\u092A\u094D\u0930\u0915\u093E\u0930",
     "history.allTypes": "\u0938\u092D\u0940 \u092A\u094D\u0930\u0915\u093E\u0930",
     "history.type.textToImage": "\u091F\u0947\u0915\u094D\u0938\u094D\u091F \u0938\u0947 \u0907\u092E\u0947\u091C",
@@ -10498,6 +11836,7 @@
     "language.ru": "\u0420\u0443\u0441\u0441\u043A\u0438\u0439",
     "language.it": "Italiano",
     "language.hi": "\u0939\u093F\u0928\u094D\u0926\u0940",
+    "language.vi": "Ti\u1EBFng Vi\u1EC7t",
     "auth.label": "\u092A\u094D\u0930\u092E\u093E\u0923\u0940\u0915\u0930\u0923 \u0938\u094D\u0930\u094B\u0924",
     "auth.checking": "\u092A\u094D\u0930\u092E\u093E\u0923\u0940\u0915\u0930\u0923 \u0915\u0940 \u091C\u093E\u0901\u091A \u0915\u0940 \u091C\u093E \u0930\u0939\u0940 \u0939\u0948",
     "auth.missingCodexSession": "\u0915\u094B\u0908 Codex \u0938\u0924\u094D\u0930 \u0928\u0939\u0940\u0902 \u092E\u093F\u0932\u093E",
@@ -10524,8 +11863,16 @@
     "recentAssets.defaultName": "\u0939\u093E\u0932\u093F\u092F\u093E \u0905\u092A\u0932\u094B\u0921",
     "recentAssets.use": "{name} \u0915\u093E \u092A\u094D\u0930\u092F\u094B\u0917 \u0915\u0930\u0947\u0902",
     "recentAssets.delete": "{name} \u0939\u091F\u093E\u090F\u0902",
+    "recentAssets.inUse": "{count} \u0915\u093E\u0930\u094D\u092F\u094B\u0902 \u0926\u094D\u0935\u093E\u0930\u093E \u0909\u092A\u092F\u094B\u0917 \u092E\u0947\u0902 \u0939\u0948; \u0907\u0938\u0947 \u0938\u094D\u0925\u093E\u092F\u0940 \u0930\u0942\u092A \u0938\u0947 \u0939\u091F\u093E\u092F\u093E \u0928\u0939\u0940\u0902 \u091C\u093E \u0938\u0915\u0924\u093E, \u0932\u0947\u0915\u093F\u0928 \u0939\u093E\u0932\u093F\u092F\u093E \u0905\u092A\u0932\u094B\u0921 \u0938\u0947 \u091B\u093F\u092A\u093E\u092F\u093E \u091C\u093E \u0938\u0915\u0924\u093E \u0939\u0948",
+    "recentAssets.hide": "{name} \u0915\u094B \u0939\u093E\u0932\u093F\u092F\u093E \u0905\u092A\u0932\u094B\u0921 \u0938\u0947 \u091B\u093F\u092A\u093E\u090F\u0902",
+    "recentAssets.hideTitle": "\u0939\u093E\u0932\u093F\u092F\u093E \u0905\u092A\u0932\u094B\u0921 \u0938\u0947 \u091B\u093F\u092A\u093E\u090F\u0902?",
+    "recentAssets.hideMessage": "\u092F\u0939 \u091A\u093F\u0924\u094D\u0930 {count} \u0915\u093E\u0930\u094D\u092F\u094B\u0902 \u0926\u094D\u0935\u093E\u0930\u093E \u0909\u092A\u092F\u094B\u0917 \u092E\u0947\u0902 \u0939\u0948 \u0914\u0930 \u0907\u0938\u0947 \u0938\u094D\u0925\u093E\u092F\u0940 \u0930\u0942\u092A \u0938\u0947 \u0939\u091F\u093E\u092F\u093E \u0928\u0939\u0940\u0902 \u091C\u093E \u0938\u0915\u0924\u093E\u0964 \u091B\u093F\u092A\u093E\u0928\u0947 \u092A\u0930 \u092F\u0939 \u0915\u0947\u0935\u0932 \u0939\u093E\u0932\u093F\u092F\u093E \u0905\u092A\u0932\u094B\u0921 \u0938\u0947 \u0939\u091F\u0947\u0917\u093E; \u092E\u0942\u0932 \u091A\u093F\u0924\u094D\u0930, \u0935\u0930\u094D\u0924\u092E\u093E\u0928 \u0907\u0928\u092A\u0941\u091F \u0914\u0930 \u092A\u0941\u0930\u093E\u0928\u0947 \u0915\u093E\u0930\u094D\u092F \u0938\u0941\u0930\u0915\u094D\u0937\u093F\u0924 \u0930\u0939\u0947\u0902\u0917\u0947\u0964",
+    "recentAssets.hideFailed": "\u0939\u093E\u0932\u093F\u092F\u093E \u0905\u092A\u0932\u094B\u0921 \u091B\u093F\u092A\u093E\u0928\u0947 \u092E\u0947\u0902 \u0935\u093F\u092B\u0932",
+    "recentAssets.hidden": "\u0939\u093E\u0932\u093F\u092F\u093E \u0905\u092A\u0932\u094B\u0921 \u0938\u0947 \u091B\u093F\u092A\u093E\u092F\u093E \u0917\u092F\u093E; \u092E\u0942\u0932 \u091A\u093F\u0924\u094D\u0930 \u0914\u0930 \u092A\u0941\u0930\u093E\u0928\u0947 \u0915\u093E\u0930\u094D\u092F \u0938\u0941\u0930\u0915\u094D\u0937\u093F\u0924 \u0939\u0948\u0902",
+    "recentAssets.hidePreviews": "\u0939\u093E\u0932\u093F\u092F\u093E \u0905\u092A\u0932\u094B\u0921 \u091A\u093F\u0924\u094D\u0930 \u091B\u093F\u092A\u093E\u090F\u0901",
+    "recentAssets.showPreviews": "\u0939\u093E\u0932\u093F\u092F\u093E \u0905\u092A\u0932\u094B\u0921 \u091A\u093F\u0924\u094D\u0930 \u0926\u093F\u0916\u093E\u090F\u0901",
     "recentAssets.deleteTitle": "\u0939\u093E\u0932\u093F\u092F\u093E \u0905\u092A\u0932\u094B\u0921 \u0939\u091F\u093E\u090F\u0902?",
-    "recentAssets.deleteMessage": "\u092F\u0939 \u0939\u093E\u0932 \u0915\u0947 \u0905\u092A\u0932\u094B\u0921 \u0938\u0947 \u091A\u093F\u0924\u094D\u0930 \u0915\u094B \u0939\u091F\u093E \u0926\u0947\u0917\u093E\u0964 \u092F\u0926\u093F \u092F\u0939 \u0905\u092D\u0940 \u091A\u093F\u0924\u094D\u0930 \u0907\u0928\u092A\u0941\u091F \u0915\u0947 \u0930\u0942\u092A \u092E\u0947\u0902 \u091A\u0941\u0928\u093E \u0917\u092F\u093E \u0939\u0948, \u0924\u094B \u0907\u0938\u0947 \u0935\u0930\u094D\u0924\u092E\u093E\u0928 \u0907\u0928\u092A\u0941\u091F \u0938\u0947 \u092D\u0940 \u0939\u091F\u093E \u0926\u093F\u092F\u093E \u091C\u093E\u090F\u0917\u093E\u0964 \u0907\u0938 \u0939\u093E\u0932\u093F\u092F\u093E \u0905\u092A\u0932\u094B\u0921 \u0915\u093E \u0938\u0902\u0926\u0930\u094D\u092D \u0926\u0947\u0928\u0947 \u0935\u093E\u0932\u0947 \u092A\u0941\u0930\u093E\u0928\u0947 \u0915\u093E\u0930\u094D\u092F \u0905\u092A\u0928\u093E \u0907\u0928\u092A\u0941\u091F \u092A\u0942\u0930\u094D\u0935\u093E\u0935\u0932\u094B\u0915\u0928 \u0916\u094B \u0926\u0947\u0902\u0917\u0947\u0964 \u0938\u093E\u0930\u094D\u0935\u091C\u0928\u093F\u0915 \u0917\u0948\u0932\u0930\u0940 \u092A\u094D\u0930\u092D\u093E\u0935\u093F\u0924 \u0928\u0939\u0940\u0902 \u0939\u094B\u0917\u0940.",
+    "recentAssets.deleteMessage": "\u0907\u0938 \u091A\u093F\u0924\u094D\u0930 \u0915\u093E \u0915\u094B\u0908 \u0915\u093E\u0930\u094D\u092F \u0909\u092A\u092F\u094B\u0917 \u0928\u0939\u0940\u0902 \u0915\u0930 \u0930\u0939\u093E \u0939\u0948\u0964 \u092E\u0942\u0932 \u091A\u093F\u0924\u094D\u0930 \u0938\u094D\u0925\u093E\u092F\u0940 \u0930\u0942\u092A \u0938\u0947 \u0939\u091F\u0947\u0917\u093E \u0914\u0930 \u092F\u0939\u0940 \u091A\u093F\u0924\u094D\u0930 \u0935\u0930\u094D\u0924\u092E\u093E\u0928 \u0907\u0928\u092A\u0941\u091F \u0938\u0947 \u092D\u0940 \u0939\u091F \u091C\u093E\u090F\u0917\u093E\u0964 \u0938\u093E\u0930\u094D\u0935\u091C\u0928\u093F\u0915 \u0917\u0948\u0932\u0930\u0940 \u092A\u094D\u0930\u092D\u093E\u0935\u093F\u0924 \u0928\u0939\u0940\u0902 \u0939\u094B\u0917\u0940\u0964",
     "recentAssets.loadFailed": "\u0939\u093E\u0932 \u0915\u0947 \u0905\u092A\u0932\u094B\u0921 \u0932\u094B\u0921 \u0915\u0930\u0928\u0947 \u092E\u0947\u0902 \u0935\u093F\u092B\u0932",
     "recentAssets.deleteFailed": "\u0939\u093E\u0932\u093F\u092F\u093E \u0905\u092A\u0932\u094B\u0921 \u0939\u091F\u093E\u0928\u0947 \u092E\u0947\u0902 \u0935\u093F\u092B\u0932",
     "recentAssets.deleted": "\u0939\u093E\u0932\u093F\u092F\u093E \u0905\u092A\u0932\u094B\u0921 \u0939\u091F\u093E \u0926\u093F\u092F\u093E \u0917\u092F\u093E",
@@ -10550,11 +11897,13 @@
     "referenceCollector.alreadyStaged": "\u092A\u0939\u0932\u0947 \u0938\u0947 \u0932\u0902\u092C\u093F\u0924 \u0938\u0902\u0926\u0930\u094D\u092D \u092E\u0947\u0902 \u0939\u0948",
     "referenceCollector.staged": "{count} \u0938\u0902\u0926\u0930\u094D\u092D \u091A\u093F\u0924\u094D\u0930 \u0932\u0902\u092C\u093F\u0924 \u0930\u0916\u0947 \u0917\u090F",
     "referenceCollector.title": "\u0932\u0902\u092C\u093F\u0924 \u0938\u0902\u0926\u0930\u094D\u092D \xB7 {count}",
-    "referenceCollector.addAll": "\u0938\u092D\u0940 \u0938\u0902\u0926\u0930\u094D\u092D \u091C\u094B\u0921\u093C\u0947\u0902",
+    "referenceCollector.addAll": "\u0938\u092D\u0940 \u091C\u094B\u0921\u093C\u0947\u0902",
+    "referenceCollector.replaceAll": "\u092E\u094C\u091C\u0942\u0926\u093E \u092C\u0926\u0932\u0947\u0902",
     "referenceCollector.itemFallback": "\u0932\u0902\u092C\u093F\u0924 \u0938\u0902\u0926\u0930\u094D\u092D",
     "referenceCollector.remove": "\u0932\u0902\u092C\u093F\u0924 \u0938\u0902\u0926\u0930\u094D\u092D \u0939\u091F\u093E\u090F\u0901",
     "referenceCollector.cleared": "\u0932\u0902\u092C\u093F\u0924 \u0938\u0902\u0926\u0930\u094D\u092D \u0938\u093E\u092B\u093C \u0915\u0930 \u0926\u093F\u090F \u0917\u090F",
     "referenceCollector.added": "{count} \u0938\u0902\u0926\u0930\u094D\u092D \u091A\u093F\u0924\u094D\u0930 \u091C\u094B\u0921\u093C\u0947 \u0917\u090F",
+    "referenceCollector.replaced": "{count} \u0938\u0902\u0926\u0930\u094D\u092D \u091A\u093F\u0924\u094D\u0930\u094B\u0902 \u0938\u0947 \u092C\u0926\u0932 \u0926\u093F\u092F\u093E \u0917\u092F\u093E",
     "referenceCollector.addFailed": "\u0932\u0902\u092C\u093F\u0924 \u0938\u0902\u0926\u0930\u094D\u092D \u091C\u094B\u0921\u093C\u0928\u0947 \u092E\u0947\u0902 \u0935\u093F\u092B\u0932",
     "referenceCollector.readFailed": "\u091A\u093F\u0924\u094D\u0930 \u092A\u0922\u093C\u0928\u0947 \u092E\u0947\u0902 \u0935\u093F\u092B\u0932: {status}",
     "gallery.quick": "\u0924\u094D\u0935\u0930\u093F\u0924 \u0917\u0948\u0932\u0930\u0940",
@@ -10672,7 +12021,7 @@
     "output.promptHelpTitle": "\u092A\u094D\u0930\u0949\u092E\u094D\u092A\u094D\u091F \u092A\u094D\u0930\u094B\u0938\u0947\u0938\u093F\u0902\u0917",
     "output.promptHelp.responsesChannel": "Responses \xB7 \u092E\u0941\u0916\u094D\u092F \u092E\u0949\u0921\u0932 \u0936\u093E\u092E\u093F\u0932",
     "output.promptHelp.imagesChannel": "Images \xB7 \u0938\u0940\u0927\u093E \u091C\u0928\u0930\u0947\u0936\u0928",
-    "output.promptHelp.responses.original": "\u092E\u0942\u0932 \u092A\u093E\u0920 \u092E\u0941\u0916\u094D\u092F \u092E\u0949\u0921\u0932 \u0915\u094B \u092D\u0947\u091C\u0924\u093E \u0939\u0948 \u0914\u0930 \u0907\u092E\u0947\u091C \u091F\u0942\u0932 \u0938\u0947 \u0909\u0938\u0947 \u092F\u0925\u093E\u0938\u0902\u092D\u0935 \u091C\u094D\u092F\u094B\u0902 \u0915\u093E \u0924\u094D\u092F\u094B\u0902 \u0930\u0916\u0928\u0947 \u0915\u094B \u0915\u0939\u0924\u093E \u0939\u0948; revised prompt \u092B\u093F\u0930 \u092D\u0940 \u092C\u0928 \u0938\u0915\u0924\u093E \u0939\u0948\u0964",
+    "output.promptHelp.responses.original": "\u0910\u092A-\u0938\u094D\u0924\u0930\u0940\u092F \u0928\u093F\u092F\u092E \u091C\u094B\u0921\u093C\u0947 \u092C\u093F\u0928\u093E \u0920\u0940\u0915 \u092E\u0942\u0932 \u092A\u093E\u0920 \u092D\u0947\u091C\u0924\u093E \u0939\u0948; \u092A\u094D\u0930\u0926\u093E\u0924\u093E \u092B\u093F\u0930 \u092D\u0940 revised prompt \u0932\u094C\u091F\u093E \u0938\u0915\u0924\u093E \u0939\u0948 \u092F\u093E \u092A\u0930\u093F\u0923\u093E\u092E \u0915\u0940 \u0905\u0932\u0917 \u0935\u094D\u092F\u093E\u0916\u094D\u092F\u093E \u0915\u0930 \u0938\u0915\u0924\u093E \u0939\u0948\u0964",
     "output.promptHelp.responses.strict": "\u092E\u0941\u0916\u094D\u092F \u092E\u0949\u0921\u0932 \u0915\u094B \u092A\u094D\u0930\u0949\u092E\u094D\u092A\u094D\u091F \u0935\u094D\u092F\u0935\u0938\u094D\u0925\u093F\u0924 \u092F\u093E \u0935\u093F\u0938\u094D\u0924\u0943\u0924 \u0915\u0930\u0928\u0947 \u0926\u0947\u0924\u093E \u0939\u0948, \u0932\u0947\u0915\u093F\u0928 \u0935\u093F\u0937\u092F, \u091F\u0947\u0915\u094D\u0938\u094D\u091F, \u0930\u0902\u0917 \u0914\u0930 \u0930\u091A\u0928\u093E \u091C\u0948\u0938\u0940 \u0905\u0928\u093F\u0935\u093E\u0930\u094D\u092F \u0936\u0930\u094D\u0924\u0947\u0902 \u0938\u0941\u0930\u0915\u094D\u0937\u093F\u0924 \u0930\u0916\u0924\u093E \u0939\u0948\u0964",
     "output.promptHelp.responses.automatic": "\u0915\u094B\u0908 \u0905\u0924\u093F\u0930\u093F\u0915\u094D\u0924 \u0936\u0930\u094D\u0924 \u0928\u0939\u0940\u0902 \u091C\u094B\u0921\u093C\u0924\u093E; \u092E\u0941\u0916\u094D\u092F \u092E\u0949\u0921\u0932 \u0907\u092E\u0947\u091C \u091F\u0942\u0932 \u092C\u0941\u0932\u093E\u0928\u0947 \u0938\u0947 \u092A\u0939\u0932\u0947 \u0905\u0930\u094D\u0925 \u0938\u092E\u091D\u0915\u0930 \u0905\u0928\u0941\u0915\u0942\u0932\u093F\u0924 \u0915\u0930\u0924\u093E \u0939\u0948\u0964",
     "output.promptHelp.images.original": "\u0910\u092A \u0938\u094D\u0924\u0930 \u0915\u0947 \u0928\u093F\u092F\u092E \u091C\u094B\u0921\u093C\u0947 \u092C\u093F\u0928\u093E \u092E\u0942\u0932 \u092A\u093E\u0920 \u0938\u0940\u0927\u0947 \u0907\u092E\u0947\u091C API \u0915\u094B \u092D\u0947\u091C\u0924\u093E \u0939\u0948\u0964",
@@ -10767,6 +12116,16 @@
     "lightbox.close": "\u092A\u0942\u0930\u094D\u0935\u093E\u0935\u0932\u094B\u0915\u0928 \u092C\u0902\u0926 \u0915\u0930\u0947\u0902",
     "lightbox.previous": "\u092A\u093F\u091B\u0932\u093E \u091A\u093F\u0924\u094D\u0930",
     "lightbox.next": "\u0905\u0917\u0932\u093E \u091A\u093F\u0924\u094D\u0930",
+    "lightbox.zoomControls": "\u091C\u093C\u0942\u092E \u0928\u093F\u092F\u0902\u0924\u094D\u0930\u0923",
+    "lightbox.zoomOut": "\u091B\u094B\u091F\u093E \u0915\u0930\u0947\u0902",
+    "lightbox.zoomIn": "\u092C\u0921\u093C\u093E \u0915\u0930\u0947\u0902",
+    "lightbox.fit": "\u092B\u093F\u091F",
+    "lightbox.fitPage": "\u092A\u0943\u0937\u094D\u0920 \u092E\u0947\u0902 \u092B\u093F\u091F \u0915\u0930\u0947\u0902",
+    "lightbox.actualSize": "100% \u0935\u093E\u0938\u094D\u0924\u0935\u093F\u0915 \u0906\u0915\u093E\u0930",
+    "lightbox.shortcuts": "\u0915\u0940\u092C\u094B\u0930\u094D\u0921 \u0936\u0949\u0930\u094D\u091F\u0915\u091F",
+    "lightbox.switchImage": "\u091A\u093F\u0924\u094D\u0930 \u092C\u0926\u0932\u0947\u0902",
+    "lightbox.switchTask": "\u0915\u093E\u0930\u094D\u092F \u092C\u0926\u0932\u0947\u0902",
+    "lightbox.wheelZoom": "\u0935\u094D\u0939\u0940\u0932 \u0938\u0947 \u091C\u093C\u0942\u092E",
     "promptPopover.title": "\u092A\u094D\u0930\u0949\u092E\u094D\u092A\u094D\u091F \u0924\u0941\u0932\u0928\u093E",
     "promptPopover.summary": "\u092E\u0942\u0932 {original} \xB7 \u0905\u0928\u0941\u0915\u0942\u0932\u093F\u0924 {optimized}",
     "promptPopover.original": "\u092E\u0942\u0932 \u092A\u094D\u0930\u0949\u092E\u094D\u092A\u094D\u091F",
@@ -10930,6 +12289,7 @@
     "colors.modifyValue": "\u0930\u0902\u0917 \u0938\u0902\u092A\u093E\u0926\u093F\u0924 \u0915\u0930\u0947\u0902 {value}",
     "colors.removeValue": "\u0930\u0902\u0917 \u0939\u091F\u093E\u090F\u0902 {value}",
     "taskGroup.today": "\u0906\u091C",
+    "taskGroup.current": "\u0935\u0930\u094D\u0924\u092E\u093E\u0928 \u0915\u093E\u0930\u094D\u092F",
     "taskGroup.yesterday": "\u0915\u0932",
     "taskGroup.last7": "\u092A\u093F\u091B\u0932\u0947 7 \u0926\u093F\u0928",
     "taskGroup.older": "\u092A\u0941\u0930\u093E\u0928\u093E",
@@ -10982,6 +12342,14 @@
     "networkEgress.direct": "\u0938\u0940\u0927\u093E",
     "networkEgress.custom": "\u0915\u0938\u094D\u091F\u092E",
     "networkEgress.customProxy": "\u0915\u0938\u094D\u091F\u092E \u092A\u094D\u0930\u0949\u0915\u094D\u0938\u0940 URL",
+    "networkEgress.timeout": "\u0907\u092E\u0947\u091C \u0905\u0928\u0941\u0930\u094B\u0927 \u091F\u093E\u0907\u092E\u0906\u0909\u091F",
+    "networkEgress.timeoutUnit": "\u092E\u093F\u0928\u091F",
+    "networkEgress.retryCount": "\u0935\u093F\u092B\u0932\u0924\u093E \u0915\u0947 \u092C\u093E\u0926 \u092A\u0941\u0928\u0903 \u092A\u094D\u0930\u092F\u093E\u0938",
+    "networkEgress.retryUnit": "\u092C\u093E\u0930",
+    "networkEgress.requestPolicyHelp": "\u092F\u0939 \u0915\u0947\u0935\u0932 \u092C\u093E\u0926 \u092E\u0947\u0902 \u0936\u0941\u0930\u0942 \u0939\u094B\u0928\u0947 \u0935\u093E\u0932\u0947 \u0907\u092E\u0947\u091C \u0905\u0928\u0941\u0930\u094B\u0927\u094B\u0902 \u092A\u0930 \u0932\u093E\u0917\u0942 \u0939\u094B\u0924\u093E \u0939\u0948\u0964 \u0939\u0930 \u0938\u094D\u0935\u091A\u093E\u0932\u093F\u0924 \u092A\u0941\u0928\u0903 \u092A\u094D\u0930\u092F\u093E\u0938 \u0915\u094B \u0928\u092F\u093E \u091F\u093E\u0907\u092E\u0906\u0909\u091F \u0938\u092E\u092F \u092E\u093F\u0932\u0924\u093E \u0939\u0948\u0964",
+    "networkEgress.timeoutInvalid": "1 \u0938\u0947 30 \u092E\u093F\u0928\u091F \u0924\u0915 \u0915\u0940 \u092A\u0942\u0930\u094D\u0923 \u0938\u0902\u0916\u094D\u092F\u093E \u0926\u0930\u094D\u091C \u0915\u0930\u0947\u0902",
+    "networkEgress.retryInvalid": "0 \u0938\u0947 5 \u0924\u0915 \u092A\u0941\u0928\u0903 \u092A\u094D\u0930\u092F\u093E\u0938\u094B\u0902 \u0915\u0940 \u092A\u0942\u0930\u094D\u0923 \u0938\u0902\u0916\u094D\u092F\u093E \u0926\u0930\u094D\u091C \u0915\u0930\u0947\u0902",
+    "networkEgress.environmentTimeoutActive": "\u0905\u092D\u0940 \u092A\u0930\u094D\u092F\u093E\u0935\u0930\u0923 \u091A\u0930 \u0915\u093E \u091F\u093E\u0907\u092E\u0906\u0909\u091F \u0938\u0915\u094D\u0930\u093F\u092F \u0939\u0948: {seconds} \u0938\u0947\u0915\u0902\u0921\u0964 \u0938\u0939\u0947\u091C\u0928\u0947 \u092A\u0930 \u0907\u0938\u0947 \u090A\u092A\u0930 \u0915\u0940 \u0938\u0947\u091F\u093F\u0902\u0917 \u0938\u0947 \u092C\u0926\u0932 \u0926\u093F\u092F\u093E \u091C\u093E\u090F\u0917\u093E\u0964",
     "networkEgress.currentRoute": "\u0935\u0930\u094D\u0924\u092E\u093E\u0928 \u092E\u093E\u0930\u094D\u0917: {route}",
     "networkEgress.test": "\u0915\u0928\u0947\u0915\u094D\u0936\u0928 \u091C\u093E\u0902\u091A\u0947\u0902",
     "networkEgress.save": "\u0938\u0939\u0947\u091C\u0947\u0902 \u0914\u0930 \u0932\u093E\u0917\u0942 \u0915\u0930\u0947\u0902",
@@ -11024,7 +12392,8 @@
     "apiSettings.copyProviderWithoutKeyStatus": "\u092A\u094D\u0930\u0926\u093E\u0924\u093E \u0915\u0949\u092A\u0940 \u0915\u093F\u092F\u093E \u0917\u092F\u093E. \u0938\u0939\u0947\u091C\u0928\u0947 \u0938\u0947 \u092A\u0939\u0932\u0947 \u0928\u093E\u092E, \u092E\u0949\u0921\u0932 \u0938\u0902\u092A\u093E\u0926\u093F\u0924 \u0915\u0930\u0947\u0902 \u092F\u093E API \u0915\u0941\u0902\u091C\u0940 \u091C\u094B\u0921\u093C\u0947\u0902\u0964",
     "apiSettings.sortProviders": "\u0915\u094D\u0930\u092E\u092C\u0926\u094D\u0927 \u0915\u0930\u0947\u0902",
     "apiSettings.finishSortProviders": "\u0939\u094B \u0917\u092F\u093E",
-    "apiSettings.sortProviderModeStatus": "\u092A\u094D\u0930\u0926\u093E\u0924\u093E\u0913\u0902 \u0915\u094B \u0915\u094D\u0930\u092E\u092C\u0926\u094D\u0927 \u0915\u0930\u0928\u093E",
+    "apiSettings.sortProviderModeStatus": "\u0915\u094D\u0930\u092E \u092C\u0926\u0932\u0928\u0947 \u0915\u0947 \u0932\u093F\u090F \u0939\u0948\u0902\u0921\u0932 \u0916\u0940\u0902\u091A\u0947\u0902 \u092F\u093E \u0924\u0940\u0930 \u0915\u0941\u0902\u091C\u093F\u092F\u094B\u0902 \u0915\u093E \u0909\u092A\u092F\u094B\u0917 \u0915\u0930\u0947\u0902",
+    "apiSettings.sortProviderHandleAria": "{provider} \u0915\u094B \u0915\u094D\u0930\u092E \u092E\u0947\u0902 \u0932\u0917\u093E\u0928\u0947 \u0915\u0947 \u0932\u093F\u090F \u0916\u0940\u0902\u091A\u0947\u0902 \u092F\u093E \u0924\u0940\u0930, Home \u0914\u0930 End \u0915\u0941\u0902\u091C\u093F\u092F\u093E\u0901 \u0909\u092A\u092F\u094B\u0917 \u0915\u0930\u0947\u0902",
     "apiSettings.sortProviderStatus": "\u092A\u094D\u0930\u0926\u093E\u0924\u093E \u0915\u094D\u0930\u092E \u092C\u0926\u0932 \u0917\u092F\u093E. \u0905\u092A\u0928\u0947 \u0906\u092A \u0938\u0939\u0947\u091C\u093E \u091C\u093E \u0930\u0939\u093E \u0939\u0948...",
     "apiSettings.moveProviderUp": "\u090A\u092A\u0930",
     "apiSettings.moveProviderDown": "\u0928\u0940\u091A\u0947",
@@ -11259,6 +12628,1227 @@
     "editPreflight.blocked": "\u0906\u0917\u0947 \u092C\u0922\u093C\u0928\u0947 \u0938\u0947 \u092A\u0939\u0932\u0947 \u092A\u0942\u0930\u094D\u0935-\u091C\u093E\u0901\u091A \u0915\u0940 \u0924\u094D\u0930\u0941\u091F\u093F\u092F\u093E\u0901 \u0920\u0940\u0915 \u0915\u0930\u0947\u0902"
   };
 
+  // codex_image/webui/frontend/src/i18n/vi.ts
+  var VI_DICTIONARY = {
+    "app.newTask": "M\u1EDBi",
+    "app.newTaskAria": "Tr\xF2 chuy\u1EC7n m\u1EDBi",
+    "sidebar.searchPlaceholder": "T\xECm ki\u1EBFm l\u1EDDi nh\u1EAFc ho\u1EB7c Task ID",
+    "sidebar.filters": "B\u1ED9 l\u1ECDc t\xE1c v\u1EE5",
+    "sidebar.allRatios": "T\u1EA5t c\u1EA3 t\u1EF7 l\u1EC7",
+    "sidebar.allOrientations": "T\u1EA5t c\u1EA3 h\u01B0\u1EDBng",
+    "sidebar.allModes": "T\u1EA5t c\u1EA3 ch\u1EBF \u0111\u1ED9",
+    "sidebar.allResolutions": "T\u1EA5t c\u1EA3 \u0111\u1ED9 ph\xE2n gi\u1EA3i",
+    "sidebar.allStatuses": "T\u1EA5t c\u1EA3 tr\u1EA1ng th\xE1i",
+    "sidebar.activeTasks": "T\xE1c v\u1EE5 \u0111ang ch\u1EA1y",
+    "sidebar.topAnchors": "\u0110i\u1EC1u h\u01B0\u1EDBng th\u1EDDi gian ph\xEDa tr\xEAn",
+    "sidebar.bottomAnchors": "\u0110i\u1EC1u h\u01B0\u1EDBng th\u1EDDi gian ph\xEDa d\u01B0\u1EDBi",
+    "sidebar.resize": "Thay \u0111\u1ED5i k\xEDch th\u01B0\u1EDBc thanh b\xEAn",
+    "batch.selected": "0 \u0111\xE3 ch\u1ECDn",
+    "batch.selectedCount": "{count} \u0111\xE3 ch\u1ECDn",
+    "batch.selectCurrentGroup": "Ch\u1ECDn t\u1EA5t c\u1EA3 trong nh\xF3m",
+    "batch.selectWaiting": "Ch\u1ECDn t\u1EA5t c\u1EA3 t\xE1c v\u1EE5 \u0111ang ch\u1EDD",
+    "batch.archivedCount": "\u0110\xE3 l\u01B0u tr\u1EEF {count} cu\u1ED9c tr\xF2 chuy\u1EC7n",
+    "batch.archiveFailed": "L\u01B0u tr\u1EEF h\xE0ng lo\u1EA1t kh\xF4ng th\xE0nh c\xF4ng",
+    "batch.runningCannotDeleteSelected": "C\xE1c t\xE1c v\u1EE5 \u0111\xE3 ch\u1ECDn \u0111ang ch\u1EA1y v\xE0 kh\xF4ng th\u1EC3 x\xF3a",
+    "batch.deleteTitle": "X\xF3a cu\u1ED9c tr\xF2 chuy\u1EC7n {count}?",
+    "batch.deleteMessage": "Thao t\xE1c n\xE0y c\u0169ng s\u1EBD x\xF3a c\xE1c file \u1EA3nh c\u1EE5c b\u1ED9.",
+    "batch.deleteSkippedDetail": "{count} t\xE1c v\u1EE5 \u0111ang ch\u1EA1y s\u1EBD \u0111\u01B0\u1EE3c gi\u1EEF l\u1EA1i",
+    "batch.deleteSkippedSuffix": ", {count} t\xE1c v\u1EE5 \u0111ang ch\u1EA1y kh\xF4ng b\u1ECB x\xF3a",
+    "batch.deletedCount": "\u0110\xE3 x\xF3a {count} cu\u1ED9c tr\xF2 chuy\u1EC7n{skipped}",
+    "batch.deleteFailed": "X\xF3a h\xE0ng lo\u1EA1t kh\xF4ng th\xE0nh c\xF4ng",
+    "batch.cancelTasksShortcut": "H\u1EE7y t\xE1c v\u1EE5",
+    "batch.cancelSelected": "H\u1EE7y t\xE1c v\u1EE5",
+    "batch.noActiveSelected": "C\xE1c t\xE1c v\u1EE5 \u0111\xE3 ch\u1ECDn kh\xF4ng c\xF2n ch\u1EA1y ho\u1EB7c ch\u1EDD",
+    "batch.cancelTitle": "H\u1EE7y {count} t\xE1c v\u1EE5?",
+    "batch.cancelMessage": "T\xE1c v\u1EE5 \u0111ang ch\u1EDD s\u1EBD b\u1ECB h\u1EE7y ngay. L\u1EC7nh g\u1ECDi nh\xE0 cung c\u1EA5p \u0111ang ch\u1EA1y c\xF3 th\u1EC3 ti\u1EBFp t\u1EE5c v\xE0 v\u1EABn c\xF3 th\u1EC3 b\u1ECB t\xEDnh ph\xED cho \u0111\u1EBFn khi tr\u1EA3 v\u1EC1. L\u1ECBch s\u1EED v\u1EABn \u0111\u01B0\u1EE3c gi\u1EEF l\u1EA1i.",
+    "batch.cancelDetail": "\u0110ang ch\u1EA1y {running} \xB7 \u0111ang ch\u1EDD {waiting}",
+    "batch.cancelConfirm": "H\u1EE7y t\xE1c v\u1EE5",
+    "batch.cancelResult": "\u0110\xE3 h\u1EE7y {cancelled}, \u0111\xE3 y\xEAu c\u1EA7u h\u1EE7y {requested}, b\u1ECF qua {skipped}, th\u1EA5t b\u1EA1i {failed}",
+    "batch.cancelFailed": "H\u1EE7y h\xE0ng lo\u1EA1t th\u1EA5t b\u1EA1i",
+    "action.archive": "L\u01B0u tr\u1EEF",
+    "action.delete": "X\xF3a",
+    "action.cancel": "H\u1EE7y",
+    "action.stop": "D\u1EEBng",
+    "action.edit": "Ch\u1EC9nh s\u1EEDa",
+    "action.clear": "X\xF3a",
+    "action.paste": "D\xE1n",
+    "action.find": "T\xECm",
+    "action.replace": "Thay th\u1EBF",
+    "action.close": "\u0110\xF3ng",
+    "action.confirm": "X\xE1c nh\u1EADn",
+    "action.confirmQuestion": "X\xE1c nh\u1EADn h\xE0nh \u0111\u1ED9ng?",
+    "action.refresh": "L\xE0m m\u1EDBi",
+    "action.save": "L\u01B0u",
+    "action.add": "Th\xEAm",
+    "action.new": "M\u1EDBi",
+    "action.import": "Nh\u1EADp",
+    "action.export": "Xu\u1EA5t",
+    "queue.empty": "Kh\xF4ng c\xF3 h\xE0ng \u0111\u1EE3i",
+    "queue.emptyAria": "Tr\u1EA1ng th\xE1i h\xE0ng \u0111\u1EE3i: kh\xF4ng c\xF3 t\xE1c v\u1EE5 \u0111ang ch\u1EDD",
+    "queue.jumpTitle": "Chuy\u1EC3n \u0111\u1EBFn t\xE1c v\u1EE5 \u0111ang ch\u1EA1y",
+    "queue.emptyTitle": "Kh\xF4ng c\xF3 t\xE1c v\u1EE5 \u0111ang ch\u1EDD",
+    "queue.channel": "K\xEAnh {count}",
+    "queue.availableChannels": "C\xE1c k\xEAnh c\xF3 s\u1EB5n {usable}/{total}",
+    "queue.dispatching": "\u0110ang l\xEAn l\u1ECBch \xB7 ch\u1EDD \u0111\u1EE3i {waiting}",
+    "queue.runningWaiting": "\u0110ang ch\u1EA1y {running} \xB7 ch\u1EDD {waiting}",
+    "queue.statusLabel": "Tr\u1EA1ng th\xE1i h\xE0ng \u0111\u1EE3i: {text} \xB7 {channelText}. B\u1EA5m \u0111\u1EC3 chuy\u1EC3n \u0111\u1EBFn t\xE1c v\u1EE5 \u0111ang ch\u1EA1y",
+    "queue.runningActions": "H\xE0nh \u0111\u1ED9ng cho t\xE1c v\u1EE5 \u0111ang ch\u1EA1y",
+    "queue.waitingActions": "H\xE0nh \u0111\u1ED9ng cho t\xE1c v\u1EE5 \u0111ang ch\u1EDD",
+    "queue.cancelRunning": "H\u1EE7y",
+    "queue.cancelRunningTitle": "H\u1EE7y t\xE1c v\u1EE5 \u0111ang ch\u1EA1y",
+    "queue.dragWaiting": "K\xE9o \u0111\u1EC3 s\u1EAFp x\u1EBFp l\u1EA1i t\xE1c v\u1EE5 \u0111ang ch\u1EDD",
+    "queue.dragSort": "K\xE9o \u0111\u1EC3 s\u1EAFp x\u1EBFp",
+    "queue.moveUp": "L\xEAn",
+    "queue.moveUpTitle": "Di chuy\u1EC3n t\xE1c v\u1EE5 \u0111ang ch\u1EDD l\xEAn",
+    "queue.moveDown": "Xu\u1ED1ng",
+    "queue.moveDownTitle": "Di chuy\u1EC3n t\xE1c v\u1EE5 \u0111ang ch\u1EDD xu\u1ED1ng",
+    "queue.promote": "L\xEAn \u0111\u1EA7u",
+    "queue.promoteTitle": "\u0110\u01B0a t\xE1c v\u1EE5 \u0111ang ch\u1EDD l\xEAn \u0111\u1EA7u",
+    "queue.promoteFailed": "Di chuy\u1EC3n l\xEAn \u0111\u1EA7u kh\xF4ng th\xE0nh c\xF4ng",
+    "queue.deleteWaitingShort": "Del",
+    "queue.deleteWaitingTitle": "X\xF3a t\xE1c v\u1EE5 \u0111ang ch\u1EDD",
+    "queue.deleteWaitingTitleConfirm": "X\xF3a t\xE1c v\u1EE5 \u0111ang ch\u1EDD?",
+    "queue.deleteWaitingMessage": "\u0110i\u1EC1u n\xE0y lo\u1EA1i b\u1ECF n\xF3 kh\u1ECFi danh s\xE1ch h\xE0ng \u0111\u1EE3i v\xE0 l\u1ECBch s\u1EED.",
+    "queue.deleteQueuedFailed": "Kh\xF4ng th\u1EC3 x\xF3a t\xE1c v\u1EE5 \u0111\xE3 x\u1EBFp h\xE0ng \u0111\u1EE3i",
+    "queue.queuedDeleted": "\u0110\xE3 x\xF3a t\xE1c v\u1EE5 x\u1EBFp h\xE0ng \u0111\u1EE3i",
+    "queue.cancelRunningConfirm": "H\u1EE7y t\xE1c v\u1EE5",
+    "queue.cancelRunningTitleConfirm": "H\u1EE7y t\xE1c v\u1EE5 \u0111ang ch\u1EA1y?",
+    "queue.cancelRunningMessage": "S\u1EBD g\u1EEDi y\xEAu c\u1EA7u h\u1EE7y. L\u1EC7nh g\u1ECDi nh\xE0 cung c\u1EA5p c\xF3 th\u1EC3 ti\u1EBFp t\u1EE5c v\xE0 v\u1EABn c\xF3 th\u1EC3 b\u1ECB t\xEDnh ph\xED cho \u0111\u1EBFn khi tr\u1EA3 v\u1EC1. L\u1ECBch s\u1EED s\u1EBD \u0111\u01B0\u1EE3c gi\u1EEF l\u1EA1i.",
+    "queue.cancelRunningFailed": "Kh\xF4ng h\u1EE7y \u0111\u01B0\u1EE3c t\xE1c v\u1EE5",
+    "queue.cancellationPending": "\u0110\xE3 y\xEAu c\u1EA7u h\u1EE7y. L\u1EC7nh g\u1ECDi nh\xE0 cung c\u1EA5p c\xF3 th\u1EC3 ti\u1EBFp t\u1EE5c v\xE0 v\u1EABn c\xF3 th\u1EC3 b\u1ECB t\xEDnh ph\xED cho \u0111\u1EBFn khi tr\u1EA3 v\u1EC1.",
+    "queue.runningCancelled": "T\xE1c v\u1EE5 \u0111\xE3 b\u1ECB h\u1EE7y",
+    "queue.reorderFailed": "Kh\xF4ng th\u1EC3 s\u1EAFp x\u1EBFp l\u1EA1i h\xE0ng \u0111\u1EE3i",
+    "queue.realtimeUpdateFailed": "Kh\xF4ng c\u1EADp nh\u1EADt \u0111\u01B0\u1EE3c tr\u1EA1ng th\xE1i tr\u1EF1c ti\u1EBFp",
+    "queue.realtimeDisconnected": "K\u1EBFt n\u1ED1i tr\u1EA1ng th\xE1i tr\u1EF1c ti\u1EBFp b\u1ECB gi\xE1n \u0111o\u1EA1n. \u0110ang t\u1EF1 \u0111\u1ED9ng k\u1EBFt n\u1ED1i l\u1EA1i\u2026",
+    "queue.readFailed": "Kh\xF4ng th\u1EC3 t\u1EA3i h\xE0ng \u0111\u1EE3i",
+    "status.waiting": "\u0110ang ch\u1EDD",
+    "status.shownActiveTasks": "Hi\u1EC3n th\u1ECB c\xE1c t\xE1c v\u1EE5 \u0111ang ch\u1EA1y",
+    "status.jsonCopied": "\u0110\xE3 sao ch\xE9p JSON",
+    "taskStatus.submitting": "\u0110ang g\u1EEDi",
+    "taskStatus.running": "\u0110ang t\u1EA1o",
+    "taskStatus.runningWithElapsed": "\u0110ang t\u1EA1o \xB7 {elapsed}",
+    "taskStatus.cancelling": "\u0110ang h\u1EE7y",
+    "taskStatus.completed": "\u0110\xE3 ho\xE0n th\xE0nh",
+    "taskStatus.partialFailed": "Th\u1EA5t b\u1EA1i m\u1ED9t ph\u1EA7n",
+    "taskStatus.failed": "Th\u1EA5t b\u1EA1i",
+    "taskStatus.queued": "\u0110\xE3 x\u1EBFp h\xE0ng",
+    "taskStatus.unknown": "Tr\u1EA1ng th\xE1i kh\xF4ng x\xE1c \u0111\u1ECBnh",
+    "taskStatus.task": "T\xE1c v\u1EE5",
+    "taskStatus.connectionInterrupted": "K\u1EBFt n\u1ED1i b\u1ECB gi\xE1n \u0111o\u1EA1n",
+    "taskStatus.lastFailed": "Th\u1EA5t b\u1EA1i l\u1EA7n cu\u1ED1i",
+    "taskStatus.waitingRetry": "{reason}, ch\u1EDD th\u1EED l\u1EA1i (l\u1EA7n {attempt}/{max})",
+    "taskStatus.retrying": "{reason}, \u0111ang th\u1EED l\u1EA1i (l\u1EA7n {attempt}/{max})",
+    "taskStatus.nonRetryableAttempt": "\u0110\xE3 th\u1EED {attempt}/{max}, kh\xF4ng th\u1EC3 th\u1EED l\u1EA1i \u0111\u01B0\u1EE3c",
+    "taskStatus.manualRetryAvailable": "\u0110\xE3 d\u1EEBng; b\u1EA1n c\xF3 th\u1EC3 th\u1EED l\u1EA1i th\u1EE7 c\xF4ng c\xE1c \u1EA3nh b\u1ECB l\u1ED7i",
+    "taskStatus.waitingRetryShort": "\u0110ang ch\u1EDD th\u1EED l\u1EA1i",
+    "taskStatus.retryingShort": "\u0110ang th\u1EED l\u1EA1i",
+    "taskStatus.nonRetryableShort": "Kh\xF4ng th\u1EC3 th\u1EED l\u1EA1i",
+    "taskStatus.manualRetryShort": "Th\u1EED l\u1EA1i th\u1EE7 c\xF4ng",
+    "taskStatus.stoppedShort": "\u0110\xE3 d\u1EEBng",
+    "taskStatus.runtime": "Th\u1EDDi l\u01B0\u1EE3ng {duration}",
+    "taskStatus.runtimeCompleted": "Th\u1EDDi l\u01B0\u1EE3ng {duration} \xB7 \u0111\xE3 ho\xE0n th\xE0nh {time}",
+    "taskStatus.completedAt": "\u0110\xE3 ho\xE0n th\xE0nh {time}",
+    "taskCard.count": "{count} h\xECnh \u1EA3nh",
+    "taskCard.successCount": "{count} th\xE0nh c\xF4ng",
+    "taskCard.failedCount": "th\u1EA5t b\u1EA1i {count}",
+    "taskCard.runningCount": "\u0111ang t\u1EA1o {count}",
+    "taskCard.waitingCount": "\u0111ang ch\u1EDD {count}",
+    "taskCard.textToImageThumb": "H\xECnh thu nh\u1ECF t\xE1c v\u1EE5 chuy\u1EC3n v\u0103n b\u1EA3n th\xE0nh h\xECnh \u1EA3nh",
+    "taskCard.imageToImageThumb": "H\xECnh thu nh\u1ECF t\xE1c v\u1EE5 chuy\u1EC3n h\xECnh \u1EA3nh th\xE0nh h\xECnh \u1EA3nh",
+    "taskCard.failedThumb": "T\xE1c v\u1EE5 th\u1EA5t b\u1EA1i",
+    "taskMode.edit": "Ch\u1EC9nh s\u1EEDa",
+    "taskMode.generate": "T\u1EA1o",
+    "document.generatingQueue": "\u0110ang t\u1EA1o \xB7 h\xE0ng \u0111\u1EE3i {total}",
+    "document.queuedWaiting": "\u0110ang x\u1EBFp h\xE0ng \xB7 \u0111ang ch\u1EDD {count}",
+    "runFeedback.editing": "Ch\u1EC9nh s\u1EEDa",
+    "runFeedback.generating": "\u0110ang t\u1EA1o",
+    "runFeedback.status": "{action}, \u0111\xE3 tr\xF4i qua {elapsed}",
+    "footer.archive": "L\u01B0u tr\u1EEF",
+    "footer.archiveCount": "L\u01B0u tr\u1EEF {count}",
+    "footer.historyLibrary": "L\u1ECBch s\u1EED",
+    "historyLibrary.openFull": "M\u1EDF th\u01B0 vi\u1EC7n l\u1ECBch s\u1EED \u0111\u1EA7y \u0111\u1EE7",
+    "history.documentTitle": "L\u1ECBch s\u1EED - iLab CONJURE",
+    "history.back": "Quay l\u1EA1i tr\xECnh t\u1EA1o",
+    "history.homeAria": "Quay l\u1EA1i trang t\u1EA1o \u1EA3nh iLab CONJURE",
+    "history.backToGenerator": "Quay l\u1EA1i trang t\u1EA1o \u1EA3nh",
+    "history.title": "L\u1ECBch s\u1EED",
+    "history.loading": "\u0110ang t\u1EA3i",
+    "history.total": "{total} t\xE1c v\u1EE5 \xB7 {archived} \u0111\xE3 l\u01B0u tr\u1EEF",
+    "history.search": "T\xECm ki\u1EBFm",
+    "history.searchPlaceholder": "T\xECm ki\u1EBFm l\u1EDDi nh\u1EAFc ho\u1EB7c Task ID",
+    "history.clear": "X\xF3a",
+    "history.activeFilterCount": "\u0110ang l\u1ECDc \xB7 {count}",
+    "history.clearAllFilters": "X\xF3a t\u1EA5t c\u1EA3",
+    "history.removeFilter": "B\u1ECF b\u1ED9 l\u1ECDc: {label}",
+    "history.filtersActive": "B\u1ED9 l\u1ECDc t\xE1c v\u1EE5, {count} \u0111ang b\u1EADt",
+    "history.favorites": "Y\xEAu th\xEDch",
+    "history.onlyFavorites": "Ch\u1EC9 xem m\u1EE5c y\xEAu th\xEDch",
+    "history.favoriteTask": "Th\xEAm v\xE0o y\xEAu th\xEDch",
+    "history.unfavoriteTask": "B\u1ECF kh\u1ECFi y\xEAu th\xEDch",
+    "history.tags": "Nh\xE3n",
+    "history.untagged": "Ch\u01B0a g\u1EAFn nh\xE3n",
+    "history.manageTags": "Qu\u1EA3n l\xFD nh\xE3n",
+    "history.createTag": "T\u1EA1o nh\xE3n",
+    "history.renameTag": "\u0110\u1ED5i t\xEAn",
+    "history.deleteTag": "X\xF3a",
+    "history.deleteTagAffected": "X\xF3a (\u1EA3nh h\u01B0\u1EDFng {count} t\xE1c v\u1EE5)",
+    "history.addTag": "Th\xEAm nh\xE3n",
+    "history.removeTag": "G\u1EE1 nh\xE3n",
+    "history.favoriteSelected": "Y\xEAu th\xEDch",
+    "history.unfavoriteSelected": "B\u1ECF y\xEAu th\xEDch",
+    "history.organizeSelected": "S\u1EAFp x\u1EBFp",
+    "history.exitSelection": "Tho\xE1t ch\u1ECDn nhi\u1EC1u",
+    "history.organizationFailed": "Kh\xF4ng th\u1EC3 c\u1EADp nh\u1EADt m\u1EE5c y\xEAu th\xEDch ho\u1EB7c nh\xE3n",
+    "history.tagNameConflict": "T\xEAn nh\xE3n n\xE0y \u0111\xE3 t\u1ED3n t\u1EA1i",
+    "history.noTags": "Ch\u01B0a c\xF3 nh\xE3n",
+    "history.backendRestartRequired": "T\xEDnh n\u0103ng th\u01B0 vi\u1EC7n l\u1ECBch s\u1EED \u0111\xE3 \u0111\u01B0\u1EE3c c\u1EADp nh\u1EADt. H\xE3y kh\u1EDFi \u0111\u1ED9ng l\u1EA1i \u1EE9ng d\u1EE5ng r\u1ED3i th\u1EED l\u1EA1i.",
+    "history.export": "Xu\u1EA5t",
+    "history.exportImagesOnly": "Ch\u1EC9 h\xECnh \u1EA3nh",
+    "history.exportImagesWithPrompts": "H\xECnh \u1EA3nh + c\xE2u l\u1EC7nh",
+    "history.exportPreparing": "\u0110ang chu\u1EA9n b\u1ECB b\u1EA3n xu\u1EA5t\u2026",
+    "history.exportStarted": "\u0110\xE3 b\u1EAFt \u0111\u1EA7u t\u1EA3i xu\u1ED1ng",
+    "history.exportSummary": "{taskCount} t\xE1c v\u1EE5 \xB7 {imageCount} h\xECnh \u1EA3nh",
+    "history.exportFailed": "Xu\u1EA5t th\u1EA5t b\u1EA1i",
+    "historyBackup.open": "Sao l\u01B0u t\xE1c v\u1EE5",
+    "historyBackup.importOpen": "Nh\u1EADp b\u1EA3n sao l\u01B0u",
+    "historyBackup.mode": "Sao l\u01B0u t\xE1c v\u1EE5",
+    "historyBackup.description": "L\u01B0u d\u1EEF li\u1EC7u t\xE1c v\u1EE5 v\xE0 t\u1EC7p li\xEAn quan \u0111\u1EC3 kh\xF4i ph\u1EE5c trong phi\xEAn b\u1EA3n iLab CONJURE t\u01B0\u01A1ng th\xEDch.",
+    "historyBackup.scopeLegend": "Ph\u1EA1m vi sao l\u01B0u",
+    "historyBackup.scopeHelp": "K\u1EBFt qu\u1EA3 l\u1ECDc v\xE0 to\xE0n b\u1ED9 l\u1ECBch s\u1EED \u0111\u01B0\u1EE3c \u0111\u1EBFm c\u1EE5c b\u1ED9, kh\xF4ng b\u1ECB gi\u1EDBi h\u1EA1n b\u1EDFi t\xE1c v\u1EE5 hi\u1EC3n th\u1ECB tr\xEAn trang n\xE0y.",
+    "historyBackup.scopeSelected": "T\xE1c v\u1EE5 \u0111\xE3 ch\u1ECDn",
+    "historyBackup.scopeFiltered": "K\u1EBFt qu\u1EA3 l\u1ECDc hi\u1EC7n t\u1EA1i",
+    "historyBackup.scopeAll": "To\xE0n b\u1ED9 l\u1ECBch s\u1EED",
+    "historyBackup.scopeCount": "{eligible}/{total} t\xE1c v\u1EE5 h\u1EE3p l\u1EC7",
+    "historyBackup.scopeCounting": "\u0110ang \u0111\u1EBFm\u2026",
+    "historyBackup.scopeCountUnavailable": "Kh\xF4ng th\u1EC3 l\u1EA5y s\u1ED1 l\u01B0\u1EE3ng",
+    "historyBackup.scopeNoneSelected": "Ch\u01B0a ch\u1ECDn t\xE1c v\u1EE5",
+    "historyBackup.willBackup": "S\u1EBD sao l\u01B0u {eligible} t\xE1c v\u1EE5; lo\u1EA1i tr\u1EEB {excluded} t\xE1c v\u1EE5 ch\u01B0a ho\xE0n t\u1EA5t.",
+    "historyBackup.selectTasksFirst": "H\xE3y ch\u1ECDn \xEDt nh\u1EA5t m\u1ED9t t\xE1c v\u1EE5 tr\u01B0\u1EDBc.",
+    "historyBackup.scopeLockedUnknown": "Ph\u1EA1m vi sao l\u01B0u ban \u0111\u1EA7u",
+    "historyBackup.scopeLocked": "\u0110\xE3 kh\xF3a ph\u1EA1m vi: {scope} \xB7 s\u1EBD sao l\u01B0u {eligible} t\xE1c v\u1EE5",
+    "historyBackup.scopeLockedPending": "\u0110\xE3 kh\xF3a ph\u1EA1m vi: {scope} \xB7 \u0111ang \u0111\u1EBFm t\xE1c v\u1EE5 h\u1EE3p l\u1EC7",
+    "historyBackup.progressLabel": "Ti\u1EBFn tr\xECnh sao l\u01B0u",
+    "historyBackup.start": "B\u1EAFt \u0111\u1EA7u sao l\u01B0u",
+    "historyBackup.cancel": "H\u1EE7y sao l\u01B0u",
+    "historyBackup.download": "T\u1EA3i b\u1EA3n sao l\u01B0u",
+    "historyBackup.dismiss": "\u0110\xF3ng k\u1EBFt qu\u1EA3",
+    "historyBackup.discard": "\u0110\xF3ng m\xE0 kh\xF4ng t\u1EA3i",
+    "historyBackup.closePanel": "\u0110\xF3ng b\u1EA3ng",
+    "historyBackup.downloadStartedTitle": "\u0110\xE3 b\u1EAFt \u0111\u1EA7u t\u1EA3i",
+    "historyBackup.idle": "S\u1EB5n s\xE0ng",
+    "historyBackup.queued": "\u0110ang ch\u1EDD",
+    "historyBackup.planning": "\u0110ang l\u1EADp k\u1EBF ho\u1EA1ch",
+    "historyBackup.packing": "\u0110ang \u0111\xF3ng g\xF3i",
+    "historyBackup.ready": "S\u1EB5n s\xE0ng t\u1EA3i xu\u1ED1ng",
+    "historyBackup.readyDetail": "B\u1EA3n sao l\u01B0u \u0111\xE3 s\u1EB5n s\xE0ng. H\xE3y t\u1EA3i trong v\xF2ng 1 gi\u1EDD; \u0111\xF3ng m\xE0 kh\xF4ng t\u1EA3i s\u1EBD x\xF3a t\u1EC7p t\u1EA1m ngay l\u1EADp t\u1EE9c.",
+    "historyBackup.downloaded": "H\xE3y x\xE1c nh\u1EADn tr\xECnh duy\u1EC7t \u0111\xE3 l\u01B0u t\u1EC7p, sau \u0111\xF3 b\u1EA1n c\xF3 th\u1EC3 \u0111\xF3ng b\u1EA3ng n\xE0y. T\u1EC7p t\u1EA1m s\u1EBD b\u1ECB x\xF3a sau khi truy\u1EC1n xong.",
+    "historyBackup.missingInputsWarning": "{tasks} t\xE1c v\u1EE5 thi\u1EBFu {files} t\u1EC7p \u0111\u1EA7u v\xE0o. C\xE1c t\u1EC7p \u0111\xF3 s\u1EBD b\u1ECB b\u1ECF qua; l\u1EDDi nh\u1EAFc v\xE0 k\u1EBFt qu\u1EA3 v\u1EABn \u0111\u01B0\u1EE3c xu\u1EA5t b\xECnh th\u01B0\u1EDDng.",
+    "historyBackup.failed": "Sao l\u01B0u th\u1EA5t b\u1EA1i",
+    "historyBackup.cancelled": "\u0110\xE3 h\u1EE7y",
+    "historyBackup.expired": "\u0110\xE3 h\u1EBFt h\u1EA1n",
+    "historyBackup.interrupted": "B\u1ECB gi\xE1n \u0111o\u1EA1n",
+    "historyBackup.stats": "T\u1ED5ng {total} \xB7 h\u1EE3p l\u1EC7 {eligible} \xB7 lo\u1EA1i tr\u1EEB {excluded} \xB7 {bytes}",
+    "historyBackup.errorDisk": "Kh\xF4ng \u0111\u1EE7 dung l\u01B0\u1EE3ng \u0111\u0129a.",
+    "historyBackup.errorSourceChanged": "D\u1EEF li\u1EC7u ngu\u1ED3n \u0111\xE3 thay \u0111\u1ED5i khi sao l\u01B0u.",
+    "historyBackup.errorEmpty": "Kh\xF4ng c\xF3 t\xE1c v\u1EE5 h\u1EE3p l\u1EC7.",
+    "historyBackup.errorIo": "Kh\xF4ng th\u1EC3 t\u1EA1o b\u1EA3n sao l\u01B0u.",
+    "historyImport.title": "Nh\u1EADp b\u1EA3n sao l\u01B0u t\xE1c v\u1EE5",
+    "historyImport.choose": "Ch\u1ECDn b\u1EA3n sao ZIP",
+    "historyImport.uploading": "\u0110ang t\u1EA3i l\xEAn",
+    "historyImport.validating": "\u0110ang x\xE1c th\u1EF1c",
+    "historyImport.validated": "\u0110\xE3 x\xE1c th\u1EF1c",
+    "historyImport.preview": "Xem tr\u01B0\u1EDBc kh\xF4i ph\u1EE5c",
+    "historyImport.restorable": "C\xF3 th\u1EC3 kh\xF4i ph\u1EE5c",
+    "historyImport.duplicate": "Tr\xF9ng l\u1EB7p",
+    "historyImport.conflict": "Xung \u0111\u1ED9t",
+    "historyImport.invalid": "Kh\xF4ng h\u1EE3p l\u1EC7",
+    "historyImport.confirm": "X\xE1c nh\u1EADn kh\xF4i ph\u1EE5c",
+    "historyImport.restoring": "\u0110ang kh\xF4i ph\u1EE5c",
+    "historyImport.restored": "\u0110\xE3 kh\xF4i ph\u1EE5c",
+    "historyImport.failed": "Kh\xF4i ph\u1EE5c th\u1EA5t b\u1EA1i",
+    "historyImport.interrupted": "B\u1ECB gi\xE1n \u0111o\u1EA1n",
+    "historyImport.cancelled": "\u0110\xE3 h\u1EE7y",
+    "historyImport.result": "K\u1EBFt qu\u1EA3",
+    "historyImport.thumbnailWarnings": "C\u1EA3nh b\xE1o \u1EA3nh thu nh\u1ECF",
+    "historyImport.cleanupWarnings": "C\u1EA3nh b\xE1o d\u1ECDn d\u1EB9p",
+    "historyImport.reselect": "H\xE3y ch\u1ECDn l\u1EA1i t\u1EC7p ZIP g\u1ED1c.",
+    "historyImport.noOverwrite": "Kh\xF4ng bao gi\u1EDD ghi \u0111\xE8 t\xE1c v\u1EE5 hi\u1EC7n c\xF3.",
+    "historyImport.reasonInvalid": "D\u1EEF li\u1EC7u sao l\u01B0u kh\xF4ng h\u1EE3p l\u1EC7",
+    "historyImport.reasonSensitive": "C\xF3 ch\u1EE9a d\u1EEF li\u1EC7u \u0111\u01B0\u1EE3c b\u1EA3o v\u1EC7",
+    "historyImport.reasonMismatch": "Kh\xF4ng kh\u1EDBp v\u1EDBi b\u1EA3n k\xEA sao l\u01B0u",
+    "history.closeExport": "\u0110\xF3ng l\u1EF1a ch\u1ECDn xu\u1EA5t",
+    "history.type": "Lo\u1EA1i",
+    "history.allTypes": "T\u1EA5t c\u1EA3 lo\u1EA1i",
+    "history.type.textToImage": "V\u0103n b\u1EA3n th\xE0nh \u1EA3nh",
+    "history.type.imageToImage": "\u1EA2nh th\xE0nh \u1EA3nh",
+    "history.month": "Th\xE1ng",
+    "history.status": "Tr\u1EA1ng th\xE1i",
+    "history.promptMode": "Ch\u1EBF \u0111\u1ED9 l\u1EDDi nh\u1EAFc",
+    "history.size": "K\xEDch th\u01B0\u1EDBc",
+    "history.quality": "Ch\u1EA5t l\u01B0\u1EE3ng",
+    "history.ratio": "T\u1EF7 l\u1EC7",
+    "history.orientation": "H\u01B0\u1EDBng",
+    "history.backend": "Backend",
+    "history.provider": "Provider",
+    "history.archived": "\u0110\xE3 l\u01B0u tr\u1EEF",
+    "history.all": "T\u1EA5t c\u1EA3",
+    "history.allMonths": "T\u1EA5t c\u1EA3 c\xE1c th\xE1ng",
+    "history.allStatuses": "T\u1EA5t c\u1EA3 tr\u1EA1ng th\xE1i",
+    "history.allPromptModes": "T\u1EA5t c\u1EA3 c\xE1c ch\u1EBF \u0111\u1ED9",
+    "history.allSizes": "T\u1EA5t c\u1EA3 c\xE1c k\xEDch c\u1EE1",
+    "history.allQualities": "T\u1EA5t c\u1EA3 ch\u1EA5t l\u01B0\u1EE3ng",
+    "history.allRatios": "T\u1EA5t c\u1EA3 c\xE1c t\u1EF7 l\u1EC7",
+    "history.ratioOther": "Kh\xE1c",
+    "history.allOrientations": "T\u1EA5t c\u1EA3 h\u01B0\u1EDBng",
+    "history.allBackends": "T\u1EA5t c\u1EA3 backend",
+    "history.allProviders": "T\u1EA5t c\u1EA3 provider",
+    "history.unarchived": "Ch\u01B0a l\u01B0u tr\u1EEF",
+    "history.archivedOnly": "\u0110\xE3 l\u01B0u tr\u1EEF",
+    "history.tasksAria": "T\xE1c v\u1EE5 l\u1ECBch s\u1EED",
+    "history.taskListTitle": "T\xE1c v\u1EE5 l\u1ECBch s\u1EED",
+    "history.browseNewest": "Duy\u1EC7t m\u1EDBi nh\u1EA5t tr\u01B0\u1EDBc",
+    "history.view": "Xem",
+    "history.grid": "L\u01B0\u1EDBi",
+    "history.list": "Danh s\xE1ch",
+    "history.sort": "S\u1EAFp x\u1EBFp",
+    "history.newest": "M\u1EDBi nh\u1EA5t \u0111\u1EA7u ti\xEAn",
+    "history.oldest": "C\u0169 nh\u1EA5t \u0111\u1EA7u ti\xEAn",
+    "history.refresh": "L\xE0m m\u1EDBi",
+    "history.selectedCount": "{count} t\xE1c v\u1EE5 \u0111\xE3 ch\u1ECDn",
+    "history.confirmDelete": "X\xE1c nh\u1EADn x\xF3a",
+    "history.detail": "Chi ti\u1EBFt t\xE1c v\u1EE5",
+    "history.detailTitle": "T\xE1c v\u1EE5 l\u1ECBch s\u1EED",
+    "history.closeDetail": "\u0110\xF3ng chi ti\u1EBFt t\xE1c v\u1EE5",
+    "history.resizeFilters": "Thay \u0111\u1ED5i k\xEDch th\u01B0\u1EDBc thanh b\xEAn b\u1ED9 l\u1ECDc",
+    "history.resizeDetail": "Thay \u0111\u1ED5i k\xEDch th\u01B0\u1EDBc ng\u0103n chi ti\u1EBFt",
+    "history.detailEmpty": "Ch\u1ECDn m\u1ED9t t\xE1c v\u1EE5 l\u1ECBch s\u1EED \u0111\u1EC3 xem chi ti\u1EBFt",
+    "history.loadingDetail": "\u0110ang t\u1EA3i chi ti\u1EBFt...",
+    "history.loadMore": "T\u1EA3i th\xEAm",
+    "history.loadingMore": "\u0110ang t\u1EA3i...",
+    "history.noMore": "Kh\xF4ng c\xF2n t\xE1c v\u1EE5 n\xE0o n\u1EEFa",
+    "history.loadFailed": "T\u1EA3i kh\xF4ng th\xE0nh c\xF4ng. L\xE0m m\u1EDBi ho\u1EB7c ti\u1EBFp t\u1EE5c cu\u1ED9n \u0111\u1EC3 th\u1EED l\u1EA1i",
+    "history.summaryFailed": "Kh\xF4ng t\u1EA3i \u0111\u01B0\u1EE3c b\u1EA3n t\xF3m t\u1EAFt",
+    "history.tasksFailed": "Kh\xF4ng t\u1EA3i \u0111\u01B0\u1EE3c t\xE1c v\u1EE5",
+    "history.detailFailed": "Kh\xF4ng th\u1EC3 t\u1EA3i chi ti\u1EBFt",
+    "history.noMatches": "Kh\xF4ng c\xF3 t\xE1c v\u1EE5 ph\xF9 h\u1EE3p",
+    "history.loadedCount": "{count} \u0111\xE3 t\u1EA3i",
+    "history.windowNotice": "Danh s\xE1ch hi\u1EC3n th\u1ECB gi\u1EDBi h\u1EA1n \u1EDF {count} t\xE1c v\u1EE5; cu\u1ED9n l\xEAn ho\u1EB7c xu\u1ED1ng \u0111\u1EC3 t\u1EA3i l\u1EA1i c\xE1c t\xE1c v\u1EE5 li\u1EC1n k\u1EC1 khi c\u1EA7n.",
+    "history.selectTask": "Ch\u1ECDn t\xE1c v\u1EE5",
+    "history.viewing": "\u0110ang xem",
+    "history.noPreview": "Kh\xF4ng c\xF3 h\xECnh \u1EA3nh xem tr\u01B0\u1EDBc",
+    "history.downloadAll": "T\u1EA3i xu\u1ED1ng ZIP",
+    "history.downloadImage": "T\u1EA3i xu\u1ED1ng h\xECnh \u1EA3nh",
+    "history.downloadSelected": "T\u1EA3i xu\u1ED1ng m\u1EE5c \u0111\xE3 ch\u1ECDn",
+    "history.deleteUnselected": "X\xF3a m\u1EE5c ch\u01B0a ch\u1ECDn",
+    "history.confirmDeleteUnselected": "X\xE1c nh\u1EADn x\xF3a b\u1ECF ch\u1ECDn",
+    "history.selected": "\u0110\xE3 ch\u1ECDn",
+    "history.select": "ch\u1ECDn",
+    "history.downloadIndex": "T\u1EA3i xu\u1ED1ng {index}",
+    "history.addReference": "Th\xEAm \u1EA3nh tham kh\u1EA3o",
+    "history.outputActions": "H\xE0nh \u0111\u1ED9ng h\xECnh \u1EA3nh k\u1EBFt qu\u1EA3",
+    "history.inputReferences": "Tham chi\u1EBFu \u0111\u1EA7u v\xE0o",
+    "history.inputReferenceIndex": "Tham chi\u1EBFu \u0111\u1EA7u v\xE0o {index}",
+    "history.copyPrompt": "Sao ch\xE9p l\u1EDDi nh\u1EAFc",
+    "history.copyPrompts": "Sao ch\xE9p l\u1EDDi nh\u1EAFc",
+    "history.copyPromptShort": "Sao ch\xE9p",
+    "history.copyPromptPanel": "Sao ch\xE9p {title}",
+    "history.copyOutputPromptPanel": "Sao ch\xE9p l\u1EDDi nh\u1EAFc \u0111\xE3 ch\u1EC9nh c\u1EE7a \u1EA3nh {index}",
+    "history.copyTaskIds": "Sao ch\xE9p Task ID",
+    "history.reuseTask": "Xem trong tr\xECnh t\u1EA1o",
+    "history.downloadTask": "T\u1EA3i xu\u1ED1ng",
+    "history.downloadSelectedTasks": "T\u1EA3i xu\u1ED1ng h\xE0ng lo\u1EA1t",
+    "history.contextMenuLabel": "Menu ng\u1EEF c\u1EA3nh t\xE1c v\u1EE5 l\u1ECBch s\u1EED",
+    "history.promptCopied": "\u0110\xE3 sao ch\xE9p l\u1EDDi nh\u1EAFc",
+    "history.promptsCopied": "Sao ch\xE9p l\u1EDDi nh\u1EAFc t\u1EEB t\xE1c v\u1EE5 {count}",
+    "history.taskIdsCopied": "\u0110\xE3 sao ch\xE9p Task ID {count}",
+    "history.promptCopiedShort": "\u0110\xE3 sao ch\xE9p",
+    "history.promptCopyFailed": "Kh\xF4ng sao ch\xE9p \u0111\u01B0\u1EE3c l\u1EDDi nh\u1EAFc",
+    "history.promptCopyFailedShort": "th\u1EA5t b\u1EA1i",
+    "history.noPrompt": "T\xE1c v\u1EE5 n\xE0y kh\xF4ng c\xF3 l\u1EDDi nh\u1EAFc \u0111\u1EC3 sao ch\xE9p",
+    "history.noPromptShort": "tr\u1ED1ng",
+    "history.downloadStarted": "\u0110\xE3 b\u1EAFt \u0111\u1EA7u t\u1EA3i xu\u1ED1ng",
+    "history.batchDownloadStarted": "\u0110\xE3 b\u1EAFt \u0111\u1EA7u t\u1EA3i xu\u1ED1ng c\xE1c t\xE1c v\u1EE5 {count}",
+    "history.noDownloadableOutputs": "Kh\xF4ng c\xF3 h\xECnh \u1EA3nh c\xF3 th\u1EC3 t\u1EA3i xu\u1ED1ng",
+    "history.confirmDeleteSelected": "X\xE1c nh\u1EADn \u0111\xE3 ch\u1ECDn x\xF3a",
+    "history.openPreview": "M\u1EDF b\u1EA3n xem tr\u01B0\u1EDBc",
+    "history.closePreview": "\u0110\xF3ng b\u1EA3n xem tr\u01B0\u1EDBc",
+    "history.untitled": "Kh\xF4ng c\xF3 ti\xEAu \u0111\u1EC1",
+    "history.promptCompare": "So s\xE1nh l\u1EDDi nh\u1EAFc",
+    "history.promptOriginal": "L\u1EDDi nh\u1EAFc ban \u0111\u1EA7u",
+    "history.promptSubmitted": "L\u1EDDi nh\u1EAFc \u0111\u01B0\u1EE3c t\u1ED1i \u01B0u h\xF3a",
+    "history.promptRevised": "K\u1EBFt qu\u1EA3 s\u1EEDa \u0111\u1ED5i",
+    "history.outputRevisedPromptTitle": "H\xECnh \u1EA3nh {index} \u0111\xE3 s\u1EEDa l\u1EA1i l\u1EDDi nh\u1EAFc",
+    "history.outputRevisedPromptNotice": "M\u1ED7i h\xECnh \u1EA3nh c\xF3 l\u1EDDi nh\u1EAFc s\u1EEDa \u0111\u1ED5i ri\xEAng b\xEAn d\u01B0\u1EDBi h\xECnh \u1EA3nh.",
+    "history.promptEmpty": "Kh\xF4ng c\xF3 n\u1ED9i dung",
+    "history.promptMode.strict": "Gi\u1EEF s\xE1t l\u1EDDi nh\u1EAFc",
+    "history.promptMode.original": "B\u1EA3n g\u1ED1c",
+    "history.promptMode.off": "S\xE1ng t\u1EA1o",
+    "history.quality.high": "Cao",
+    "history.quality.medium": "Trung b\xECnh",
+    "history.quality.low": "Th\u1EA5p",
+    "history.quality.auto": "T\u1EF1 \u0111\u1ED9ng",
+    "footer.batch": "L\xF4",
+    "footer.storage": "L\u01B0u tr\u1EEF",
+    "footer.apiStatus": "Tr\u1EA1ng th\xE1i API: OK",
+    "footer.version": "Phi\xEAn b\u1EA3n {version}",
+    "footer.versionInfo": "Th\xF4ng tin phi\xEAn b\u1EA3n",
+    "footer.versionLoading": "Phi\xEAn b\u1EA3n...",
+    "footer.updateBadge": "\u0110\xE3 c\xF3 phi\xEAn b\u1EA3n m\u1EDBi",
+    "footer.updateAvailable": "Phi\xEAn b\u1EA3n m\u1EDBi {version}",
+    "version.title": "Phi\xEAn b\u1EA3n & C\u1EADp nh\u1EADt",
+    "version.loading": "\u0110\u1ECDc tr\u1EA1ng th\xE1i phi\xEAn b\u1EA3n",
+    "version.current": "Phi\xEAn b\u1EA3n hi\u1EC7n t\u1EA1i",
+    "version.latest": "Phi\xEAn b\u1EA3n m\u1EDBi nh\u1EA5t",
+    "version.source": "Th\u1EDDi gian ch\u1EA1y",
+    "version.sourcePortable": "G\xF3i di \u0111\u1ED9ng",
+    "version.sourceStandard": "\u1EE8ng d\u1EE5ng ti\xEAu chu\u1EA9n",
+    "version.sourceSource": "Ki\u1EC3m tra ngu\u1ED3n",
+    "version.upToDate": "B\u1EA1n \u0111\xE3 \u1EDF phi\xEAn b\u1EA3n m\u1EDBi nh\u1EA5t",
+    "version.updateAvailable": "Phi\xEAn b\u1EA3n {version} c\xF3 s\u1EB5n. \u0110\xF3ng c\u1EEDa s\u1ED5 m\xE1y ch\u1EE7 WebUI, sau \u0111\xF3 ch\u1EA1y tr\xECnh c\u1EADp nh\u1EADt \u0111\u1EC3 n\xE2ng c\u1EA5p.",
+    "version.standardUpdateAvailable": "Phi\xEAn b\u1EA3n {version} c\xF3 s\u1EB5n. T\u1EA3i xu\u1ED1ng g\xF3i ti\xEAu chu\u1EA9n m\u1EDBi, sau \u0111\xF3 tho\xE1t kh\u1ECFi \u1EE9ng d\u1EE5ng n\xE0y v\xE0 c\xE0i \u0111\u1EB7t n\xF3 l\xEAn g\xF3i c\u0169.",
+    "version.standardManualInstall": "\u1EE8ng d\u1EE5ng ti\xEAu chu\u1EA9n t\u1EA3i xu\u1ED1ng g\xF3i c\xE0i \u0111\u1EB7t m\u1EDBi; t\u1EF1 \u0111\u1ED9ng thay th\u1EBF v\u1EABn c\xF2n h\u1EA1n ch\u1EBF \u1EDF c\xE1c g\xF3i di \u0111\u1ED9ng.",
+    "version.noUpdater": "Th\u1EDDi gian ch\u1EA1y n\xE0y kh\xF4ng ph\u1EA3i l\xE0 g\xF3i di \u0111\u1ED9ng n\xEAn tr\xECnh c\u1EADp nh\u1EADt kh\xF4ng th\u1EC3 t\u1EF1 \u0111\u1ED9ng kh\u1EDFi \u0111\u1ED9ng.",
+    "version.openUpdater": "B\u1EAFt \u0111\u1EA7u c\u1EADp nh\u1EADt",
+    "version.release": "Xem b\u1EA3n ph\xE1t h\xE0nh",
+    "version.updaterStarted": "Tr\xECnh c\u1EADp nh\u1EADt \u0111\xE3 b\u1EAFt \u0111\u1EA7u. \u0110\xF3ng c\u1EEDa s\u1ED5 m\xE1y ch\u1EE7 WebUI hi\u1EC7n t\u1EA1i, sau \u0111\xF3 l\xE0m theo l\u1EDDi nh\u1EAFc c\u1EE7a tr\xECnh c\u1EADp nh\u1EADt.",
+    "version.updaterFailed": "Kh\xF4ng th\u1EC3 kh\u1EDFi \u0111\u1ED9ng tr\xECnh c\u1EADp nh\u1EADt. Ch\u1EA1y t\u1EADp l\u1EC7nh c\u1EADp nh\u1EADt t\u1EEB g\xF3i theo c\xE1ch th\u1EE7 c\xF4ng.",
+    "version.onboardingTitle": "0.5.5 th\xEAm c\xE1c g\xF3i \u1EE9ng d\u1EE5ng ti\xEAu chu\u1EA9n",
+    "version.onboardingStatus": "B\u1EA1n \u0111\xE3 n\xE2ng c\u1EA5p l\xEAn {version}. B\u1EA1n c\xF3 th\u1EC3 ti\u1EBFp t\u1EE5c s\u1EED d\u1EE5ng g\xF3i di \u0111\u1ED9ng ho\u1EB7c chuy\u1EC3n sang g\xF3i \u1EE9ng d\u1EE5ng ti\xEAu chu\u1EA9n.",
+    "version.onboardingBody": "B\u1EA3n ph\xE1t h\xE0nh n\xE0y b\u1ED5 sung c\xE1c g\xF3i macOS DMG v\xE0 Windows App ZIP. Ng\u01B0\u1EDDi d\xF9ng m\u1EDBi n\xEAn s\u1EED d\u1EE5ng g\xF3i ti\xEAu chu\u1EA9n; g\xF3i di \u0111\u1ED9ng hi\u1EC7n t\u1EA1i v\u1EABn ho\u1EA1t \u0111\u1ED9ng.",
+    "version.onboardingDataPortable": "D\u1EEF li\u1EC7u hi\u1EC7n t\u1EA1i \u0111\u01B0\u1EE3c gi\u1EEF trong th\u01B0 m\u1EE5c data/ c\u1EE7a g\xF3i portable n\xE0y.",
+    "version.onboardingStandardData": "\u1EE8ng d\u1EE5ng ti\xEAu chu\u1EA9n l\u01B0u tr\u1EEF d\u1EEF li\u1EC7u trong th\u01B0 m\u1EE5c d\u1EEF li\u1EC7u \u1EE9ng d\u1EE5ng h\u1EC7 th\u1ED1ng: H\u1ED7 tr\u1EE3 \u1EE9ng d\u1EE5ng macOS / Windows %APPDATA%.",
+    "version.onboardingMigration": "Khi chuy\u1EC3n sang \u1EE9ng d\u1EE5ng ti\xEAu chu\u1EA9n, h\xE3y s\u1EED d\u1EE5ng tr\u1EE3 l\xFD di chuy\u1EC3n \u0111\u1EC3 sao ch\xE9p d\u1EEF li\u1EC7u c\u0169. N\xF3 s\u1EBD kh\xF4ng di chuy\u1EC3n ho\u1EB7c ghi \u0111\xE8 l\xEAn d\u1EEF li\u1EC7u g\u1ED1c.",
+    "version.standardDownload": "T\u1EA3i xu\u1ED1ng \u1EE9ng d\u1EE5ng ti\xEAu chu\u1EA9n",
+    "version.continuePortable": "Ti\u1EBFp t\u1EE5c d\xF9ng g\xF3i portable",
+    "version.dismissOnboarding": "Kh\xF4ng hi\u1EC3n th\u1ECB l\u1EA1i",
+    "version.dismissFailed": "Kh\xF4ng th\u1EC3 l\u01B0u tr\u1EA1ng th\xE1i th\xF4ng b\xE1o n\xE0y. H\xE3y th\u1EED l\u1EA1i sau.",
+    "notifications.title": "Th\xF4ng b\xE1o",
+    "notifications.unread": "Th\xF4ng b\xE1o, {count} ch\u01B0a \u0111\u1ECDc",
+    "notifications.unreadSummary": "{count} ch\u01B0a \u0111\u1ECDc",
+    "notifications.empty": "Kh\xF4ng c\xF3 th\xF4ng b\xE1o t\xE1c v\u1EE5",
+    "notifications.taskFailed": "T\xE1c v\u1EE5 th\u1EA5t b\u1EA1i",
+    "notifications.taskPartial": "T\xE1c v\u1EE5 \u0111\xE3 ho\xE0n th\xE0nh m\u1ED9t ph\u1EA7n",
+    "notifications.taskCompleted": "T\xE1c v\u1EE5 \u0111\xE3 ho\xE0n th\xE0nh",
+    "notifications.generationFailed": "T\u1EA1o \u1EA3nh th\u1EA5t b\u1EA1i",
+    "notifications.successCount": "{count} \u0111\xE3 th\xE0nh c\xF4ng",
+    "notifications.resultAvailable": "K\u1EBFt qu\u1EA3 c\xF3 s\u1EB5n",
+    "notifications.failedCount": "{count} th\u1EA5t b\u1EA1i",
+    "notifications.systemUnsupported": "Tr\xECnh duy\u1EC7t n\xE0y kh\xF4ng h\u1ED7 tr\u1EE3 th\xF4ng b\xE1o h\u1EC7 th\u1ED1ng",
+    "notifications.systemBlocked": "Th\xF4ng b\xE1o h\u1EC7 th\u1ED1ng b\u1ECB tr\xECnh duy\u1EC7t ch\u1EB7n. K\xEDch ho\u1EA1t ch\xFAng trong c\xE0i \u0111\u1EB7t tr\xECnh duy\u1EC7t.",
+    "notifications.systemDenied": "Th\xF4ng b\xE1o h\u1EC7 th\u1ED1ng ch\u01B0a \u0111\u01B0\u1EE3c b\u1EADt",
+    "notifications.systemEnabled": "\u0110\xE3 b\u1EADt th\xF4ng b\xE1o h\u1EC7 th\u1ED1ng",
+    "notifications.taskMissing": "T\xE1c v\u1EE5 kh\xF4ng t\u1ED3n t\u1EA1i ho\u1EB7c \u0111\xE3 b\u1ECB x\xF3a",
+    "theme.label": "Ch\u1EE7 \u0111\u1EC1",
+    "theme.system": "T\u1EF1 \u0111\u1ED9ng",
+    "theme.light": "S\xE1ng",
+    "theme.dark": "T\u1ED1i",
+    "language.label": "Ng\xF4n ng\u1EEF giao di\u1EC7n",
+    "language.zh": "\u4E2D",
+    "language.zhCN": "\u7B80\u4F53\u4E2D\u6587",
+    "language.zhTW": "\u6B63\u9AD4\u4E2D\u6587",
+    "language.zhHK": "\u7E41\u4F53\u4E2D\u6587",
+    "language.ja": "\u65E5\u672C\u8A9E",
+    "language.ko": "\uD55C\uAD6D\uC5B4",
+    "language.en": "English",
+    "language.es": "Espa\xF1ol",
+    "language.pt": "Portugu\xEAs",
+    "language.fr": "Fran\xE7ais",
+    "language.de": "Deutsch",
+    "language.ru": "\u0420\u0443\u0441\u0441\u043A\u0438\u0439",
+    "language.it": "Italiano",
+    "language.hi": "\u0939\u093F\u0928\u094D\u0926\u0940",
+    "language.vi": "Ti\u1EBFng Vi\u1EC7t",
+    "auth.label": "Ngu\u1ED3n x\xE1c th\u1EF1c",
+    "auth.checking": "Ki\u1EC3m tra x\xE1c th\u1EF1c",
+    "auth.missingCodexSession": "Kh\xF4ng ph\xE1t hi\u1EC7n th\u1EA5y phi\xEAn Codex n\xE0o",
+    "auth.switchFailed": "Kh\xF4ng th\u1EC3 chuy\u1EC3n \u0111\u1ED5i ngu\u1ED3n x\xE1c th\u1EF1c",
+    "auth.sourceUnavailable": "{source} kh\xF4ng kh\u1EA3 d\u1EE5ng",
+    "auth.notActive": "Kh\xF4ng ho\u1EA1t \u0111\u1ED9ng",
+    "api.settings": "C\xE0i \u0111\u1EB7t h\u1EC7 th\u1ED1ng",
+    "api.provider": "Provider API",
+    "imageInput.title": "H\xECnh \u1EA3nh",
+    "imageInput.uploadAria": "Nh\u1EA5p, th\u1EA3 ho\u1EB7c d\xE1n h\xECnh \u1EA3nh v\xE0 t\u1EC7p",
+    "imageInput.uploadFull": "Nh\u1EA5p, th\u1EA3 ho\u1EB7c d\xE1n h\xECnh \u1EA3nh v\xE0 t\u1EC7p",
+    "imageInput.uploadCompact": "Th\xEAm \u0111\u1EA7u v\xE0o",
+    "imageInput.uploadSubtitle": "H\u1ED7 tr\u1EE3 h\xECnh \u1EA3nh v\xE0 t\u1EC7p tham chi\u1EBFu Responses",
+    "imageInput.recent": "T\u1EA3i l\xEAn g\u1EA7n \u0111\xE2y",
+    "imageInput.recentBadge": "G\u1EA7n \u0111\xE2y",
+    "imageInput.uploadBadge": "T\u1EA3i l\xEAn",
+    "imageInput.addToGallery": "Th\xEAm v\xE0o th\u01B0 vi\u1EC7n",
+    "imageInput.addToGalleryShort": "Th\u01B0 vi\u1EC7n \u1EA3nh",
+    "imageInput.removeImage": "X\xF3a h\xECnh \u1EA3nh",
+    "imageInput.editedBadge": "\u0110\xE3 ch\u1EC9nh s\u1EEDa",
+    "imageInput.editImage": "Ch\u1EC9nh s\u1EEDa {name}",
+    "imageInput.deletedRecent": "\u0110\xE3 x\xF3a n\u1ED9i dung t\u1EA3i l\xEAn g\u1EA7n \u0111\xE2y",
+    "imageInput.deletedGallery": "\u0110\xE3 x\xF3a h\xECnh \u1EA3nh th\u01B0 vi\u1EC7n",
+    "recentAssets.defaultName": "T\u1EA3i l\xEAn g\u1EA7n \u0111\xE2y",
+    "recentAssets.use": "S\u1EED d\u1EE5ng {name}",
+    "recentAssets.delete": "X\xF3a {name}",
+    "recentAssets.inUse": "\u0110\u01B0\u1EE3c {count} t\xE1c v\u1EE5 s\u1EED d\u1EE5ng; kh\xF4ng th\u1EC3 x\xF3a v\u0129nh vi\u1EC5n nh\u01B0ng c\xF3 th\u1EC3 \u1EA9n kh\u1ECFi m\u1EE5c t\u1EA3i l\xEAn g\u1EA7n \u0111\xE2y",
+    "recentAssets.hide": "\u1EA8n {name} kh\u1ECFi m\u1EE5c t\u1EA3i l\xEAn g\u1EA7n \u0111\xE2y",
+    "recentAssets.hideTitle": "\u1EA8n kh\u1ECFi m\u1EE5c t\u1EA3i l\xEAn g\u1EA7n \u0111\xE2y?",
+    "recentAssets.hideMessage": "H\xECnh \u1EA3nh n\xE0y \u0111\u01B0\u1EE3c {count} t\xE1c v\u1EE5 s\u1EED d\u1EE5ng n\xEAn kh\xF4ng th\u1EC3 x\xF3a v\u0129nh vi\u1EC5n. Vi\u1EC7c \u1EA9n ch\u1EC9 lo\u1EA1i b\u1ECF n\xF3 kh\u1ECFi m\u1EE5c t\u1EA3i l\xEAn g\u1EA7n \u0111\xE2y; \u1EA3nh g\u1ED1c, \u0111\u1EA7u v\xE0o hi\u1EC7n t\u1EA1i v\xE0 c\xE1c t\xE1c v\u1EE5 tr\u01B0\u1EDBc \u0111\xE2y v\u1EABn \u0111\u01B0\u1EE3c gi\u1EEF l\u1EA1i.",
+    "recentAssets.hideFailed": "Kh\xF4ng \u1EA9n \u0111\u01B0\u1EE3c \u1EA3nh t\u1EA3i l\xEAn g\u1EA7n \u0111\xE2y",
+    "recentAssets.hidden": "\u0110\xE3 \u1EA9n kh\u1ECFi m\u1EE5c t\u1EA3i l\xEAn g\u1EA7n \u0111\xE2y; \u1EA3nh g\u1ED1c v\xE0 c\xE1c t\xE1c v\u1EE5 tr\u01B0\u1EDBc \u0111\xE2y v\u1EABn \u0111\u01B0\u1EE3c gi\u1EEF l\u1EA1i",
+    "recentAssets.hidePreviews": "\u1EA8n \u1EA3nh t\u1EA3i l\xEAn g\u1EA7n \u0111\xE2y",
+    "recentAssets.showPreviews": "Hi\u1EC7n \u1EA3nh t\u1EA3i l\xEAn g\u1EA7n \u0111\xE2y",
+    "recentAssets.deleteTitle": "X\xF3a n\u1ED9i dung t\u1EA3i l\xEAn g\u1EA7n \u0111\xE2y?",
+    "recentAssets.deleteMessage": "H\xECnh \u1EA3nh n\xE0y kh\xF4ng \u0111\u01B0\u1EE3c t\xE1c v\u1EE5 n\xE0o s\u1EED d\u1EE5ng. \u1EA2nh g\u1ED1c s\u1EBD b\u1ECB x\xF3a v\u0129nh vi\u1EC5n v\xE0 h\xECnh \u1EA3nh t\u01B0\u01A1ng \u1EE9ng s\u1EBD b\u1ECB lo\u1EA1i kh\u1ECFi \u0111\u1EA7u v\xE0o hi\u1EC7n t\u1EA1i. Ph\xF2ng tr\u01B0ng b\xE0y c\xF4ng c\u1ED9ng kh\xF4ng b\u1ECB \u1EA3nh h\u01B0\u1EDFng.",
+    "recentAssets.loadFailed": "Kh\xF4ng t\u1EA3i \u0111\u01B0\u1EE3c \u1EA3nh t\u1EA3i l\xEAn g\u1EA7n \u0111\xE2y",
+    "recentAssets.deleteFailed": "Kh\xF4ng x\xF3a \u0111\u01B0\u1EE3c n\u1ED9i dung t\u1EA3i l\xEAn g\u1EA7n \u0111\xE2y",
+    "recentAssets.deleted": "\u0110\xE3 x\xF3a n\u1ED9i dung t\u1EA3i l\xEAn g\u1EA7n \u0111\xE2y",
+    "inputSource.uploadFallback": "H\xECnh \u1EA3nh \u0111\xE3 t\u1EA3i l\xEAn",
+    "inputSource.galleryFallback": "H\xECnh \u1EA3nh th\u01B0 vi\u1EC7n",
+    "inputSource.focusPasteFallback": "{prefix}. \u0110\u1EA7u v\xE0o h\xECnh \u1EA3nh \u0111\u01B0\u1EE3c t\u1EADp trung; nh\u1EA5n {shortcut} \u0111\u1EC3 d\xE1n h\xECnh \u1EA3nh.",
+    "inputSource.pastedCount": "\u0110\xE3 d\xE1n h\xECnh \u1EA3nh b\u1EA3ng nh\u1EDB t\u1EA1m {count}",
+    "inputSource.droppedCount": "\u0110\xE3 th\xEAm {count} \u1EA3nh \u0111\u01B0\u1EE3c th\u1EA3",
+    "inputSource.dropImagesOnly": "Ch\u1EC9 th\u1EA3 t\u1EADp tin h\xECnh \u1EA3nh",
+    "inputSource.clipboardUnsupported": "Tr\xECnh duy\u1EC7t n\xE0y kh\xF4ng th\u1EC3 \u0111\u1ECDc clipboard tr\u1EF1c ti\u1EBFp",
+    "inputSource.clipboardEmpty": "Kh\xF4ng t\xECm th\u1EA5y h\xECnh \u1EA3nh clipboard",
+    "inputSource.clipboardDenied": "Tr\xECnh duy\u1EC7t \u0111\xE3 ch\u1EB7n truy c\u1EADp clipboard tr\u1EF1c ti\u1EBFp",
+    "inputSource.clipboardReadFailed": "Kh\xF4ng \u0111\u1ECDc \u0111\u01B0\u1EE3c b\u1EA3ng nh\u1EDB t\u1EA1m",
+    "status.missingGalleryReference": "M\u1ED9t h\xECnh \u1EA3nh tham kh\u1EA3o th\u01B0 vi\u1EC7n \u0111\xE3 b\u1ECB x\xF3a. Lo\u1EA1i b\u1ECF n\xF3 tr\u01B0\u1EDBc khi t\u1EA1o.",
+    "status.missingRecentReference": "H\xECnh \u1EA3nh tham chi\u1EBFu t\u1EA3i l\xEAn g\u1EA7n \u0111\xE2y \u0111\xE3 b\u1ECB x\xF3a. Lo\u1EA1i b\u1ECF n\xF3 tr\u01B0\u1EDBc khi t\u1EA1o.",
+    "status.emptyPrompt": "Nh\u1EADp l\u1EDDi nh\u1EAFc",
+    "status.editNeedsImage": "Ch\u1EBF \u0111\u1ED9 ch\u1EC9nh s\u1EEDa y\xEAu c\u1EA7u \xEDt nh\u1EA5t m\u1ED9t h\xECnh \u1EA3nh",
+    "status.loadedTask": "\u0110\xE3 t\u1EA3i t\xE1c v\u1EE5 {taskId}",
+    "status.reusedTask": "\u0110\xE3 m\u1EDF t\xE1c v\u1EE5 {taskId} trong tr\xECnh t\u1EA1o",
+    "status.loadingHistoryInputs": "\u0110ang t\u1EA3i h\xECnh \u1EA3nh \u0111\u1EA7u v\xE0o l\u1ECBch s\u1EED...",
+    "status.historyInputLoadFailed": "Kh\xF4ng t\u1EA3i \u0111\u01B0\u1EE3c h\xECnh \u1EA3nh \u0111\u1EA7u v\xE0o l\u1ECBch s\u1EED: {url}",
+    "referenceCollector.alreadyStaged": "\u0110\xE3 t\u1EA1m gi\u1EEF l\xE0m \u1EA3nh tham kh\u1EA3o",
+    "referenceCollector.staged": "\u0110\xE3 t\u1EA1m gi\u1EEF {count} \u1EA3nh tham kh\u1EA3o",
+    "referenceCollector.title": "Tham chi\u1EBFu \u0111ang ch\u1EDD \xB7 {count}",
+    "referenceCollector.addAll": "Th\xEAm t\u1EA5t c\u1EA3",
+    "referenceCollector.replaceAll": "Thay th\u1EBF hi\u1EC7n t\u1EA1i",
+    "referenceCollector.itemFallback": "\u0110ang ch\u1EDD tham chi\u1EBFu",
+    "referenceCollector.remove": "X\xF3a tham chi\u1EBFu \u0111ang ch\u1EDD x\u1EED l\xFD",
+    "referenceCollector.cleared": "\u0110\xE3 x\xF3a c\xE1c tham chi\u1EBFu \u0111ang ch\u1EDD x\u1EED l\xFD",
+    "referenceCollector.added": "\u0110\xE3 th\xEAm {count} \u1EA3nh tham kh\u1EA3o",
+    "referenceCollector.replaced": "\u0110\xE3 thay th\u1EBF b\u1EB1ng {count} \u1EA3nh tham kh\u1EA3o",
+    "referenceCollector.addFailed": "Kh\xF4ng th\u1EC3 th\xEAm tham chi\u1EBFu \u0111ang ch\u1EDD",
+    "referenceCollector.readFailed": "Kh\xF4ng \u0111\u1ECDc \u0111\u01B0\u1EE3c h\xECnh \u1EA3nh: {status}",
+    "gallery.quick": "Th\u01B0 vi\u1EC7n nhanh",
+    "gallery.current": "Th\u01B0 vi\u1EC7n danh m\u1EE5c hi\u1EC7n t\u1EA1i",
+    "gallery.categories": "Danh m\u1EE5c th\u01B0 vi\u1EC7n",
+    "gallery.categoryPortrait": "Ch\xE2n dung",
+    "gallery.categoryCharacter": "Nh\xE2n v\u1EADt",
+    "gallery.categoryProduct": "S\u1EA3n ph\u1EA9m",
+    "gallery.categoryPortraitRole": "Tham kh\u1EA3o ch\xE2n dung",
+    "gallery.categoryCharacterRole": "Tham kh\u1EA3o nh\xE2n v\u1EADt",
+    "gallery.categoryProductRole": "Tham kh\u1EA3o s\u1EA3n ph\u1EA9m",
+    "gallery.referenceRole": "H\xECnh \u1EA3nh tham kh\u1EA3o",
+    "gallery.manage": "Qu\u1EA3n l\xFD th\u01B0 vi\u1EC7n",
+    "gallery.loadFailed": "Kh\xF4ng t\u1EA3i \u0111\u01B0\u1EE3c th\u01B0 vi\u1EC7n",
+    "gallery.imageOrderUpdateFailed": "Kh\xF4ng th\u1EC3 c\u1EADp nh\u1EADt th\u1EE9 t\u1EF1 h\xECnh \u1EA3nh",
+    "gallery.imageOrderUpdated": "\u0110\xE3 c\u1EADp nh\u1EADt th\u1EE9 t\u1EF1 h\xECnh \u1EA3nh",
+    "gallery.categoryName": "T\xEAn danh m\u1EE5c",
+    "gallery.categoryPromptRole": "Vai tr\xF2 l\u1EDDi nh\u1EAFc",
+    "gallery.categorySave": "L\u01B0u",
+    "gallery.categoryDelete": "X\xF3a",
+    "gallery.categoryLoadFailed": "Kh\xF4ng th\u1EC3 t\u1EA3i danh m\u1EE5c",
+    "gallery.categoryNameRequired": "Nh\u1EADp t\xEAn danh m\u1EE5c",
+    "gallery.categoryCreateFailed": "Kh\xF4ng th\u1EC3 th\xEAm danh m\u1EE5c",
+    "gallery.categoryCreated": "\u0110\xE3 th\xEAm danh m\u1EE5c",
+    "gallery.categorySaveFailed": "Kh\xF4ng l\u01B0u \u0111\u01B0\u1EE3c danh m\u1EE5c",
+    "gallery.categorySaved": "\u0110\xE3 l\u01B0u danh m\u1EE5c",
+    "gallery.categoryDeleteTitle": "X\xF3a danh m\u1EE5c th\u01B0 vi\u1EC7n?",
+    "gallery.categoryDeleteMessage": "H\xECnh \u1EA3nh trong danh m\u1EE5c n\xE0y s\u1EBD chuy\u1EC3n sang danh m\u1EE5c kh\xE1c. H\xECnh \u1EA3nh th\u01B0 vi\u1EC7n s\u1EBD kh\xF4ng b\u1ECB x\xF3a.",
+    "gallery.categoryDeleteConfirm": "X\xF3a danh m\u1EE5c",
+    "gallery.categoryDeleteFailed": "Kh\xF4ng th\u1EC3 x\xF3a danh m\u1EE5c",
+    "gallery.categoryDeletedMigrated": 'Danh m\u1EE5c "{name}" \u0111\xE3 b\u1ECB x\xF3a v\xE0 h\xECnh \u1EA3nh \u0111\xE3 \u0111\u01B0\u1EE3c di chuy\u1EC3n',
+    "gallery.categoryOrderUpdateFailed": "Kh\xF4ng th\u1EC3 c\u1EADp nh\u1EADt th\u1EE9 t\u1EF1 danh m\u1EE5c",
+    "gallery.categoryOrderUpdated": "\u0110\xE3 c\u1EADp nh\u1EADt th\u1EE9 t\u1EF1 danh m\u1EE5c",
+    "gallery.categoryFallback": "danh m\u1EE5c th\u01B0 vi\u1EC7n",
+    "gallery.imageFallback": "H\xECnh \u1EA3nh th\u01B0 vi\u1EC7n",
+    "gallery.imageLoadFailed": "Kh\xF4ng th\u1EC3 t\u1EA3i h\xECnh \u1EA3nh n\xE0y",
+    "gallery.editImageLoadFailed": "Kh\xF4ng th\u1EC3 t\u1EA3i h\xECnh \u1EA3nh n\xE0y \u0111\u1EC3 ch\u1EC9nh s\u1EEDa",
+    "gallery.cannotAddImage": "Kh\xF4ng th\u1EC3 th\xEAm h\xECnh \u1EA3nh n\xE0y v\xE0o th\u01B0 vi\u1EC7n",
+    "gallery.nameRequired": "Nh\u1EADp t\xEAn th\u01B0 vi\u1EC7n",
+    "gallery.saveFailed": "Kh\xF4ng l\u01B0u \u0111\u01B0\u1EE3c h\xECnh \u1EA3nh th\u01B0 vi\u1EC7n",
+    "gallery.savedAsReference": "\u0110\xE3 th\xEAm v\xE0o th\u01B0 vi\u1EC7n v\xE0 chuy\u1EC3n sang tham chi\u1EBFu th\u01B0 vi\u1EC7n",
+    "gallery.renameImage": "\u0110\u1ED5i t\xEAn h\xECnh \u1EA3nh th\u01B0 vi\u1EC7n",
+    "gallery.moveToCategory": "Chuy\u1EC3n \u0111\u1EBFn danh m\u1EE5c",
+    "gallery.categoryRequired": "Ch\u1ECDn danh m\u1EE5c th\u01B0 vi\u1EC7n",
+    "gallery.promptNoteTitle": "Ghi ch\xFA tham kh\u1EA3o th\u01B0 vi\u1EC7n",
+    "gallery.updateFailed": "Kh\xF4ng c\u1EADp nh\u1EADt \u0111\u01B0\u1EE3c th\u01B0 vi\u1EC7n",
+    "gallery.selectImageFile": "Ch\u1ECDn m\u1ED9t t\u1EADp tin h\xECnh \u1EA3nh",
+    "gallery.replaceImageFailed": "Kh\xF4ng th\u1EC3 thay th\u1EBF h\xECnh \u1EA3nh th\u01B0 vi\u1EC7n",
+    "gallery.replacedImage": '\u0110\xE3 thay th\u1EBF h\xECnh \u1EA3nh ngu\u1ED3n cho "{name}"',
+    "gallery.deleteImageTitle": "X\xF3a h\xECnh \u1EA3nh th\u01B0 vi\u1EC7n?",
+    "gallery.deleteImageMessage": "C\xE1c tham chi\u1EBFu t\xE1c v\u1EE5 l\u1ECBch s\u1EED s\u1EBD hi\u1EC3n th\u1ECB l\xE0 \u0111\xE3 b\u1ECB x\xF3a.",
+    "gallery.deleteFailed": "Kh\xF4ng th\u1EC3 x\xF3a h\xECnh \u1EA3nh th\u01B0 vi\u1EC7n",
+    "gallery.deletedSuffix": "(\u0111\xE3 x\xF3a)",
+    "gallery.editImageLabel": "Ch\u1EC9nh s\u1EEDa h\xECnh \u1EA3nh th\u01B0 vi\u1EC7n",
+    "gallery.fieldCategory": "Danh m\u1EE5c",
+    "gallery.fieldPromptNote": "Ghi ch\xFA tham kh\u1EA3o",
+    "gallery.fieldName": "T\xEAn",
+    "quickGallery.empty": "Kh\xF4ng c\xF3 h\xECnh \u1EA3nh {category}",
+    "promptGallery.remove": "X\xF3a @{name}",
+    "prompt.title": "L\u1EDDi nh\u1EAFc",
+    "prompt.editorLabel": "L\u1EDDi nh\u1EAFc",
+    "prompt.placeholder": "M\xF4 t\u1EA3 h\xECnh \u1EA3nh b\u1EA1n mu\u1ED1n t\u1EA1o ho\u1EB7c ch\u1EC9nh s\u1EEDa. Nh\u1EADp @ \u0111\u1EC3 tham kh\u1EA3o th\u01B0 vi\u1EC7n, # cho m\xE3 m\xE0u v\xE0 ~ cho \u0111o\u1EA1n l\u1EDDi nh\u1EAFc.",
+    "prompt.run": "T\u1EA1o",
+    "prompt.runEdit": "B\u1EAFt \u0111\u1EA7u ch\u1EC9nh s\u1EEDa",
+    "prompt.runTitle": "T\u1EA1o (Cmd+Enter)",
+    "prompt.runEditTitle": "B\u1EAFt \u0111\u1EA7u ch\u1EC9nh s\u1EEDa (Cmd+Enter)",
+    "prompt.findPanel": "L\u1EDDi nh\u1EAFc t\xECm v\xE0 thay th\u1EBF",
+    "prompt.findText": "T\xECm v\u0103n b\u1EA3n",
+    "prompt.replaceWith": "Thay th\u1EBF b\u1EB1ng",
+    "prompt.findActions": "H\xE0nh \u0111\u1ED9ng t\xECm v\xE0 thay th\u1EBF",
+    "prompt.countZero": "0 k\u1EBFt qu\u1EA3",
+    "prompt.matchCount": "{count} k\u1EBFt qu\u1EA3",
+    "prompt.foundCount": "\u0110\xE3 t\xECm th\u1EA5y {count} k\u1EBFt qu\u1EA3 ph\xF9 h\u1EE3p",
+    "prompt.noMatch": "Kh\xF4ng c\xF3 v\u0103n b\u1EA3n ph\xF9 h\u1EE3p",
+    "prompt.replacedCount": "\u0110\xE3 thay th\u1EBF {count} k\u1EBFt qu\u1EA3",
+    "prompt.closeFind": "\u0110\xF3ng t\xECm v\xE0 thay th\u1EBF",
+    "prompt.recentTemplates": "M\u1EABu g\u1EA7n \u0111\xE2y",
+    "prompt.manageTemplates": "Qu\u1EA3n l\xFD m\u1EABu",
+    "promptModel.galleryHeader": "Ghi ch\xFA h\xECnh \u1EA3nh tham kh\u1EA3o:",
+    "promptModel.galleryInstruction": '- \u1EA2nh tham kh\u1EA3o {number}: th\u01B0 vi\u1EC7n "{name}", vai tr\xF2: {role}. @{name} trong l\u1EDDi nh\u1EAFc \u0111\u1EC1 c\u1EADp \u0111\u1EBFn h\xECnh \u1EA3nh n\xE0y.{note}',
+    "outputSettings.title": "\u0110\u1EA7u ra",
+    "output.lock.lock": "Kh\xF3a tham s\u1ED1",
+    "output.lock.unlock": "M\u1EDF kh\xF3a v\xE0 ch\u1EC9nh s\u1EEDa",
+    "output.lock.current": "Kh\xF3a hi\u1EC7n t\u1EA1i",
+    "output.lock.task": "Tham s\u1ED1 t\xE1c v\u1EE5 \u0111\xE3 ch\u1ECDn",
+    "output.lock.adoptTask": "D\xF9ng tham s\u1ED1 t\xE1c v\u1EE5 n\xE0y",
+    "output.lock.frame": "Khung h\xECnh",
+    "output.lock.outputCount": "S\u1ED1 \u1EA3nh \u0111\u1EA7u ra",
+    "output.lock.output": "\u0110\u1EA7u ra",
+    "output.lock.search": "T\xECm ki\u1EBFm",
+    "output.lock.call": "L\u1EC7nh g\u1ECDi",
+    "output.lock.sheets": "\u1EA3nh",
+    "output.lock.imageModel": "M\xF4 h\xECnh h\xECnh \u1EA3nh",
+    "output.lock.prompt": "L\u1EDDi nh\u1EAFc",
+    "output.lock.fileFormat": "\u0110\u1ECBnh d\u1EA1ng t\u1EC7p",
+    "output.lock.taskHint": "Ch\u1EC9 \u0111ang xem tham s\u1ED1 c\u1EE7a t\xE1c v\u1EE5 \u0111\xE3 ch\u1ECDn; tham s\u1ED1 \u0111ang kh\xF3a v\u1EABn gi\u1EEF nguy\xEAn. Vi\u1EC7c s\u1EED d\u1EE5ng ch\xFAng kh\xF4ng l\xE0m thay \u0111\u1ED5i k\xEAnh h\u1EC7 th\u1ED1ng.",
+    "output.lock.lockedHint": "Tham s\u1ED1 \u0111\xE3 \u0111\u01B0\u1EE3c c\u1ED1 \u0111\u1ECBnh. B\u1EA5m bi\u1EC3u t\u01B0\u1EE3ng kh\xF3a \u1EDF g\xF3c tr\xEAn b\xEAn ph\u1EA3i \u0111\u1EC3 ch\u1EC9nh s\u1EEDa.",
+    "output.lock.enabled": "B\u1EADt",
+    "output.lock.disabled": "T\u1EAFt",
+    "output.lock.custom": "T\xF9y ch\u1EC9nh",
+    "output.mainModel": "M\xF4 h\xECnh ch\xEDnh",
+    "output.selectMainModel": "Ch\u1ECDn m\xF4 h\xECnh ch\xEDnh",
+    "output.mainModelCustomForInput": "S\u1EED d\u1EE5ng m\xF4 h\xECnh t\xF9y ch\u1EC9nh cho \u0111\u1EA7u v\xE0o hi\u1EC7n t\u1EA1i",
+    "output.apiDirect": "API tr\u1EF1c ti\u1EBFp",
+    "output.apiToolModel": "S\u1EED d\u1EE5ng m\xF4 h\xECnh h\xECnh \u1EA3nh API",
+    "output.mainModelUnused": "M\xF4 h\xECnh ch\xEDnh kh\xF4ng \u0111\u01B0\u1EE3c s\u1EED d\u1EE5ng cho y\xEAu c\u1EA7u n\xE0y",
+    "output.webSearch": "T\xECm ki\u1EBFm tr\xEAn web",
+    "output.webSearchToggle": "B\u1EADt",
+    "output.webSearchTitle": "T\xECm ki\u1EBFm web tr\u01B0\u1EDBc, r\u1ED3i d\xF9ng k\u1EBFt qu\u1EA3 cho l\u1EA7n t\u1EA1o n\xE0y; ch\u1EC9 h\u1ED7 tr\u1EE3 Codex v\xE0 API Responses",
+    "output.promptMode": "Ch\u1EBF \u0111\u1ED9 l\u1EDDi nh\u1EAFc",
+    "output.modeOriginal": "B\u1EA3n g\u1ED1c",
+    "output.modeStrict": "Gi\u1EEF s\xE1t l\u1EDDi nh\u1EAFc",
+    "output.modeCreative": "S\xE1ng t\u1EA1o",
+    "output.promptHelp": "Xem gi\u1EA3i th\xEDch c\xE1ch x\u1EED l\xFD l\u1EDDi nh\u1EAFc",
+    "output.promptHelpTitle": "X\u1EED l\xFD l\u1EDDi nh\u1EAFc",
+    "output.promptHelp.responsesChannel": "Responses \xB7 c\xF3 m\xF4 h\xECnh ch\xEDnh tham gia",
+    "output.promptHelp.imagesChannel": "Images \xB7 t\u1EA1o tr\u1EF1c ti\u1EBFp",
+    "output.promptHelp.responses.original": "G\u1EEDi nguy\xEAn v\u0103n ch\xEDnh x\xE1c m\xE0 kh\xF4ng th\xEAm quy t\u1EAFc \u1EDF c\u1EA5p \u1EE9ng d\u1EE5ng; nh\xE0 cung c\u1EA5p v\u1EABn c\xF3 th\u1EC3 tr\u1EA3 v\u1EC1 revised prompt ho\u1EB7c di\u1EC5n gi\u1EA3i k\u1EBFt qu\u1EA3 theo c\xE1ch kh\xE1c.",
+    "output.promptHelp.responses.strict": "Cho ph\xE9p m\xF4 h\xECnh ch\xEDnh s\u1EAFp x\u1EBFp ho\u1EB7c m\u1EDF r\u1ED9ng l\u1EDDi nh\u1EAFc, nh\u01B0ng v\u1EABn gi\u1EEF c\xE1c r\xE0ng bu\u1ED9c b\u1EAFt bu\u1ED9c nh\u01B0 \u0111\u1ED1i t\u01B0\u1EE3ng, v\u0103n b\u1EA3n, m\xE0u s\u1EAFc v\xE0 b\u1ED1 c\u1EE5c.",
+    "output.promptHelp.responses.automatic": "Kh\xF4ng th\xEAm r\xE0ng bu\u1ED9c n\xE0o, \u0111\u1EC3 m\xF4 h\xECnh ch\xEDnh t\u1EF1 hi\u1EC3u v\xE0 t\u1ED1i \u01B0u h\xF3a l\u1EDDi nh\u1EAFc tr\u01B0\u1EDBc khi g\u1ECDi c\xF4ng c\u1EE5 h\xECnh \u1EA3nh.",
+    "output.promptHelp.images.original": "\u1EE8ng d\u1EE5ng kh\xF4ng th\xEAm quy t\u1EAFc l\u1EDDi nh\u1EAFc n\xE0o v\xE0 g\u1EEDi th\u1EB3ng nguy\xEAn v\u0103n c\u1EE7a b\u1EA1n t\u1EDBi API h\xECnh \u1EA3nh.",
+    "output.promptHelp.images.strict": "\u1EE8ng d\u1EE5ng g\u1EEDi k\xE8m quy t\u1EAFc gi\u1EEF nguy\xEAn c\xF9ng v\u1EDBi l\u1EDDi nh\u1EAFc g\u1ED1c \u0111\u1EC3 nh\u1EA5n m\u1EA1nh m\u1ECDi r\xE0ng bu\u1ED9c b\u1EAFt bu\u1ED9c.",
+    "output.promptHelp.images.automatic": "D\xF9ng c\xE1ch x\u1EED l\xFD m\u1EB7c \u0111\u1ECBnh c\u1EE7a API h\xECnh \u1EA3nh; c\xE1c ghi ch\xFA tham chi\u1EBFu th\u01B0 vi\u1EC7n c\u1EA7n thi\u1EBFt v\u1EABn \u0111\u01B0\u1EE3c g\u1EEDi k\xE8m.",
+    "output.size": "K\xEDch th\u01B0\u1EDBc \u0111\u1EA7u ra",
+    "output.sizeMode": "Ch\u1EBF \u0111\u1ED9 k\xEDch th\u01B0\u1EDBc",
+    "output.sizePreset": "C\xF3 s\u1EB5n",
+    "output.sizeCustom": "T\xF9y ch\u1EC9nh",
+    "output.orientation": "H\u01B0\u1EDBng",
+    "output.square": "Vu\xF4ng",
+    "output.portrait": "D\u1ECDc",
+    "output.landscape": "Ngang",
+    "output.resolution": "\u0110\u1ED9 ph\xE2n gi\u1EA3i",
+    "output.pixelSize": "K\xEDch th\u01B0\u1EDBc pixel",
+    "output.width": "Chi\u1EC1u r\u1ED9ng",
+    "output.height": "Chi\u1EC1u cao",
+    "output.swapSize": "Ho\xE1n \u0111\u1ED5i chi\u1EC1u r\u1ED9ng v\xE0 chi\u1EC1u cao",
+    "output.customSizeHint": "\u0110\u01A1n v\u1ECB px \xB7 16-3840 \xB7 b\u1ED9i s\u1ED1 c\u1EE7a 16 \xB7 \u22643:1",
+    "output.imageSizeUnavailable": "Kh\xF4ng c\xF3 k\xEDch th\u01B0\u1EDBc \u1EA3nh",
+    "output.imageLoadFailed": "Kh\xF4ng t\u1EA3i \u0111\u01B0\u1EE3c h\xECnh \u1EA3nh",
+    "output.customSizeRequired": "Nh\u1EADp chi\u1EC1u r\u1ED9ng v\xE0 chi\u1EC1u cao",
+    "output.customSizeBounds": "Chi\u1EC1u r\u1ED9ng v\xE0 chi\u1EC1u cao ph\u1EA3i l\xE0 16-3840 px",
+    "output.customSizeMultiple": "Chi\u1EC1u r\u1ED9ng v\xE0 chi\u1EC1u cao ph\u1EA3i l\xE0 b\u1ED9i s\u1ED1 c\u1EE7a 16",
+    "output.customSizeRatio": "T\u1EF7 l\u1EC7 c\u1EA1nh d\xE0i v\xE0 ng\u1EAFn kh\xF4ng \u0111\u01B0\u1EE3c v\u01B0\u1EE3t qu\xE1 3:1",
+    "output.customSizePixels": "T\u1ED5ng s\u1ED1 pixel ph\u1EA3i l\xE0 655.360-8.294.400",
+    "output.ratioLock": "Kh\xF3a t\u1EF7 l\u1EC7 (t\xF9y ch\u1ECDn)",
+    "output.customRatio": "T\u1EF7 l\u1EC7 khung h\xECnh t\xF9y ch\u1EC9nh",
+    "output.ratioWidth": "R\u1ED9ng",
+    "output.ratioHeight": "Cao",
+    "output.firstImageRatio": "S\u1EED d\u1EE5ng t\u1EF7 l\u1EC7 khung h\xECnh c\u1EE7a h\xECnh \u1EA3nh tham chi\u1EBFu \u0111\u1EA7u ti\xEAn",
+    "output.useFirstImage": "Theo \u1EA3nh \u0111\u1EA7u",
+    "output.ratioHint": "\u0110\u1EC3 tr\u1ED1ng \u0111\u1ED1i v\u1EDBi k\xEDch th\u01B0\u1EDBc mi\u1EC5n ph\xED \xB7 \u0110i\u1EC1n c\u1EA3 hai \u0111\u1EC3 \u0111\u1ED3ng b\u1ED9 h\xF3a",
+    "output.ratio": "T\u1EF7 l\u1EC7",
+    "output.quality": "Ch\u1EA5t l\u01B0\u1EE3ng",
+    "output.qualityAuto": "T\u1EF1 \u0111\u1ED9ng",
+    "output.qualityLow": "Th\u1EA5p",
+    "output.qualityMedium": "Trung b\xECnh",
+    "output.qualityHigh": "Cao",
+    "output.quantity": "S\u1ED1 l\u01B0\u1EE3ng",
+    "output.pixelPreview": "Pixel \u0111\u1EA7u ra: 1024 x 1024 px",
+    "output.pixelPreviewValue": "Pixel \u0111\u1EA7u ra: {value}",
+    "output.pixelPreviewAuto": "Pixel \u0111\u1EA7u ra: t\u1EF1 \u0111\u1ED9ng (OpenAI ch\u1ECDn t\u1EF1 \u0111\u1ED9ng)",
+    "output.format": "\u0110\u1ECBnh d\u1EA1ng",
+    "output.compression": "N\xE9n",
+    "output.moderation": "Ki\u1EC3m duy\u1EC7t",
+    "preview.title": "Xem tr\u01B0\u1EDBc",
+    "preview.selectedZero": "0 \u0111\xE3 ch\u1ECDn",
+    "preview.selectedCount": "\u0110\xE3 ch\u1ECDn {selected}/{total}",
+    "preview.downloadSelected": "T\u1EA3i xu\u1ED1ng m\u1EE5c \u0111\xE3 ch\u1ECDn",
+    "preview.deleteUnselected": "X\xF3a m\u1EE5c ch\u01B0a ch\u1ECDn",
+    "preview.downloadAll": "T\u1EA3i xu\u1ED1ng ZIP",
+    "preview.empty": "Ch\u01B0a c\xF3 h\xECnh \u1EA3nh n\xE0o",
+    "preview.taskFailed": "T\xE1c v\u1EE5 th\u1EA5t b\u1EA1i",
+    "preview.partialFailed": "M\u1ED9t s\u1ED1 h\xECnh \u1EA3nh kh\xF4ng th\xE0nh c\xF4ng",
+    "preview.failedOutput": "H\xECnh \u1EA3nh {index} kh\xF4ng th\xE0nh c\xF4ng",
+    "preview.progressLine": "\u0110\xE3 ho\xE0n th\xE0nh {generated} / {total} \xB7 \u0111\xE3 tr\xF4i qua {elapsed}",
+    "preview.failureLine": "\u0110\xE3 ho\xE0n th\xE0nh {generated} / {total} \xB7 th\u1EA5t b\u1EA1i {failed}",
+    "preview.elapsedLine": "\u0110\xE3 tr\xF4i qua {elapsed}",
+    "preview.lastError": "L\u1ED7i cu\u1ED1i c\xF9ng: {error}",
+    "preview.continueGenerating": "\u0110ang ti\u1EBFp t\u1EE5c t\u1EA1o",
+    "preview.waitingContinue": "\u0110ang ch\u1EDD ti\u1EBFp t\u1EE5c",
+    "preview.retryFailed": "Th\u1EED l\u1EA1i h\xECnh \u1EA3nh kh\xF4ng th\xE0nh c\xF4ng",
+    "preview.acceptSuccesses": "Ch\u1EA5p nh\u1EADn k\u1EBFt qu\u1EA3 th\xE0nh c\xF4ng",
+    "preview.generateMode": "T\u1EA1o",
+    "preview.editMode": "Ch\u1EC9nh s\u1EEDa",
+    "preview.runningTitle": "{mode} \u0111ang ch\u1EA1y",
+    "preview.submittingTitle": "\u0110ang g\u1EEDi t\xE1c v\u1EE5",
+    "preview.queuedTitle": "T\xE1c v\u1EE5 \u0111\u01B0\u1EE3c x\u1EBFp h\xE0ng \u0111\u1EE3i",
+    "preview.submittingDetail": "\u0110ang l\u01B0u \u0111\u1EA7u v\xE0o v\xE0 th\xEAm t\xE1c v\u1EE5 v\xE0o h\xE0ng \u0111\u1EE3i. Qu\xE1 tr\xECnh t\u1EA1o s\u1EBD t\u1EF1 b\u1EAFt \u0111\u1EA7u.",
+    "preview.queuedDetail": "T\xE1c v\u1EE5 \u0111ang \u1EDF trong h\xE0ng \u0111\u1EE3i v\xE0 \u0111ang ch\u1EDD k\xEAnh kh\u1EA3 d\u1EE5ng.",
+    "preview.featured": "\u0110\xE3 ch\u1ECDn",
+    "preview.addFeatured": "Ch\u1ECDn k\u1EBFt qu\u1EA3",
+    "preview.selectedFeatured": "\u0110\xE3 ch\u1ECDn",
+    "preview.removeFeatured": "B\u1ECF ch\u1ECDn k\u1EBFt qu\u1EA3",
+    "preview.selectionAdded": "\u0110\xE3 ch\u1ECDn k\u1EBFt qu\u1EA3",
+    "preview.selectionRemoved": "\u0110\xE3 b\u1ECF ch\u1ECDn k\u1EBFt qu\u1EA3",
+    "preview.selectionUpdateFailed": "Kh\xF4ng th\u1EC3 c\u1EADp nh\u1EADt l\u1EF1a ch\u1ECDn",
+    "preview.noUnselectedOutputs": "Kh\xF4ng c\xF3 \u1EA3nh ch\u01B0a ch\u1ECDn \u0111\u1EC3 x\xF3a",
+    "preview.deleteUnselectedTitle": "X\xF3a h\xECnh \u1EA3nh kh\xF4ng \u0111\u01B0\u1EE3c ch\u1ECDn?",
+    "preview.deleteUnselectedMessage": "Thao t\xE1c n\xE0y s\u1EBD x\xF3a c\xE1c t\u1EC7p h\xECnh \u1EA3nh c\u1EE5c b\u1ED9 \u0111\u1ED1i v\u1EDBi c\xE1c k\u1EBFt qu\u1EA3 kh\xF4ng \u0111\u01B0\u1EE3c ch\u1ECDn trong t\xE1c v\u1EE5 n\xE0y.",
+    "preview.deleteUnselectedDetail": "Gi\u1EEF {selected}, x\xF3a {deleted}",
+    "preview.deleteUnselectedFailed": "Kh\xF4ng th\u1EC3 x\xF3a h\xECnh \u1EA3nh kh\xF4ng \u0111\u01B0\u1EE3c ch\u1ECDn",
+    "preview.deleteUnselectedDone": "\u0110\xE3 x\xF3a h\xECnh \u1EA3nh kh\xF4ng \u0111\u01B0\u1EE3c ch\u1ECDn",
+    "preview.addReference": "Th\xEAm \u1EA3nh tham kh\u1EA3o",
+    "preview.stage": "T\u1EA1m gi\u1EEF",
+    "preview.stageReference": "T\u1EA1m gi\u1EEF l\xE0m tham chi\u1EBFu \u0111ang ch\u1EDD",
+    "preview.prompt": "L\u1EDDi nh\u1EAFc",
+    "preview.download": "T\u1EA3i xu\u1ED1ng",
+    "preview.downloadImage": "T\u1EA3i xu\u1ED1ng h\xECnh \u1EA3nh n\xE0y",
+    "lightbox.label": "Xem tr\u01B0\u1EDBc h\xECnh \u1EA3nh",
+    "lightbox.close": "\u0110\xF3ng b\u1EA3n xem tr\u01B0\u1EDBc",
+    "lightbox.previous": "H\xECnh \u1EA3nh tr\u01B0\u1EDBc \u0111\xF3",
+    "lightbox.next": "H\xECnh \u1EA3nh ti\u1EBFp theo",
+    "lightbox.zoomControls": "\u0110i\u1EC1u khi\u1EC3n thu ph\xF3ng",
+    "lightbox.zoomOut": "Thu nh\u1ECF",
+    "lightbox.zoomIn": "Ph\xF3ng to",
+    "lightbox.fit": "V\u1EEBa khung",
+    "lightbox.fitPage": "V\u1EEBa trang",
+    "lightbox.actualSize": "100% k\xEDch th\u01B0\u1EDBc th\u1EADt",
+    "lightbox.shortcuts": "Ph\xEDm t\u1EAFt",
+    "lightbox.switchImage": "\u0110\u1ED5i \u1EA3nh",
+    "lightbox.switchTask": "\u0110\u1ED5i t\xE1c v\u1EE5",
+    "lightbox.wheelZoom": "Cu\u1ED9n \u0111\u1EC3 thu ph\xF3ng",
+    "promptPopover.title": "So s\xE1nh l\u1EDDi nh\u1EAFc",
+    "promptPopover.summary": "B\u1EA3n g\u1ED1c {original} \xB7 t\u1ED1i \u01B0u h\xF3a {optimized}",
+    "promptPopover.original": "L\u1EDDi nh\u1EAFc ban \u0111\u1EA7u",
+    "promptPopover.optimized": "L\u1EDDi nh\u1EAFc \u0111\u01B0\u1EE3c t\u1ED1i \u01B0u h\xF3a",
+    "promptPopover.charCount": "{count} k\xFD t\u1EF1",
+    "promptPopover.empty": "Kh\xF4ng c\xF3",
+    "promptPopover.notReturned": "Kh\xF4ng tr\u1EA3 v\u1EC1",
+    "promptPopover.noOptimized": "Kh\xF4ng c\xF3 l\u1EDDi nh\u1EAFc t\u1ED1i \u01B0u h\xF3a n\xE0o \u0111\u01B0\u1EE3c tr\u1EA3 v\u1EC1",
+    "promptPopover.submitted": "Xem l\u1EDDi nh\u1EAFc \u0111\xE3 g\u1EEDi",
+    "promptPopover.close": "\u0110\xF3ng so s\xE1nh l\u1EDDi nh\u1EAFc",
+    "promptPopover.copyOptimized": "Sao ch\xE9p l\u1EDDi nh\u1EAFc \u0111\u01B0\u1EE3c t\u1ED1i \u01B0u h\xF3a",
+    "promptPopover.copied": "\u0110\xE3 sao ch\xE9p",
+    "taskContext.menuLabel": "Menu ng\u1EEF c\u1EA3nh t\xE1c v\u1EE5",
+    "taskContext.view": "Xem t\xE1c v\u1EE5",
+    "taskContext.copyId": "Sao ch\xE9p Task ID",
+    "taskContext.copyPrompt": "Sao ch\xE9p l\u1EDDi nh\u1EAFc",
+    "taskContext.revealOutput": "M\u1EDF th\u01B0 m\u1EE5c \u0111\u1EA7u ra",
+    "taskContext.archive": "L\u01B0u tr\u1EEF t\xE1c v\u1EE5",
+    "taskContext.delete": "X\xF3a t\xE1c v\u1EE5",
+    "taskContext.idCopied": "\u0110\xE3 sao ch\xE9p Task ID",
+    "taskContext.promptCopied": "\u0110\xE3 sao ch\xE9p l\u1EDDi nh\u1EAFc",
+    "taskContext.noPrompt": "T\xE1c v\u1EE5 n\xE0y kh\xF4ng c\xF3 l\u1EDDi nh\u1EAFc \u0111\u1EC3 sao ch\xE9p",
+    "taskContext.revealFailed": "Kh\xF4ng th\u1EC3 m\u1EDF th\u01B0 m\u1EE5c \u0111\u1EA7u ra",
+    "taskContext.revealOpened": "\u0110\xE3 m\u1EDF th\u01B0 m\u1EE5c \u0111\u1EA7u ra",
+    "taskContext.actionFailed": "Thao t\xE1c t\xE1c v\u1EE5 th\u1EA5t b\u1EA1i",
+    "taskActions.group": "H\xE0nh \u0111\u1ED9ng t\xE1c v\u1EE5",
+    "taskActions.deleteTitle": "X\xF3a t\xE1c v\u1EE5?",
+    "taskActions.deleteMessage": "\u0110i\u1EC1u n\xE0y c\u0169ng s\u1EBD x\xF3a c\xE1c t\u1EADp tin h\xECnh \u1EA3nh c\u1EE5c b\u1ED9.",
+    "taskActions.runningCannotDelete": "Kh\xF4ng th\u1EC3 x\xF3a c\xE1c t\xE1c v\u1EE5 \u0111ang ch\u1EA1y",
+    "taskActions.updated": "\u0110\xE3 c\u1EADp nh\u1EADt tr\u1EA1ng th\xE1i t\xE1c v\u1EE5",
+    "taskActions.archived": "\u0110\xE3 l\u01B0u tr\u1EEF cu\u1ED9c tr\xF2 chuy\u1EC7n",
+    "taskActions.archiveFailed": "L\u01B0u tr\u1EEF kh\xF4ng th\xE0nh c\xF4ng",
+    "taskActions.deleted": "\u0110\xE3 x\xF3a t\xE1c v\u1EE5",
+    "taskActions.deleteFailed": "X\xF3a kh\xF4ng th\xE0nh c\xF4ng",
+    "taskActions.noRetryableFailedImages": "T\xE1c v\u1EE5 n\xE0y kh\xF4ng c\xF3 h\xECnh \u1EA3nh n\xE0o b\u1ECB l\u1ED7i \u0111\u1EC3 th\u1EED l\u1EA1i",
+    "taskActions.retryFailedOutputsFailed": "Kh\xF4ng th\u1EC3 th\u1EED l\u1EA1i c\xE1c h\xECnh \u1EA3nh b\u1ECB l\u1ED7i",
+    "taskActions.requeuedFailedImages": "\u0110\xE3 \u0111\u01B0a \u1EA3nh l\u1ED7i v\xE0o h\xE0ng \u0111\u1EE3i",
+    "taskActions.noAcceptableSuccessImages": "T\xE1c v\u1EE5 n\xE0y kh\xF4ng c\xF3 h\xECnh \u1EA3nh th\xE0nh c\xF4ng n\xE0o \u0111\u1EC3 ch\u1EA5p nh\u1EADn",
+    "taskActions.acceptSuccessesFailed": "Kh\xF4ng th\u1EC3 ch\u1EA5p nh\u1EADn k\u1EBFt qu\u1EA3 th\xE0nh c\xF4ng",
+    "taskActions.acceptedSuccesses": "\u0110\xE3 ch\u1EA5p nh\u1EADn k\u1EBFt qu\u1EA3 th\xE0nh c\xF4ng",
+    "taskActions.viewedUpdateFailed": "Kh\xF4ng c\u1EADp nh\u1EADt \u0111\u01B0\u1EE3c tr\u1EA1ng th\xE1i \u0111\u1ECDc",
+    "taskActions.failedFallback": "T\xE1c v\u1EE5 th\u1EA5t b\u1EA1i",
+    "taskList.empty": "Ch\u01B0a c\xF3 l\u1ECBch s\u1EED",
+    "taskList.selectSession": "Ch\u1ECDn tr\xF2 chuy\u1EC7n",
+    "taskList.unreadUpdate": "C\u1EADp nh\u1EADt ch\u01B0a \u0111\u1ECDc",
+    "taskList.viewing": "\u0110ang xem",
+    "taskList.backToLatest": "Quay l\u1EA1i t\xE1c v\u1EE5 m\u1EDBi nh\u1EA5t",
+    "taskList.backToLatestWithCount": "Quay l\u1EA1i t\xE1c v\u1EE5 m\u1EDBi nh\u1EA5t, c\xF3 {count} t\xE1c v\u1EE5 m\u1EDBi \u1EDF ph\xEDa tr\xEAn",
+    "taskDerived.usageLimited": "H\u1EA1n ch\u1EBF s\u1EED d\u1EE5ng",
+    "taskSubmit.requestFailed": "Y\xEAu c\u1EA7u kh\xF4ng th\xE0nh c\xF4ng",
+    "taskSubmit.queued": "T\xE1c v\u1EE5 \u0111\u01B0\u1EE3c th\xEAm v\xE0o h\xE0ng \u0111\u1EE3i",
+    "taskSubmit.timeout": "G\u1EEDi t\xE1c v\u1EE5 h\u1EBFt th\u1EDDi gian tr\u01B0\u1EDBc khi backend ph\u1EA3n h\u1ED3i. L\xE0m m\u1EDBi h\xE0ng \u0111\u1EE3i \u0111\u1EC3 x\xE1c nh\u1EADn t\xE1c v\u1EE5 \u0111\xE3 \u0111\u01B0\u1EE3c th\xEAm hay ch\u01B0a, r\u1ED3i quy\u1EBFt \u0111\u1ECBnh c\xF3 th\u1EED l\u1EA1i kh\xF4ng.",
+    "taskSubmit.failed": "G\u1EEDi t\xE1c v\u1EE5 kh\xF4ng th\xE0nh c\xF4ng",
+    "templates.title": "M\u1EABu l\u1EDDi nh\u1EAFc",
+    "templates.summary": "Th\u01B0 vi\u1EC7n m\u1EABu c\u1EE5c b\u1ED9",
+    "templates.availableCount": "{count} m\u1EABu kh\u1EA3 d\u1EE5ng",
+    "templates.noMatch": "Kh\xF4ng c\xF3 m\u1EABu ph\xF9 h\u1EE3p",
+    "templates.empty": "Kh\xF4ng c\xF3 m\u1EABu",
+    "templates.favoriteBadge": "Y\xEAu th\xEDch",
+    "templates.usageCount": "{count} l\u1EA7n d\xF9ng",
+    "templates.back": "Quay l\u1EA1i",
+    "templates.edit": "Ch\u1EC9nh s\u1EEDa",
+    "templates.copy": "Sao ch\xE9p",
+    "templates.insert": "Ch\xE8n",
+    "templates.formTitle": "Ti\xEAu \u0111\u1EC1",
+    "templates.formShortTitle": "Ti\xEAu \u0111\u1EC1 ng\u1EAFn",
+    "templates.formCategory": "Danh m\u1EE5c",
+    "templates.formTags": "Th\u1EBB",
+    "templates.formThumbnail": "H\xECnh thu nh\u1ECF",
+    "templates.formContent": "N\u1ED9i dung",
+    "templates.formNotes": "Ghi ch\xFA",
+    "templates.formFavorite": "Y\xEAu th\xEDch",
+    "templates.thumbnailClear": "X\xF3a",
+    "templates.thumbnailNone": "Ch\u01B0a ch\u1ECDn",
+    "templates.thumbnailEmpty": "Kh\xF4ng c\xF3 h\xECnh thu nh\u1ECF l\u1ECBch s\u1EED",
+    "templates.newCategory": "Danh m\u1EE5c m\u1EDBi",
+    "templates.search": "T\xECm ki\u1EBFm m\u1EABu, th\u1EBB ho\u1EB7c n\u1ED9i dung",
+    "templates.filter": "B\u1ED9 l\u1ECDc m\u1EABu",
+    "templates.all": "T\u1EA5t c\u1EA3",
+    "templates.categoryCommon": "Chung",
+    "templates.categoryPortrait": "Ch\xE2n dung",
+    "templates.categoryProduct": "S\u1EA3n ph\u1EA9m",
+    "templates.categoryRepair": "S\u1EEDa \u1EA3nh",
+    "templates.categoryPoster": "\xC1p ph\xEDch",
+    "templates.categoryEcommerce": "Th\u01B0\u01A1ng m\u1EA1i \u0111i\u1EC7n t\u1EED",
+    "templates.favorite": "Y\xEAu th\xEDch",
+    "templates.recent": "G\u1EA7n \u0111\xE2y",
+    "templates.category": "Danh m\u1EE5c",
+    "templates.loadFailed": "Kh\xF4ng t\u1EA3i \u0111\u01B0\u1EE3c m\u1EABu l\u1EDDi nh\u1EAFc",
+    "templates.useStateUpdateFailed": "Kh\xF4ng c\u1EADp nh\u1EADt \u0111\u01B0\u1EE3c tr\u1EA1ng th\xE1i s\u1EED d\u1EE5ng m\u1EABu l\u1EDDi nh\u1EAFc",
+    "templates.copied": "\u0110\xE3 sao ch\xE9p m\u1EABu l\u1EDDi nh\u1EAFc",
+    "templates.copyFailed": "Kh\xF4ng sao ch\xE9p \u0111\u01B0\u1EE3c m\u1EABu l\u1EDDi nh\u1EAFc",
+    "templates.history": "L\u1ECBch s\u1EED",
+    "templates.saveFailed": "Kh\xF4ng l\u01B0u \u0111\u01B0\u1EE3c m\u1EABu l\u1EDDi nh\u1EAFc",
+    "templates.saved": "\u0110\xE3 l\u01B0u m\u1EABu l\u1EDDi nh\u1EAFc",
+    "templates.deleteFailed": "Kh\xF4ng x\xF3a \u0111\u01B0\u1EE3c m\u1EABu l\u1EDDi nh\u1EAFc",
+    "templates.deleted": "\u0110\xE3 x\xF3a m\u1EABu l\u1EDDi nh\u1EAFc",
+    "templates.categoryAddFailed": "Kh\xF4ng th\u1EC3 th\xEAm danh m\u1EE5c m\u1EABu",
+    "templates.categoryAdded": "\u0110\xE3 th\xEAm danh m\u1EE5c m\u1EABu",
+    "templates.categorySaveFailed": "Kh\xF4ng l\u01B0u \u0111\u01B0\u1EE3c danh m\u1EE5c m\u1EABu",
+    "templates.categorySaved": "\u0110\xE3 l\u01B0u danh m\u1EE5c m\u1EABu",
+    "templates.categoryDeleteFailed": "Kh\xF4ng th\u1EC3 x\xF3a danh m\u1EE5c m\u1EABu",
+    "templates.categoryDeleted": "\u0110\xE3 x\xF3a danh m\u1EE5c m\u1EABu",
+    "templates.importFailed": "Kh\xF4ng th\u1EC3 nh\u1EADp g\xF3i m\u1EABu",
+    "templates.importedCount": "\u0110\xE3 nh\u1EADp {count} m\u1EABu",
+    "templates.exportFailed": "Kh\xF4ng xu\u1EA5t \u0111\u01B0\u1EE3c g\xF3i m\u1EABu",
+    "templates.exported": "\u0110\xE3 xu\u1EA5t g\xF3i m\u1EABu",
+    "snippets.suggestLabel": "B\u1ED9 ch\u1ECDn \u0111o\u1EA1n l\u1EDDi nh\u1EAFc",
+    "snippets.saveSelection": "L\u01B0u",
+    "snippets.saveSelectionLabel": "L\u01B0u v\u0103n b\u1EA3n \u0111\xE3 ch\u1ECDn d\u01B0\u1EDBi d\u1EA1ng \u0111o\u1EA1n nh\u1EAFc",
+    "snippets.popoverLabel": "\u0110o\u1EA1n l\u1EDDi nh\u1EAFc",
+    "snippets.defaultCategory": "Chung",
+    "snippets.loadFailed": "Kh\xF4ng t\u1EA3i \u0111\u01B0\u1EE3c \u0111o\u1EA1n l\u1EDDi nh\u1EAFc",
+    "snippets.remove": "X\xF3a ~{tag}",
+    "snippets.expand": "M\u1EDF r\u1ED9ng",
+    "snippets.edit": "Ch\u1EC9nh s\u1EEDa",
+    "snippets.close": "\u0110\xF3ng",
+    "snippets.editTitle": "Ch\u1EC9nh s\u1EEDa \u0111o\u1EA1n l\u1EDDi nh\u1EAFc",
+    "snippets.saveTitle": "L\u01B0u \u0111o\u1EA1n l\u1EDDi nh\u1EAFc",
+    "snippets.shortTag": "Th\u1EBB ng\u1EAFn",
+    "snippets.title": "Ti\xEAu \u0111\u1EC1",
+    "snippets.category": "Danh m\u1EE5c",
+    "snippets.content": "N\u1ED9i dung",
+    "snippets.titlePlaceholder": "S\u1EED d\u1EE5ng th\u1EBB ng\u1EAFn theo m\u1EB7c \u0111\u1ECBnh",
+    "snippets.cancel": "H\u1EE7y",
+    "snippets.save": "L\u01B0u",
+    "snippets.saveFailed": "Kh\xF4ng l\u01B0u \u0111\u01B0\u1EE3c \u0111o\u1EA1n l\u1EDDi nh\u1EAFc",
+    "snippets.saved": "\u0110\xE3 l\u01B0u \u0111o\u1EA1n l\u1EDDi nh\u1EAFc",
+    "snippets.defaultTag": "\u0110o\u1EA1n th\u01B0\u1EDDng d\xF9ng",
+    "colors.white": "Tr\u1EAFng",
+    "colors.black": "\u0110en",
+    "colors.warmBeige": "M\xE0u be \u1EA5m",
+    "colors.lightGreen": "Xanh nh\u1EA1t",
+    "colors.brandGreen": "Xanh th\u01B0\u01A1ng hi\u1EC7u",
+    "colors.peachOrange": "Cam \u0111\xE0o",
+    "colors.lightBlue": "M\xE0u xanh nh\u1EA1t",
+    "colors.lightPink": "H\u1ED3ng nh\u1EA1t",
+    "colors.loadFailed": "Kh\xF4ng t\u1EA3i \u0111\u01B0\u1EE3c c\xE0i \u0111\u1EB7t m\xE0u",
+    "colors.saveFailed": "Kh\xF4ng l\u01B0u \u0111\u01B0\u1EE3c c\xE0i \u0111\u1EB7t m\xE0u",
+    "colors.importFailed": "Kh\xF4ng th\u1EC3 nh\u1EADp c\xE0i \u0111\u1EB7t m\xE0u",
+    "colors.importedCount": "\u0110\xE3 nh\u1EADp m\xE0u {count}",
+    "colors.recentSaveFailed": "Kh\xF4ng l\u01B0u \u0111\u01B0\u1EE3c c\xE1c m\xE0u g\u1EA7n \u0111\xE2y",
+    "colors.favoriteSaveFailed": "Kh\xF4ng l\u01B0u \u0111\u01B0\u1EE3c m\xE0u y\xEAu th\xEDch",
+    "colors.favoriteDeleteFailed": "Kh\xF4ng x\xF3a \u0111\u01B0\u1EE3c m\xE0u y\xEAu th\xEDch",
+    "colors.update": "C\u1EADp nh\u1EADt",
+    "colors.insert": "Ch\xE8n",
+    "colors.pick": "Ch\u1ECDn m\xE0u",
+    "colors.pickShort": "Ch\u1ECDn",
+    "colors.hexValue": "Gi\xE1 tr\u1ECB m\xE0u",
+    "colors.pendingUpdate": "M\xE0u s\u1EAFc \u0111\xE3 thay \u0111\u1ED5i. Nh\u1EA5n v\xE0o C\u1EADp nh\u1EADt \u0111\u1EC3 \xE1p d\u1EE5ng.",
+    "colors.save": "L\u01B0u",
+    "colors.exportPs": "Xu\u1EA5t",
+    "colors.importPs": "Nh\u1EADp",
+    "colors.done": "Xong",
+    "colors.manage": "Qu\u1EA3n l\xFD",
+    "colors.favorites": "M\xE0u s\u1EAFc y\xEAu th\xEDch",
+    "colors.recent": "M\xE0u s\u1EAFc g\u1EA7n \u0111\xE2y",
+    "colors.recentLabel": "G\u1EA7n \u0111\xE2y",
+    "colors.deleteFavorite": "X\xF3a m\xE0u y\xEAu th\xEDch {name}",
+    "colors.modify": "Ch\u1EC9nh s\u1EEDa m\xE0u",
+    "colors.modifyValue": "Ch\u1EC9nh s\u1EEDa m\xE0u {value}",
+    "colors.removeValue": "X\xF3a m\xE0u {value}",
+    "taskGroup.today": "h\xF4m nay",
+    "taskGroup.current": "T\xE1c v\u1EE5 hi\u1EC7n t\u1EA1i",
+    "taskGroup.yesterday": "H\xF4m qua",
+    "taskGroup.last7": "7 ng\xE0y qua",
+    "taskGroup.older": "C\u0169 h\u01A1n",
+    "taskGroup.searchResults": "K\u1EBFt qu\u1EA3 t\xECm ki\u1EBFm",
+    "taskGroup.active": "\u0110ang ch\u1EA1y",
+    "taskGroup.running": "\u0110ang ch\u1EA1y",
+    "taskGroup.waiting": "\u0110ang ch\u1EDD",
+    "taskGroup.dispatchPending": "\u0110ang ch\u1EC9 \u0111\u1ECBnh m\u1ED9t k\xEAnh kh\u1EA3 d\u1EE5ng...",
+    "taskGroup.expand": "M\u1EDF r\u1ED9ng {label}",
+    "taskGroup.collapse": "Thu g\u1ECDn {label}",
+    "taskGroup.buttonLabel": "{label}, {count} t\xE1c v\u1EE5",
+    "taskGroup.loadMore": "T\u1EA3i th\xEAm {count}",
+    "archive.title": "L\u01B0u tr\u1EEF",
+    "archive.empty": "Kh\xF4ng c\xF3 cu\u1ED9c tr\xF2 chuy\u1EC7n n\xE0o \u0111\u01B0\u1EE3c l\u01B0u tr\u1EEF",
+    "archive.count": "{count} c\xE1c cu\u1ED9c tr\xF2 chuy\u1EC7n \u0111\u01B0\u1EE3c l\u01B0u tr\u1EEF",
+    "archive.restore": "Kh\xF4i ph\u1EE5c",
+    "archive.archiveFailed": "L\u01B0u tr\u1EEF kh\xF4ng th\xE0nh c\xF4ng",
+    "archive.restoreFailed": "Kh\xF4i ph\u1EE5c kh\xF4ng th\xE0nh c\xF4ng",
+    "archive.restored": "\u0110\xE3 kh\xF4i ph\u1EE5c cu\u1ED9c tr\xF2 chuy\u1EC7n",
+    "archive.archiving": "\u0110ang l\u01B0u tr\u1EEF...",
+    "archive.restoring": "\u0110ang kh\xF4i ph\u1EE5c...",
+    "archive.deleting": "\u0110ang x\xF3a...",
+    "archive.restoredCount": "\u0110\xE3 kh\xF4i ph\u1EE5c c\xE1c t\xE1c v\u1EE5 {count}",
+    "settings.title": "L\u01B0u tr\u1EEF",
+    "settings.status": "Kh\u1EDFi \u0111\u1ED9ng l\u1EA1i WebUI sau khi l\u01B0u \u0111\u01B0\u1EDDng d\u1EABn l\u01B0u tr\u1EEF",
+    "settings.inputRoot": "Th\u01B0 m\u1EE5c \u0111\u1EA7u v\xE0o",
+    "settings.outputRoot": "Th\u01B0 m\u1EE5c \u0111\u1EA7u ra",
+    "settings.galleryRoot": "Th\u01B0 m\u1EE5c th\u01B0 vi\u1EC7n",
+    "settings.sourceDataRoot": "Th\u01B0 m\u1EE5c d\u1EEF li\u1EC7u ngu\u1ED3n",
+    "settings.language": "Ng\xF4n ng\u1EEF giao di\u1EC7n",
+    "settings.languageCopy": "L\u1EA7n \u0111\u1EA7u m\u1EDF app, giao di\u1EC7n s\u1EBD theo ng\xF4n ng\u1EEF tr\xECnh duy\u1EC7t. L\u1EF1a ch\u1ECDn th\u1EE7 c\xF4ng s\u1EBD \u0111\u01B0\u1EE3c ghi nh\u1EDB.",
+    "settings.notificationsCopy": "Th\xF4ng b\xE1o khi t\xE1c v\u1EE5 ho\xE0n t\u1EA5t ho\u1EB7c th\u1EA5t b\u1EA1i. B\u1EA1n c\u1EA7n b\u1EADt th\xF4ng b\xE1o h\u1EC7 th\u1ED1ng th\u1EE7 c\xF4ng.",
+    "settings.inAppNotification": "Th\xF4ng b\xE1o trong \u1EE9ng d\u1EE5ng",
+    "settings.systemNotification": "Th\xF4ng b\xE1o h\u1EC7 th\u1ED1ng",
+    "settings.save": "L\u01B0u c\xE0i \u0111\u1EB7t",
+    "settings.loadFailed": "Kh\xF4ng t\u1EA3i \u0111\u01B0\u1EE3c c\xE0i \u0111\u1EB7t",
+    "settings.saveFailed": "Kh\xF4ng l\u01B0u \u0111\u01B0\u1EE3c c\xE0i \u0111\u1EB7t",
+    "settings.savedRestart": "\u0110\xE3 l\u01B0u c\xE0i \u0111\u1EB7t l\u01B0u tr\u1EEF. Kh\u1EDFi \u0111\u1ED9ng l\u1EA1i WebUI \u0111\u1EC3 \xE1p d\u1EE5ng.",
+    "settings.saved": "\u0110\xE3 l\u01B0u",
+    "settings.savedRestartStatus": "\u0110\xE3 l\u01B0u c\xE0i \u0111\u1EB7t l\u01B0u tr\u1EEF. Kh\u1EDFi \u0111\u1ED9ng l\u1EA1i WebUI \u0111\u1EC3 \xE1p d\u1EE5ng.",
+    "systemSettings.title": "C\xE0i \u0111\u1EB7t h\u1EC7 th\u1ED1ng",
+    "systemSettings.tabsLabel": "Ph\u1EA7n c\xE0i \u0111\u1EB7t h\u1EC7 th\u1ED1ng",
+    "systemSettings.apiTab": "C\xE0i \u0111\u1EB7t API",
+    "systemSettings.codexTab": "K\xEAnh Codex",
+    "systemSettings.languageTab": "Ng\xF4n ng\u1EEF",
+    "systemSettings.storageTab": "L\u01B0u tr\u1EEF & Th\xF4ng b\xE1o",
+    "systemSettings.networkTab": "M\u1EA1ng",
+    "networkEgress.mode": "Tuy\u1EBFn m\u1EA1ng",
+    "networkEgress.system": "H\u1EC7 th\u1ED1ng",
+    "networkEgress.direct": "K\u1EBFt n\u1ED1i tr\u1EF1c ti\u1EBFp",
+    "networkEgress.custom": "T\xF9y ch\u1EC9nh",
+    "networkEgress.customProxy": "URL proxy t\xF9y ch\u1EC9nh",
+    "networkEgress.timeout": "Th\u1EDDi gian ch\u1EDD y\xEAu c\u1EA7u \u1EA3nh",
+    "networkEgress.timeoutUnit": "ph\xFAt",
+    "networkEgress.retryCount": "Th\u1EED l\u1EA1i sau khi l\u1ED7i",
+    "networkEgress.retryUnit": "l\u1EA7n",
+    "networkEgress.requestPolicyHelp": "Ch\u1EC9 \xE1p d\u1EE5ng cho c\xE1c y\xEAu c\u1EA7u \u1EA3nh b\u1EAFt \u0111\u1EA7u sau \u0111\xF3. M\u1ED7i l\u1EA7n t\u1EF1 \u0111\u1ED9ng th\u1EED l\u1EA1i c\xF3 m\u1ED9t kho\u1EA3ng th\u1EDDi gian ch\u1EDD m\u1EDBi.",
+    "networkEgress.timeoutInvalid": "Nh\u1EADp s\u1ED1 nguy\xEAn t\u1EEB 1 \u0111\u1EBFn 30 ph\xFAt",
+    "networkEgress.retryInvalid": "Nh\u1EADp s\u1ED1 nguy\xEAn t\u1EEB 0 \u0111\u1EBFn 5 l\u1EA7n th\u1EED l\u1EA1i",
+    "networkEgress.environmentTimeoutActive": "Th\u1EDDi gian ch\u1EDD t\u1EEB bi\u1EBFn m\xF4i tr\u01B0\u1EDDng \u0111ang ho\u1EA1t \u0111\u1ED9ng: {seconds} gi\xE2y. Khi l\u01B0u, gi\xE1 tr\u1ECB n\xE0y s\u1EBD \u0111\u01B0\u1EE3c thay b\u1EB1ng c\xE0i \u0111\u1EB7t \u1EDF tr\xEAn.",
+    "networkEgress.currentRoute": "Tuy\u1EBFn hi\u1EC7n t\u1EA1i: {route}",
+    "networkEgress.test": "Ki\u1EC3m tra k\u1EBFt n\u1ED1i",
+    "networkEgress.save": "L\u01B0u v\xE0 \xE1p d\u1EE5ng",
+    "networkEgress.saved": "\u0110\xE3 l\u01B0u tuy\u1EBFn m\u1EA1ng",
+    "networkEgress.testSucceeded": "K\u1EBFt n\u1ED1i th\xE0nh c\xF4ng: {target} ({elapsed} ms)",
+    "networkEgress.testFailed": "Ki\u1EC3m tra k\u1EBFt n\u1ED1i th\u1EA5t b\u1EA1i",
+    "networkEgress.loadFailed": "Kh\xF4ng th\u1EC3 t\u1EA3i c\xE0i \u0111\u1EB7t m\u1EA1ng",
+    "networkEgress.saveFailed": "Kh\xF4ng th\u1EC3 l\u01B0u c\xE0i \u0111\u1EB7t m\u1EA1ng",
+    "languageSettings.instantStatus": "Thay \u0111\u1ED5i ng\xF4n ng\u1EEF \xE1p d\u1EE5ng ngay l\u1EADp t\u1EE9c",
+    "apiSettings.title": "C\xE0i \u0111\u1EB7t API",
+    "apiSettings.status": "C\xE0i \u0111\u1EB7t \u0111\xE3 l\u01B0u \xE1p d\u1EE5ng ngay l\u1EADp t\u1EE9c \u1EDF ch\u1EBF \u0111\u1ED9 API",
+    "apiSettings.codexMode": "K\xEAnh Codex",
+    "apiSettings.codexImages": "Image",
+    "apiSettings.codexResponses": "Responses",
+    "apiSettings.providers": "Provider API",
+    "apiSettings.searchProviders": "T\xECm ki\u1EBFm t\xEAn provider",
+    "apiSettings.noProviderSearchResults": "Kh\xF4ng c\xF3 provider ph\xF9 h\u1EE3p",
+    "apiSettings.providerCount": "{count} provider",
+    "apiSettings.provider": "Provider",
+    "apiSettings.providerName": "T\xEAn provider",
+    "apiSettings.providerIcon": "Emoji",
+    "apiSettings.providerIconPlaceholder": "T\xF9y ch\u1ECDn, v\xED d\u1EE5 \u{1FA84}",
+    "apiSettings.connectionScope": "C\xE0i \u0111\u1EB7t k\u1EBFt n\u1ED1i",
+    "apiSettings.connectionPreview": "Xem tr\u01B0\u1EDBc k\u1EBFt n\u1ED1i",
+    "apiSettings.modelBindings": "Li\xEAn k\u1EBFt m\xF4 h\xECnh",
+    "apiSettings.modelBindingsHint": "M\u1ED9t provider c\xF3 th\u1EC3 li\xEAn k\u1EBFt \u0111\u1ED3ng th\u1EDDi nhi\u1EC1u m\xF4 h\xECnh v\xE0 giao th\u1EE9c.",
+    "apiSettings.addModelBinding": "Th\xEAm li\xEAn k\u1EBFt m\xF4 h\xECnh",
+    "apiSettings.appendRatioPrompt": "Th\xEAm t\u1EF7 l\u1EC7 v\xE0o l\u1EDDi nh\u1EAFc",
+    "apiSettings.defaultProviderForModel": "Provider m\u1EB7c \u0111\u1ECBnh",
+    "apiSettings.removeBinding": "X\xF3a li\xEAn k\u1EBFt",
+    "apiSettings.catalogRequiredForBinding": "Danh m\u1EE5c m\xF4 h\xECnh kh\xF4ng kh\u1EA3 d\u1EE5ng n\xEAn ch\u01B0a th\u1EC3 th\xEAm li\xEAn k\u1EBFt.",
+    "apiSettings.keepOneBinding": "M\u1ED7i provider ph\u1EA3i gi\u1EEF \xEDt nh\u1EA5t m\u1ED9t li\xEAn k\u1EBFt m\xF4 h\xECnh.",
+    "apiSettings.bindingRequiredFields": "V\u1EDBi m\u1ED7i li\xEAn k\u1EBFt, h\xE3y ch\u1ECDn m\xF4 h\xECnh, nh\u1EADp t\xEAn m\xF4 h\xECnh t\u1EEB xa v\xE0 ch\u1ECDn \xEDt nh\u1EA5t m\u1ED9t thao t\xE1c.",
+    "apiSettings.bindingOverlap": "Thao t\xE1c {operation} c\u1EE7a {model} b\u1ECB nhi\u1EC1u li\xEAn k\u1EBFt x\u1EED l\xFD tr\xF9ng nhau.",
+    "apiSettings.actualRequest": "Y\xEAu c\u1EA7u th\u1EF1c t\u1EBF",
+    "apiSettings.newProviderAction": "Provider m\u1EDBi",
+    "apiSettings.copyProvider": "Sao ch\xE9p",
+    "apiSettings.copyProviderName": "B\u1EA3n sao {name}",
+    "apiSettings.copyProviderStatus": "\u0110\xE3 sao ch\xE9p provider c\xF9ng key \u0111\xE3 l\u01B0u. Ch\u1EC9nh t\xEAn, m\xF4 h\xECnh ho\u1EB7c thay key tr\u01B0\u1EDBc khi l\u01B0u.",
+    "apiSettings.copyProviderWithoutKeyStatus": "\u0110\xE3 sao ch\xE9p provider. Ch\u1EC9nh t\xEAn, m\xF4 h\xECnh ho\u1EB7c th\xEAm API key tr\u01B0\u1EDBc khi l\u01B0u.",
+    "apiSettings.sortProviders": "S\u1EAFp x\u1EBFp",
+    "apiSettings.finishSortProviders": "Xong",
+    "apiSettings.sortProviderModeStatus": "K\xE9o tay n\u1EAFm \u0111\u1EC3 s\u1EAFp x\u1EBFp ho\u1EB7c d\xF9ng c\xE1c ph\xEDm m\u0169i t\xEAn",
+    "apiSettings.sortProviderHandleAria": "K\xE9o \u0111\u1EC3 s\u1EAFp x\u1EBFp l\u1EA1i {provider}, ho\u1EB7c d\xF9ng ph\xEDm m\u0169i t\xEAn, Home v\xE0 End",
+    "apiSettings.sortProviderStatus": "Th\u1EE9 t\u1EF1 provider \u0111\xE3 thay \u0111\u1ED5i. \u0110ang t\u1EF1 \u0111\u1ED9ng l\u01B0u...",
+    "apiSettings.moveProviderUp": "L\xEAn",
+    "apiSettings.moveProviderDown": "Xu\u1ED1ng",
+    "apiSettings.moveProviderUpAria": "Di chuy\u1EC3n {provider} l\xEAn",
+    "apiSettings.moveProviderDownAria": "Di chuy\u1EC3n {provider} xu\u1ED1ng",
+    "apiSettings.mode": "Ch\u1EBF \u0111\u1ED9 y\xEAu c\u1EA7u",
+    "apiSettings.images": "API h\xECnh \u1EA3nh tr\u1EF1c ti\u1EBFp",
+    "apiSettings.responses": "Responses API",
+    "apiSettings.modeImagesShort": "Tr\u1EF1c ti\u1EBFp",
+    "apiSettings.imageModel": "M\xF4 h\xECnh h\xECnh \u1EA3nh",
+    "apiSettings.concurrency": "Gi\u1EDBi h\u1EA1n \u0111\u1ED3ng th\u1EDDi c\u1EE7a provider",
+    "apiSettings.concurrencyShort": "\u0110\u1ED3ng th\u1EDDi",
+    "apiSettings.advancedSettings": "C\xE0i \u0111\u1EB7t n\xE2ng cao",
+    "apiSettings.concurrencyValue": "{concurrency} \u0111\u1ED3ng th\u1EDDi",
+    "apiSettings.keySaved": "\u0110\xE3 l\u01B0u kh\xF3a API",
+    "apiSettings.keyNotSet": "Kh\xF3a API ch\u01B0a \u0111\u01B0\u1EE3c \u0111\u1EB7t",
+    "apiSettings.showApiKey": "Hi\u1EC3n th\u1ECB kh\xF3a API",
+    "apiSettings.hideApiKey": "\u1EA8n kh\xF3a API",
+    "apiSettings.editProvider": "Ch\u1EC9nh s\u1EEDa provider",
+    "apiSettings.newProviderTitle": "Provider m\u1EDBi",
+    "apiSettings.editHint": "B\u1EA5m l\u01B0u provider \u0111\u1EC3 ghi thay \u0111\u1ED5i v\xE0o backend; h\u1EE7y s\u1EBD b\u1ECF thay \u0111\u1ED5i l\u1EA7n n\xE0y.",
+    "apiSettings.finishEditFirst": "L\u01B0u ho\u1EB7c h\u1EE7y ch\u1EC9nh s\u1EEDa provider hi\u1EC7n t\u1EA1i tr\u01B0\u1EDBc",
+    "apiSettings.newDraftStatus": "\u0110ang t\u1EA1o provider. L\u01B0u provider \u0111\u1EC3 \xE1p d\u1EE5ng.",
+    "apiSettings.editDraftStatus": "\u0110ang ch\u1EC9nh s\u1EEDa provider. L\u01B0u provider \u0111\u1EC3 \xE1p d\u1EE5ng.",
+    "apiSettings.cancelEdit": "H\u1EE7y ch\u1EC9nh s\u1EEDa",
+    "apiSettings.saveProvider": "L\u01B0u provider",
+    "apiSettings.saveSelection": "L\u01B0u l\u1EF1a ch\u1ECDn",
+    "apiSettings.deleteProviderTitle": "X\xF3a provider?",
+    "apiSettings.deleteProviderMessage": 'X\xF3a "{provider}"?',
+    "apiSettings.deleteProviderDetail": "Thao t\xE1c n\xE0y s\u1EBD x\xF3a provider kh\u1ECFi danh s\xE1ch hi\u1EC7n t\u1EA1i v\xE0 t\u1EF1 \u0111\u1ED9ng l\u01B0u v\xE0o backend.",
+    "apiSettings.deleteProviderStatus": "\u0110\xE3 x\xF3a provider. \u0110ang t\u1EF1 \u0111\u1ED9ng l\u01B0u...",
+    "apiSettings.save": "L\u01B0u c\xE0i \u0111\u1EB7t API",
+    "apiSettings.loadFailed": "Kh\xF4ng t\u1EA3i \u0111\u01B0\u1EE3c c\xE0i \u0111\u1EB7t API",
+    "apiSettings.savedKeyPlaceholder": "Backend \u0111\xE3 l\u01B0u API key. Nh\u1EADp key m\u1EDBi \u0111\u1EC3 thay th\u1EBF.",
+    "apiSettings.newProvider": "Provider m\u1EDBi",
+    "apiSettings.saving": "\u0110ang l\u01B0u...",
+    "apiSettings.savingStatus": "\u0110ang l\u01B0u c\xE0i \u0111\u1EB7t API...",
+    "apiSettings.autoSaving": "T\u1EF1 \u0111\u1ED9ng l\u01B0u...",
+    "apiSettings.autoSaved": "T\u1EF1 \u0111\u1ED9ng l\u01B0u",
+    "apiSettings.saveFailed": "Kh\xF4ng l\u01B0u \u0111\u01B0\u1EE3c c\xE0i \u0111\u1EB7t API",
+    "apiSettings.savedSummary": "\u0110\xE3 l\u01B0u \xB7 Codex {codex} \xB7 API {provider} \xB7 {mode} \xB7 {model} \xB7 \u0111\u1ED3ng th\u1EDDi {concurrency}",
+    "apiSettings.savedShort": "\u0110\xE3 l\u01B0u",
+    "apiSettings.savedStatus": "\u0110\xE3 l\u01B0u c\xE0i \u0111\u1EB7t API",
+    "apiSettings.saveFailedShort": "L\u01B0u kh\xF4ng th\xE0nh c\xF4ng",
+    "codexSettings.title": "K\xEAnh Codex",
+    "codexSettings.status": "Ch\u1ECDn k\xEAnh t\u1EA1o \u1EA3nh d\xF9ng \u0111\u0103ng nh\u1EADp Codex c\u1EE5c b\u1ED9",
+    "codexSettings.notesLabel": "Ghi ch\xFA k\xEAnh Codex",
+    "codexSettings.imagesTitle": "H\xECnh \u1EA3nh Codex",
+    "codexSettings.imagesCopy": "K\xEAnh m\u1EB7c \u0111\u1ECBnh \u0111\u1EC3 t\u1EA1o v\xE0 ch\u1EC9nh s\u1EEDa th\xF4ng th\u01B0\u1EDDng, v\u1EDBi c\xE1c tham s\u1ED1 k\xEDch th\u01B0\u1EDBc, ch\u1EA5t l\u01B0\u1EE3ng v\xE0 ch\u1EC9nh s\u1EEDa \u0111\u01B0\u1EE3c truy\u1EC1n tr\u1EF1c ti\u1EBFp.",
+    "codexSettings.responsesTitle": "Codex Responses",
+    "codexSettings.responsesCopy": "K\xEAnh t\u01B0\u01A1ng th\xEDch cho c\xE1c t\xE1c v\u1EE5 c\u1EA7n t\xECm ki\u1EBFm web ho\u1EB7c chu\u1ED7i c\xF4ng c\u1EE5 Responses.",
+    "codexSettings.current": "hi\u1EC7n t\u1EA1i",
+    "codexSettings.save": "L\u01B0u k\xEAnh Codex",
+    "codexSettings.saveMode": "L\u01B0u {mode}",
+    "imageEditor.title": "Ch\u1EC9nh s\u1EEDa h\xECnh \u1EA3nh \u0111\u1EA7u v\xE0o",
+    "imageEditor.promptHint": "C\xE1c m\u0169i t\xEAn v\xE0 d\u1EA5u v\u1EBD tay trong \u1EA3nh ch\u1EC9 l\xE0 h\u01B0\u1EDBng d\u1EABn. Kh\xF4ng gi\u1EEF ch\xFAng trong \u1EA3nh cu\u1ED1i c\xF9ng.",
+    "imageEditor.inputFallback": "H\xECnh \u1EA3nh \u0111\u1EA7u v\xE0o",
+    "imageEditor.openFailed": "Kh\xF4ng th\u1EC3 m\u1EDF h\xECnh \u1EA3nh n\xE0y \u0111\u1EC3 ch\u1EC9nh s\u1EEDa",
+    "imageEditor.loadForEditFailed": "Kh\xF4ng th\u1EC3 t\u1EA3i h\xECnh \u1EA3nh n\xE0y \u0111\u1EC3 ch\u1EC9nh s\u1EEDa",
+    "imageEditor.canvasCreateFailed": "Kh\xF4ng t\u1EA1o \u0111\u01B0\u1EE3c canvas ch\u1EC9nh s\u1EEDa h\xECnh \u1EA3nh",
+    "imageEditor.closedRegionRequired": "S\u1EED d\u1EE5ng c\u1ECD \u0111\u1EC3 v\u1EBD v\xF9ng k\xEDn tr\u01B0\u1EDBc",
+    "imageEditor.saveFailed": "Kh\xF4ng l\u01B0u \u0111\u01B0\u1EE3c ch\u1EC9nh s\u1EEDa h\xECnh \u1EA3nh",
+    "imageEditor.saved": "\u0110\xE3 l\u01B0u h\xECnh \u1EA3nh \u0111\u1EA7u v\xE0o \u0111\xE3 ch\u1EC9nh s\u1EEDa",
+    "imageEditor.uneditable": "H\xECnh \u1EA3nh n\xE0y kh\xF4ng th\u1EC3 \u0111\u01B0\u1EE3c ch\u1EC9nh s\u1EEDa",
+    "imageEditor.resetDone": "\u0110\u1EB7t l\u1EA1i v\u1EC1 \u1EA3nh g\u1ED1c",
+    "imageEditor.resetFailed": "Kh\xF4ng th\u1EC3 \u0111\u1EB7t l\u1EA1i \u1EA3nh g\u1ED1c",
+    "imageEditor.subtitle": "C\u1EAFt, v\u1EBD, \u0111i\u1EC1n ho\u1EB7c th\xEAm m\u0169i t\xEAn, sau \u0111\xF3 l\u01B0u l\xE0m h\xECnh \u1EA3nh \u0111\u1EA7u v\xE0o m\u1EDBi",
+    "imageEditor.toolbar": "Thanh c\xF4ng c\u1EE5 ch\u1EC9nh s\u1EEDa h\xECnh \u1EA3nh",
+    "imageEditor.tools": "C\xF4ng c\u1EE5",
+    "imageEditor.select": "Ch\u1ECDn",
+    "imageEditor.brush": "C\u1ECD",
+    "imageEditor.arrow": "M\u0169i t\xEAn",
+    "imageEditor.crop": "C\u1EAFt",
+    "imageEditor.fill": "T\xF4",
+    "imageEditor.fillLabel": "T\xF4 m\xE0u b\u1EB1ng th\xF9ng s\u01A1n",
+    "imageEditor.eraser": "T\u1EA9y",
+    "imageEditor.colors": "M\xE0u",
+    "imageEditor.red": "\u0110\u1ECF",
+    "imageEditor.blue": "Xanh d\u01B0\u01A1ng",
+    "imageEditor.green": "Xanh l\xE1",
+    "imageEditor.yellow": "V\xE0ng",
+    "imageEditor.white": "Tr\u1EAFng",
+    "imageEditor.black": "\u0110en",
+    "imageEditor.customColor": "M\xE0u t\xF9y ch\u1EC9nh",
+    "imageEditor.stroke": "N\xE9t",
+    "imageEditor.history": "L\u1ECBch s\u1EED",
+    "imageEditor.undo": "Ho\xE0n t\xE1c",
+    "imageEditor.redo": "L\xE0m l\u1EA1i",
+    "imageEditor.reset": "\u0110\u1EB7t l\u1EA1i h\xECnh \u1EA3nh",
+    "imageEditor.canvas": "Canvas ch\u1EC9nh s\u1EEDa h\xECnh \u1EA3nh",
+    "imageEditor.canvasScope": "Ph\u1EA1m vi canvas",
+    "imageEditor.canvasScopeBase": "H\xECnh \u1EA3nh c\u01A1 s\u1EDF",
+    "imageEditor.canvasScopeFit": "V\u1EEBa l\u1EDBp",
+    "imageEditor.canvasFitDone": "Canvas b\xE2y gi\u1EDD v\u1EEBa v\u1EDBi c\xE1c l\u1EDBp",
+    "imageEditor.canvasBaseDone": "Canvas \u0111\u01B0\u1EE3c kh\xF4i ph\u1EE5c v\u1EC1 h\xECnh \u1EA3nh c\u01A1 s\u1EDF",
+    "imageEditor.insertImages": "Ch\xE8n h\xECnh \u1EA3nh",
+    "imageEditor.layers": "L\u1EDBp",
+    "imageEditor.layerUp": "Di chuy\u1EC3n l\xEAn",
+    "imageEditor.layerDown": "Di chuy\u1EC3n xu\u1ED1ng",
+    "imageEditor.emptyInsertList": "Kh\xF4ng c\xF3 h\xECnh \u1EA3nh \u0111\u1EA7u v\xE0o kh\xE1c",
+    "imageEditor.selectLayerFirst": "Ch\u1ECDn m\u1ED9t l\u1EDBp tr\u01B0\u1EDBc",
+    "imageEditor.baseLayer": "H\xECnh \u1EA3nh c\u01A1 s\u1EDF",
+    "gallery.title": "Th\u01B0 vi\u1EC7n \u1EA3nh",
+    "gallery.subtitle": "Ch\u1ECDn h\xECnh \u1EA3nh tham kh\u1EA3o cho t\xE1c v\u1EE5 hi\u1EC7n t\u1EA1i",
+    "gallery.manageCategories": "Qu\u1EA3n l\xFD danh m\u1EE5c",
+    "gallery.categoryManager": "Qu\u1EA3n l\xFD danh m\u1EE5c th\u01B0 vi\u1EC7n",
+    "gallery.categoryManagement": "Qu\u1EA3n l\xFD danh m\u1EE5c",
+    "gallery.categoryCopy": "Danh m\u1EE5c \u0111\u01B0\u1EE3c l\u01B0u v\xE0o th\u01B0 vi\u1EC7n; vai tr\xF2 prompt m\xF4 t\u1EA3 c\xE1ch d\xF9ng \u1EA3nh tham kh\u1EA3o.",
+    "gallery.newCategoryName": "T\xEAn danh m\u1EE5c m\u1EDBi",
+    "gallery.newCategoryRole": "Vai tr\xF2 prompt, v\xED d\u1EE5: tham kh\u1EA3o phong c\xE1ch",
+    "gallery.addCategory": "Th\xEAm danh m\u1EE5c",
+    "gallery.drawerSubtitle": 'Danh m\u1EE5c hi\u1EC7n t\u1EA1i: {category}. B\u1EA5m "S\u1EED d\u1EE5ng" \u0111\u1EC3 th\xEAm v\xE0o \u1EA3nh \u0111\u1EA7u v\xE0o.',
+    "gallery.emptyCategory": "Ch\u01B0a c\xF3 h\xECnh \u1EA3nh n\xE0o trong danh m\u1EE5c n\xE0y",
+    "gallery.dragSort": "K\xE9o \u0111\u1EC3 s\u1EAFp x\u1EBFp",
+    "gallery.dragSortImage": "K\xE9o s\u1EAFp x\u1EBFp h\xECnh \u1EA3nh {name}",
+    "gallery.dragSortCategory": "K\xE9o \u0111\u1EC3 s\u1EAFp x\u1EBFp danh m\u1EE5c {name}",
+    "gallery.use": "S\u1EED d\u1EE5ng",
+    "gallery.replace": "Thay th\u1EBF",
+    "gallery.rename": "\u0110\u1ED5i t\xEAn",
+    "gallery.moveCategory": "Danh m\u1EE5c",
+    "gallery.note": "L\u01B0u \xFD",
+    "gallery.delete": "X\xF3a",
+    "gallery.uncategorized": "Ch\u01B0a \u0111\u01B0\u1EE3c ph\xE2n lo\u1EA1i",
+    "addGallery.title": "Th\xEAm v\xE0o th\u01B0 vi\u1EC7n",
+    "addGallery.copy": "T\xEAn l\xE0 duy nh\u1EA5t to\xE0n c\u1EE5c v\xE0 c\xF3 th\u1EC3 g\u1ECDi b\u1EB1ng @t\xEAn sau n\xE0y",
+    "addGallery.name": "T\xEAn",
+    "addGallery.namePlaceholder": "V\xED d\u1EE5: Mia",
+    "addGallery.category": "Danh m\u1EE5c",
+    "addGallery.note": "Ghi ch\xFA tham kh\u1EA3o",
+    "addGallery.notePlaceholder": "V\xED d\u1EE5: ch\u1EC9 tham chi\u1EBFu khu\xF4n m\u1EB7t v\xE0 t\xF3c, kh\xF4ng tham chi\u1EBFu qu\u1EA7n \xE1o hay h\xECnh n\u1EC1n",
+    "addGallery.save": "L\u01B0u v\xE0o th\u01B0 vi\u1EC7n",
+    "close.promptTemplates": "\u0110\xF3ng b\u1EA3ng m\u1EABu l\u1EDDi nh\u1EAFc",
+    "close.archive": "\u0110\xF3ng b\u1EA3ng l\u01B0u tr\u1EEF",
+    "close.settings": "\u0110\xF3ng b\u1EA3ng c\xE0i \u0111\u1EB7t b\u1ED9 nh\u1EDB",
+    "close.apiSettings": "\u0110\xF3ng b\u1EA3ng c\xE0i \u0111\u1EB7t API",
+    "close.systemSettings": "\u0110\xF3ng b\u1EA3ng c\xE0i \u0111\u1EB7t h\u1EC7 th\u1ED1ng",
+    "close.imageEditor": "\u0110\xF3ng b\u1EA3ng ch\u1EC9nh s\u1EEDa h\xECnh \u1EA3nh",
+    "close.gallery": "\u0110\xF3ng b\u1EA3ng th\u01B0 vi\u1EC7n",
+    "close.addGallery": "\u0110\xF3ng b\u1EA3ng th\xEAm v\xE0o th\u01B0 vi\u1EC7n",
+    "close.version": "\u0110\xF3ng b\u1EA3ng c\u1EADp nh\u1EADt phi\xEAn b\u1EA3n",
+    "imageInput.referenceTitle": "\u0110\u1EA7u v\xE0o tham chi\u1EBFu (t\xF9y ch\u1ECDn)",
+    "referenceFiles.add": "Th\xEAm t\u1EC7p",
+    "referenceFiles.selected": "T\u1EC7p tham chi\u1EBFu",
+    "referenceFiles.recent": "T\u1EC7p g\u1EA7n \u0111\xE2y",
+    "referenceFiles.familyPdf": "Trang + v\u0103n b\u1EA3n",
+    "referenceFiles.familySpreadsheet": "B\u1EA3ng t\xEDnh",
+    "referenceFiles.familyDocument": "T\xE0i li\u1EC7u",
+    "referenceFiles.familyText": "V\u0103n b\u1EA3n",
+    "referenceFiles.visualLimit": "T\u1EC7p kh\xF4ng ph\u1EA3i PDF s\u1EBD kh\xF4ng gi\u1EEF l\u1EA1i h\xECnh \u1EA3nh v\xE0 bi\u1EC3u \u0111\u1ED3 nh\xFAng. H\xE3y chuy\u1EC3n sang PDF khi c\u1EA7n tham chi\u1EBFu b\u1ED1 c\u1EE5c.",
+    "referenceFiles.remove": "X\xF3a t\u1EC7p {filename}",
+    "referenceFiles.switchTitle": "X\xF3a t\u1EC7p tham chi\u1EBFu?",
+    "referenceFiles.switchMessage": "T\u1EC7p tham chi\u1EBFu ch\u1EC9 ho\u1EA1t \u0111\u1ED9ng v\u1EDBi Responses. H\xE3y x\xF3a c\xE1c t\u1EC7p \u0111\xE3 ch\u1ECDn tr\u01B0\u1EDBc khi chuy\u1EC3n sang Images.",
+    "referenceFiles.removeAndSwitch": "X\xF3a t\u1EC7p v\xE0 chuy\u1EC3n",
+    "referenceFiles.requiresResponses": "T\u1EC7p tham chi\u1EBFu ch\u1EC9 h\u1ED7 tr\u1EE3 Responses",
+    "referenceFiles.switchToResponses": "Chuy\u1EC3n sang Responses",
+    "referenceFiles.openApiSettings": "M\u1EDF c\xE0i \u0111\u1EB7t API",
+    "referenceFiles.providerMissing": "Provider Responses c\u1EE7a t\xE1c v\u1EE5 g\u1ED1c kh\xF4ng kh\u1EA3 d\u1EE5ng. H\xE3y ch\u1ECDn provider trong c\xE0i \u0111\u1EB7t API.",
+    "referenceFiles.missing": "Kh\xF4ng t\xECm th\u1EA5y t\u1EC7p",
+    "referenceFiles.loadFailed": "Kh\xF4ng t\u1EA3i \u0111\u01B0\u1EE3c t\u1EC7p tham chi\u1EBFu",
+    "referenceFiles.errorEmpty": "T\u1EC7p tham chi\u1EBFu tr\u1ED1ng",
+    "referenceFiles.errorUnsupported": "Kh\xF4ng h\u1ED7 tr\u1EE3 \u0111\u1ECBnh d\u1EA1ng t\u1EC7p tham chi\u1EBFu n\xE0y",
+    "referenceFiles.errorMismatch": "N\u1ED9i dung t\u1EC7p kh\xF4ng kh\u1EDBp v\u1EDBi ph\u1EA7n m\u1EDF r\u1ED9ng",
+    "referenceFiles.errorInvalid": "T\u1EC7p tham chi\u1EBFu kh\xF4ng h\u1EE3p l\u1EC7",
+    "referenceFiles.errorTooLarge": "M\u1ED7i t\u1EC7p tham chi\u1EBFu ph\u1EA3i nh\u1ECF h\u01A1n 50 MB",
+    "referenceFiles.errorTotalTooLarge": "T\u1ED5ng dung l\u01B0\u1EE3ng t\u1EC7p tham chi\u1EBFu kh\xF4ng \u0111\u01B0\u1EE3c v\u01B0\u1EE3t qu\xE1 50 MB",
+    "referenceFiles.errorMissing": "M\u1ED9t t\u1EC7p tham chi\u1EBFu \u0111\xE3 ch\u1ECDn kh\xF4ng c\xF2n t\u1ED3n t\u1EA1i",
+    "referenceFiles.errorProviderUnsupported": "Responses c\u1EE7a provider hi\u1EC7n t\u1EA1i kh\xF4ng h\u1ED7 tr\u1EE3 t\u1EC7p tham chi\u1EBFu",
+    "referenceFiles.responsesEnabled": "\u0110\xE3 chuy\u1EC3n sang Responses",
+    "referenceFiles.historyPathMismatch": "C\xE1c t\u1EC7p tham chi\u1EBFu n\xE0y d\xF9ng nh\u1EEFng \u0111\u01B0\u1EDDng d\u1EABn Responses kh\xE1c nhau",
+    "history.referenceFiles": "T\u1EC7p tham chi\u1EBFu",
+    "history.downloadReferenceFile": "T\u1EA3i xu\u1ED1ng t\u1EC7p",
+    "history.readdReferenceFile": "Th\xEAm l\u1EA1i",
+    "modelSelection.family": "D\xF2ng m\xF4 h\xECnh",
+    "modelSelection.concreteModel": "M\xF4 h\xECnh",
+    "modelSelection.provider": "Provider",
+    "modelSelection.providerUnavailable": "Kh\xF4ng c\xF3 provider kh\u1EA3 d\u1EE5ng cho m\xF4 h\xECnh n\xE0y",
+    "modelSelection.openSettings": "M\u1EDF c\xE0i \u0111\u1EB7t provider",
+    "modelSelection.codexUnavailable": "\u0110\u0103ng nh\u1EADp Codex kh\xF4ng kh\u1EA3 d\u1EE5ng",
+    "modelSelection.catalogUnavailable": "Danh m\u1EE5c m\xF4 h\xECnh kh\xF4ng kh\u1EA3 d\u1EE5ng",
+    "output.background": "N\u1EC1n",
+    "canvas.aspectRatio": "T\u1EF7 l\u1EC7 khung h\xECnh",
+    "canvas.resolution": "\u0110\u1ED9 ph\xE2n gi\u1EA3i",
+    "gemini.googleSearch": "T\xECm ki\u1EBFm Google",
+    "gemini.googleImageSearch": "T\xECm ki\u1EBFm h\xECnh \u1EA3nh Google",
+    "output.modalities": "Ph\u01B0\u01A1ng th\u1EE9c \u0111\u1EA7u ra",
+    "gemini.safetySettings": "C\xE0i \u0111\u1EB7t an to\xE0n",
+    "gemini.safety.harassment": "Qu\u1EA5y r\u1ED1i",
+    "gemini.safety.hateSpeech": "Ng\xF4n t\u1EEB th\xF9 gh\xE9t",
+    "gemini.safety.sexuallyExplicit": "N\u1ED9i dung khi\xEAu d\xE2m",
+    "gemini.safety.dangerousContent": "N\u1ED9i dung nguy hi\u1EC3m",
+    "gemini.safety.threshold.unspecified": "M\u1EB7c \u0111\u1ECBnh",
+    "gemini.safety.threshold.off": "T\u1EAFt b\u1ED9 l\u1ECDc",
+    "gemini.safety.threshold.blockNone": "Kh\xF4ng ch\u1EB7n",
+    "gemini.safety.threshold.blockOnlyHigh": "Ch\u1EB7n m\u1EE9c cao",
+    "gemini.safety.threshold.blockMediumAndAbove": "Ch\u1EB7n m\u1EE9c trung b\xECnh+",
+    "gemini.safety.threshold.blockLowAndAbove": "Ch\u1EB7n t\u1EA5t c\u1EA3",
+    "grounding.title": "Ngu\u1ED3n t\xECm ki\u1EBFm Google",
+    "grounding.searchSuggestions": "G\u1EE3i \xFD t\xECm ki\u1EBFm Google",
+    "grounding.sourceCount": "{count} ngu\u1ED3n",
+    "grounding.source": "Ngu\u1ED3n {index}",
+    "modelParameters.invalidValue": "Gi\xE1 tr\u1ECB tham s\u1ED1 kh\xF4ng h\u1EE3p l\u1EC7",
+    "modelParameters.objectRequired": "Nh\u1EADp m\u1ED9t \u0111\u1ED1i t\u01B0\u1EE3ng JSON",
+    "modelParameters.invalidJson": "\u0110\u1ECBnh d\u1EA1ng JSON kh\xF4ng h\u1EE3p l\u1EC7",
+    "modelParameters.migrated": "\u0110\xE3 \u0111i\u1EC1u ch\u1EC9nh {count} tham s\u1ED1 c\u0169 cho ph\xF9 h\u1EE3p v\u1EDBi m\xF4 h\xECnh hi\u1EC7n t\u1EA1i",
+    "modelParameters.historyConfiguration": "C\u1EA5u h\xECnh l\u1ECBch s\u1EED",
+    "modelParameters.legacyTask": "T\xE1c v\u1EE5 phi\xEAn b\u1EA3n c\u0169",
+    "imageEditor.guidance": "H\u01B0\u1EDBng d\u1EABn ch\u1EC9nh s\u1EEDa",
+    "imageEditor.instructionMarksGuidance": "D\u1EA5u h\u01B0\u1EDBng d\u1EABn",
+    "imageEditor.editRegionGuidance": "M\u1EB7t n\u1EA1",
+    "imageEditor.maskTools": "C\xF4ng c\u1EE5 m\u1EB7t n\u1EA1",
+    "imageEditor.maskPaint": "V\u1EBD",
+    "imageEditor.maskErase": "C\u1ECD x\xF3a",
+    "imageEditor.maskRectangle": "H\xECnh ch\u1EEF nh\u1EADt",
+    "imageEditor.maskEllipse": "H\xECnh tr\xF2n",
+    "imageEditor.maskRestore": "Kh\xF4i ph\u1EE5c m\u1EB7t n\u1EA1",
+    "imageEditor.maskClear": "\u0110\u1EB7t l\u1EA1i m\u1EB7t n\u1EA1",
+    "imageEditor.maskHelp": "C\xE1c v\xF9ng ph\u1EE7 m\u1EB7t n\u1EA1 m\xE0u xanh s\u1EBD \u0111\u01B0\u1EE3c gi\u1EEF nguy\xEAn. C\xE1c v\xF9ng trong su\u1ED1t \u0111\u01B0\u1EE3c x\xF3a b\u1EB1ng c\u1ECD, h\xECnh ch\u1EEF nh\u1EADt ho\u1EB7c h\xECnh tr\xF2n s\u1EBD \u0111\u01B0\u1EE3c ch\u1EC9nh s\u1EEDa.",
+    "imageEditor.emptyEditRegion": "H\xE3y x\xF3a m\u1ED9t v\xF9ng trong su\u1ED1t kh\u1ECFi m\u1EB7t n\u1EA1 tr\u01B0\u1EDBc khi l\u01B0u.",
+    "imageInput.instructionMarksApplied": "\u0110\xE3 \xE1p d\u1EE5ng d\u1EA5u h\u01B0\u1EDBng d\u1EABn",
+    "imageInput.editRegionApplied": "\u0110\xE3 \xE1p d\u1EE5ng v\xF9ng ch\u1EC9nh s\u1EEDa",
+    "editPreflight.title": "Ki\u1EC3m tra tr\u01B0\u1EDBc khi g\u1EEDi",
+    "editPreflight.primary": "M\u1EB7t n\u1EA1 ch\u1EC9 \xE1p d\u1EE5ng cho \u1EA2nh ch\u1EC9nh s\u1EEDa ch\xEDnh \u0111\u1EA7u ti\xEAn: {name}; \u1EA3nh, m\u1EB7t n\u1EA1 v\xE0 \u0111\u1EA7u ra \u0111\u01B0\u1EE3c kh\xF3a tr\xEAn c\xF9ng m\u1ED9t canvas PNG khi g\u1EEDi",
+    "editPreflight.responsesResize": "Responses s\u1EBD \u0111\u1ED5i k\xEDch th\u01B0\u1EDBc {width}\xD7{height} th\xE0nh {targetWidth}\xD7{targetHeight} tr\u01B0\u1EDBc khi g\u1EEDi",
+    "editPreflight.editArea": "V\xF9ng ch\u1EC9nh s\u1EEDa trong su\u1ED1t: {percent}%",
+    "editPreflight.editAreaSmall": "V\xF9ng ch\u1EC9nh s\u1EEDa r\u1EA5t nh\u1ECF n\xEAn m\xF4 h\xECnh c\xF3 th\u1EC3 kh\xF4ng t\u1EA1o ra thay \u0111\u1ED5i r\xF5 r\xE0ng",
+    "editPreflight.editAreaLarge": "Ph\u1EA7n l\u1EDBn \u1EA3nh c\xF3 th\u1EC3 ch\u1EC9nh s\u1EEDa; k\u1EBFt qu\u1EA3 c\xF3 th\u1EC3 gi\u1ED1ng nh\u01B0 v\u1EBD l\u1EA1i to\xE0n b\u1ED9 \u1EA3nh",
+    "editPreflight.aspectMismatch": "T\u1EF7 l\u1EC7 \u1EA3nh ngu\u1ED3n kho\u1EA3ng {sourceRatio}, trong khi \u0111\u1EA7u ra l\xE0 {outputRatio}; \u1EA3nh c\xF3 th\u1EC3 b\u1ECB c\u1EAFt ho\u1EB7c t\xE1i t\u1EA1o r\u1ED9ng h\u01A1n",
+    "editPreflight.maskDimensionsMismatch": "K\xEDch th\u01B0\u1EDBc m\u1EB7t n\u1EA1 {maskWidth}\xD7{maskHeight} kh\xF4ng kh\u1EDBp k\xEDch th\u01B0\u1EDBc \u1EA3nh {width}\xD7{height}; h\xE3y m\u1EDF l\u1EA1i tr\xECnh ch\u1EC9nh s\u1EEDa v\xE0 l\u01B0u m\u1EB7t n\u1EA1 l\u1EA7n n\u1EEFa",
+    "editPreflight.emptyEditArea": "M\u1EB7t n\u1EA1 kh\xF4ng c\xF3 v\xF9ng ch\u1EC9nh s\u1EEDa trong su\u1ED1t; tr\u01B0\u1EDBc ti\xEAn h\xE3y x\xF3a v\xF9ng b\u1EA1n mu\u1ED1n thay \u0111\u1ED5i",
+    "editPreflight.maskInactive": "Kh\xF4ng c\xF3 v\xF9ng ch\u1EC9nh s\u1EEDa \u0111ang ho\u1EA1t \u0111\u1ED9ng; m\xF4 h\xECnh c\xF3 th\u1EC3 thay \u0111\u1ED5i to\xE0n b\u1ED9 \u1EA2nh ch\u1EC9nh s\u1EEDa ch\xEDnh",
+    "editPreflight.inspectionFailed": "Kh\xF4ng th\u1EC3 \u0111\u1ECDc chi ti\u1EBFt ki\u1EC3m tra m\u1EB7t n\u1EA1; m\xE1y ch\u1EE7 v\u1EABn s\u1EBD x\xE1c th\u1EF1c khi g\u1EEDi",
+    "editPreflight.blocked": "H\xE3y x\u1EED l\xFD c\xE1c l\u1ED7i ki\u1EC3m tra tr\u01B0\u1EDBc khi ti\u1EBFp t\u1EE5c"
+  };
+
   // codex_image/webui/frontend/src/i18n/zh-cn.ts
   var ZH_CN_DICTIONARY = {
     "app.newTask": "\u65B0\u5EFA",
@@ -11277,6 +13867,7 @@
     "batch.selected": "\u5DF2\u9009\u62E9 0 \u4E2A",
     "batch.selectedCount": "\u5DF2\u9009\u62E9 {count} \u4E2A",
     "batch.selectCurrentGroup": "\u5168\u9009\u672C\u7EC4",
+    "batch.selectWaiting": "\u5168\u9009\u7B49\u5F85\u4E2D",
     "batch.archivedCount": "\u5DF2\u5F52\u6863 {count} \u4E2A\u4F1A\u8BDD",
     "batch.archiveFailed": "\u6279\u91CF\u5F52\u6863\u5931\u8D25",
     "batch.runningCannotDeleteSelected": "\u9009\u4E2D\u7684\u4F1A\u8BDD\u6B63\u5728\u8FD0\u884C\uFF0C\u4E0D\u80FD\u5220\u9664",
@@ -11290,14 +13881,15 @@
     "batch.cancelSelected": "\u53D6\u6D88\u4EFB\u52A1",
     "batch.noActiveSelected": "\u9009\u4E2D\u7684\u4EFB\u52A1\u5DF2\u4E0D\u5728\u8FD0\u884C\u6216\u7B49\u5F85\u961F\u5217\u4E2D",
     "batch.cancelTitle": "\u53D6\u6D88 {count} \u4E2A\u4EFB\u52A1\uFF1F",
-    "batch.cancelMessage": "\u8FD0\u884C\u4E2D\u7684\u4EFB\u52A1\u4F1A\u505C\u6B62\uFF0C\u7B49\u5F85\u4E2D\u7684\u4EFB\u52A1\u4F1A\u79BB\u5F00\u961F\u5217\uFF1B\u5386\u53F2\u8BB0\u5F55\u90FD\u4F1A\u4FDD\u7559\u3002",
+    "batch.cancelMessage": "\u7B49\u5F85\u4EFB\u52A1\u4F1A\u7ACB\u5373\u53D6\u6D88\u3002\u8FD0\u884C\u4E2D\u7684\u670D\u52A1\u5546\u8C03\u7528\u5728\u8FD4\u56DE\u524D\u53EF\u80FD\u4ECD\u4F1A\u7EE7\u7EED\uFF0C\u4E5F\u53EF\u80FD\u4ECD\u4F1A\u8BA1\u8D39\uFF1B\u5386\u53F2\u8BB0\u5F55\u90FD\u4F1A\u4FDD\u7559\u3002",
     "batch.cancelDetail": "\u8FD0\u884C {running} \u4E2A \xB7 \u7B49\u5F85 {waiting} \u4E2A",
     "batch.cancelConfirm": "\u786E\u8BA4\u53D6\u6D88",
-    "batch.cancelResult": "\u5DF2\u53D6\u6D88 {cancelled} \u4E2A\uFF0C\u8DF3\u8FC7 {skipped} \u4E2A\uFF0C\u5931\u8D25 {failed} \u4E2A",
+    "batch.cancelResult": "\u5DF2\u53D6\u6D88 {cancelled} \u4E2A\uFF0C\u5DF2\u8BF7\u6C42\u53D6\u6D88 {requested} \u4E2A\uFF0C\u8DF3\u8FC7 {skipped} \u4E2A\uFF0C\u5931\u8D25 {failed} \u4E2A",
     "batch.cancelFailed": "\u6279\u91CF\u53D6\u6D88\u5931\u8D25",
     "action.archive": "\u5F52\u6863",
     "action.delete": "\u5220\u9664",
     "action.cancel": "\u53D6\u6D88",
+    "action.stop": "\u505C\u6B62",
     "action.edit": "\u7F16\u8F91",
     "action.clear": "\u6E05\u7A7A",
     "action.paste": "\u7C98\u8D34",
@@ -11325,13 +13917,13 @@
     "queue.waitingActions": "\u7B49\u5F85\u4EFB\u52A1\u961F\u5217\u64CD\u4F5C",
     "queue.cancelRunning": "\u53D6\u6D88",
     "queue.cancelRunningTitle": "\u53D6\u6D88\u8FD0\u884C\u4EFB\u52A1",
-    "queue.dragWaiting": "\u62D6\u52A8\u8C03\u6574\u7B49\u5F85\u987A\u5E8F",
+    "queue.dragWaiting": "\u6309\u4F4F\u5361\u7247\u4E0A\u4E0B\u62D6\u52A8\u6392\u5E8F",
     "queue.dragSort": "\u62D6\u52A8\u6392\u5E8F",
     "queue.moveUp": "\u4E0A",
     "queue.moveUpTitle": "\u4E0A\u79FB\u7B49\u5F85\u4EFB\u52A1",
     "queue.moveDown": "\u4E0B",
     "queue.moveDownTitle": "\u4E0B\u79FB\u7B49\u5F85\u4EFB\u52A1",
-    "queue.promote": "\u9876",
+    "queue.promote": "\u7F6E\u9876",
     "queue.promoteTitle": "\u7F6E\u9876\u7B49\u5F85\u4EFB\u52A1",
     "queue.promoteFailed": "\u7F6E\u9876\u5931\u8D25",
     "queue.deleteWaitingShort": "\u5220",
@@ -11342,12 +13934,13 @@
     "queue.queuedDeleted": "\u961F\u5217\u4EFB\u52A1\u5DF2\u5220\u9664",
     "queue.cancelRunningConfirm": "\u53D6\u6D88\u4EFB\u52A1",
     "queue.cancelRunningTitleConfirm": "\u53D6\u6D88\u8FD0\u884C\u4EFB\u52A1\uFF1F",
-    "queue.cancelRunningMessage": "\u5F53\u524D\u4EFB\u52A1\u4F1A\u505C\u6B62\uFF0C\u5386\u53F2\u8BB0\u5F55\u4F1A\u4FDD\u7559\u3002",
+    "queue.cancelRunningMessage": "\u5C06\u53D1\u9001\u53D6\u6D88\u8BF7\u6C42\u3002\u670D\u52A1\u5546\u8C03\u7528\u5728\u8FD4\u56DE\u524D\u53EF\u80FD\u4ECD\u4F1A\u7EE7\u7EED\uFF0C\u4E5F\u53EF\u80FD\u4ECD\u4F1A\u8BA1\u8D39\uFF1B\u5386\u53F2\u8BB0\u5F55\u4F1A\u4FDD\u7559\u3002",
     "queue.cancelRunningFailed": "\u53D6\u6D88\u4EFB\u52A1\u5931\u8D25",
+    "queue.cancellationPending": "\u5DF2\u8BF7\u6C42\u53D6\u6D88\u3002\u670D\u52A1\u5546\u8C03\u7528\u5728\u8FD4\u56DE\u524D\u53EF\u80FD\u4ECD\u4F1A\u7EE7\u7EED\uFF0C\u4E5F\u53EF\u80FD\u4ECD\u4F1A\u8BA1\u8D39\u3002",
     "queue.runningCancelled": "\u4EFB\u52A1\u5DF2\u53D6\u6D88",
     "queue.reorderFailed": "\u961F\u5217\u6392\u5E8F\u5931\u8D25",
     "queue.realtimeUpdateFailed": "\u5B9E\u65F6\u72B6\u6001\u66F4\u65B0\u5931\u8D25",
-    "queue.realtimeDisconnected": "\u5B9E\u65F6\u72B6\u6001\u8FDE\u63A5\u5DF2\u65AD\u5F00\uFF0C\u5237\u65B0\u9875\u9762\u53EF\u6062\u590D",
+    "queue.realtimeDisconnected": "\u5B9E\u65F6\u72B6\u6001\u8FDE\u63A5\u5DF2\u4E2D\u65AD\uFF0C\u6B63\u5728\u81EA\u52A8\u91CD\u8FDE\u2026",
     "queue.readFailed": "\u961F\u5217\u8BFB\u53D6\u5931\u8D25",
     "status.waiting": "\u7B49\u5F85\u4EFB\u52A1",
     "status.shownActiveTasks": "\u5DF2\u663E\u793A\u8FDB\u884C\u4E2D\u4EFB\u52A1",
@@ -11355,6 +13948,7 @@
     "taskStatus.submitting": "\u63D0\u4EA4\u4E2D",
     "taskStatus.running": "\u751F\u6210\u4E2D",
     "taskStatus.runningWithElapsed": "\u751F\u6210\u4E2D \xB7 {elapsed}",
+    "taskStatus.cancelling": "\u6B63\u5728\u53D6\u6D88",
     "taskStatus.completed": "\u5DF2\u5B8C\u6210",
     "taskStatus.partialFailed": "\u90E8\u5206\u5931\u8D25",
     "taskStatus.failed": "\u5931\u8D25",
@@ -11383,7 +13977,6 @@
     "taskCard.textToImageThumb": "\u6587\u751F\u56FE\u4EFB\u52A1\u7F29\u7565\u56FE",
     "taskCard.imageToImageThumb": "\u56FE\u751F\u56FE\u4EFB\u52A1\u7F29\u7565\u56FE",
     "taskCard.failedThumb": "\u4EFB\u52A1\u5931\u8D25",
-    "taskCard.textBadge": "\u6587",
     "taskMode.edit": "\u7F16\u8F91",
     "taskMode.generate": "\u751F\u6210",
     "document.generatingQueue": "\u751F\u6210\u4E2D \xB7 \u961F\u5217 {total}",
@@ -11397,12 +13990,114 @@
     "historyLibrary.openFull": "\u6253\u5F00\u5B8C\u6574\u5386\u53F2\u5E93",
     "history.documentTitle": "\u5386\u53F2\u5E93 - iLab CONJURE",
     "history.back": "\u8FD4\u56DE\u751F\u6210\u9875",
+    "history.homeAria": "\u8FD4\u56DE iLab CONJURE \u751F\u6210\u9875",
+    "history.backToGenerator": "\u8FD4\u56DE\u751F\u6210\u9875",
     "history.title": "\u5386\u53F2\u5E93",
     "history.loading": "\u8F7D\u5165\u4E2D",
     "history.total": "{total} \u4E2A\u4EFB\u52A1 \xB7 {archived} \u5DF2\u5F52\u6863",
     "history.search": "\u641C\u7D22",
     "history.searchPlaceholder": "\u641C\u7D22\u63D0\u793A\u8BCD\u6216\u4EFB\u52A1 ID",
     "history.clear": "\u6E05\u7A7A",
+    "history.activeFilterCount": "\u5DF2\u7B5B\u9009 \xB7 {count} \u9879",
+    "history.clearAllFilters": "\u6E05\u9664\u5168\u90E8",
+    "history.removeFilter": "\u79FB\u9664\u7B5B\u9009\uFF1A{label}",
+    "history.filtersActive": "\u4EFB\u52A1\u7B5B\u9009\uFF0C\u5DF2\u542F\u7528 {count} \u9879",
+    "history.favorites": "\u6536\u85CF",
+    "history.onlyFavorites": "\u4EC5\u770B\u6536\u85CF",
+    "history.favoriteTask": "\u6536\u85CF\u4EFB\u52A1",
+    "history.unfavoriteTask": "\u53D6\u6D88\u6536\u85CF",
+    "history.tags": "\u6807\u7B7E",
+    "history.untagged": "\u65E0\u6807\u7B7E",
+    "history.manageTags": "\u7BA1\u7406\u6807\u7B7E",
+    "history.createTag": "\u521B\u5EFA\u6807\u7B7E",
+    "history.renameTag": "\u6539\u540D",
+    "history.deleteTag": "\u5220\u9664",
+    "history.deleteTagAffected": "\u5220\u9664\uFF08\u5F71\u54CD {count} \u4E2A\u4EFB\u52A1\uFF09",
+    "history.addTag": "\u6DFB\u52A0\u6807\u7B7E",
+    "history.removeTag": "\u79FB\u9664\u6807\u7B7E",
+    "history.favoriteSelected": "\u6536\u85CF",
+    "history.unfavoriteSelected": "\u53D6\u6D88\u6536\u85CF",
+    "history.organizeSelected": "\u6574\u7406",
+    "history.exitSelection": "\u9000\u51FA\u6279\u91CF\u9009\u62E9",
+    "history.organizationFailed": "\u6536\u85CF\u6216\u6807\u7B7E\u66F4\u65B0\u5931\u8D25",
+    "history.tagNameConflict": "\u8FD9\u4E2A\u6807\u7B7E\u540D\u79F0\u5DF2\u5B58\u5728",
+    "history.noTags": "\u8FD8\u6CA1\u6709\u6807\u7B7E",
+    "history.backendRestartRequired": "\u5386\u53F2\u5E93\u529F\u80FD\u5DF2\u66F4\u65B0\uFF0C\u8BF7\u91CD\u542F\u5E94\u7528\u540E\u518D\u8BD5",
+    "history.export": "\u5BFC\u51FA",
+    "history.exportImagesOnly": "\u4EC5\u56FE\u7247",
+    "history.exportImagesWithPrompts": "\u56FE\u7247\uFF0B\u63D0\u793A\u8BCD",
+    "history.exportPreparing": "\u6B63\u5728\u51C6\u5907\u5BFC\u51FA\u2026",
+    "history.exportStarted": "\u5DF2\u5F00\u59CB\u4E0B\u8F7D",
+    "history.exportSummary": "{taskCount} \u4E2A\u4EFB\u52A1 \xB7 {imageCount} \u5F20\u56FE\u7247",
+    "history.exportFailed": "\u5BFC\u51FA\u5931\u8D25",
+    "historyBackup.open": "\u4EFB\u52A1\u5907\u4EFD",
+    "historyBackup.importOpen": "\u5BFC\u5165\u5907\u4EFD",
+    "historyBackup.mode": "\u4EFB\u52A1\u5907\u4EFD",
+    "historyBackup.description": "\u4FDD\u5B58\u4EFB\u52A1\u6570\u636E\u4E0E\u76F8\u5173\u6587\u4EF6\uFF0C\u53EF\u5728\u517C\u5BB9\u7248\u672C\u7684 iLab CONJURE \u4E2D\u5BFC\u5165\u6062\u590D\u3002",
+    "historyBackup.scopeLegend": "\u5907\u4EFD\u8303\u56F4",
+    "historyBackup.scopeHelp": "\u5F53\u524D\u7B5B\u9009\u548C\u5168\u90E8\u8303\u56F4\u7531\u672C\u673A\u5B8C\u6574\u7EDF\u8BA1\uFF0C\u4E0D\u53D7\u5F53\u524D\u9875\u9762\u663E\u793A\u6570\u91CF\u5F71\u54CD\u3002",
+    "historyBackup.scopeSelected": "\u5DF2\u9009\u4EFB\u52A1",
+    "historyBackup.scopeFiltered": "\u5F53\u524D\u7B5B\u9009\u7ED3\u679C",
+    "historyBackup.scopeAll": "\u5168\u90E8\u5386\u53F2\u4EFB\u52A1",
+    "historyBackup.scopeCount": "{eligible}/{total} \u4E2A\u53EF\u5907\u4EFD",
+    "historyBackup.scopeCounting": "\u6B63\u5728\u7EDF\u8BA1\u2026",
+    "historyBackup.scopeCountUnavailable": "\u6682\u65F6\u65E0\u6CD5\u7EDF\u8BA1",
+    "historyBackup.scopeNoneSelected": "\u672A\u9009\u62E9\u4EFB\u52A1",
+    "historyBackup.willBackup": "\u5C06\u5907\u4EFD {eligible} \u4E2A\u4EFB\u52A1\uFF1B{excluded} \u4E2A\u672A\u5B8C\u6210\u4EFB\u52A1\u4F1A\u88AB\u6392\u9664\u3002",
+    "historyBackup.selectTasksFirst": "\u8BF7\u5148\u9009\u62E9\u81F3\u5C11\u4E00\u4E2A\u4EFB\u52A1\u3002",
+    "historyBackup.scopeLockedUnknown": "\u672C\u6B21\u5907\u4EFD\u8303\u56F4",
+    "historyBackup.scopeLocked": "\u8303\u56F4\u5DF2\u9501\u5B9A\uFF1A{scope} \xB7 \u5C06\u5907\u4EFD {eligible} \u4E2A\u4EFB\u52A1",
+    "historyBackup.scopeLockedPending": "\u8303\u56F4\u5DF2\u9501\u5B9A\uFF1A{scope} \xB7 \u6B63\u5728\u7EDF\u8BA1\u53EF\u5907\u4EFD\u4EFB\u52A1",
+    "historyBackup.progressLabel": "\u5907\u4EFD\u8FDB\u5EA6",
+    "historyBackup.start": "\u5F00\u59CB\u5907\u4EFD",
+    "historyBackup.cancel": "\u53D6\u6D88\u5907\u4EFD",
+    "historyBackup.download": "\u4E0B\u8F7D\u5907\u4EFD",
+    "historyBackup.dismiss": "\u5173\u95ED\u7ED3\u679C",
+    "historyBackup.discard": "\u4E0D\u4E0B\u8F7D\u5E76\u5173\u95ED",
+    "historyBackup.closePanel": "\u5173\u95ED\u9762\u677F",
+    "historyBackup.downloadStartedTitle": "\u4E0B\u8F7D\u5DF2\u5F00\u59CB",
+    "historyBackup.idle": "\u5C31\u7EEA",
+    "historyBackup.queued": "\u6392\u961F\u4E2D",
+    "historyBackup.planning": "\u6B63\u5728\u89C4\u5212",
+    "historyBackup.packing": "\u6B63\u5728\u6253\u5305",
+    "historyBackup.ready": "\u53EF\u4E0B\u8F7D",
+    "historyBackup.readyDetail": "\u5907\u4EFD\u5DF2\u5C31\u7EEA\u3002\u8BF7\u5728 1 \u5C0F\u65F6\u5185\u4E0B\u8F7D\uFF1B\u4E0D\u4E0B\u8F7D\u5E76\u5173\u95ED\u4F1A\u7ACB\u5373\u5220\u9664\u4E34\u65F6\u6587\u4EF6\u3002",
+    "historyBackup.downloaded": "\u8BF7\u786E\u8BA4\u6D4F\u89C8\u5668\u5DF2\u4FDD\u5B58\u6587\u4EF6\uFF1B\u5B8C\u6210\u540E\u5373\u53EF\u5173\u95ED\u6B64\u9762\u677F\u3002\u4E34\u65F6\u6587\u4EF6\u4F1A\u5728\u4F20\u8F93\u7ED3\u675F\u540E\u5220\u9664\u3002",
+    "historyBackup.missingInputsWarning": "{tasks} \u4E2A\u4EFB\u52A1\u7F3A\u5931 {files} \u4E2A\u8F93\u5165\u6587\u4EF6\uFF1B\u8FD9\u4E9B\u6587\u4EF6\u4E0D\u4F1A\u5305\u542B\u5728\u5907\u4EFD\u4E2D\uFF0C\u63D0\u793A\u8BCD\u548C\u8F93\u51FA\u7ED3\u679C\u4ECD\u4F1A\u6B63\u5E38\u5BFC\u51FA\u3002",
+    "historyBackup.failed": "\u5907\u4EFD\u5931\u8D25",
+    "historyBackup.cancelled": "\u5DF2\u53D6\u6D88",
+    "historyBackup.expired": "\u5DF2\u8FC7\u671F",
+    "historyBackup.interrupted": "\u5DF2\u4E2D\u65AD",
+    "historyBackup.stats": "\u5171 {total} \u4E2A \xB7 \u53EF\u5907\u4EFD {eligible} \u4E2A \xB7 \u6392\u9664 {excluded} \u4E2A \xB7 {bytes}",
+    "historyBackup.errorDisk": "\u78C1\u76D8\u7A7A\u95F4\u4E0D\u8DB3\u3002",
+    "historyBackup.errorSourceChanged": "\u5907\u4EFD\u671F\u95F4\u6E90\u6570\u636E\u53D1\u751F\u53D8\u5316\u3002",
+    "historyBackup.errorEmpty": "\u6CA1\u6709\u53EF\u5907\u4EFD\u7684\u4EFB\u52A1\u3002",
+    "historyBackup.errorIo": "\u65E0\u6CD5\u521B\u5EFA\u5907\u4EFD\u3002",
+    "historyImport.title": "\u5BFC\u5165\u4EFB\u52A1\u5907\u4EFD",
+    "historyImport.choose": "\u9009\u62E9 ZIP \u5907\u4EFD\u5305",
+    "historyImport.uploading": "\u6B63\u5728\u4E0A\u4F20",
+    "historyImport.validating": "\u6B63\u5728\u6821\u9A8C",
+    "historyImport.validated": "\u5DF2\u6821\u9A8C",
+    "historyImport.preview": "\u6062\u590D\u9884\u89C8",
+    "historyImport.restorable": "\u53EF\u6062\u590D",
+    "historyImport.duplicate": "\u91CD\u590D",
+    "historyImport.conflict": "\u51B2\u7A81",
+    "historyImport.invalid": "\u65E0\u6548",
+    "historyImport.confirm": "\u786E\u8BA4\u6062\u590D",
+    "historyImport.restoring": "\u6B63\u5728\u6062\u590D",
+    "historyImport.restored": "\u5DF2\u6062\u590D",
+    "historyImport.failed": "\u6062\u590D\u5931\u8D25",
+    "historyImport.interrupted": "\u5DF2\u4E2D\u65AD",
+    "historyImport.cancelled": "\u5DF2\u53D6\u6D88",
+    "historyImport.result": "\u6062\u590D\u7ED3\u679C",
+    "historyImport.thumbnailWarnings": "\u7F29\u7565\u56FE\u8B66\u544A",
+    "historyImport.cleanupWarnings": "\u6E05\u7406\u8B66\u544A",
+    "historyImport.reselect": "\u8BF7\u91CD\u65B0\u9009\u62E9\u539F ZIP \u7EE7\u7EED\u3002",
+    "historyImport.noOverwrite": "\u53EA\u65B0\u589E\u4EFB\u52A1\uFF0C\u7EDD\u4E0D\u8986\u76D6\u5DF2\u6709\u4EFB\u52A1\u3002",
+    "historyImport.reasonInvalid": "\u5907\u4EFD\u6570\u636E\u65E0\u6548",
+    "historyImport.reasonSensitive": "\u5305\u542B\u53D7\u4FDD\u62A4\u6570\u636E",
+    "historyImport.reasonMismatch": "\u4E0E\u5907\u4EFD\u6E05\u5355\u4E0D\u4E00\u81F4",
+    "history.closeExport": "\u5173\u95ED\u5BFC\u51FA\u9009\u62E9",
     "history.type": "\u7C7B\u578B",
     "history.allTypes": "\u5168\u90E8\u7C7B\u578B",
     "history.type.textToImage": "\u6587\u751F\u56FE",
@@ -11583,6 +14278,7 @@
     "language.ru": "\u0420\u0443\u0441\u0441\u043A\u0438\u0439",
     "language.it": "Italiano",
     "language.hi": "\u0939\u093F\u0928\u094D\u0926\u0940",
+    "language.vi": "Ti\u1EBFng Vi\u1EC7t",
     "auth.label": "\u6388\u6743\u6765\u6E90",
     "auth.checking": "\u6388\u6743\u68C0\u67E5\u4E2D",
     "auth.missingCodexSession": "\u6CA1\u6709\u68C0\u6D4B\u5230 Codex \u767B\u5F55\u6001",
@@ -11609,8 +14305,16 @@
     "recentAssets.defaultName": "\u6700\u8FD1\u4E0A\u4F20",
     "recentAssets.use": "\u4F7F\u7528{name}",
     "recentAssets.delete": "\u5220\u9664{name}",
+    "recentAssets.inUse": "\u88AB {count} \u4E2A\u4EFB\u52A1\u5F15\u7528\uFF0C\u65E0\u6CD5\u6C38\u4E45\u5220\u9664\uFF1B\u53EF\u4EC5\u4ECE\u6700\u8FD1\u4E0A\u4F20\u9690\u85CF",
+    "recentAssets.hide": "\u4ECE\u6700\u8FD1\u4E0A\u4F20\u9690\u85CF{name}",
+    "recentAssets.hideTitle": "\u4ECE\u6700\u8FD1\u4E0A\u4F20\u9690\u85CF\uFF1F",
+    "recentAssets.hideMessage": "\u8FD9\u5F20\u56FE\u7247\u88AB {count} \u4E2A\u4EFB\u52A1\u5F15\u7528\uFF0C\u65E0\u6CD5\u6C38\u4E45\u5220\u9664\u3002\u9690\u85CF\u53EA\u4F1A\u4ECE\u300C\u6700\u8FD1\u4E0A\u4F20\u300D\u79FB\u9664\uFF1B\u539F\u56FE\u3001\u5F53\u524D\u8F93\u5165\u548C\u5386\u53F2\u4EFB\u52A1\u5747\u4FDD\u7559\u3002",
+    "recentAssets.hideFailed": "\u6700\u8FD1\u4E0A\u4F20\u9690\u85CF\u5931\u8D25",
+    "recentAssets.hidden": "\u5DF2\u4ECE\u6700\u8FD1\u4E0A\u4F20\u9690\u85CF\uFF1B\u539F\u56FE\u548C\u5386\u53F2\u4EFB\u52A1\u5747\u5DF2\u4FDD\u7559",
+    "recentAssets.hidePreviews": "\u9690\u85CF\u6700\u8FD1\u4E0A\u4F20\u56FE\u7247",
+    "recentAssets.showPreviews": "\u663E\u793A\u6700\u8FD1\u4E0A\u4F20\u56FE\u7247",
     "recentAssets.deleteTitle": "\u5220\u9664\u6700\u8FD1\u4E0A\u4F20\uFF1F",
-    "recentAssets.deleteMessage": "\u4F1A\u4ECE\u300C\u6700\u8FD1\u4E0A\u4F20\u300D\u4E2D\u5220\u9664\u8FD9\u5F20\u56FE\u7247\u3002\u5982\u679C\u5B83\u5DF2\u88AB\u6DFB\u52A0\u5230\u5F53\u524D\u56FE\u50CF\u8F93\u5165\uFF0C\u4F1A\u4ECE\u5F53\u524D\u8F93\u5165\u4E2D\u79FB\u9664\uFF1B\u5386\u53F2\u4EFB\u52A1\u91CC\u5F15\u7528\u8FD9\u5F20\u6700\u8FD1\u4E0A\u4F20\u56FE\u7684\u8F93\u5165\u9884\u89C8\u4E5F\u4F1A\u5931\u6548\u3002\u4E0D\u4F1A\u5F71\u54CD\u516C\u7528\u56FE\u5E93\u3002",
+    "recentAssets.deleteMessage": "\u8FD9\u5F20\u56FE\u7247\u672A\u88AB\u4EFB\u4F55\u4EFB\u52A1\u5F15\u7528\uFF0C\u5C06\u6C38\u4E45\u5220\u9664\u539F\u56FE\uFF0C\u5E76\u4ECE\u5F53\u524D\u8F93\u5165\u79FB\u9664\u540C\u56FE\u3002\u516C\u7528\u56FE\u5E93\u4E0D\u53D7\u5F71\u54CD\u3002",
     "recentAssets.loadFailed": "\u6700\u8FD1\u4E0A\u4F20\u8BFB\u53D6\u5931\u8D25",
     "recentAssets.deleteFailed": "\u6700\u8FD1\u4E0A\u4F20\u5220\u9664\u5931\u8D25",
     "recentAssets.deleted": "\u6700\u8FD1\u4E0A\u4F20\u5DF2\u5220\u9664",
@@ -11635,11 +14339,13 @@
     "referenceCollector.alreadyStaged": "\u5DF2\u5728\u5F85\u52A0\u5165\u53C2\u8003\u56FE",
     "referenceCollector.staged": "\u5DF2\u6682\u5B58 {count} \u5F20\u53C2\u8003\u56FE",
     "referenceCollector.title": "\u5F85\u52A0\u5165\u53C2\u8003\u56FE \xB7 {count} \u5F20",
-    "referenceCollector.addAll": "\u5168\u90E8\u52A0\u5165\u53C2\u8003\u56FE",
+    "referenceCollector.addAll": "\u5168\u90E8\u52A0\u5165",
+    "referenceCollector.replaceAll": "\u66FF\u6362\u73B0\u6709",
     "referenceCollector.itemFallback": "\u5F85\u52A0\u5165\u53C2\u8003\u56FE",
     "referenceCollector.remove": "\u79FB\u9664\u5F85\u52A0\u5165\u53C2\u8003\u56FE",
     "referenceCollector.cleared": "\u5F85\u52A0\u5165\u53C2\u8003\u56FE\u5DF2\u6E05\u7A7A",
     "referenceCollector.added": "\u5DF2\u52A0\u5165 {count} \u5F20\u53C2\u8003\u56FE",
+    "referenceCollector.replaced": "\u5DF2\u66FF\u6362\u4E3A {count} \u5F20\u53C2\u8003\u56FE",
     "referenceCollector.addFailed": "\u5F85\u52A0\u5165\u53C2\u8003\u56FE\u52A0\u5165\u5931\u8D25",
     "referenceCollector.readFailed": "\u56FE\u7247\u8BFB\u53D6\u5931\u8D25\uFF1A{status}",
     "gallery.quick": "\u5FEB\u901F\u9009\u62E9\u516C\u7528\u56FE\u5E93",
@@ -11757,7 +14463,7 @@
     "output.promptHelpTitle": "\u63D0\u793A\u8BCD\u5904\u7406",
     "output.promptHelp.responsesChannel": "Responses \xB7 \u4E3B\u6A21\u578B\u53C2\u4E0E",
     "output.promptHelp.imagesChannel": "Images \xB7 \u76F4\u63A5\u751F\u6210",
-    "output.promptHelp.responses.original": "\u539F\u6587\u4EA4\u7ED9\u4E3B\u6A21\u578B\uFF0C\u5E76\u8981\u6C42\u56FE\u50CF\u5DE5\u5177\u5C3D\u91CF\u9010\u5B57\u4F7F\u7528\uFF1B\u4E3B\u6A21\u578B\u4ECD\u53EF\u80FD\u751F\u6210 revised prompt\u3002",
+    "output.promptHelp.responses.original": "\u6309\u539F\u6587\u53D1\u9001\uFF0C\u4E0D\u6DFB\u52A0\u5E94\u7528\u7EA7\u63D0\u793A\u8BCD\u89C4\u5219\uFF1B\u670D\u52A1\u5546\u4ECD\u53EF\u80FD\u8FD4\u56DE revised prompt\uFF0C\u751F\u6210\u7ED3\u679C\u4E5F\u53EF\u80FD\u4E0E\u6587\u5B57\u7EA6\u675F\u6709\u504F\u5DEE\u3002",
     "output.promptHelp.responses.strict": "\u5141\u8BB8\u4E3B\u6A21\u578B\u6574\u7406\u6216\u6269\u5199\uFF0C\u4F46\u5FC5\u987B\u4FDD\u7559\u5BF9\u8C61\u3001\u6587\u5B57\u3001\u989C\u8272\u3001\u6784\u56FE\u7B49\u786C\u6027\u7EA6\u675F\u3002",
     "output.promptHelp.responses.automatic": "\u4E0D\u6DFB\u52A0\u989D\u5916\u7EA6\u675F\uFF0C\u7531\u4E3B\u6A21\u578B\u7406\u89E3\u5E76\u4F18\u5316\u540E\u8C03\u7528\u56FE\u50CF\u5DE5\u5177\u3002",
     "output.promptHelp.images.original": "\u5E94\u7528\u4E0D\u6DFB\u52A0\u63D0\u793A\u8BCD\u89C4\u5219\uFF0C\u6309\u7528\u6237\u539F\u6587\u76F4\u63A5\u63D0\u4EA4\u7ED9\u56FE\u50CF\u63A5\u53E3\u3002",
@@ -11852,6 +14558,16 @@
     "lightbox.close": "\u5173\u95ED\u9884\u89C8",
     "lightbox.previous": "\u4E0A\u4E00\u5F20",
     "lightbox.next": "\u4E0B\u4E00\u5F20",
+    "lightbox.zoomControls": "\u7F29\u653E\u63A7\u5236",
+    "lightbox.zoomOut": "\u7F29\u5C0F",
+    "lightbox.zoomIn": "\u653E\u5927",
+    "lightbox.fit": "\u9002\u5408",
+    "lightbox.fitPage": "\u9002\u5408\u9875\u9762",
+    "lightbox.actualSize": "100% \u539F\u59CB\u5C3A\u5BF8",
+    "lightbox.shortcuts": "\u5FEB\u6377\u952E\u63D0\u793A",
+    "lightbox.switchImage": "\u5207\u6362\u56FE\u7247",
+    "lightbox.switchTask": "\u5207\u6362\u4EFB\u52A1",
+    "lightbox.wheelZoom": "\u6EDA\u8F6E\u7F29\u653E",
     "promptPopover.title": "\u63D0\u793A\u8BCD\u5BF9\u6BD4",
     "promptPopover.summary": "\u539F\u59CB {original} \xB7 \u4F18\u5316 {optimized}",
     "promptPopover.original": "\u539F\u59CB\u63D0\u793A\u8BCD",
@@ -12015,6 +14731,7 @@
     "colors.modifyValue": "\u4FEE\u6539\u989C\u8272 {value}",
     "colors.removeValue": "\u79FB\u9664\u989C\u8272 {value}",
     "taskGroup.today": "\u4ECA\u5929",
+    "taskGroup.current": "\u5F53\u524D\u67E5\u770B",
     "taskGroup.yesterday": "\u6628\u5929",
     "taskGroup.last7": "\u6700\u8FD1 7 \u5929",
     "taskGroup.older": "\u66F4\u65E9",
@@ -12067,6 +14784,14 @@
     "networkEgress.direct": "\u76F4\u8FDE",
     "networkEgress.custom": "\u81EA\u5B9A\u4E49",
     "networkEgress.customProxy": "\u81EA\u5B9A\u4E49\u4EE3\u7406\u5730\u5740",
+    "networkEgress.timeout": "\u5355\u6B21\u751F\u56FE\u8D85\u65F6",
+    "networkEgress.timeoutUnit": "\u5206\u949F",
+    "networkEgress.retryCount": "\u5931\u8D25\u540E\u91CD\u8BD5",
+    "networkEgress.retryUnit": "\u6B21",
+    "networkEgress.requestPolicyHelp": "\u4EC5\u5F71\u54CD\u4E4B\u540E\u5F00\u59CB\u7684\u751F\u56FE\u8BF7\u6C42\uFF1B\u6BCF\u6B21\u81EA\u52A8\u91CD\u8BD5\u90FD\u4F1A\u91CD\u65B0\u8BA1\u7B97\u8D85\u65F6\u65F6\u95F4\u3002",
+    "networkEgress.timeoutInvalid": "\u8BF7\u8F93\u5165 1\u201330 \u7684\u6574\u6570\u5206\u949F",
+    "networkEgress.retryInvalid": "\u8BF7\u8F93\u5165 0\u20135 \u7684\u6574\u6570\u6B21\u6570",
+    "networkEgress.environmentTimeoutActive": "\u5F53\u524D\u4F7F\u7528\u73AF\u5883\u53D8\u91CF\u8D85\u65F6\uFF1A{seconds} \u79D2\uFF1B\u4FDD\u5B58\u540E\u5C06\u6539\u7528\u4E0A\u65B9\u8BBE\u7F6E\u3002",
     "networkEgress.currentRoute": "\u5F53\u524D\u51FA\u53E3\uFF1A{route}",
     "networkEgress.test": "\u68C0\u6D4B\u8FDE\u63A5",
     "networkEgress.save": "\u4FDD\u5B58\u5E76\u5E94\u7528",
@@ -12109,7 +14834,8 @@
     "apiSettings.copyProviderWithoutKeyStatus": "\u5DF2\u590D\u5236\u914D\u7F6E\uFF0C\u53EF\u4FEE\u6539\u540D\u79F0\u3001\u6A21\u578B\u6216\u586B\u5199 API Key \u540E\u4FDD\u5B58",
     "apiSettings.sortProviders": "\u6392\u5E8F",
     "apiSettings.finishSortProviders": "\u5B8C\u6210",
-    "apiSettings.sortProviderModeStatus": "\u6B63\u5728\u6392\u5E8F\u4F9B\u5E94\u5546",
+    "apiSettings.sortProviderModeStatus": "\u62D6\u52A8\u624B\u67C4\u6392\u5E8F\uFF0C\u4E5F\u53EF\u4F7F\u7528\u65B9\u5411\u952E\u8C03\u6574",
+    "apiSettings.sortProviderHandleAria": "\u62D6\u52A8\u6392\u5E8F {provider}\uFF0C\u4E5F\u53EF\u4F7F\u7528\u65B9\u5411\u952E\u6216 Home\u3001End \u952E\u8C03\u6574",
     "apiSettings.sortProviderStatus": "\u4F9B\u5E94\u5546\u6392\u5E8F\u5DF2\u8C03\u6574\uFF0C\u6B63\u5728\u81EA\u52A8\u4FDD\u5B58",
     "apiSettings.moveProviderUp": "\u4E0A\u79FB",
     "apiSettings.moveProviderDown": "\u4E0B\u79FB",
@@ -12362,6 +15088,7 @@
     "batch.selected": "\u5DF2\u9078\u64C7 0 \u500B",
     "batch.selectedCount": "\u5DF2\u9078\u64C7{count}\u500B",
     "batch.selectCurrentGroup": "\u5168\u9078\u672C\u7D44",
+    "batch.selectWaiting": "\u5168\u9078\u7B49\u5F85\u4E2D",
     "batch.archivedCount": "\u5DF2\u6B78\u6A94{count}\u500B\u6703\u8A71",
     "batch.archiveFailed": "\u6279\u6B21\u6B78\u6A94\u5931\u6557",
     "batch.runningCannotDeleteSelected": "\u9078\u53D6\u7684\u6703\u8A71\u6B63\u5728\u57F7\u884C\uFF0C\u4E14\u7121\u6CD5\u522A\u9664",
@@ -12375,14 +15102,15 @@
     "batch.cancelSelected": "\u53D6\u6D88\u4EFB\u52D9",
     "batch.noActiveSelected": "\u6240\u9078\u4EFB\u52D9\u5DF2\u4E0D\u5728\u57F7\u884C\u6216\u7B49\u5019\u4F47\u5217\u4E2D",
     "batch.cancelTitle": "\u53D6\u6D88 {count} \u500B\u4EFB\u52D9\uFF1F",
-    "batch.cancelMessage": "\u57F7\u884C\u4E2D\u7684\u4EFB\u52D9\u6703\u505C\u6B62\uFF0C\u7B49\u5019\u4E2D\u7684\u4EFB\u52D9\u6703\u96E2\u958B\u4F47\u5217\uFF1B\u6B77\u53F2\u8A18\u9304\u90FD\u6703\u4FDD\u7559\u3002",
+    "batch.cancelMessage": "\u7B49\u5019\u4EFB\u52D9\u6703\u7ACB\u5373\u53D6\u6D88\u3002\u57F7\u884C\u4E2D\u7684\u670D\u52D9\u5546\u547C\u53EB\u5728\u8FD4\u56DE\u524D\u53EF\u80FD\u4ECD\u6703\u7E7C\u7E8C\uFF0C\u4EA6\u53EF\u80FD\u4ECD\u6703\u8A08\u8CBB\uFF1B\u6B77\u53F2\u8A18\u9304\u90FD\u6703\u4FDD\u7559\u3002",
     "batch.cancelDetail": "\u57F7\u884C {running} \u500B \xB7 \u7B49\u5019 {waiting} \u500B",
     "batch.cancelConfirm": "\u78BA\u8A8D\u53D6\u6D88",
-    "batch.cancelResult": "\u5DF2\u53D6\u6D88 {cancelled} \u500B\uFF0C\u7565\u904E {skipped} \u500B\uFF0C\u5931\u6557 {failed} \u500B",
+    "batch.cancelResult": "\u5DF2\u53D6\u6D88 {cancelled} \u500B\uFF0C\u5DF2\u8981\u6C42\u53D6\u6D88 {requested} \u500B\uFF0C\u7565\u904E {skipped} \u500B\uFF0C\u5931\u6557 {failed} \u500B",
     "batch.cancelFailed": "\u6279\u6B21\u53D6\u6D88\u5931\u6557",
     "action.archive": "\u6B78\u6A94",
     "action.delete": "\u522A\u9664",
     "action.cancel": "\u53D6\u6D88",
+    "action.stop": "\u505C\u6B62",
     "action.edit": "\u7DE8\u8F2F",
     "action.clear": "\u6E05\u7A7A",
     "action.paste": "\u8CBC\u4E0A",
@@ -12410,13 +15138,13 @@
     "queue.waitingActions": "\u7B49\u5F85\u4EFB\u52D9\u4F47\u5217\u64CD\u4F5C",
     "queue.cancelRunning": "\u53D6\u6D88",
     "queue.cancelRunningTitle": "\u53D6\u6D88\u57F7\u884C\u4EFB\u52D9",
-    "queue.dragWaiting": "\u62D6\u66F3\u8ABF\u6574\u7B49\u5F85\u9806\u5E8F",
+    "queue.dragWaiting": "\u6309\u4F4F\u5361\u7247\u4E0A\u4E0B\u62D6\u66F3\u6392\u5E8F",
     "queue.dragSort": "\u62D6\u66F3\u6392\u5E8F",
     "queue.moveUp": "\u4E0A",
     "queue.moveUpTitle": "\u4E0A\u79FB\u7B49\u5F85\u4EFB\u52D9",
     "queue.moveDown": "\u4E0B",
     "queue.moveDownTitle": "\u4E0B\u79FB\u7B49\u5F85\u4EFB\u52D9",
-    "queue.promote": "\u9802",
+    "queue.promote": "\u7F6E\u9802",
     "queue.promoteTitle": "\u7F6E\u9802\u7B49\u5F85\u4EFB\u52D9",
     "queue.promoteFailed": "\u7F6E\u9802\u5931\u6557",
     "queue.deleteWaitingShort": "\u522A",
@@ -12427,12 +15155,13 @@
     "queue.queuedDeleted": "\u4F47\u5217\u4EFB\u52D9\u5DF2\u522A\u9664",
     "queue.cancelRunningConfirm": "\u53D6\u6D88\u4EFB\u52D9",
     "queue.cancelRunningTitleConfirm": "\u53D6\u6D88\u57F7\u884C\u4EFB\u52D9\uFF1F",
-    "queue.cancelRunningMessage": "\u76EE\u524D\u4EFB\u52D9\u6703\u505C\u6B62\uFF0C\u6B77\u53F2\u8A18\u9304\u6703\u4FDD\u7559\u3002",
+    "queue.cancelRunningMessage": "\u5C07\u50B3\u9001\u53D6\u6D88\u8981\u6C42\u3002\u670D\u52D9\u5546\u547C\u53EB\u5728\u8FD4\u56DE\u524D\u53EF\u80FD\u4ECD\u6703\u7E7C\u7E8C\uFF0C\u4EA6\u53EF\u80FD\u4ECD\u6703\u8A08\u8CBB\uFF1B\u6B77\u53F2\u8A18\u9304\u6703\u4FDD\u7559\u3002",
     "queue.cancelRunningFailed": "\u53D6\u6D88\u4EFB\u52D9\u5931\u6557",
+    "queue.cancellationPending": "\u5DF2\u8981\u6C42\u53D6\u6D88\u3002\u670D\u52D9\u5546\u547C\u53EB\u5728\u8FD4\u56DE\u524D\u53EF\u80FD\u4ECD\u6703\u7E7C\u7E8C\uFF0C\u4EA6\u53EF\u80FD\u4ECD\u6703\u8A08\u8CBB\u3002",
     "queue.runningCancelled": "\u4EFB\u52D9\u5DF2\u53D6\u6D88",
     "queue.reorderFailed": "\u4F47\u5217\u6392\u5E8F\u5931\u6557",
     "queue.realtimeUpdateFailed": "\u5373\u6642\u72C0\u614B\u66F4\u65B0\u5931\u6557",
-    "queue.realtimeDisconnected": "\u5373\u6642\u72C0\u614B\u9023\u7DDA\u5DF2\u65B7\u958B\uFF0C\u91CD\u65B0\u6574\u7406\u9801\u9762\u53EF\u6062\u5FA9",
+    "queue.realtimeDisconnected": "\u5373\u6642\u72C0\u614B\u9023\u7DDA\u5DF2\u4E2D\u65B7\uFF0C\u6B63\u5728\u81EA\u52D5\u91CD\u65B0\u9023\u7DDA\u2026",
     "queue.readFailed": "\u4F47\u5217\u8B80\u53D6\u5931\u6557",
     "status.waiting": "\u7B49\u5F85\u4EFB\u52D9",
     "status.shownActiveTasks": "\u5DF2\u986F\u793A\u9032\u884C\u4E2D\u4EFB\u52D9",
@@ -12440,6 +15169,7 @@
     "taskStatus.submitting": "\u63D0\u4EA4\u4E2D",
     "taskStatus.running": "\u751F\u6210\u4E2D",
     "taskStatus.runningWithElapsed": "\u751F\u6210\u4E2D \xB7{elapsed}",
+    "taskStatus.cancelling": "\u6B63\u5728\u53D6\u6D88",
     "taskStatus.completed": "\u5DF2\u5B8C\u6210",
     "taskStatus.partialFailed": "\u90E8\u5206\u5931\u6557",
     "taskStatus.failed": "\u5931\u6557",
@@ -12468,7 +15198,6 @@
     "taskCard.textToImageThumb": "\u6587\u751F\u5716\u4EFB\u52D9\u7E2E\u5716",
     "taskCard.imageToImageThumb": "\u5716\u751F\u5716\u4EFB\u52D9\u7E2E\u5716",
     "taskCard.failedThumb": "\u4EFB\u52D9\u5931\u6557",
-    "taskCard.textBadge": "\u6587",
     "taskMode.edit": "\u7DE8\u8F2F",
     "taskMode.generate": "\u751F\u6210",
     "document.generatingQueue": "\u751F\u6210\u4E2D \xB7 \u4F47\u5217{total}",
@@ -12482,12 +15211,114 @@
     "historyLibrary.openFull": "\u958B\u555F\u5B8C\u6574\u6B77\u53F2\u5EAB",
     "history.documentTitle": "\u6B77\u53F2\u5EAB - iLab CONJURE",
     "history.back": "\u8FD4\u56DE\u751F\u6210\u9801",
+    "history.homeAria": "\u8FD4\u56DE iLab CONJURE \u751F\u6210\u9801",
+    "history.backToGenerator": "\u8FD4\u56DE\u751F\u6210\u9801",
     "history.title": "\u6B77\u53F2\u5EAB",
     "history.loading": "\u8F09\u5165\u4E2D",
     "history.total": "{total}\u500B\u4EFB\u52D9 \xB7{archived}\u5DF2\u6B78\u6A94",
     "history.search": "\u641C\u5C0B",
     "history.searchPlaceholder": "\u641C\u5C0B\u63D0\u793A\u8A5E\u6216\u4EFB\u52D9ID",
     "history.clear": "\u6E05\u7A7A",
+    "history.activeFilterCount": "\u5DF2\u7BE9\u9078 \xB7 {count} \u9805",
+    "history.clearAllFilters": "\u6E05\u9664\u5168\u90E8",
+    "history.removeFilter": "\u79FB\u9664\u7BE9\u9078\uFF1A{label}",
+    "history.filtersActive": "\u4EFB\u52D9\u7BE9\u9078\uFF0C\u5DF2\u555F\u7528 {count} \u9805",
+    "history.favorites": "\u6536\u85CF",
+    "history.onlyFavorites": "\u53EA\u770B\u6536\u85CF",
+    "history.favoriteTask": "\u6536\u85CF\u4EFB\u52D9",
+    "history.unfavoriteTask": "\u53D6\u6D88\u6536\u85CF",
+    "history.tags": "\u6A19\u7C64",
+    "history.untagged": "\u7121\u6A19\u7C64",
+    "history.manageTags": "\u7BA1\u7406\u6A19\u7C64",
+    "history.createTag": "\u5EFA\u7ACB\u6A19\u7C64",
+    "history.renameTag": "\u91CD\u65B0\u547D\u540D",
+    "history.deleteTag": "\u522A\u9664",
+    "history.deleteTagAffected": "\u522A\u9664\uFF08\u5F71\u97FF {count} \u500B\u4EFB\u52D9\uFF09",
+    "history.addTag": "\u52A0\u5165\u6A19\u7C64",
+    "history.removeTag": "\u79FB\u9664\u6A19\u7C64",
+    "history.favoriteSelected": "\u6536\u85CF",
+    "history.unfavoriteSelected": "\u53D6\u6D88\u6536\u85CF",
+    "history.organizeSelected": "\u6574\u7406",
+    "history.exitSelection": "\u7D50\u675F\u6279\u91CF\u9078\u64C7",
+    "history.organizationFailed": "\u6536\u85CF\u6216\u6A19\u7C64\u66F4\u65B0\u5931\u6557",
+    "history.tagNameConflict": "\u9019\u500B\u6A19\u7C64\u540D\u7A31\u5DF2\u5B58\u5728",
+    "history.noTags": "\u9084\u6C92\u6709\u6A19\u7C64",
+    "history.backendRestartRequired": "\u6B77\u53F2\u5EAB\u529F\u80FD\u5DF2\u66F4\u65B0\uFF0C\u8ACB\u91CD\u65B0\u555F\u52D5\u61C9\u7528\u7A0B\u5F0F\u5F8C\u518D\u8A66",
+    "history.export": "\u532F\u51FA",
+    "history.exportImagesOnly": "\u53EA\u6709\u5716\u7247",
+    "history.exportImagesWithPrompts": "\u5716\u7247\uFF0B\u63D0\u793A\u8A5E",
+    "history.exportPreparing": "\u6B63\u5728\u6E96\u5099\u532F\u51FA\u2026",
+    "history.exportStarted": "\u5DF2\u958B\u59CB\u4E0B\u8F09",
+    "history.exportSummary": "{taskCount} \u500B\u4EFB\u52D9 \xB7 {imageCount} \u5F35\u5716\u7247",
+    "history.exportFailed": "\u532F\u51FA\u5931\u6557",
+    "historyBackup.open": "\u4EFB\u52D9\u5099\u4EFD",
+    "historyBackup.importOpen": "\u532F\u5165\u5099\u4EFD",
+    "historyBackup.mode": "\u4EFB\u52D9\u5099\u4EFD",
+    "historyBackup.description": "\u5132\u5B58\u4EFB\u52D9\u8CC7\u6599\u53CA\u76F8\u95DC\u6A94\u6848\uFF0C\u53EF\u5728\u76F8\u5BB9\u7248\u672C\u7684 iLab CONJURE \u4E2D\u532F\u5165\u9084\u539F\u3002",
+    "historyBackup.scopeLegend": "\u5099\u4EFD\u7BC4\u570D",
+    "historyBackup.scopeHelp": "\u76EE\u524D\u7BE9\u9078\u53CA\u5168\u90E8\u7BC4\u570D\u7531\u672C\u6A5F\u5B8C\u6574\u7D71\u8A08\uFF0C\u4E0D\u53D7\u6B64\u9801\u986F\u793A\u6578\u91CF\u5F71\u97FF\u3002",
+    "historyBackup.scopeSelected": "\u5DF2\u9078\u4EFB\u52D9",
+    "historyBackup.scopeFiltered": "\u76EE\u524D\u7BE9\u9078\u7D50\u679C",
+    "historyBackup.scopeAll": "\u5168\u90E8\u6B77\u53F2\u4EFB\u52D9",
+    "historyBackup.scopeCount": "{eligible}/{total} \u500B\u53EF\u5099\u4EFD",
+    "historyBackup.scopeCounting": "\u6B63\u5728\u7D71\u8A08\u2026",
+    "historyBackup.scopeCountUnavailable": "\u66AB\u6642\u7121\u6CD5\u7D71\u8A08",
+    "historyBackup.scopeNoneSelected": "\u5C1A\u672A\u9078\u64C7\u4EFB\u52D9",
+    "historyBackup.willBackup": "\u5C07\u5099\u4EFD {eligible} \u500B\u4EFB\u52D9\uFF1B{excluded} \u500B\u672A\u5B8C\u6210\u4EFB\u52D9\u6703\u88AB\u6392\u9664\u3002",
+    "historyBackup.selectTasksFirst": "\u8ACB\u5148\u9078\u64C7\u81F3\u5C11\u4E00\u500B\u4EFB\u52D9\u3002",
+    "historyBackup.scopeLockedUnknown": "\u672C\u6B21\u5099\u4EFD\u7BC4\u570D",
+    "historyBackup.scopeLocked": "\u7BC4\u570D\u5DF2\u9396\u5B9A\uFF1A{scope} \xB7 \u5C07\u5099\u4EFD {eligible} \u500B\u4EFB\u52D9",
+    "historyBackup.scopeLockedPending": "\u7BC4\u570D\u5DF2\u9396\u5B9A\uFF1A{scope} \xB7 \u6B63\u5728\u7D71\u8A08\u53EF\u5099\u4EFD\u4EFB\u52D9",
+    "historyBackup.progressLabel": "\u5099\u4EFD\u9032\u5EA6",
+    "historyBackup.start": "\u958B\u59CB\u5099\u4EFD",
+    "historyBackup.cancel": "\u53D6\u6D88\u5099\u4EFD",
+    "historyBackup.download": "\u4E0B\u8F09\u5099\u4EFD",
+    "historyBackup.dismiss": "\u95DC\u9589\u7D50\u679C",
+    "historyBackup.discard": "\u4E0D\u4E0B\u8F09\u4E26\u95DC\u9589",
+    "historyBackup.closePanel": "\u95DC\u9589\u9762\u677F",
+    "historyBackup.downloadStartedTitle": "\u4E0B\u8F09\u5DF2\u958B\u59CB",
+    "historyBackup.idle": "\u5C31\u7DD2",
+    "historyBackup.queued": "\u6392\u968A\u4E2D",
+    "historyBackup.planning": "\u6B63\u5728\u898F\u5283",
+    "historyBackup.packing": "\u6B63\u5728\u5C01\u88DD",
+    "historyBackup.ready": "\u53EF\u4E0B\u8F09",
+    "historyBackup.readyDetail": "\u5099\u4EFD\u5DF2\u5C31\u7DD2\u3002\u8ACB\u5728 1 \u5C0F\u6642\u5167\u4E0B\u8F09\uFF1B\u4E0D\u4E0B\u8F09\u4E26\u95DC\u9589\u6703\u7ACB\u5373\u522A\u9664\u81E8\u6642\u6A94\u6848\u3002",
+    "historyBackup.downloaded": "\u8ACB\u78BA\u8A8D\u700F\u89BD\u5668\u5DF2\u5132\u5B58\u6A94\u6848\uFF1B\u5B8C\u6210\u5F8C\u5373\u53EF\u95DC\u9589\u6B64\u9762\u677F\u3002\u81E8\u6642\u6A94\u6848\u6703\u5728\u50B3\u8F38\u7D50\u675F\u5F8C\u522A\u9664\u3002",
+    "historyBackup.missingInputsWarning": "{tasks} \u500B\u4EFB\u52D9\u7F3A\u5C11 {files} \u500B\u8F38\u5165\u6A94\u6848\uFF1B\u9019\u4E9B\u6A94\u6848\u4E0D\u6703\u5305\u542B\u5728\u5099\u4EFD\u4E2D\uFF0C\u63D0\u793A\u8A5E\u53CA\u8F38\u51FA\u7D50\u679C\u4ECD\u6703\u6B63\u5E38\u532F\u51FA\u3002",
+    "historyBackup.failed": "\u5099\u4EFD\u5931\u6557",
+    "historyBackup.cancelled": "\u5DF2\u53D6\u6D88",
+    "historyBackup.expired": "\u5DF2\u904E\u671F",
+    "historyBackup.interrupted": "\u5DF2\u4E2D\u65B7",
+    "historyBackup.stats": "\u5171 {total} \u500B \xB7 \u53EF\u5099\u4EFD {eligible} \u500B \xB7 \u6392\u9664 {excluded} \u500B \xB7 {bytes}",
+    "historyBackup.errorDisk": "\u78C1\u789F\u7A7A\u9593\u4E0D\u8DB3\u3002",
+    "historyBackup.errorSourceChanged": "\u5099\u4EFD\u671F\u9593\u4F86\u6E90\u8CC7\u6599\u6709\u8B8A\u3002",
+    "historyBackup.errorEmpty": "\u6C92\u6709\u53EF\u5099\u4EFD\u7684\u4EFB\u52D9\u3002",
+    "historyBackup.errorIo": "\u7121\u6CD5\u5EFA\u7ACB\u5099\u4EFD\u3002",
+    "historyImport.title": "\u532F\u5165\u4EFB\u52D9\u5099\u4EFD",
+    "historyImport.choose": "\u9078\u64C7 ZIP \u5099\u4EFD\u5957\u4EF6",
+    "historyImport.uploading": "\u6B63\u5728\u4E0A\u8F09",
+    "historyImport.validating": "\u6B63\u5728\u9A57\u8B49",
+    "historyImport.validated": "\u5DF2\u9A57\u8B49",
+    "historyImport.preview": "\u9084\u539F\u9810\u89BD",
+    "historyImport.restorable": "\u53EF\u9084\u539F",
+    "historyImport.duplicate": "\u91CD\u8907",
+    "historyImport.conflict": "\u885D\u7A81",
+    "historyImport.invalid": "\u7121\u6548",
+    "historyImport.confirm": "\u78BA\u8A8D\u9084\u539F",
+    "historyImport.restoring": "\u6B63\u5728\u9084\u539F",
+    "historyImport.restored": "\u5DF2\u9084\u539F",
+    "historyImport.failed": "\u9084\u539F\u5931\u6557",
+    "historyImport.interrupted": "\u5DF2\u4E2D\u65B7",
+    "historyImport.cancelled": "\u5DF2\u53D6\u6D88",
+    "historyImport.result": "\u9084\u539F\u7D50\u679C",
+    "historyImport.thumbnailWarnings": "\u7E2E\u5716\u8B66\u544A",
+    "historyImport.cleanupWarnings": "\u6E05\u7406\u8B66\u544A",
+    "historyImport.reselect": "\u8ACB\u91CD\u65B0\u9078\u64C7\u539F ZIP \u7E7C\u7E8C\u3002",
+    "historyImport.noOverwrite": "\u53EA\u65B0\u589E\u4EFB\u52D9\uFF0C\u7D55\u4E0D\u8986\u5BEB\u73FE\u6709\u4EFB\u52D9\u3002",
+    "historyImport.reasonInvalid": "\u5099\u4EFD\u8CC7\u6599\u7121\u6548",
+    "historyImport.reasonSensitive": "\u5305\u542B\u53D7\u4FDD\u8B77\u8CC7\u6599",
+    "historyImport.reasonMismatch": "\u8207\u5099\u4EFD\u6E05\u55AE\u4E0D\u4E00\u81F4",
+    "history.closeExport": "\u95DC\u9589\u532F\u51FA\u9078\u64C7",
     "history.type": "\u985E\u578B",
     "history.allTypes": "\u5168\u90E8\u985E\u578B",
     "history.type.textToImage": "\u6587\u751F\u5716",
@@ -12668,6 +15499,7 @@
     "language.ru": "\u0420\u0443\u0441\u0441\u043A\u0438\u0439",
     "language.it": "Italiano",
     "language.hi": "\u0939\u093F\u0928\u094D\u0926\u0940",
+    "language.vi": "Ti\u1EBFng Vi\u1EC7t",
     "auth.label": "\u6388\u6B0A\u4F86\u6E90",
     "auth.checking": "\u6388\u6B0A\u6AA2\u67E5\u4E2D",
     "auth.missingCodexSession": "\u6C92\u6709\u5075\u6E2C\u5230Codex\u767B\u5165\u614B",
@@ -12694,8 +15526,16 @@
     "recentAssets.defaultName": "\u6700\u8FD1\u4E0A\u50B3",
     "recentAssets.use": "\u4F7F\u7528{name}",
     "recentAssets.delete": "\u522A\u9664{name}",
+    "recentAssets.inUse": "\u88AB {count} \u500B\u4EFB\u52D9\u5F15\u7528\uFF0C\u7121\u6CD5\u6C38\u4E45\u522A\u9664\uFF1B\u53EF\u53EA\u5F9E\u6700\u8FD1\u4E0A\u50B3\u96B1\u85CF",
+    "recentAssets.hide": "\u5F9E\u6700\u8FD1\u4E0A\u50B3\u96B1\u85CF{name}",
+    "recentAssets.hideTitle": "\u5F9E\u6700\u8FD1\u4E0A\u50B3\u96B1\u85CF\uFF1F",
+    "recentAssets.hideMessage": "\u9019\u5F35\u5716\u7247\u88AB {count} \u500B\u4EFB\u52D9\u5F15\u7528\uFF0C\u7121\u6CD5\u6C38\u4E45\u522A\u9664\u3002\u96B1\u85CF\u53EA\u6703\u5F9E\u300C\u6700\u8FD1\u4E0A\u50B3\u300D\u79FB\u9664\uFF1B\u539F\u5716\u3001\u7576\u524D\u8F38\u5165\u53CA\u6B77\u53F2\u4EFB\u52D9\u5747\u6703\u4FDD\u7559\u3002",
+    "recentAssets.hideFailed": "\u6700\u8FD1\u4E0A\u50B3\u96B1\u85CF\u5931\u6557",
+    "recentAssets.hidden": "\u5DF2\u5F9E\u6700\u8FD1\u4E0A\u50B3\u96B1\u85CF\uFF1B\u539F\u5716\u53CA\u6B77\u53F2\u4EFB\u52D9\u5747\u5DF2\u4FDD\u7559",
+    "recentAssets.hidePreviews": "\u96B1\u85CF\u6700\u8FD1\u4E0A\u50B3\u5716\u7247",
+    "recentAssets.showPreviews": "\u986F\u793A\u6700\u8FD1\u4E0A\u50B3\u5716\u7247",
     "recentAssets.deleteTitle": "\u522A\u9664\u6700\u8FD1\u4E0A\u50B3\uFF1F",
-    "recentAssets.deleteMessage": "\u6703\u5F9E\u300C\u6700\u8FD1\u4E0A\u50B3\u300D\u522A\u9664\u9019\u5F35\u5716\u7247\u3002\u5982\u679C\u5B83\u5DF2\u88AB\u52A0\u5165\u5230\u7576\u524D\u5716\u50CF\u8F38\u5165\uFF0C\u5247\u6703\u5F9E\u7576\u524D\u8F38\u5165\u4E2D\u79FB\u9664\uFF1B\u6B77\u53F2\u4EFB\u52D9\u4E2D\u53C3\u7167\u9019\u5F35\u6700\u8FD1\u4E0A\u50B3\u5716\u7684\u8F38\u5165\u9810\u89BD\u4E5F\u6703\u5931\u6548\u3002\u4E0D\u6703\u5F71\u97FF\u516C\u7528\u5716\u5EAB\u3002",
+    "recentAssets.deleteMessage": "\u9019\u5F35\u5716\u7247\u672A\u88AB\u4EFB\u4F55\u4EFB\u52D9\u5F15\u7528\uFF0C\u5C07\u6C38\u4E45\u522A\u9664\u539F\u5716\uFF0C\u4E26\u5F9E\u7576\u524D\u8F38\u5165\u79FB\u9664\u76F8\u540C\u5716\u7247\u3002\u516C\u7528\u5716\u5EAB\u4E0D\u53D7\u5F71\u97FF\u3002",
     "recentAssets.loadFailed": "\u6700\u8FD1\u4E0A\u50B3\u8B80\u53D6\u5931\u6557",
     "recentAssets.deleteFailed": "\u6700\u8FD1\u4E0A\u50B3\u522A\u9664\u5931\u6557",
     "recentAssets.deleted": "\u6700\u8FD1\u4E0A\u50B3\u5DF2\u522A\u9664",
@@ -12720,11 +15560,13 @@
     "referenceCollector.alreadyStaged": "\u5DF2\u5728\u5F85\u52A0\u5165\u53C3\u8003\u5716",
     "referenceCollector.staged": "\u5DF2\u66AB\u5B58{count}\u5F35\u53C3\u8003\u5716",
     "referenceCollector.title": "\u5F85\u52A0\u5165\u53C3\u8003\u5716 \xB7{count}\u5F35",
-    "referenceCollector.addAll": "\u5168\u90E8\u52A0\u5165\u53C3\u8003\u5716",
+    "referenceCollector.addAll": "\u5168\u90E8\u52A0\u5165",
+    "referenceCollector.replaceAll": "\u53D6\u4EE3\u73FE\u6709",
     "referenceCollector.itemFallback": "\u5F85\u52A0\u5165\u53C3\u8003\u5716",
     "referenceCollector.remove": "\u79FB\u9664\u5F85\u52A0\u5165\u53C3\u8003\u5716",
     "referenceCollector.cleared": "\u5F85\u52A0\u5165\u53C3\u8003\u5716\u5DF2\u6E05\u7A7A",
     "referenceCollector.added": "\u5DF2\u52A0\u5165{count}\u5F35\u53C3\u8003\u5716",
+    "referenceCollector.replaced": "\u5DF2\u53D6\u4EE3\u70BA{count}\u5F35\u53C3\u8003\u5716",
     "referenceCollector.addFailed": "\u5F85\u52A0\u5165\u53C3\u8003\u5716\u52A0\u5165\u5931\u6557",
     "referenceCollector.readFailed": "\u5716\u7247\u8B80\u53D6\u5931\u6557\uFF1A{status}",
     "gallery.quick": "\u5FEB\u901F\u9078\u64C7\u516C\u7528\u5716\u5EAB",
@@ -12842,7 +15684,7 @@
     "output.promptHelpTitle": "\u63D0\u793A\u8A5E\u8655\u7406",
     "output.promptHelp.responsesChannel": "Responses \xB7 \u4E3B\u6A21\u578B\u53C3\u8207",
     "output.promptHelp.imagesChannel": "Images \xB7 \u76F4\u63A5\u751F\u6210",
-    "output.promptHelp.responses.original": "\u539F\u6587\u4EA4\u7D66\u4E3B\u6A21\u578B\uFF0C\u4E26\u8981\u6C42\u5716\u50CF\u5DE5\u5177\u76E1\u91CF\u9010\u5B57\u4F7F\u7528\uFF1B\u4E3B\u6A21\u578B\u4ECD\u53EF\u80FD\u7522\u751F revised prompt\u3002",
+    "output.promptHelp.responses.original": "\u6309\u539F\u6587\u50B3\u9001\uFF0C\u4E0D\u52A0\u5165\u61C9\u7528\u7A0B\u5F0F\u5C64\u63D0\u793A\u8A5E\u898F\u5247\uFF1B\u670D\u52D9\u5546\u4ECD\u53EF\u80FD\u50B3\u56DE revised prompt\uFF0C\u751F\u6210\u7D50\u679C\u4EA6\u53EF\u80FD\u8207\u6587\u5B57\u7D04\u675F\u6709\u504F\u5DEE\u3002",
     "output.promptHelp.responses.strict": "\u5141\u8A31\u4E3B\u6A21\u578B\u6574\u7406\u6216\u64F4\u5BEB\uFF0C\u4F46\u5FC5\u9808\u4FDD\u7559\u7269\u4EF6\u3001\u6587\u5B57\u3001\u984F\u8272\u3001\u69CB\u5716\u7B49\u786C\u6027\u9650\u5236\u3002",
     "output.promptHelp.responses.automatic": "\u4E0D\u52A0\u5165\u984D\u5916\u9650\u5236\uFF0C\u7531\u4E3B\u6A21\u578B\u7406\u89E3\u4E26\u512A\u5316\u5F8C\u547C\u53EB\u5716\u50CF\u5DE5\u5177\u3002",
     "output.promptHelp.images.original": "\u61C9\u7528\u7A0B\u5F0F\u4E0D\u52A0\u5165\u63D0\u793A\u8A5E\u898F\u5247\uFF0C\u6309\u7528\u6236\u539F\u6587\u76F4\u63A5\u63D0\u4EA4\u81F3\u5716\u50CF\u4ECB\u9762\u3002",
@@ -12937,6 +15779,16 @@
     "lightbox.close": "\u95DC\u9589\u9810\u89BD",
     "lightbox.previous": "\u4E0A\u4E00\u5F35",
     "lightbox.next": "\u4E0B\u4E00\u5F35",
+    "lightbox.zoomControls": "\u7E2E\u653E\u63A7\u5236",
+    "lightbox.zoomOut": "\u7E2E\u5C0F",
+    "lightbox.zoomIn": "\u653E\u5927",
+    "lightbox.fit": "\u9069\u5408",
+    "lightbox.fitPage": "\u9069\u5408\u9801\u9762",
+    "lightbox.actualSize": "100% \u539F\u59CB\u5C3A\u5BF8",
+    "lightbox.shortcuts": "\u5FEB\u6377\u9375\u63D0\u793A",
+    "lightbox.switchImage": "\u5207\u63DB\u5716\u7247",
+    "lightbox.switchTask": "\u5207\u63DB\u4EFB\u52D9",
+    "lightbox.wheelZoom": "\u6EFE\u8F2A\u7E2E\u653E",
     "promptPopover.title": "\u63D0\u793A\u8A5E\u5C0D\u6BD4",
     "promptPopover.summary": "\u539F\u59CB{original}\xB7 \u6700\u4F73\u5316{optimized}",
     "promptPopover.original": "\u539F\u59CB\u63D0\u793A\u8A5E",
@@ -13100,6 +15952,7 @@
     "colors.modifyValue": "\u4FEE\u6539\u984F\u8272{value}",
     "colors.removeValue": "\u79FB\u9664\u984F\u8272{value}",
     "taskGroup.today": "\u4ECA\u5929",
+    "taskGroup.current": "\u76EE\u524D\u6AA2\u8996",
     "taskGroup.yesterday": "\u6628\u5929",
     "taskGroup.last7": "\u6700\u8FD1 7 \u5929",
     "taskGroup.older": "\u66F4\u65E9",
@@ -13152,6 +16005,14 @@
     "networkEgress.direct": "\u76F4\u9023",
     "networkEgress.custom": "\u81EA\u8A02",
     "networkEgress.customProxy": "\u81EA\u8A02\u4EE3\u7406\u5730\u5740",
+    "networkEgress.timeout": "\u55AE\u6B21\u751F\u5716\u903E\u6642",
+    "networkEgress.timeoutUnit": "\u5206\u9418",
+    "networkEgress.retryCount": "\u5931\u6557\u5F8C\u91CD\u8A66",
+    "networkEgress.retryUnit": "\u6B21",
+    "networkEgress.requestPolicyHelp": "\u53EA\u5F71\u97FF\u4E4B\u5F8C\u958B\u59CB\u7684\u751F\u5716\u8ACB\u6C42\uFF1B\u6BCF\u6B21\u81EA\u52D5\u91CD\u8A66\u90FD\u6703\u91CD\u65B0\u8A08\u7B97\u903E\u6642\u6642\u9593\u3002",
+    "networkEgress.timeoutInvalid": "\u8ACB\u8F38\u5165 1\u201330 \u7684\u6574\u6578\u5206\u9418",
+    "networkEgress.retryInvalid": "\u8ACB\u8F38\u5165 0\u20135 \u7684\u6574\u6578\u6B21\u6578",
+    "networkEgress.environmentTimeoutActive": "\u76EE\u524D\u4F7F\u7528\u74B0\u5883\u8B8A\u6578\u903E\u6642\uFF1A{seconds} \u79D2\uFF1B\u5132\u5B58\u5F8C\u6703\u6539\u7528\u4E0A\u65B9\u8A2D\u5B9A\u3002",
     "networkEgress.currentRoute": "\u76EE\u524D\u51FA\u53E3\uFF1A{route}",
     "networkEgress.test": "\u6E2C\u8A66\u9023\u7DDA",
     "networkEgress.save": "\u5132\u5B58\u4E26\u5957\u7528",
@@ -13194,7 +16055,8 @@
     "apiSettings.copyProviderWithoutKeyStatus": "\u5DF2\u8907\u88FD\u914D\u7F6E\uFF0C\u53EF\u4FEE\u6539\u540D\u7A31\u3001\u6A21\u578B\u6216\u586B\u5BEBAPI Key\u5F8C\u5132\u5B58",
     "apiSettings.sortProviders": "\u6392\u5E8F",
     "apiSettings.finishSortProviders": "\u5B8C\u6210",
-    "apiSettings.sortProviderModeStatus": "\u6B63\u5728\u6392\u5E8F\u4F9B\u61C9\u5546",
+    "apiSettings.sortProviderModeStatus": "\u62D6\u66F3\u63A7\u5236\u9EDE\u6392\u5E8F\uFF0C\u4E5F\u53EF\u4F7F\u7528\u65B9\u5411\u9375\u8ABF\u6574",
+    "apiSettings.sortProviderHandleAria": "\u62D6\u66F3\u6392\u5E8F {provider}\uFF0C\u4E5F\u53EF\u4F7F\u7528\u65B9\u5411\u9375\u6216 Home\u3001End \u9375\u8ABF\u6574",
     "apiSettings.sortProviderStatus": "\u4F9B\u61C9\u5546\u6392\u5E8F\u5DF2\u8ABF\u6574\uFF0C\u6B63\u5728\u81EA\u52D5\u5132\u5B58",
     "apiSettings.moveProviderUp": "\u4E0A\u79FB",
     "apiSettings.moveProviderDown": "\u4E0B\u79FB",
@@ -13447,6 +16309,7 @@
     "batch.selected": "\u5DF2\u9078\u64C7 0 \u500B",
     "batch.selectedCount": "\u5DF2\u9078\u64C7{count}\u500B",
     "batch.selectCurrentGroup": "\u5168\u9078\u672C\u7D44",
+    "batch.selectWaiting": "\u5168\u9078\u7B49\u5F85\u4E2D",
     "batch.archivedCount": "\u5DF2\u6B78\u6A94{count}\u500B\u6703\u8A71",
     "batch.archiveFailed": "\u6279\u6B21\u6B78\u6A94\u5931\u6557",
     "batch.runningCannotDeleteSelected": "\u9078\u53D6\u7684\u6703\u8A71\u6B63\u5728\u57F7\u884C\uFF0C\u4E14\u7121\u6CD5\u522A\u9664",
@@ -13460,14 +16323,15 @@
     "batch.cancelSelected": "\u53D6\u6D88\u4EFB\u52D9",
     "batch.noActiveSelected": "\u6240\u9078\u4EFB\u52D9\u5DF2\u4E0D\u5728\u57F7\u884C\u6216\u7B49\u5F85\u4F47\u5217\u4E2D",
     "batch.cancelTitle": "\u53D6\u6D88 {count} \u500B\u4EFB\u52D9\uFF1F",
-    "batch.cancelMessage": "\u57F7\u884C\u4E2D\u7684\u4EFB\u52D9\u6703\u505C\u6B62\uFF0C\u7B49\u5F85\u4E2D\u7684\u4EFB\u52D9\u6703\u96E2\u958B\u4F47\u5217\uFF1B\u6B77\u53F2\u8A18\u9304\u90FD\u6703\u4FDD\u7559\u3002",
+    "batch.cancelMessage": "\u7B49\u5F85\u4EFB\u52D9\u6703\u7ACB\u5373\u53D6\u6D88\u3002\u57F7\u884C\u4E2D\u7684\u670D\u52D9\u5546\u547C\u53EB\u5728\u8FD4\u56DE\u524D\u53EF\u80FD\u4ECD\u6703\u7E7C\u7E8C\uFF0C\u4E5F\u53EF\u80FD\u4ECD\u6703\u8A08\u8CBB\uFF1B\u6B77\u53F2\u8A18\u9304\u90FD\u6703\u4FDD\u7559\u3002",
     "batch.cancelDetail": "\u57F7\u884C {running} \u500B \xB7 \u7B49\u5F85 {waiting} \u500B",
     "batch.cancelConfirm": "\u78BA\u8A8D\u53D6\u6D88",
-    "batch.cancelResult": "\u5DF2\u53D6\u6D88 {cancelled} \u500B\uFF0C\u7565\u904E {skipped} \u500B\uFF0C\u5931\u6557 {failed} \u500B",
+    "batch.cancelResult": "\u5DF2\u53D6\u6D88 {cancelled} \u500B\uFF0C\u5DF2\u8981\u6C42\u53D6\u6D88 {requested} \u500B\uFF0C\u7565\u904E {skipped} \u500B\uFF0C\u5931\u6557 {failed} \u500B",
     "batch.cancelFailed": "\u6279\u6B21\u53D6\u6D88\u5931\u6557",
     "action.archive": "\u6B78\u6A94",
     "action.delete": "\u522A\u9664",
     "action.cancel": "\u53D6\u6D88",
+    "action.stop": "\u505C\u6B62",
     "action.edit": "\u7DE8\u8F2F",
     "action.clear": "\u6E05\u7A7A",
     "action.paste": "\u8CBC\u4E0A",
@@ -13495,13 +16359,13 @@
     "queue.waitingActions": "\u7B49\u5F85\u4EFB\u52D9\u4F47\u5217\u64CD\u4F5C",
     "queue.cancelRunning": "\u53D6\u6D88",
     "queue.cancelRunningTitle": "\u53D6\u6D88\u57F7\u884C\u4EFB\u52D9",
-    "queue.dragWaiting": "\u62D6\u66F3\u8ABF\u6574\u7B49\u5F85\u9806\u5E8F",
+    "queue.dragWaiting": "\u6309\u4F4F\u5361\u7247\u4E0A\u4E0B\u62D6\u66F3\u6392\u5E8F",
     "queue.dragSort": "\u62D6\u66F3\u6392\u5E8F",
     "queue.moveUp": "\u4E0A",
     "queue.moveUpTitle": "\u4E0A\u79FB\u7B49\u5F85\u4EFB\u52D9",
     "queue.moveDown": "\u4E0B",
     "queue.moveDownTitle": "\u4E0B\u79FB\u7B49\u5F85\u4EFB\u52D9",
-    "queue.promote": "\u9802",
+    "queue.promote": "\u7F6E\u9802",
     "queue.promoteTitle": "\u7F6E\u9802\u7B49\u5F85\u4EFB\u52D9",
     "queue.promoteFailed": "\u7F6E\u9802\u5931\u6557",
     "queue.deleteWaitingShort": "\u522A",
@@ -13512,12 +16376,13 @@
     "queue.queuedDeleted": "\u4F47\u5217\u4EFB\u52D9\u5DF2\u522A\u9664",
     "queue.cancelRunningConfirm": "\u53D6\u6D88\u4EFB\u52D9",
     "queue.cancelRunningTitleConfirm": "\u53D6\u6D88\u57F7\u884C\u4EFB\u52D9\uFF1F",
-    "queue.cancelRunningMessage": "\u76EE\u524D\u4EFB\u52D9\u6703\u505C\u6B62\uFF0C\u6B77\u53F2\u8A18\u9304\u6703\u4FDD\u7559\u3002",
+    "queue.cancelRunningMessage": "\u5C07\u50B3\u9001\u53D6\u6D88\u8981\u6C42\u3002\u670D\u52D9\u5546\u547C\u53EB\u5728\u8FD4\u56DE\u524D\u53EF\u80FD\u4ECD\u6703\u7E7C\u7E8C\uFF0C\u4E5F\u53EF\u80FD\u4ECD\u6703\u8A08\u8CBB\uFF1B\u6B77\u53F2\u8A18\u9304\u6703\u4FDD\u7559\u3002",
     "queue.cancelRunningFailed": "\u53D6\u6D88\u4EFB\u52D9\u5931\u6557",
+    "queue.cancellationPending": "\u5DF2\u8981\u6C42\u53D6\u6D88\u3002\u670D\u52D9\u5546\u547C\u53EB\u5728\u8FD4\u56DE\u524D\u53EF\u80FD\u4ECD\u6703\u7E7C\u7E8C\uFF0C\u4E5F\u53EF\u80FD\u4ECD\u6703\u8A08\u8CBB\u3002",
     "queue.runningCancelled": "\u4EFB\u52D9\u5DF2\u53D6\u6D88",
     "queue.reorderFailed": "\u4F47\u5217\u6392\u5E8F\u5931\u6557",
     "queue.realtimeUpdateFailed": "\u5373\u6642\u72C0\u614B\u66F4\u65B0\u5931\u6557",
-    "queue.realtimeDisconnected": "\u5373\u6642\u72C0\u614B\u9023\u7DDA\u5DF2\u65B7\u958B\uFF0C\u91CD\u65B0\u6574\u7406\u9801\u9762\u53EF\u6062\u5FA9",
+    "queue.realtimeDisconnected": "\u5373\u6642\u72C0\u614B\u9023\u7DDA\u5DF2\u4E2D\u65B7\uFF0C\u6B63\u5728\u81EA\u52D5\u91CD\u65B0\u9023\u7DDA\u2026",
     "queue.readFailed": "\u4F47\u5217\u8B80\u53D6\u5931\u6557",
     "status.waiting": "\u7B49\u5F85\u4EFB\u52D9",
     "status.shownActiveTasks": "\u5DF2\u986F\u793A\u9032\u884C\u4E2D\u4EFB\u52D9",
@@ -13525,6 +16390,7 @@
     "taskStatus.submitting": "\u63D0\u4EA4\u4E2D",
     "taskStatus.running": "\u751F\u6210\u4E2D",
     "taskStatus.runningWithElapsed": "\u751F\u6210\u4E2D \xB7{elapsed}",
+    "taskStatus.cancelling": "\u6B63\u5728\u53D6\u6D88",
     "taskStatus.completed": "\u5DF2\u5B8C\u6210",
     "taskStatus.partialFailed": "\u90E8\u5206\u5931\u6557",
     "taskStatus.failed": "\u5931\u6557",
@@ -13553,7 +16419,6 @@
     "taskCard.textToImageThumb": "\u6587\u751F\u5716\u4EFB\u52D9\u7E2E\u5716",
     "taskCard.imageToImageThumb": "\u5716\u751F\u5716\u4EFB\u52D9\u7E2E\u5716",
     "taskCard.failedThumb": "\u4EFB\u52D9\u5931\u6557",
-    "taskCard.textBadge": "\u6587",
     "taskMode.edit": "\u7DE8\u8F2F",
     "taskMode.generate": "\u751F\u6210",
     "document.generatingQueue": "\u751F\u6210\u4E2D \xB7 \u4F47\u5217{total}",
@@ -13567,12 +16432,114 @@
     "historyLibrary.openFull": "\u958B\u555F\u5B8C\u6574\u6B77\u53F2\u5EAB",
     "history.documentTitle": "\u6B77\u53F2\u5EAB - iLab CONJURE",
     "history.back": "\u8FD4\u56DE\u751F\u6210\u9801",
+    "history.homeAria": "\u8FD4\u56DE iLab CONJURE \u751F\u6210\u9801",
+    "history.backToGenerator": "\u8FD4\u56DE\u751F\u6210\u9801",
     "history.title": "\u6B77\u53F2\u5EAB",
     "history.loading": "\u8F09\u5165\u4E2D",
     "history.total": "{total}\u500B\u4EFB\u52D9 \xB7{archived}\u5DF2\u6B78\u6A94",
     "history.search": "\u641C\u5C0B",
     "history.searchPlaceholder": "\u641C\u5C0B\u63D0\u793A\u8A5E\u6216\u4EFB\u52D9ID",
     "history.clear": "\u6E05\u7A7A",
+    "history.activeFilterCount": "\u5DF2\u7BE9\u9078 \xB7 {count} \u9805",
+    "history.clearAllFilters": "\u6E05\u9664\u5168\u90E8",
+    "history.removeFilter": "\u79FB\u9664\u7BE9\u9078\uFF1A{label}",
+    "history.filtersActive": "\u4EFB\u52D9\u7BE9\u9078\uFF0C\u5DF2\u555F\u7528 {count} \u9805",
+    "history.favorites": "\u6536\u85CF",
+    "history.onlyFavorites": "\u53EA\u770B\u6536\u85CF",
+    "history.favoriteTask": "\u6536\u85CF\u4EFB\u52D9",
+    "history.unfavoriteTask": "\u53D6\u6D88\u6536\u85CF",
+    "history.tags": "\u6A19\u7C64",
+    "history.untagged": "\u7121\u6A19\u7C64",
+    "history.manageTags": "\u7BA1\u7406\u6A19\u7C64",
+    "history.createTag": "\u5EFA\u7ACB\u6A19\u7C64",
+    "history.renameTag": "\u91CD\u65B0\u547D\u540D",
+    "history.deleteTag": "\u522A\u9664",
+    "history.deleteTagAffected": "\u522A\u9664\uFF08\u5F71\u97FF {count} \u500B\u4EFB\u52D9\uFF09",
+    "history.addTag": "\u52A0\u5165\u6A19\u7C64",
+    "history.removeTag": "\u79FB\u9664\u6A19\u7C64",
+    "history.favoriteSelected": "\u6536\u85CF",
+    "history.unfavoriteSelected": "\u53D6\u6D88\u6536\u85CF",
+    "history.organizeSelected": "\u6574\u7406",
+    "history.exitSelection": "\u7D50\u675F\u6279\u6B21\u9078\u53D6",
+    "history.organizationFailed": "\u6536\u85CF\u6216\u6A19\u7C64\u66F4\u65B0\u5931\u6557",
+    "history.tagNameConflict": "\u9019\u500B\u6A19\u7C64\u540D\u7A31\u5DF2\u5B58\u5728",
+    "history.noTags": "\u9084\u6C92\u6709\u6A19\u7C64",
+    "history.backendRestartRequired": "\u6B77\u53F2\u5EAB\u529F\u80FD\u5DF2\u66F4\u65B0\uFF0C\u8ACB\u91CD\u65B0\u555F\u52D5\u61C9\u7528\u7A0B\u5F0F\u5F8C\u518D\u8A66",
+    "history.export": "\u532F\u51FA",
+    "history.exportImagesOnly": "\u53EA\u6709\u5716\u7247",
+    "history.exportImagesWithPrompts": "\u5716\u7247\uFF0B\u63D0\u793A\u8A5E",
+    "history.exportPreparing": "\u6B63\u5728\u6E96\u5099\u532F\u51FA\u2026",
+    "history.exportStarted": "\u5DF2\u958B\u59CB\u4E0B\u8F09",
+    "history.exportSummary": "{taskCount} \u500B\u4EFB\u52D9 \xB7 {imageCount} \u5F35\u5716\u7247",
+    "history.exportFailed": "\u532F\u51FA\u5931\u6557",
+    "historyBackup.open": "\u4EFB\u52D9\u5099\u4EFD",
+    "historyBackup.importOpen": "\u532F\u5165\u5099\u4EFD",
+    "historyBackup.mode": "\u4EFB\u52D9\u5099\u4EFD",
+    "historyBackup.description": "\u5132\u5B58\u4EFB\u52D9\u8CC7\u6599\u8207\u76F8\u95DC\u6A94\u6848\uFF0C\u53EF\u5728\u76F8\u5BB9\u7248\u672C\u7684 iLab CONJURE \u4E2D\u532F\u5165\u9084\u539F\u3002",
+    "historyBackup.scopeLegend": "\u5099\u4EFD\u7BC4\u570D",
+    "historyBackup.scopeHelp": "\u76EE\u524D\u7BE9\u9078\u8207\u5168\u90E8\u7BC4\u570D\u7531\u672C\u6A5F\u5B8C\u6574\u7D71\u8A08\uFF0C\u4E0D\u53D7\u6B64\u9801\u986F\u793A\u6578\u91CF\u5F71\u97FF\u3002",
+    "historyBackup.scopeSelected": "\u5DF2\u9078\u4EFB\u52D9",
+    "historyBackup.scopeFiltered": "\u76EE\u524D\u7BE9\u9078\u7D50\u679C",
+    "historyBackup.scopeAll": "\u5168\u90E8\u6B77\u53F2\u4EFB\u52D9",
+    "historyBackup.scopeCount": "{eligible}/{total} \u500B\u53EF\u5099\u4EFD",
+    "historyBackup.scopeCounting": "\u6B63\u5728\u7D71\u8A08\u2026",
+    "historyBackup.scopeCountUnavailable": "\u66AB\u6642\u7121\u6CD5\u7D71\u8A08",
+    "historyBackup.scopeNoneSelected": "\u5C1A\u672A\u9078\u64C7\u4EFB\u52D9",
+    "historyBackup.willBackup": "\u5C07\u5099\u4EFD {eligible} \u500B\u4EFB\u52D9\uFF1B{excluded} \u500B\u672A\u5B8C\u6210\u4EFB\u52D9\u6703\u88AB\u6392\u9664\u3002",
+    "historyBackup.selectTasksFirst": "\u8ACB\u5148\u9078\u64C7\u81F3\u5C11\u4E00\u500B\u4EFB\u52D9\u3002",
+    "historyBackup.scopeLockedUnknown": "\u672C\u6B21\u5099\u4EFD\u7BC4\u570D",
+    "historyBackup.scopeLocked": "\u7BC4\u570D\u5DF2\u9396\u5B9A\uFF1A{scope} \xB7 \u5C07\u5099\u4EFD {eligible} \u500B\u4EFB\u52D9",
+    "historyBackup.scopeLockedPending": "\u7BC4\u570D\u5DF2\u9396\u5B9A\uFF1A{scope} \xB7 \u6B63\u5728\u7D71\u8A08\u53EF\u5099\u4EFD\u4EFB\u52D9",
+    "historyBackup.progressLabel": "\u5099\u4EFD\u9032\u5EA6",
+    "historyBackup.start": "\u958B\u59CB\u5099\u4EFD",
+    "historyBackup.cancel": "\u53D6\u6D88\u5099\u4EFD",
+    "historyBackup.download": "\u4E0B\u8F09\u5099\u4EFD",
+    "historyBackup.dismiss": "\u95DC\u9589\u7D50\u679C",
+    "historyBackup.discard": "\u4E0D\u4E0B\u8F09\u4E26\u95DC\u9589",
+    "historyBackup.closePanel": "\u95DC\u9589\u9762\u677F",
+    "historyBackup.downloadStartedTitle": "\u4E0B\u8F09\u5DF2\u958B\u59CB",
+    "historyBackup.idle": "\u5C31\u7DD2",
+    "historyBackup.queued": "\u6392\u968A\u4E2D",
+    "historyBackup.planning": "\u6B63\u5728\u898F\u5283",
+    "historyBackup.packing": "\u6B63\u5728\u5C01\u88DD",
+    "historyBackup.ready": "\u53EF\u4E0B\u8F09",
+    "historyBackup.readyDetail": "\u5099\u4EFD\u5DF2\u5C31\u7DD2\u3002\u8ACB\u5728 1 \u5C0F\u6642\u5167\u4E0B\u8F09\uFF1B\u4E0D\u4E0B\u8F09\u4E26\u95DC\u9589\u6703\u7ACB\u5373\u522A\u9664\u66AB\u5B58\u6A94\u3002",
+    "historyBackup.downloaded": "\u8ACB\u78BA\u8A8D\u700F\u89BD\u5668\u5DF2\u5132\u5B58\u6A94\u6848\uFF1B\u5B8C\u6210\u5F8C\u5373\u53EF\u95DC\u9589\u6B64\u9762\u677F\u3002\u66AB\u5B58\u6A94\u6703\u5728\u50B3\u8F38\u7D50\u675F\u5F8C\u522A\u9664\u3002",
+    "historyBackup.missingInputsWarning": "{tasks} \u500B\u4EFB\u52D9\u7F3A\u5C11 {files} \u500B\u8F38\u5165\u6A94\u6848\uFF1B\u9019\u4E9B\u6A94\u6848\u4E0D\u6703\u5305\u542B\u5728\u5099\u4EFD\u4E2D\uFF0C\u63D0\u793A\u8A5E\u8207\u8F38\u51FA\u7D50\u679C\u4ECD\u6703\u6B63\u5E38\u532F\u51FA\u3002",
+    "historyBackup.failed": "\u5099\u4EFD\u5931\u6557",
+    "historyBackup.cancelled": "\u5DF2\u53D6\u6D88",
+    "historyBackup.expired": "\u5DF2\u904E\u671F",
+    "historyBackup.interrupted": "\u5DF2\u4E2D\u65B7",
+    "historyBackup.stats": "\u5171 {total} \u500B \xB7 \u53EF\u5099\u4EFD {eligible} \u500B \xB7 \u6392\u9664 {excluded} \u500B \xB7 {bytes}",
+    "historyBackup.errorDisk": "\u78C1\u789F\u7A7A\u9593\u4E0D\u8DB3\u3002",
+    "historyBackup.errorSourceChanged": "\u5099\u4EFD\u671F\u9593\u4F86\u6E90\u8CC7\u6599\u5DF2\u8B8A\u66F4\u3002",
+    "historyBackup.errorEmpty": "\u6C92\u6709\u53EF\u5099\u4EFD\u7684\u4EFB\u52D9\u3002",
+    "historyBackup.errorIo": "\u7121\u6CD5\u5EFA\u7ACB\u5099\u4EFD\u3002",
+    "historyImport.title": "\u532F\u5165\u4EFB\u52D9\u5099\u4EFD",
+    "historyImport.choose": "\u9078\u64C7 ZIP \u5099\u4EFD\u5957\u4EF6",
+    "historyImport.uploading": "\u6B63\u5728\u4E0A\u50B3",
+    "historyImport.validating": "\u6B63\u5728\u9A57\u8B49",
+    "historyImport.validated": "\u5DF2\u9A57\u8B49",
+    "historyImport.preview": "\u9084\u539F\u9810\u89BD",
+    "historyImport.restorable": "\u53EF\u9084\u539F",
+    "historyImport.duplicate": "\u91CD\u8907",
+    "historyImport.conflict": "\u885D\u7A81",
+    "historyImport.invalid": "\u7121\u6548",
+    "historyImport.confirm": "\u78BA\u8A8D\u9084\u539F",
+    "historyImport.restoring": "\u6B63\u5728\u9084\u539F",
+    "historyImport.restored": "\u5DF2\u9084\u539F",
+    "historyImport.failed": "\u9084\u539F\u5931\u6557",
+    "historyImport.interrupted": "\u5DF2\u4E2D\u65B7",
+    "historyImport.cancelled": "\u5DF2\u53D6\u6D88",
+    "historyImport.result": "\u9084\u539F\u7D50\u679C",
+    "historyImport.thumbnailWarnings": "\u7E2E\u5716\u8B66\u544A",
+    "historyImport.cleanupWarnings": "\u6E05\u7406\u8B66\u544A",
+    "historyImport.reselect": "\u8ACB\u91CD\u65B0\u9078\u64C7\u539F ZIP \u7E7C\u7E8C\u3002",
+    "historyImport.noOverwrite": "\u53EA\u65B0\u589E\u4EFB\u52D9\uFF0C\u7D55\u4E0D\u8986\u5BEB\u73FE\u6709\u4EFB\u52D9\u3002",
+    "historyImport.reasonInvalid": "\u5099\u4EFD\u8CC7\u6599\u7121\u6548",
+    "historyImport.reasonSensitive": "\u5305\u542B\u53D7\u4FDD\u8B77\u8CC7\u6599",
+    "historyImport.reasonMismatch": "\u8207\u5099\u4EFD\u6E05\u55AE\u4E0D\u4E00\u81F4",
+    "history.closeExport": "\u95DC\u9589\u532F\u51FA\u9078\u64C7",
     "history.type": "\u985E\u578B",
     "history.allTypes": "\u5168\u90E8\u985E\u578B",
     "history.type.textToImage": "\u6587\u751F\u5716",
@@ -13753,6 +16720,7 @@
     "language.ru": "\u0420\u0443\u0441\u0441\u043A\u0438\u0439",
     "language.it": "Italiano",
     "language.hi": "\u0939\u093F\u0928\u094D\u0926\u0940",
+    "language.vi": "Ti\u1EBFng Vi\u1EC7t",
     "auth.label": "\u6388\u6B0A\u4F86\u6E90",
     "auth.checking": "\u6388\u6B0A\u6AA2\u67E5\u4E2D",
     "auth.missingCodexSession": "\u6C92\u6709\u5075\u6E2C\u5230Codex\u767B\u5165\u614B",
@@ -13779,8 +16747,16 @@
     "recentAssets.defaultName": "\u6700\u8FD1\u4E0A\u50B3",
     "recentAssets.use": "\u4F7F\u7528{name}",
     "recentAssets.delete": "\u522A\u9664{name}",
+    "recentAssets.inUse": "\u88AB {count} \u500B\u4EFB\u52D9\u5F15\u7528\uFF0C\u7121\u6CD5\u6C38\u4E45\u522A\u9664\uFF1B\u53EF\u53EA\u5F9E\u6700\u8FD1\u4E0A\u50B3\u96B1\u85CF",
+    "recentAssets.hide": "\u5F9E\u6700\u8FD1\u4E0A\u50B3\u96B1\u85CF{name}",
+    "recentAssets.hideTitle": "\u5F9E\u6700\u8FD1\u4E0A\u50B3\u96B1\u85CF\uFF1F",
+    "recentAssets.hideMessage": "\u9019\u5F35\u5716\u7247\u88AB {count} \u500B\u4EFB\u52D9\u5F15\u7528\uFF0C\u7121\u6CD5\u6C38\u4E45\u522A\u9664\u3002\u96B1\u85CF\u53EA\u6703\u5F9E\u300C\u6700\u8FD1\u4E0A\u50B3\u300D\u79FB\u9664\uFF1B\u539F\u5716\u3001\u76EE\u524D\u8F38\u5165\u53CA\u6B77\u53F2\u4EFB\u52D9\u90FD\u6703\u4FDD\u7559\u3002",
+    "recentAssets.hideFailed": "\u6700\u8FD1\u4E0A\u50B3\u96B1\u85CF\u5931\u6557",
+    "recentAssets.hidden": "\u5DF2\u5F9E\u6700\u8FD1\u4E0A\u50B3\u96B1\u85CF\uFF1B\u539F\u5716\u53CA\u6B77\u53F2\u4EFB\u52D9\u90FD\u5DF2\u4FDD\u7559",
+    "recentAssets.hidePreviews": "\u96B1\u85CF\u6700\u8FD1\u4E0A\u50B3\u5716\u7247",
+    "recentAssets.showPreviews": "\u986F\u793A\u6700\u8FD1\u4E0A\u50B3\u5716\u7247",
     "recentAssets.deleteTitle": "\u522A\u9664\u6700\u8FD1\u4E0A\u50B3\uFF1F",
-    "recentAssets.deleteMessage": "\u6703\u5F9E\u300C\u6700\u8FD1\u4E0A\u50B3\u300D\u522A\u9664\u9019\u5F35\u5716\u7247\u3002\u5982\u679C\u5B83\u5DF2\u88AB\u52A0\u5165\u5230\u76EE\u524D\u5716\u50CF\u8F38\u5165\uFF0C\u6703\u5F9E\u76EE\u524D\u8F38\u5165\u4E2D\u79FB\u9664\uFF1B\u6B77\u53F2\u4EFB\u52D9\u91CC\u53C3\u7167\u9019\u5F35\u6700\u8FD1\u4E0A\u50B3\u5716\u7684\u8F38\u5165\u9810\u89BD\u4E5F\u6703\u5931\u6548\u3002\u4E0D\u6703\u5F71\u97FF\u516C\u7528\u5716\u5EAB\u3002",
+    "recentAssets.deleteMessage": "\u9019\u5F35\u5716\u7247\u672A\u88AB\u4EFB\u4F55\u4EFB\u52D9\u5F15\u7528\uFF0C\u5C07\u6C38\u4E45\u522A\u9664\u539F\u5716\uFF0C\u4E26\u5F9E\u76EE\u524D\u8F38\u5165\u79FB\u9664\u76F8\u540C\u5716\u7247\u3002\u516C\u7528\u5716\u5EAB\u4E0D\u53D7\u5F71\u97FF\u3002",
     "recentAssets.loadFailed": "\u6700\u8FD1\u4E0A\u50B3\u8B80\u53D6\u5931\u6557",
     "recentAssets.deleteFailed": "\u6700\u8FD1\u4E0A\u50B3\u522A\u9664\u5931\u6557",
     "recentAssets.deleted": "\u6700\u8FD1\u4E0A\u50B3\u5DF2\u522A\u9664",
@@ -13805,11 +16781,13 @@
     "referenceCollector.alreadyStaged": "\u5DF2\u5728\u5F85\u52A0\u5165\u53C3\u8003\u5716",
     "referenceCollector.staged": "\u5DF2\u66AB\u5B58{count}\u5F35\u53C3\u8003\u5716",
     "referenceCollector.title": "\u5F85\u52A0\u5165\u53C3\u8003\u5716 \xB7{count}\u5F35",
-    "referenceCollector.addAll": "\u5168\u90E8\u52A0\u5165\u53C3\u8003\u5716",
+    "referenceCollector.addAll": "\u5168\u90E8\u52A0\u5165",
+    "referenceCollector.replaceAll": "\u53D6\u4EE3\u73FE\u6709",
     "referenceCollector.itemFallback": "\u5F85\u52A0\u5165\u53C3\u8003\u5716",
     "referenceCollector.remove": "\u79FB\u9664\u5F85\u52A0\u5165\u53C3\u8003\u5716",
     "referenceCollector.cleared": "\u5F85\u52A0\u5165\u53C3\u8003\u5716\u5DF2\u6E05\u7A7A",
     "referenceCollector.added": "\u5DF2\u52A0\u5165{count}\u5F35\u53C3\u8003\u5716",
+    "referenceCollector.replaced": "\u5DF2\u53D6\u4EE3\u70BA{count}\u5F35\u53C3\u8003\u5716",
     "referenceCollector.addFailed": "\u5F85\u52A0\u5165\u53C3\u8003\u5716\u52A0\u5165\u5931\u6557",
     "referenceCollector.readFailed": "\u5716\u7247\u8B80\u53D6\u5931\u6557\uFF1A{status}",
     "gallery.quick": "\u5FEB\u901F\u9078\u64C7\u516C\u7528\u5716\u5EAB",
@@ -13927,7 +16905,7 @@
     "output.promptHelpTitle": "\u63D0\u793A\u8A5E\u8655\u7406",
     "output.promptHelp.responsesChannel": "Responses \xB7 \u4E3B\u6A21\u578B\u53C3\u8207",
     "output.promptHelp.imagesChannel": "Images \xB7 \u76F4\u63A5\u751F\u6210",
-    "output.promptHelp.responses.original": "\u539F\u6587\u4EA4\u7D66\u4E3B\u6A21\u578B\uFF0C\u4E26\u8981\u6C42\u5716\u50CF\u5DE5\u5177\u76E1\u91CF\u9010\u5B57\u4F7F\u7528\uFF1B\u4E3B\u6A21\u578B\u4ECD\u53EF\u80FD\u7522\u751F revised prompt\u3002",
+    "output.promptHelp.responses.original": "\u6309\u539F\u6587\u50B3\u9001\uFF0C\u4E0D\u52A0\u5165\u61C9\u7528\u7A0B\u5F0F\u5C64\u63D0\u793A\u8A5E\u898F\u5247\uFF1B\u670D\u52D9\u5546\u4ECD\u53EF\u80FD\u50B3\u56DE revised prompt\uFF0C\u751F\u6210\u7D50\u679C\u4E5F\u53EF\u80FD\u8207\u6587\u5B57\u7D04\u675F\u6709\u504F\u5DEE\u3002",
     "output.promptHelp.responses.strict": "\u5141\u8A31\u4E3B\u6A21\u578B\u6574\u7406\u6216\u64F4\u5BEB\uFF0C\u4F46\u5FC5\u9808\u4FDD\u7559\u7269\u4EF6\u3001\u6587\u5B57\u3001\u984F\u8272\u3001\u69CB\u5716\u7B49\u786C\u6027\u9650\u5236\u3002",
     "output.promptHelp.responses.automatic": "\u4E0D\u52A0\u5165\u984D\u5916\u9650\u5236\uFF0C\u7531\u4E3B\u6A21\u578B\u7406\u89E3\u4E26\u6700\u4F73\u5316\u5F8C\u547C\u53EB\u5716\u50CF\u5DE5\u5177\u3002",
     "output.promptHelp.images.original": "\u61C9\u7528\u7A0B\u5F0F\u4E0D\u52A0\u5165\u63D0\u793A\u8A5E\u898F\u5247\uFF0C\u6309\u4F7F\u7528\u8005\u539F\u6587\u76F4\u63A5\u63D0\u4EA4\u81F3\u5716\u50CF\u4ECB\u9762\u3002",
@@ -14022,6 +17000,16 @@
     "lightbox.close": "\u95DC\u9589\u9810\u89BD",
     "lightbox.previous": "\u4E0A\u4E00\u5F35",
     "lightbox.next": "\u4E0B\u4E00\u5F35",
+    "lightbox.zoomControls": "\u7E2E\u653E\u63A7\u5236",
+    "lightbox.zoomOut": "\u7E2E\u5C0F",
+    "lightbox.zoomIn": "\u653E\u5927",
+    "lightbox.fit": "\u9069\u5408",
+    "lightbox.fitPage": "\u9069\u5408\u9801\u9762",
+    "lightbox.actualSize": "100% \u539F\u59CB\u5C3A\u5BF8",
+    "lightbox.shortcuts": "\u5FEB\u6377\u9375\u63D0\u793A",
+    "lightbox.switchImage": "\u5207\u63DB\u5716\u7247",
+    "lightbox.switchTask": "\u5207\u63DB\u4EFB\u52D9",
+    "lightbox.wheelZoom": "\u6EFE\u8F2A\u7E2E\u653E",
     "promptPopover.title": "\u63D0\u793A\u8A5E\u5C0D\u6BD4",
     "promptPopover.summary": "\u539F\u59CB{original}\xB7 \u6700\u4F73\u5316{optimized}",
     "promptPopover.original": "\u539F\u59CB\u63D0\u793A\u8A5E",
@@ -14185,6 +17173,7 @@
     "colors.modifyValue": "\u4FEE\u6539\u984F\u8272{value}",
     "colors.removeValue": "\u79FB\u9664\u984F\u8272{value}",
     "taskGroup.today": "\u4ECA\u5929",
+    "taskGroup.current": "\u76EE\u524D\u6AA2\u8996",
     "taskGroup.yesterday": "\u6628\u5929",
     "taskGroup.last7": "\u6700\u8FD1 7 \u5929",
     "taskGroup.older": "\u66F4\u65E9",
@@ -14237,6 +17226,14 @@
     "networkEgress.direct": "\u76F4\u9023",
     "networkEgress.custom": "\u81EA\u8A02",
     "networkEgress.customProxy": "\u81EA\u8A02\u4EE3\u7406\u4F4D\u5740",
+    "networkEgress.timeout": "\u55AE\u6B21\u751F\u5716\u903E\u6642",
+    "networkEgress.timeoutUnit": "\u5206\u9418",
+    "networkEgress.retryCount": "\u5931\u6557\u5F8C\u91CD\u8A66",
+    "networkEgress.retryUnit": "\u6B21",
+    "networkEgress.requestPolicyHelp": "\u50C5\u5F71\u97FF\u4E4B\u5F8C\u958B\u59CB\u7684\u751F\u5716\u8ACB\u6C42\uFF1B\u6BCF\u6B21\u81EA\u52D5\u91CD\u8A66\u90FD\u6703\u91CD\u65B0\u8A08\u7B97\u903E\u6642\u6642\u9593\u3002",
+    "networkEgress.timeoutInvalid": "\u8ACB\u8F38\u5165 1\u201330 \u7684\u6574\u6578\u5206\u9418",
+    "networkEgress.retryInvalid": "\u8ACB\u8F38\u5165 0\u20135 \u7684\u6574\u6578\u6B21\u6578",
+    "networkEgress.environmentTimeoutActive": "\u76EE\u524D\u4F7F\u7528\u74B0\u5883\u8B8A\u6578\u903E\u6642\uFF1A{seconds} \u79D2\uFF1B\u5132\u5B58\u5F8C\u5C07\u6539\u7528\u4E0A\u65B9\u8A2D\u5B9A\u3002",
     "networkEgress.currentRoute": "\u76EE\u524D\u51FA\u53E3\uFF1A{route}",
     "networkEgress.test": "\u6E2C\u8A66\u9023\u7DDA",
     "networkEgress.save": "\u5132\u5B58\u4E26\u5957\u7528",
@@ -14279,7 +17276,8 @@
     "apiSettings.copyProviderWithoutKeyStatus": "\u5DF2\u8907\u88FD\u914D\u7F6E\uFF0C\u53EF\u4FEE\u6539\u540D\u7A31\u3001\u6A21\u578B\u6216\u586B\u5BEBAPI Key\u5F8C\u5132\u5B58",
     "apiSettings.sortProviders": "\u6392\u5E8F",
     "apiSettings.finishSortProviders": "\u5B8C\u6210",
-    "apiSettings.sortProviderModeStatus": "\u6B63\u5728\u6392\u5E8F\u4F9B\u61C9\u5546",
+    "apiSettings.sortProviderModeStatus": "\u62D6\u66F3\u63A7\u5236\u9EDE\u6392\u5E8F\uFF0C\u4E5F\u53EF\u4F7F\u7528\u65B9\u5411\u9375\u8ABF\u6574",
+    "apiSettings.sortProviderHandleAria": "\u62D6\u66F3\u6392\u5E8F {provider}\uFF0C\u4E5F\u53EF\u4F7F\u7528\u65B9\u5411\u9375\u6216 Home\u3001End \u9375\u8ABF\u6574",
     "apiSettings.sortProviderStatus": "\u4F9B\u61C9\u5546\u6392\u5E8F\u5DF2\u8ABF\u6574\uFF0C\u6B63\u5728\u81EA\u52D5\u5132\u5B58",
     "apiSettings.moveProviderUp": "\u4E0A\u79FB",
     "apiSettings.moveProviderDown": "\u4E0B\u79FB",
@@ -14516,7 +17514,7 @@
 
   // codex_image/webui/frontend/src/i18n/dictionaries.ts
   var DEFAULT_LOCALE = "zh-CN";
-  var LOCALES = ["zh-CN", "zh-TW", "zh-HK", "ja", "ko", "en", "es", "pt", "fr", "de", "ru", "it", "hi"];
+  var LOCALES = ["zh-CN", "zh-TW", "zh-HK", "ja", "ko", "en", "vi", "es", "pt", "fr", "de", "ru", "it", "hi"];
   var DICTIONARIES = {
     "zh-CN": ZH_CN_DICTIONARY,
     "zh-TW": ZH_TW_DICTIONARY,
@@ -14524,6 +17522,7 @@
     "ja": JA_DICTIONARY,
     "ko": KO_DICTIONARY,
     "en": EN_DICTIONARY,
+    "vi": VI_DICTIONARY,
     "es": ES_DICTIONARY,
     "pt": PT_DICTIONARY,
     "fr": FR_DICTIONARY,
@@ -14865,6 +17864,7 @@
   var LOCALE_CHANGE_EVENT = "codex-image-locale-change";
   var currentLocale = DEFAULT_LOCALE;
   var i18nInitialized = false;
+  var localePreferenceRevision = 0;
   function canUseLocale(value) {
     return LOCALES.includes(value);
   }
@@ -14892,6 +17892,7 @@
     if (language.startsWith("ja")) return "ja";
     if (language.startsWith("ko")) return "ko";
     if (language.startsWith("en")) return "en";
+    if (language.startsWith("vi")) return "vi";
     if (language.startsWith("es")) return "es";
     if (language.startsWith("pt")) return "pt";
     if (language.startsWith("fr")) return "fr";
@@ -14961,6 +17962,7 @@
     updateLanguageSelect();
   }
   function setLocale(locale, options = {}) {
+    localePreferenceRevision += 1;
     currentLocale = normalizeLocale(locale);
     if (options.persist !== false) {
       persistLocalePreference();
@@ -15002,9 +18004,12 @@
   function restoreLocalePreference() {
     const fallback = readLocalLocalePreference() || detectPreferredLocale();
     setLocale(fallback, { persist: false });
+    const restoreRevision = localePreferenceRevision;
     void readStoredLocalePreference().then((storedLocale) => {
+      if (localePreferenceRevision !== restoreRevision) return;
       setLocale(storedLocale || fallback);
     }).catch(() => {
+      if (localePreferenceRevision !== restoreRevision) return;
       persistLocalePreference();
     });
   }
@@ -15044,7 +18049,10 @@
   var USER_CANCELLATION_ERROR = "Task cancelled by user.";
   function taskWasCancelled(task) {
     const error = String(task?.error || task?.last_error || "").trim();
-    return Boolean(task?.cancel_requested || error === USER_CANCELLATION_ERROR);
+    return Boolean(task?.cancelled_at || error === USER_CANCELLATION_ERROR);
+  }
+  function taskCancellationPending(task) {
+    return Boolean(task?.cancel_requested && !taskWasCancelled(task));
   }
 
   // codex_image/webui/frontend/src/runtime-feedback.ts
@@ -15075,27 +18083,28 @@
   var getPromptText = (...args) => legacyMethod("getPromptText", ...args);
   var syncRunButtonLabel = (...args) => legacyMethod("syncRunButtonLabel", ...args);
   function updateTaskInState(task) {
-    const state32 = getLegacyBridge().state;
+    const state33 = getLegacyBridge().state;
     if (!task?.task_id) return false;
     const taskId = String(task.task_id);
-    const previousIndex = state32.tasks.findIndex((item) => String(item.task_id) === taskId);
+    const previousIndex = state33.tasks.findIndex((item) => String(item.task_id) === taskId);
     if (previousIndex === -1) {
-      state32.tasks.unshift(task);
+      state33.tasks.unshift(task);
       return true;
     }
-    const previousTask = state32.tasks[previousIndex];
+    const previousTask = state33.tasks[previousIndex];
     if (previousTask?.local_pending) {
       revokeTaskUploadPreviewUrls(previousTask);
     }
-    state32.tasks = state32.tasks.map((item, index) => index === previousIndex ? task : item);
-    if (state32.pendingTaskId && String(state32.pendingTaskId) === taskId && !task.local_pending) {
-      state32.pendingTaskId = null;
+    state33.tasks = state33.tasks.map((item, index) => index === previousIndex ? task : item);
+    if (state33.pendingTaskId && String(state33.pendingTaskId) === taskId && !task.local_pending) {
+      state33.pendingTaskId = null;
     }
     return true;
   }
   function formatTaskStatus(task) {
     if (!task) return "";
     if (taskWasCancelled(task)) return translate("queue.runningCancelled");
+    if (taskCancellationPending(task)) return translate("taskStatus.cancelling");
     if (task.status === "submitting") return translate("taskStatus.submitting");
     if (task.status === "running") {
       const progressStartedAt = taskProgressStartValue(task);
@@ -15108,30 +18117,31 @@
     return task.status || "";
   }
   function formatTaskCardStatus(task) {
+    if (taskCancellationPending(task)) return translate("taskStatus.cancelling");
     if (task?.status === "running" && !taskWasCancelled(task)) return translate("taskStatus.running");
     return formatTaskStatus(task);
   }
   var uiClockVisibilityBound = false;
   function startUiClock() {
-    const state32 = getLegacyBridge().state;
+    const state33 = getLegacyBridge().state;
     if (!uiClockVisibilityBound) {
       uiClockVisibilityBound = true;
       document.addEventListener("visibilitychange", handleUiClockVisibilityChange);
     }
-    if (state32.uiClockTimerId || document.hidden) return;
-    state32.uiClockTimerId = window.setInterval(updateElapsedDisplays, 100);
+    if (state33.uiClockTimerId || document.hidden) return;
+    state33.uiClockTimerId = window.setInterval(updateElapsedDisplays, 100);
   }
   function handleUiClockVisibilityChange() {
-    const state32 = getLegacyBridge().state;
+    const state33 = getLegacyBridge().state;
     if (document.hidden) {
-      if (state32.uiClockTimerId) {
-        window.clearInterval(state32.uiClockTimerId);
-        state32.uiClockTimerId = null;
+      if (state33.uiClockTimerId) {
+        window.clearInterval(state33.uiClockTimerId);
+        state33.uiClockTimerId = null;
       }
       return;
     }
-    if (!state32.uiClockTimerId) {
-      state32.uiClockTimerId = window.setInterval(updateElapsedDisplays, 100);
+    if (!state33.uiClockTimerId) {
+      state33.uiClockTimerId = window.setInterval(updateElapsedDisplays, 100);
       updateElapsedDisplays();
     }
   }
@@ -15139,7 +18149,7 @@
     updateTaskElapsedDisplays();
     updatePreviewElapsedDisplay();
   }
-  var ELAPSED_TICK_STATUSES = /* @__PURE__ */ new Set(["submitting", "queued", "running"]);
+  var ELAPSED_TICK_STATUSES = /* @__PURE__ */ new Set(["submitting", "queued", "running", "cancelling"]);
   function taskNeedsElapsedTick(task) {
     if (!task) return false;
     if (task.local_pending) return true;
@@ -15148,8 +18158,8 @@
   function setTextIfChanged(element2, text) {
     if (element2.textContent !== text) element2.textContent = text;
   }
-  function activeElapsedTaskCards(els43, taskId) {
-    const roots = [els43.taskActiveList, els43.taskList].filter((root) => root instanceof HTMLElement);
+  function activeElapsedTaskCards(els44, taskId) {
+    const roots = [els44.taskActiveList, els44.taskList].filter((root) => root instanceof HTMLElement);
     const cards = roots.flatMap(
       (root) => Array.from(root.querySelectorAll(`.task-card[data-task-id="${cssEscape(taskId)}"]`))
     );
@@ -15178,19 +18188,19 @@
     });
   }
   function updateTaskElapsedDisplays() {
-    const { state: state32, els: els43 } = getLegacyBridge();
-    const activeTasks = state32.tasks.filter((task) => taskNeedsElapsedTick(task));
+    const { state: state33, els: els44 } = getLegacyBridge();
+    const activeTasks = state33.tasks.filter((task) => taskNeedsElapsedTick(task));
     if (!activeTasks.length) return;
     activeTasks.forEach((task) => {
       const taskId = String(task.task_id || "");
       if (!taskId) return;
-      activeElapsedTaskCards(els43, taskId).forEach((card) => updateTaskElapsedCard(card, task));
+      activeElapsedTaskCards(els44, taskId).forEach((card) => updateTaskElapsedCard(card, task));
     });
   }
   function updatePreviewElapsedDisplay() {
-    const { els: els43 } = getLegacyBridge();
-    if (!els43.previewGrid) return;
-    els43.previewGrid.querySelectorAll("[data-preview-elapsed]").forEach((element2) => {
+    const { els: els44 } = getLegacyBridge();
+    if (!els44.previewGrid) return;
+    els44.previewGrid.querySelectorAll("[data-preview-elapsed]").forEach((element2) => {
       updateElapsedTimerElement(element2, elapsedMillisecondsSince(element2.dataset.previewStart));
     });
   }
@@ -15226,73 +18236,75 @@
     }
   }
   function updatePromptCount() {
-    const { els: els43 } = getLegacyBridge();
-    if (!els43.charCount) return;
-    els43.charCount.textContent = `${getPromptText().length} / 4000`;
+    const { els: els44 } = getLegacyBridge();
+    if (!els44.charCount) return;
+    els44.charCount.textContent = `${getPromptText().length} / 4000`;
   }
   function addPendingTask(task) {
-    const state32 = getLegacyBridge().state;
-    state32.pendingTaskId = task.task_id;
-    state32.selectedTaskId = task.task_id;
-    state32.tasks = [task, ...state32.tasks.filter((item) => item.task_id !== task.task_id)];
+    const state33 = getLegacyBridge().state;
+    state33.historyTaskReveal = null;
+    state33.historyTaskRevealSeq += 1;
+    state33.pendingTaskId = task.task_id;
+    state33.selectedTaskId = task.task_id;
+    state33.tasks = [task, ...state33.tasks.filter((item) => item.task_id !== task.task_id)];
     renderTasks();
     renderPreview(task);
   }
   function replacePendingTask(pendingTaskId, completedTask) {
-    const state32 = getLegacyBridge().state;
-    const removedPendingTasks = state32.tasks.filter((task) => task?.local_pending && (task.task_id === completedTask.task_id || task.task_id === pendingTaskId));
-    state32.tasks = [
+    const state33 = getLegacyBridge().state;
+    const removedPendingTasks = state33.tasks.filter((task) => task?.local_pending && (task.task_id === completedTask.task_id || task.task_id === pendingTaskId));
+    state33.tasks = [
       completedTask,
-      ...state32.tasks.filter((task) => task.task_id !== completedTask.task_id && task.task_id !== pendingTaskId)
+      ...state33.tasks.filter((task) => task.task_id !== completedTask.task_id && task.task_id !== pendingTaskId)
     ];
     removedPendingTasks.forEach(revokeTaskUploadPreviewUrls);
-    state32.selectedTaskId = completedTask.task_id;
-    state32.pendingTaskId = null;
+    state33.selectedTaskId = completedTask.task_id;
+    state33.pendingTaskId = null;
     renderTasks();
     renderPreview(completedTask);
   }
   function markPendingTaskFailed(pendingTaskId, message) {
-    const state32 = getLegacyBridge().state;
-    const task = state32.tasks.find((item) => item.task_id === pendingTaskId);
+    const state33 = getLegacyBridge().state;
+    const task = state33.tasks.find((item) => item.task_id === pendingTaskId);
     if (!task) return;
     task.status = "failed";
     task.error = message;
     task.updated_at = (/* @__PURE__ */ new Date()).toISOString();
-    state32.selectedTaskId = pendingTaskId;
-    state32.pendingTaskId = null;
+    state33.selectedTaskId = pendingTaskId;
+    state33.pendingTaskId = null;
     renderTasks();
     renderPreview(task);
   }
   function startRunFeedback(task, actionLabel = null) {
-    const { state: state32, els: els43 } = getLegacyBridge();
+    const { state: state33, els: els44 } = getLegacyBridge();
     stopRunFeedback();
-    state32.runFeedbackAction = actionLabel;
-    state32.runStartedAt = timestampMs(task.started_at || task.created_at) || Date.now();
-    state32.runTimerId = window.setInterval(updateRunFeedback, 100);
-    els43.runButton?.classList.add("running");
+    state33.runFeedbackAction = actionLabel;
+    state33.runStartedAt = timestampMs(task.started_at || task.created_at) || Date.now();
+    state33.runTimerId = window.setInterval(updateRunFeedback, 100);
+    els44.runButton?.classList.add("running");
     updateRunFeedback();
   }
   function updateRunFeedback() {
-    const { state: state32, els: els43 } = getLegacyBridge();
-    if (!state32.runStartedAt) return;
-    const elapsed = formatDurationTenths(elapsedMillisecondsSince(state32.runStartedAt));
-    const action = state32.runFeedbackAction || (state32.mode === "edit" ? translate("runFeedback.editing") : translate("runFeedback.generating"));
-    if (els43.runButton) els43.runButton.textContent = `${action} ${elapsed}`;
+    const { state: state33, els: els44 } = getLegacyBridge();
+    if (!state33.runStartedAt) return;
+    const elapsed = formatDurationTenths(elapsedMillisecondsSince(state33.runStartedAt));
+    const action = state33.runFeedbackAction || (state33.mode === "edit" ? translate("runFeedback.editing") : translate("runFeedback.generating"));
+    if (els44.runButton) els44.runButton.textContent = `${action} ${elapsed}`;
     setStatus(formatTranslation("runFeedback.status", { action, elapsed }), "running");
     updateElapsedDisplays();
-    if (state32.selectedTaskId === state32.pendingTaskId) {
+    if (state33.selectedTaskId === state33.pendingTaskId) {
       renderPreview();
     }
   }
   function stopRunFeedback() {
-    const { state: state32, els: els43 } = getLegacyBridge();
-    if (state32.runTimerId) {
-      window.clearInterval(state32.runTimerId);
+    const { state: state33, els: els44 } = getLegacyBridge();
+    if (state33.runTimerId) {
+      window.clearInterval(state33.runTimerId);
     }
-    state32.runTimerId = null;
-    state32.runStartedAt = null;
-    state32.runFeedbackAction = null;
-    els43.runButton?.classList.remove("running");
+    state33.runTimerId = null;
+    state33.runStartedAt = null;
+    state33.runFeedbackAction = null;
+    els44.runButton?.classList.remove("running");
     syncRunButtonLabel();
   }
 
@@ -15394,6 +18406,8 @@
       activeTaskGroupCollapsed: false,
       expandedTaskGroupKey: null,
       expandedTaskGroupAnimationPending: false,
+      historyTaskReveal: null,
+      historyTaskRevealSeq: 0,
       latestTaskNoticeCount: 0,
       latestTaskKeepAtTop: false,
       latestTaskKeepAtTopExpiresAt: 0,
@@ -15575,6 +18589,7 @@
     restoreExpandedTaskGroupKey: proxy("restoreExpandedTaskGroupKey"),
     restoreLegacyArchivedTasks: proxy("restoreLegacyArchivedTasks"),
     restoreMainModel: proxy("restoreMainModel"),
+    restoreCollectedReferences: proxy("restoreCollectedReferences"),
     restoreSidebarWidth: proxy("restoreSidebarWidth"),
     restoreThemePreference: proxy("restoreThemePreference"),
     revokeTaskUploadPreviewUrls: proxy("revokeTaskUploadPreviewUrls"),
@@ -15880,7 +18895,7 @@
       showResponsesRequirement();
       return false;
     }
-    const state32 = getState();
+    const state33 = getState();
     let source = null;
     if (input instanceof File) {
       const family = familyForFilename(input.name);
@@ -15888,15 +18903,15 @@
         legacyMethod2("setStatus", translate("referenceFiles.errorUnsupported"), "error");
         return false;
       }
-      if (state32.referenceFiles.some((item) => item.kind === "upload" && item.file === input)) return false;
+      if (state33.referenceFiles.some((item) => item.kind === "upload" && item.file === input)) return false;
       source = uploadSource(input, family);
     } else {
       source = storedSource(input);
       if (!source) return false;
-      if (state32.referenceFiles.some((item) => item.kind === "asset" && item.id === source?.id)) return false;
+      if (state33.referenceFiles.some((item) => item.kind === "asset" && item.id === source?.id)) return false;
     }
     requirementActionVisible = false;
-    state32.referenceFiles.push(source);
+    state33.referenceFiles.push(source);
     renderReferenceFiles();
     legacyMethod2("updateRequestPreview");
     return true;
@@ -15917,15 +18932,15 @@
     legacyMethod2("updateRequestPreview");
   }
   function removeReferenceFile(index) {
-    const state32 = getState();
-    if (!Number.isInteger(index) || index < 0 || index >= state32.referenceFiles.length) return;
-    state32.referenceFiles.splice(index, 1);
+    const state33 = getState();
+    if (!Number.isInteger(index) || index < 0 || index >= state33.referenceFiles.length) return;
+    state33.referenceFiles.splice(index, 1);
     renderReferenceFiles();
     legacyMethod2("updateRequestPreview");
   }
   function renderReferenceFiles() {
-    const els43 = getEls();
-    const container = els43.referenceFileSelection;
+    const els44 = getEls();
+    const container = els44.referenceFileSelection;
     if (!container) return;
     requirementFeedback?.remove();
     requirementFeedback = null;
@@ -15948,7 +18963,7 @@
       action.textContent = (legacyMethod2("currentAuthSource") || "codex") === "api" ? translate("referenceFiles.openApiSettings") : translate("referenceFiles.switchToResponses");
       action.addEventListener("click", activateResponsesRequirementAction);
       feedback.append(message, action);
-      els43.imageUploaderGrid?.append(feedback);
+      els44.imageUploaderGrid?.append(feedback);
       requirementFeedback = feedback;
     }
     sources.forEach((source, index) => {
@@ -15974,7 +18989,7 @@
     });
     legacyMethod2("updateImageStripDensity");
     if (requirementActionVisible) {
-      els43.imageUploaderGrid?.classList.add("has-inputs");
+      els44.imageUploaderGrid?.classList.add("has-inputs");
     }
   }
   function syncReferenceFileAvailability() {
@@ -15991,12 +19006,12 @@
   function initReferenceFileInputsFeature() {
     if (initialized) return;
     initialized = true;
-    const els43 = getEls();
+    const els44 = getEls();
     document.addEventListener("change", (event) => {
       const target = event.target;
       if (target?.matches?.("#generationProviderSelect, #apiMode")) syncReferenceFileAvailability();
     });
-    els43.authSourceGroup?.addEventListener("click", () => queueMicrotask(syncReferenceFileAvailability));
+    els44.authSourceGroup?.addEventListener("click", () => queueMicrotask(syncReferenceFileAvailability));
     document.addEventListener(LOCALE_CHANGE_EVENT, renderReferenceFiles);
     syncReferenceFileAvailability();
     Object.assign(getLegacyBridge().methods, {
@@ -16008,6 +19023,61 @@
       renderReferenceFiles,
       syncReferenceFileAvailability
     });
+  }
+
+  // codex_image/webui/frontend/src/staged-references-session.ts
+  var STAGED_REFERENCES_SESSION_KEY = "codex-image-staged-references";
+  function currentSessionStorage() {
+    try {
+      return globalThis.sessionStorage;
+    } catch {
+      return null;
+    }
+  }
+  function normalizeStagedReferences(value) {
+    if (!Array.isArray(value)) return [];
+    const references = [];
+    const seenUrls = /* @__PURE__ */ new Set();
+    value.forEach((item) => {
+      if (!item || typeof item !== "object") return;
+      const record5 = item;
+      const url = typeof record5.url === "string" ? record5.url.trim() : "";
+      if (!url || seenUrls.has(url)) return;
+      seenUrls.add(url);
+      references.push({
+        url,
+        name: typeof record5.name === "string" ? record5.name : "",
+        sourceTaskId: typeof record5.sourceTaskId === "string" ? record5.sourceTaskId : "",
+        outputIndex: Number.isInteger(record5.outputIndex) && Number(record5.outputIndex) > 0 ? Number(record5.outputIndex) : null
+      });
+    });
+    return references;
+  }
+  function persistStagedReferences(value, storage = currentSessionStorage()) {
+    if (!storage) return;
+    try {
+      const references = normalizeStagedReferences(value);
+      if (!references.length) {
+        storage.removeItem(STAGED_REFERENCES_SESSION_KEY);
+        return;
+      }
+      storage.setItem(STAGED_REFERENCES_SESSION_KEY, JSON.stringify(references));
+    } catch {
+    }
+  }
+  function readStagedReferences(storage = currentSessionStorage()) {
+    if (!storage) return [];
+    try {
+      const raw = storage.getItem(STAGED_REFERENCES_SESSION_KEY);
+      if (!raw) return [];
+      return normalizeStagedReferences(JSON.parse(raw));
+    } catch {
+      try {
+        storage.removeItem(STAGED_REFERENCES_SESSION_KEY);
+      } catch {
+      }
+      return [];
+    }
   }
 
   // codex_image/webui/frontend/src/input-sources.ts
@@ -16076,12 +19146,12 @@
     });
   }
   function uploadPreviewUrlInUse(previewUrl, options = {}) {
-    const state32 = getState();
+    const state33 = getState();
     if (!previewUrl) return false;
     const ignoredCurrentSources = options.ignoredCurrentSources || /* @__PURE__ */ new Set();
     const ignoredTasks = options.ignoredTasks || /* @__PURE__ */ new Set();
-    if (sourceListUsesPreviewUrl(state32.images, previewUrl, ignoredCurrentSources)) return true;
-    return state32.tasks.some((task) => {
+    if (sourceListUsesPreviewUrl(state33.images, previewUrl, ignoredCurrentSources)) return true;
+    return state33.tasks.some((task) => {
       if (!task || ignoredTasks.has(task)) return false;
       return task.preview_url === previewUrl || sourceListUsesPreviewUrl(task.local_input_files, previewUrl) || sourceListUsesPreviewUrl(task.input_sources, previewUrl);
     });
@@ -16122,12 +19192,12 @@
     return source.name || translate("inputSource.galleryFallback");
   }
   function addGalleryInput(item, options = {}) {
-    const state32 = getState();
+    const state33 = getState();
     if (!item) return;
-    const alreadySelected = state32.images.some((source) => source.kind === "gallery" && source.id === item.id);
+    const alreadySelected = state33.images.some((source) => source.kind === "gallery" && source.id === item.id);
     if (!alreadySelected) {
-      state32.images.push(gallerySource(item));
-      if (state32.mode !== "edit") {
+      state33.images.push(gallerySource(item));
+      if (state33.mode !== "edit") {
         legacyMethod3("setMode", "edit");
       }
       legacyMethod3("renderImageStrip");
@@ -16146,14 +19216,14 @@
     return getState().images.filter((image) => image.kind === "upload");
   }
   function addImageFiles(files, options = {}) {
-    const state32 = getState();
+    const state33 = getState();
     const imageFiles = Array.from(files || []).filter(isImageFile2);
     if (!imageFiles.length) {
       if (options.emptyMessage) setStatus2(options.emptyMessage, "error");
       return false;
     }
-    state32.images.push(...imageFiles.map((file) => uploadSource2(file)));
-    if (state32.images.length > 0 && state32.mode !== "edit") {
+    state33.images.push(...imageFiles.map((file) => uploadSource2(file)));
+    if (state33.images.length > 0 && state33.mode !== "edit") {
       legacyMethod3("setMode", "edit");
     }
     legacyMethod3("renderImageStrip");
@@ -16214,8 +19284,8 @@
     });
   }
   function focusImagePasteTarget() {
-    const els43 = getEls();
-    els43.imageUploadSource?.focus({ preventScroll: true });
+    const els44 = getEls();
+    els44.imageUploadSource?.focus({ preventScroll: true });
   }
   function handleImagePaste(event) {
     const files = imageFilesFromClipboardItems(event.clipboardData?.items);
@@ -16286,13 +19356,13 @@
     return files;
   }
   async function pasteClipboardImages() {
-    const els43 = getEls();
+    const els44 = getEls();
     if (!navigator.clipboard?.read) {
       focusImagePasteTarget();
       setStatus2(clipboardReadFallbackMessage(translate("inputSource.clipboardUnsupported")), "error");
       return;
     }
-    els43.pasteClipboardButton.disabled = true;
+    els44.pasteClipboardButton.disabled = true;
     try {
       const files = await readClipboardImageFiles();
       const added = addImageFiles(files, {
@@ -16305,7 +19375,7 @@
       const reason = ["NotAllowedError", "SecurityError"].includes(String(error?.name || "")) ? translate("inputSource.clipboardDenied") : translate("inputSource.clipboardReadFailed");
       setStatus2(clipboardReadFallbackMessage(reason), "error");
     } finally {
-      els43.pasteClipboardButton.disabled = false;
+      els44.pasteClipboardButton.disabled = false;
     }
   }
   function missingGalleryInputs() {
@@ -16315,51 +19385,49 @@
     return getState().images.filter((image) => image.kind === "asset" && image.missing);
   }
   function addReferenceAssetInput(item) {
-    const state32 = getState();
+    const state33 = getState();
     if (!item?.id) return;
-    const alreadySelected = state32.images.some((source) => source.kind === "asset" && source.id === item.id);
+    const alreadySelected = state33.images.some((source) => source.kind === "asset" && source.id === item.id);
     if (alreadySelected) return;
-    state32.images.push(assetSource(item));
-    if (state32.mode !== "edit") {
+    state33.images.push(assetSource(item));
+    if (state33.mode !== "edit") {
       legacyMethod3("setMode", "edit");
     }
     legacyMethod3("renderImageStrip");
     legacyMethod3("updateRequestPreview");
   }
   function collectReferenceOutput(url, options = {}) {
-    const state32 = getState();
+    const state33 = getState();
     if (!url) return;
-    if (state32.collectedReferences.some((item) => item.url === url)) {
+    if (state33.collectedReferences.some((item) => item.url === url)) {
       setStatus2(translate("referenceCollector.alreadyStaged"), "ok");
       return;
     }
-    state32.collectedReferences.push({
+    state33.collectedReferences.push({
       url,
       name: options.name || "",
       sourceTaskId: options.sourceTaskId || "",
       outputIndex: options.outputIndex || null
     });
+    persistStagedReferences(state33.collectedReferences);
     renderReferenceCollector();
-    setStatus2(formatTranslation("referenceCollector.staged", { count: state32.collectedReferences.length }), "ok");
+    setStatus2(formatTranslation("referenceCollector.staged", { count: state33.collectedReferences.length }), "ok");
   }
   function renderReferenceCollector() {
-    const state32 = getState();
-    const els43 = getEls();
-    if (!els43.referenceCollector) return;
-    const items = state32.collectedReferences;
+    const state33 = getState();
+    const els44 = getEls();
+    const items = state33.collectedReferences;
+    els44.imageUploaderGrid?.classList.toggle("has-collected-references", Boolean(items.length));
+    if (!els44.referenceCollector) return;
     if (!items.length) {
-      els43.referenceCollector.classList.add("hidden");
-      els43.referenceCollector.innerHTML = "";
+      els44.referenceCollector.classList.add("hidden");
+      els44.referenceCollector.innerHTML = "";
       return;
     }
-    els43.referenceCollector.classList.remove("hidden");
-    els43.referenceCollector.innerHTML = `
-    <div class="reference-collector-header">
+    els44.referenceCollector.classList.remove("hidden");
+    els44.referenceCollector.innerHTML = `
+    <div class="reference-collector-summary">
       <span>${escapeHtml2(formatTranslation("referenceCollector.title", { count: items.length }))}</span>
-      <div class="reference-collector-actions">
-        <button class="ghost-button text-sm" type="button" data-reference-collector-add-all>${escapeHtml2(translate("referenceCollector.addAll"))}</button>
-        <button class="ghost-button text-sm" type="button" data-reference-collector-clear>${escapeHtml2(translate("action.clear"))}</button>
-      </div>
     </div>
     <div class="reference-collector-list">
       ${items.map((item, index) => `
@@ -16369,10 +19437,20 @@
         </div>
       `).join("")}
     </div>
+    <div class="reference-collector-actions">
+      <button class="ghost-button text-sm reference-collector-add" type="button" data-reference-collector-add-all>${escapeHtml2(translate("referenceCollector.addAll"))}</button>
+      <button class="ghost-button text-sm reference-collector-replace" type="button" data-reference-collector-replace-all title="${escapeHtml2(translate("referenceCollector.replaceAll"))}">${escapeHtml2(translate("referenceCollector.replaceAll"))}</button>
+      <button class="ghost-button text-sm quiet-danger-button" type="button" data-reference-collector-clear>${escapeHtml2(translate("action.clear"))}</button>
+    </div>
   `;
-    els43.referenceCollector.querySelector("[data-reference-collector-add-all]")?.addEventListener("click", addCollectedReferencesToInput);
-    els43.referenceCollector.querySelector("[data-reference-collector-clear]")?.addEventListener("click", () => clearCollectedReferences());
-    els43.referenceCollector.querySelectorAll("[data-reference-collector-remove]").forEach((button) => {
+    els44.referenceCollector.querySelector("[data-reference-collector-add-all]")?.addEventListener("click", () => {
+      void addCollectedReferencesToInput();
+    });
+    els44.referenceCollector.querySelector("[data-reference-collector-replace-all]")?.addEventListener("click", () => {
+      void addCollectedReferencesToInput({ replace: true });
+    });
+    els44.referenceCollector.querySelector("[data-reference-collector-clear]")?.addEventListener("click", () => clearCollectedReferences());
+    els44.referenceCollector.querySelectorAll("[data-reference-collector-remove]").forEach((button) => {
       button.addEventListener("click", () => removeCollectedReference(button.dataset.referenceCollectorRemove));
     });
   }
@@ -16380,12 +19458,18 @@
     const itemIndex = Number.parseInt(index, 10);
     if (!Number.isInteger(itemIndex) || itemIndex < 0 || itemIndex >= getState().collectedReferences.length) return;
     getState().collectedReferences.splice(itemIndex, 1);
+    persistStagedReferences(getState().collectedReferences);
     renderReferenceCollector();
   }
   function clearCollectedReferences(options = {}) {
     getState().collectedReferences = [];
+    persistStagedReferences([]);
     renderReferenceCollector();
     if (!options.silent) setStatus2(translate("referenceCollector.cleared"), "ok");
+  }
+  function restoreCollectedReferences() {
+    getState().collectedReferences = readStagedReferences();
+    renderReferenceCollector();
   }
   function imageExtensionFromType(type) {
     const normalized = String(type || "").toLowerCase();
@@ -16421,20 +19505,30 @@
   function collectedReferenceFilename(item, index) {
     return ensureImageFilenameExtension(item?.name || `collected-reference-${index + 1}`, "image/png");
   }
-  async function addCollectedReferencesToInput() {
-    const state32 = getState();
-    const els43 = getEls();
-    const items = state32.collectedReferences.slice();
+  async function addCollectedReferencesToInput(options = {}) {
+    const state33 = getState();
+    const els44 = getEls();
+    const items = state33.collectedReferences.slice();
     if (!items.length) return;
-    const addButton = els43.referenceCollector?.querySelector("[data-reference-collector-add-all]");
-    if (addButton) addButton.disabled = true;
+    const actionButtons = els44.referenceCollector?.querySelectorAll(
+      "[data-reference-collector-add-all], [data-reference-collector-replace-all]"
+    );
+    actionButtons?.forEach((button) => {
+      button.disabled = true;
+    });
     try {
       const files = [];
       for (const [index, item] of items.entries()) {
         files.push(await imageFileFromUrl(item.url, collectedReferenceFilename(item, index)));
       }
+      if (options.replace) {
+        const previousImages = state33.images;
+        legacyMethod3("revokeUploadPreviewUrls", previousImages);
+        state33.images = [];
+        legacyMethod3("syncPromptGalleryMentionsFromInputs");
+      }
       const added = addImageFiles(files, {
-        successMessage: (count) => formatTranslation("referenceCollector.added", { count })
+        successMessage: (count) => options.replace ? formatTranslation("referenceCollector.replaced", { count }) : formatTranslation("referenceCollector.added", { count })
       });
       if (added) clearCollectedReferences({ silent: true });
     } catch (error) {
@@ -16508,13 +19602,13 @@
     }
   }
   function bindInputSourceEvents() {
-    const els43 = getEls();
-    els43.pasteClipboardButton?.addEventListener("click", pasteClipboardImages);
+    const els44 = getEls();
+    els44.pasteClipboardButton?.addEventListener("click", pasteClipboardImages);
     document.addEventListener("paste", handleImagePaste);
-    els43.imageUploaderGrid?.addEventListener("dragenter", handleImageDragEnter);
-    els43.imageUploaderGrid?.addEventListener("dragover", handleImageDragOver);
-    els43.imageUploaderGrid?.addEventListener("dragleave", handleImageDragLeave);
-    els43.imageUploaderGrid?.addEventListener("drop", handleImageDrop);
+    els44.imageUploaderGrid?.addEventListener("dragenter", handleImageDragEnter);
+    els44.imageUploaderGrid?.addEventListener("dragover", handleImageDragOver);
+    els44.imageUploaderGrid?.addEventListener("dragleave", handleImageDragLeave);
+    els44.imageUploaderGrid?.addEventListener("drop", handleImageDrop);
   }
   function initInputSourcesFeature() {
     if (inputSourcesFeatureInitialized) return;
@@ -16544,6 +19638,8 @@
       addReferenceAssetInput,
       collectReferenceOutput,
       renderReferenceCollector,
+      restoreCollectedReferences,
+      addCollectedReferencesToInput,
       imageFileFromUrl,
       restoreHistoryReferenceHandoff
     });
@@ -28374,10 +31470,10 @@ ${instructionMarksHint}` : instructionMarksHint;
     imageEditorState.hasInstructionMarks = Boolean(source.instructionMarksFile);
   }
   function setImageEditorStatus(message, type = "") {
-    const els43 = getEls();
-    if (!els43.imageEditorStatus) return;
-    els43.imageEditorStatus.textContent = message || "";
-    els43.imageEditorStatus.className = `image-editor-status ${type || ""}`.trim();
+    const els44 = getEls();
+    if (!els44.imageEditorStatus) return;
+    els44.imageEditorStatus.textContent = message || "";
+    els44.imageEditorStatus.className = `image-editor-status ${type || ""}`.trim();
   }
   function nextImageEditorSession() {
     imageEditorState.sessionId += 1;
@@ -28828,8 +31924,8 @@ ${instructionMarksHint}` : instructionMarksHint;
     imageEditorState.editRegionNode = null;
   }
   function initializeImageEditorKonva(width, height) {
-    const els43 = getEls();
-    const container = els43.imageEditorKonvaMount;
+    const els44 = getEls();
+    const container = els44.imageEditorKonvaMount;
     if (!container) throw new Error(translate("imageEditor.canvasCreateFailed"));
     destroyImageEditorKonva();
     container.innerHTML = "";
@@ -28916,8 +32012,8 @@ ${instructionMarksHint}` : instructionMarksHint;
     pushImageEditorHistory();
   }
   function renderImageEditor() {
-    const els43 = getEls();
-    const visible = els43.imageEditorCanvas;
+    const els44 = getEls();
+    const visible = els44.imageEditorCanvas;
     const stage = imageEditorState.konvaStage;
     const work = imageEditorState.workCanvas;
     if (visible && work) {
@@ -28969,16 +32065,16 @@ ${instructionMarksHint}` : instructionMarksHint;
     restoreImageEditorSnapshot(snapshot);
   }
   function updateImageEditorControls() {
-    const els43 = getEls();
+    const els44 = getEls();
     const canUndo = imageEditorState.historyIndex > 0;
     const canRedo = imageEditorState.historyIndex >= 0 && imageEditorState.historyIndex < imageEditorState.history.length - 1;
     const selectedLayer = selectedImageEditorLayer();
-    if (els43.imageEditorUndo) els43.imageEditorUndo.disabled = !canUndo;
-    if (els43.imageEditorRedo) els43.imageEditorRedo.disabled = !canRedo;
-    if (els43.imageEditorLayerUp) els43.imageEditorLayerUp.disabled = !selectedLayer || imageEditorState.layers.indexOf(selectedLayer) >= imageEditorState.layers.length - 1;
-    if (els43.imageEditorLayerDown) els43.imageEditorLayerDown.disabled = !selectedLayer || imageEditorState.layers.indexOf(selectedLayer) <= 0;
-    if (els43.imageEditorLayerDelete) els43.imageEditorLayerDelete.disabled = !selectedLayer || imageEditorState.layers.length <= 1;
-    if (els43.imageEditorStrokeValue) els43.imageEditorStrokeValue.textContent = `${imageEditorState.strokeWidth}px`;
+    if (els44.imageEditorUndo) els44.imageEditorUndo.disabled = !canUndo;
+    if (els44.imageEditorRedo) els44.imageEditorRedo.disabled = !canRedo;
+    if (els44.imageEditorLayerUp) els44.imageEditorLayerUp.disabled = !selectedLayer || imageEditorState.layers.indexOf(selectedLayer) >= imageEditorState.layers.length - 1;
+    if (els44.imageEditorLayerDown) els44.imageEditorLayerDown.disabled = !selectedLayer || imageEditorState.layers.indexOf(selectedLayer) <= 0;
+    if (els44.imageEditorLayerDelete) els44.imageEditorLayerDelete.disabled = !selectedLayer || imageEditorState.layers.length <= 1;
+    if (els44.imageEditorStrokeValue) els44.imageEditorStrokeValue.textContent = `${imageEditorState.strokeWidth}px`;
     document.querySelectorAll("[data-image-editor-tool]").forEach((button) => {
       button.classList.toggle("active", button.dataset.imageEditorTool === imageEditorState.tool);
     });
@@ -29025,9 +32121,9 @@ ${instructionMarksHint}` : instructionMarksHint;
     transformer.rotateAnchorOffset?.(Math.max(28, Math.round(28 / safeScale)));
   }
   function updateImageEditorDisplayScale() {
-    const els43 = getEls();
-    const wrap = els43.imageEditorCanvasWrap;
-    const mount = els43.imageEditorKonvaMount;
+    const els44 = getEls();
+    const wrap = els44.imageEditorCanvasWrap;
+    const mount = els44.imageEditorKonvaMount;
     const stage = imageEditorState.konvaStage;
     if (!wrap || !mount || !stage) return;
     const width = stage.width();
@@ -29050,16 +32146,16 @@ ${instructionMarksHint}` : instructionMarksHint;
     mount.style.setProperty("--image-editor-stage-scale", String(displayScale));
   }
   function updateImageEditorCropBox() {
-    const els43 = getEls();
-    const box = els43.imageEditorCropBox;
-    const wrap = els43.imageEditorCanvasWrap;
+    const els44 = getEls();
+    const box = els44.imageEditorCropBox;
+    const wrap = els44.imageEditorCanvasWrap;
     const stage = imageEditorState.konvaStage;
     const crop = imageEditorState.crop;
     if (!box || !wrap || !stage || !crop) {
       box?.classList.add("hidden");
       return;
     }
-    const content = els43.imageEditorKonvaMount?.querySelector(".konvajs-content");
+    const content = els44.imageEditorKonvaMount?.querySelector(".konvajs-content");
     const rect = content?.getBoundingClientRect() || wrap.getBoundingClientRect();
     const wrapRect = wrap.getBoundingClientRect();
     const scaleX = rect.width / Math.max(1, stage.width());
@@ -29777,8 +32873,8 @@ ${instructionMarksHint}` : instructionMarksHint;
     });
   }
   async function saveImageEdit() {
-    const state32 = getState();
-    const els43 = getEls();
+    const state33 = getState();
+    const els44 = getEls();
     const sessionId = imageEditorState.sessionId;
     const source = imageEditorState.source;
     const saveCanvas = imageEditorCanvasForSave();
@@ -29788,11 +32884,11 @@ ${instructionMarksHint}` : instructionMarksHint;
       setImageEditorStatus(translate("imageEditor.emptyEditRegion"), "error");
       return;
     }
-    if (!source || !isEditableImageSource(source) || !saveCanvas || !cleanCanvas || !state32.images.includes(source)) {
+    if (!source || !isEditableImageSource(source) || !saveCanvas || !cleanCanvas || !state33.images.includes(source)) {
       setImageEditorStatus(translate("imageEditor.saveFailed"), "error");
       return;
     }
-    if (els43.imageEditorSave) els43.imageEditorSave.disabled = true;
+    if (els44.imageEditorSave) els44.imageEditorSave.disabled = true;
     try {
       const instructionMarksCanvas = imageEditorState.hasInstructionMarks ? imageEditorDraftCanvasForSave(imageEditorState.workCanvas) : null;
       const editRegionDraftCanvas = imageEditorDraftCanvasForSave(imageEditorState.editRegionCanvas);
@@ -29804,7 +32900,7 @@ ${instructionMarksHint}` : instructionMarksHint;
         editRegionCanvas ? imageEditorExportBlob(editRegionCanvas) : Promise.resolve(null),
         editMaskCanvas ? imageEditorExportBlob(editMaskCanvas) : Promise.resolve(null)
       ]);
-      const sourceIndex = state32.images.indexOf(source);
+      const sourceIndex = state33.images.indexOf(source);
       if (sessionId !== imageEditorState.sessionId || imageEditorState.source !== source || sourceIndex < 0) {
         return;
       }
@@ -29827,7 +32923,7 @@ ${instructionMarksHint}` : instructionMarksHint;
         editRegionFile: editRegionBlob ? new File([editRegionBlob], "edit-region.png", { type: "image/png" }) : null,
         editMaskFile: editMaskBlob ? new File([editMaskBlob], "edit-mask.png", { type: "image/png" }) : null
       };
-      state32.images[sourceIndex] = nextSource;
+      state33.images[sourceIndex] = nextSource;
       legacyMethod4("revokeUploadPreviewUrl", source);
       legacyMethod4("syncPromptGalleryMentionsFromInputs");
       legacyMethod4("renderImageStrip");
@@ -29837,7 +32933,7 @@ ${instructionMarksHint}` : instructionMarksHint;
     } catch (error) {
       setImageEditorStatus(error.message || translate("imageEditor.saveFailed"), "error");
     } finally {
-      if (els43.imageEditorSave) els43.imageEditorSave.disabled = false;
+      if (els44.imageEditorSave) els44.imageEditorSave.disabled = false;
     }
   }
   function sourcePreviewUrlForEditor(source) {
@@ -29846,11 +32942,11 @@ ${instructionMarksHint}` : instructionMarksHint;
     return legacyMethod4("sourcePreviewUrl", source) || "";
   }
   function renderImageEditorInsertList() {
-    const state32 = getState();
+    const state33 = getState();
     const list = getEls().imageEditorInsertList;
     if (!list) return;
     list.textContent = "";
-    const sources = state32.images.map((source, index) => ({ source, index })).filter((item) => item.index !== imageEditorState.sourceIndex && isEditableImageSource(item.source));
+    const sources = state33.images.map((source, index) => ({ source, index })).filter((item) => item.index !== imageEditorState.sourceIndex && isEditableImageSource(item.source));
     if (!sources.length) {
       const empty = document.createElement("div");
       empty.className = "image-editor-insert-empty";
@@ -30016,9 +33112,9 @@ ${instructionMarksHint}` : instructionMarksHint;
     renderImageEditor();
   }
   async function openImageEditor(index) {
-    const state32 = getState();
-    const els43 = getEls();
-    const source = state32.images[index];
+    const state33 = getState();
+    const els44 = getEls();
+    const source = state33.images[index];
     if (!source || !isEditableImageSource(source)) {
       legacyMethod4("setStatus", translate("imageEditor.uneditable"), "error");
       return;
@@ -30027,19 +33123,19 @@ ${instructionMarksHint}` : instructionMarksHint;
     imageEditorState.sourceIndex = index;
     imageEditorState.source = source;
     imageEditorState.originalFile = null;
-    imageEditorState.canUseEditRegion = state32.mode === "edit" && index === 0;
+    imageEditorState.canUseEditRegion = state33.mode === "edit" && index === 0;
     imageEditorState.activeGuidance = imageEditorState.canUseEditRegion && source.activeGuidance === "edit-region" ? "edit-region" : "instruction-marks";
     imageEditorState.tool = imageEditorState.activeGuidance === "edit-region" ? "mask-erase" : "crop";
-    imageEditorState.color = els43.imageEditorColor?.value || "#ff3b30";
-    imageEditorState.strokeWidth = Number(els43.imageEditorStroke?.value || 8);
+    imageEditorState.color = els44.imageEditorColor?.value || "#ff3b30";
+    imageEditorState.strokeWidth = Number(els44.imageEditorStroke?.value || 8);
     imageEditorState.hasInstructionMarks = false;
     imageEditorState.drawing = null;
     imageEditorState.canvasScope = "base";
     setImageEditorStatus("");
-    if (els43.imageEditorSubtitle) {
-      els43.imageEditorSubtitle.textContent = legacyMethod4("sourceName", source) || translate("imageEditor.inputFallback");
+    if (els44.imageEditorSubtitle) {
+      els44.imageEditorSubtitle.textContent = legacyMethod4("sourceName", source) || translate("imageEditor.inputFallback");
     }
-    els43.imageEditorModal?.classList.remove("hidden");
+    els44.imageEditorModal?.classList.remove("hidden");
     try {
       const file = await imageEditorSourceFile(source);
       if (sessionId !== imageEditorState.sessionId || imageEditorState.source !== source) return;
@@ -30061,9 +33157,9 @@ ${instructionMarksHint}` : instructionMarksHint;
     }
   }
   function closeImageEditor() {
-    const els43 = getEls();
+    const els44 = getEls();
     nextImageEditorSession();
-    els43.imageEditorModal?.classList.add("hidden");
+    els44.imageEditorModal?.classList.add("hidden");
     destroyImageEditorKonva();
     imageEditorState.sourceIndex = null;
     imageEditorState.source = null;
@@ -30139,8 +33235,8 @@ ${instructionMarksHint}` : instructionMarksHint;
     }
   }
   function isImageEditorModalOpen() {
-    const els43 = getEls();
-    return Boolean(els43.imageEditorModal && !els43.imageEditorModal.classList.contains("hidden"));
+    const els44 = getEls();
+    return Boolean(els44.imageEditorModal && !els44.imageEditorModal.classList.contains("hidden"));
   }
   function handleImageEditorHistoryShortcut(event) {
     if (!isImageEditorModalOpen()) return false;
@@ -30185,11 +33281,11 @@ ${instructionMarksHint}` : instructionMarksHint;
     });
   }
   function bindImageEditorEvents() {
-    const els43 = getEls();
-    els43.imageEditorClose?.addEventListener("click", closeImageEditor);
-    els43.imageEditorCancel?.addEventListener("click", closeImageEditor);
-    els43.imageEditorModal?.addEventListener("click", (event) => {
-      if (event.target === els43.imageEditorModal) closeImageEditor();
+    const els44 = getEls();
+    els44.imageEditorClose?.addEventListener("click", closeImageEditor);
+    els44.imageEditorCancel?.addEventListener("click", closeImageEditor);
+    els44.imageEditorModal?.addEventListener("click", (event) => {
+      if (event.target === els44.imageEditorModal) closeImageEditor();
     });
     document.querySelectorAll("[data-image-editor-tool]").forEach((button) => {
       button.addEventListener("click", () => setImageEditorTool(button.dataset.imageEditorTool));
@@ -30201,32 +33297,32 @@ ${instructionMarksHint}` : instructionMarksHint;
     document.querySelectorAll("[data-image-editor-color]").forEach((button) => {
       button.addEventListener("click", () => {
         imageEditorState.color = button.dataset.imageEditorColor || imageEditorState.color;
-        if (els43.imageEditorColor) els43.imageEditorColor.value = imageEditorState.color;
+        if (els44.imageEditorColor) els44.imageEditorColor.value = imageEditorState.color;
         updateImageEditorControls();
       });
     });
     document.querySelectorAll("[data-image-editor-canvas-scope]").forEach((button) => {
       button.addEventListener("click", () => setImageEditorCanvasScope(button.dataset.imageEditorCanvasScope));
     });
-    els43.imageEditorColor?.addEventListener("input", () => {
-      imageEditorState.color = els43.imageEditorColor.value || imageEditorState.color;
+    els44.imageEditorColor?.addEventListener("input", () => {
+      imageEditorState.color = els44.imageEditorColor.value || imageEditorState.color;
       updateImageEditorControls();
     });
-    els43.imageEditorStroke?.addEventListener("input", () => {
-      imageEditorState.strokeWidth = Number(els43.imageEditorStroke.value || 8);
+    els44.imageEditorStroke?.addEventListener("input", () => {
+      imageEditorState.strokeWidth = Number(els44.imageEditorStroke.value || 8);
       updateImageEditorControls();
     });
-    els43.imageEditorUndo?.addEventListener("click", undoImageEdit);
-    els43.imageEditorRedo?.addEventListener("click", redoImageEdit);
-    els43.imageEditorReset?.addEventListener("click", resetImageEdit);
-    els43.imageEditorSave?.addEventListener("click", saveImageEdit);
-    els43.imageEditorLayerUp?.addEventListener("click", () => moveImageEditorLayer("up"));
-    els43.imageEditorLayerDown?.addEventListener("click", () => moveImageEditorLayer("down"));
-    els43.imageEditorLayerDelete?.addEventListener("click", deleteSelectedImageEditorLayer);
-    els43.imageEditorCanvas?.addEventListener("pointerdown", handleImageEditorPointerDown);
-    els43.imageEditorCanvas?.addEventListener("pointermove", handleImageEditorPointerMove);
-    els43.imageEditorCanvas?.addEventListener("pointerup", handleImageEditorPointerUp);
-    els43.imageEditorCanvas?.addEventListener("pointercancel", handleImageEditorPointerCancel);
+    els44.imageEditorUndo?.addEventListener("click", undoImageEdit);
+    els44.imageEditorRedo?.addEventListener("click", redoImageEdit);
+    els44.imageEditorReset?.addEventListener("click", resetImageEdit);
+    els44.imageEditorSave?.addEventListener("click", saveImageEdit);
+    els44.imageEditorLayerUp?.addEventListener("click", () => moveImageEditorLayer("up"));
+    els44.imageEditorLayerDown?.addEventListener("click", () => moveImageEditorLayer("down"));
+    els44.imageEditorLayerDelete?.addEventListener("click", deleteSelectedImageEditorLayer);
+    els44.imageEditorCanvas?.addEventListener("pointerdown", handleImageEditorPointerDown);
+    els44.imageEditorCanvas?.addEventListener("pointermove", handleImageEditorPointerMove);
+    els44.imageEditorCanvas?.addEventListener("pointerup", handleImageEditorPointerUp);
+    els44.imageEditorCanvas?.addEventListener("pointercancel", handleImageEditorPointerCancel);
   }
   function initImageEditorFeature() {
     if (imageEditorFeatureInitialized) return;
@@ -30251,9 +33347,9 @@ ${instructionMarksHint}` : instructionMarksHint;
     event.target.value = "";
   }
   function clearImages() {
-    const state32 = getState();
-    legacyMethod5("revokeUploadPreviewUrls", state32.images);
-    state32.images = [];
+    const state33 = getState();
+    legacyMethod5("revokeUploadPreviewUrls", state33.images);
+    state33.images = [];
     legacyMethod5("clearReferenceFiles", { silent: true });
     legacyMethod5("syncPromptGalleryMentionsFromInputs");
     legacyMethod5("setMode", "generate");
@@ -30275,11 +33371,11 @@ ${instructionMarksHint}` : instructionMarksHint;
     return icon;
   }
   function imageStripNeedsCompactGrid() {
-    const state32 = getState();
-    const els43 = getEls();
-    const thumbCount = state32.images.length + state32.referenceFiles.length;
-    if (!els43.imageUploaderGrid || !thumbCount) return false;
-    const availableWidth = Math.max(0, els43.imageUploaderGrid.clientWidth - 24);
+    const state33 = getState();
+    const els44 = getEls();
+    const thumbCount = state33.images.length + state33.referenceFiles.length;
+    if (!els44.imageUploaderGrid || !thumbCount) return false;
+    const availableWidth = Math.max(0, els44.imageUploaderGrid.clientWidth - 24);
     if (!availableWidth) return false;
     const fullSizeThumbsWidth = thumbCount * 116 + Math.max(0, thumbCount - 1) * 10;
     const fullSizeUploadWidth = 118;
@@ -30287,27 +33383,27 @@ ${instructionMarksHint}` : instructionMarksHint;
     return fullSizeThumbsWidth + fullSizeUploadGap + fullSizeUploadWidth > availableWidth;
   }
   function updateImageStripDensity() {
-    const state32 = getState();
-    const els43 = getEls();
-    const hasImages = Boolean(state32.images.length);
-    const hasInputs = Boolean(state32.images.length + state32.referenceFiles.length);
+    const state33 = getState();
+    const els44 = getEls();
+    const hasImages = Boolean(state33.images.length);
+    const hasInputs = Boolean(state33.images.length + state33.referenceFiles.length);
     const compactGrid = imageStripNeedsCompactGrid();
-    els43.imageUploaderGrid?.classList.toggle("has-images", hasImages);
-    els43.imageUploaderGrid?.classList.toggle("has-inputs", hasInputs);
-    els43.imageUploaderGrid?.classList.toggle("compact-grid", compactGrid);
+    els44.imageUploaderGrid?.classList.toggle("has-images", hasImages);
+    els44.imageUploaderGrid?.classList.toggle("has-inputs", hasInputs);
+    els44.imageUploaderGrid?.classList.toggle("compact-grid", compactGrid);
   }
   function wheelDeltaInPixels(event) {
     const dominantDelta = Math.abs(event.deltaX) > Math.abs(event.deltaY) ? event.deltaX : event.deltaY;
     if (event.deltaMode === WheelEvent.DOM_DELTA_LINE) return dominantDelta * 16;
     if (event.deltaMode === WheelEvent.DOM_DELTA_PAGE) {
-      const els43 = getEls();
-      return dominantDelta * Math.max(1, els43.imageStrip?.clientWidth || 1);
+      const els44 = getEls();
+      return dominantDelta * Math.max(1, els44.imageStrip?.clientWidth || 1);
     }
     return dominantDelta;
   }
   function handleImageStripWheel(event) {
-    const els43 = getEls();
-    const scrollTarget = els43.imageThumbList;
+    const els44 = getEls();
+    const scrollTarget = els44.imageThumbList;
     if (!scrollTarget) return;
     const maxScrollLeft = Math.max(0, scrollTarget.scrollWidth - scrollTarget.clientWidth);
     if (!maxScrollLeft) return;
@@ -30319,10 +33415,10 @@ ${instructionMarksHint}` : instructionMarksHint;
     scrollTarget.scrollLeft = nextScrollLeft;
   }
   function renderImageStrip() {
-    const state32 = getState();
-    const els43 = getEls();
-    const hasImages = Boolean(state32.images.length);
-    const thumbItems = els43.imageThumbItems;
+    const state33 = getState();
+    const els44 = getEls();
+    const hasImages = Boolean(state33.images.length);
+    const thumbItems = els44.imageThumbItems;
     updateImageStripDensity();
     if (!thumbItems) return;
     if (!hasImages) {
@@ -30331,7 +33427,7 @@ ${instructionMarksHint}` : instructionMarksHint;
       return;
     }
     thumbItems.innerHTML = "";
-    state32.images.forEach((source, index) => {
+    state33.images.forEach((source, index) => {
       const wrapper = document.createElement("div");
       wrapper.className = `thumb ${source.kind === "gallery" ? "gallery-thumb" : source.kind === "asset" ? "asset-thumb" : "upload-thumb"}${source.missing ? " missing-thumb" : ""}`;
       const image = document.createElement("img");
@@ -30369,11 +33465,11 @@ ${instructionMarksHint}` : instructionMarksHint;
       remove.append(createThumbRemoveIcon());
       remove.addEventListener("click", (event) => {
         event.stopPropagation();
-        const removedSource = state32.images[index];
+        const removedSource = state33.images[index];
         legacyMethod5("revokeUploadPreviewUrl", removedSource, { ignoredCurrentSources: /* @__PURE__ */ new Set([removedSource]) });
-        state32.images.splice(index, 1);
+        state33.images.splice(index, 1);
         legacyMethod5("syncPromptGalleryMentionsFromInputs");
-        if (!state32.images.length) {
+        if (!state33.images.length) {
           legacyMethod5("setMode", "generate");
         }
         renderImageStrip();
@@ -30404,10 +33500,10 @@ ${instructionMarksHint}` : instructionMarksHint;
     legacyMethod5("updateCustomRatioReferenceButtonState");
   }
   function bindImageStripEvents() {
-    const els43 = getEls();
-    els43.imageInput?.addEventListener("change", addImages);
-    els43.clearImagesButton?.addEventListener("click", clearImages);
-    els43.imageStrip?.addEventListener("wheel", handleImageStripWheel, { passive: false });
+    const els44 = getEls();
+    els44.imageInput?.addEventListener("change", addImages);
+    els44.clearImagesButton?.addEventListener("click", clearImages);
+    els44.imageStrip?.addEventListener("wheel", handleImageStripWheel, { passive: false });
     window.addEventListener("resize", updateImageStripDensity);
     document.addEventListener(LOCALE_CHANGE_EVENT, renderImageStrip);
   }
@@ -31065,6 +34161,9 @@ ${instructionMarksHint}` : instructionMarksHint;
   var RECENT_ASSET_RENDER_BATCH_SIZE = 12;
   var RECENT_ASSET_LOAD_AHEAD_PX = 96;
   var recentAssetRenderLimit = RECENT_ASSET_RENDER_BATCH_SIZE;
+  var recentAssetPreviewsHidden = false;
+  var recentAssetLoadState = "idle";
+  var recentAssetLoadError = "";
   function legacyMethod7(name, ...args) {
     const method = getLegacyBridge().methods[name];
     if (typeof method !== "function") {
@@ -31096,8 +34195,42 @@ ${instructionMarksHint}` : instructionMarksHint;
   function recentAssetName(item) {
     return item?.filename || translate("recentAssets.defaultName");
   }
+  function recentAssetReferenceCount(item) {
+    const count = Number(item?.reference_count);
+    return Number.isInteger(count) && count > 0 ? count : 0;
+  }
+  function recentAssetRequiresHide(item) {
+    return recentAssetReferenceCount(item) > 0 || item?.deletable === false;
+  }
+  function recentAssetRequestError(data, fallback) {
+    const detail = data?.detail;
+    if (detail?.code === "reference_asset_in_use") {
+      const count = Math.max(1, Number(detail.reference_count) || 1);
+      return formatTranslation("recentAssets.inUse", { count });
+    }
+    if (typeof detail === "string" && detail.trim()) return detail;
+    if (typeof detail?.message === "string" && detail.message.trim()) return detail.message;
+    return fallback;
+  }
+  function syncRecentAssetPreviewVisibility() {
+    els3.recentAssetDock?.classList.toggle("previews-hidden", recentAssetPreviewsHidden);
+    els3.recentAssetList?.setAttribute("aria-hidden", String(recentAssetPreviewsHidden));
+    els3.recentAssetList?.toggleAttribute("inert", recentAssetPreviewsHidden);
+    const label = translate(recentAssetPreviewsHidden ? "recentAssets.showPreviews" : "recentAssets.hidePreviews");
+    els3.recentAssetVisibilityToggle?.setAttribute("aria-expanded", String(!recentAssetPreviewsHidden));
+    els3.recentAssetVisibilityToggle?.setAttribute("aria-label", label);
+    els3.recentAssetVisibilityToggle?.setAttribute("title", label);
+  }
+  function toggleRecentAssetPreviews() {
+    recentAssetPreviewsHidden = !recentAssetPreviewsHidden;
+    syncRecentAssetPreviewVisibility();
+  }
   async function refreshRecentAssets() {
     if (!els3.recentAssetList) return;
+    recentAssetLoadState = "loading";
+    recentAssetLoadError = "";
+    els3.recentAssetList.setAttribute("aria-busy", "true");
+    renderRecentAssets();
     try {
       const response = await fetch("/api/reference-assets/recent?limit=50");
       const data = await response.json();
@@ -31106,33 +34239,79 @@ ${instructionMarksHint}` : instructionMarksHint;
       }
       state3.recentAssets = Array.isArray(data.items) ? data.items : [];
       recentAssetRenderLimit = RECENT_ASSET_RENDER_BATCH_SIZE;
-      renderRecentAssets();
-    } catch {
-      state3.recentAssets = [];
+      recentAssetLoadState = "idle";
+    } catch (error) {
+      recentAssetLoadState = "error";
+      recentAssetLoadError = error?.message || translate("recentAssets.loadFailed");
       recentAssetRenderLimit = RECENT_ASSET_RENDER_BATCH_SIZE;
+    } finally {
+      els3.recentAssetList.removeAttribute("aria-busy");
       renderRecentAssets();
     }
+  }
+  function renderRecentAssetStatus() {
+    if (!els3.recentAssetStatus) return;
+    if (recentAssetLoadState === "idle") {
+      els3.recentAssetStatus.hidden = true;
+      els3.recentAssetStatus.innerHTML = "";
+      return;
+    }
+    els3.recentAssetStatus.hidden = false;
+    if (recentAssetLoadState === "loading") {
+      els3.recentAssetStatus.className = "recent-asset-status is-loading";
+      els3.recentAssetStatus.textContent = translate("history.loading");
+      return;
+    }
+    els3.recentAssetStatus.className = "recent-asset-status is-error";
+    els3.recentAssetStatus.innerHTML = `
+    <span>${escapeHtml4(recentAssetLoadError || translate("recentAssets.loadFailed"))}</span>
+    <button class="ghost-button text-sm" type="button" data-recent-assets-retry>${escapeHtml4(translate("action.refresh"))}</button>
+  `;
   }
   function renderRecentAssets() {
     if (!els3.recentAssetDock || !els3.recentAssetList) return;
     const items = state3.recentAssets.filter((item) => item?.id && item?.image_url);
     const visibleItems = items.slice(0, recentAssetRenderLimit);
-    els3.recentAssetDock.classList.toggle("hidden", !items.length);
+    els3.recentAssetDock.classList.toggle("hidden", !items.length && recentAssetLoadState === "idle");
+    els3.recentAssetDock.classList.toggle("is-loading", recentAssetLoadState === "loading");
+    renderRecentAssetStatus();
+    syncRecentAssetPreviewVisibility();
     els3.recentAssetList.innerHTML = visibleItems.map((item) => {
       const name = recentAssetName(item);
+      const referenceCount = recentAssetReferenceCount(item);
+      const hideOnly = recentAssetRequiresHide(item);
+      const actionLabel = hideOnly ? formatTranslation("recentAssets.hide", { name }) : formatTranslation("recentAssets.delete", { name });
+      const actionTitle = hideOnly ? formatTranslation("recentAssets.inUse", { count: referenceCount }) : translate("recentAssets.deleteTitle");
+      const actionAttribute = hideOnly ? `data-reference-asset-hide="${escapeHtml4(item.id)}"` : `data-reference-asset-delete="${escapeHtml4(item.id)}"`;
       return `
     <div class="recent-asset-button" title="${escapeHtml4(name)}">
       <button class="recent-asset-use" type="button" data-reference-asset-id="${escapeHtml4(item.id)}" aria-label="${escapeHtml4(formatTranslation("recentAssets.use", { name }))}">
-        <img src="${escapeHtml4(item.image_url)}" alt="${escapeHtml4(name)}" loading="lazy" decoding="async">
+        <img src="${escapeHtml4(item.image_url)}" alt="${escapeHtml4(name)}" loading="eager" decoding="async">
         <span>${escapeHtml4(name)}</span>
       </button>
-      <button class="recent-asset-delete" type="button" data-reference-asset-delete="${escapeHtml4(item.id)}" aria-label="${escapeHtml4(formatTranslation("recentAssets.delete", { name }))}">\xD7</button>
+      <button class="recent-asset-delete${hideOnly ? " is-hide" : ""}" type="button" ${actionAttribute} aria-label="${escapeHtml4(actionLabel)}" title="${escapeHtml4(actionTitle)}">\xD7</button>
     </div>
   `;
     }).join("");
   }
   function handleRecentAssetClick(event) {
     const target = event.target instanceof Element ? event.target : null;
+    const hideButton = target?.closest("[data-reference-asset-hide]");
+    if (hideButton) {
+      event.stopPropagation();
+      const item2 = state3.recentAssets.find((candidate) => candidate.id === hideButton.dataset.referenceAssetHide);
+      if (!item2) return;
+      const referenceCount = recentAssetReferenceCount(item2);
+      openConfirmPopover2(hideButton, {
+        title: translate("recentAssets.hideTitle"),
+        message: formatTranslation("recentAssets.hideMessage", { count: referenceCount }),
+        detail: `${recentAssetName(item2)} \xB7 ${formatTranslation("recentAssets.inUse", { count: referenceCount })}`,
+        confirmText: translate("action.confirm"),
+        danger: false,
+        onConfirm: () => hideRecentAsset(item2.id)
+      });
+      return;
+    }
     const deleteButton = target?.closest("[data-reference-asset-delete]");
     if (deleteButton) {
       event.stopPropagation();
@@ -31182,6 +34361,23 @@ ${instructionMarksHint}` : instructionMarksHint;
     event.preventDefault();
     list.scrollLeft = nextScrollLeft;
   }
+  async function hideRecentAsset(assetId) {
+    if (!assetId) return;
+    try {
+      const response = await fetch(`/api/reference-assets/${encodeURIComponent(assetId)}/hide`, {
+        method: "POST"
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(recentAssetRequestError(data, translate("recentAssets.hideFailed")));
+      }
+      state3.recentAssets = state3.recentAssets.filter((item) => item.id !== assetId);
+      renderRecentAssets();
+      setStatus4(translate("recentAssets.hidden"), "ok");
+    } catch (error) {
+      setStatus4(error.message || translate("recentAssets.hideFailed"), "error");
+    }
+  }
   async function deleteRecentAsset(assetId) {
     if (!assetId) return;
     try {
@@ -31190,7 +34386,12 @@ ${instructionMarksHint}` : instructionMarksHint;
       });
       const data = await response.json().catch(() => ({}));
       if (!response.ok) {
-        throw new Error(data.detail || translate("recentAssets.deleteFailed"));
+        if (data?.detail?.code === "reference_asset_in_use") {
+          const referenceCount = Math.max(1, Number(data.detail.reference_count) || 1);
+          state3.recentAssets = state3.recentAssets.map((item) => item.id === assetId ? { ...item, reference_count: referenceCount, deletable: false } : item);
+          renderRecentAssets();
+        }
+        throw new Error(recentAssetRequestError(data, translate("recentAssets.deleteFailed")));
       }
       state3.recentAssets = state3.recentAssets.filter((item) => item.id !== assetId);
       state3.images = state3.images.filter((source) => !(source.kind === "asset" && source.id === assetId));
@@ -31211,12 +34412,20 @@ ${instructionMarksHint}` : instructionMarksHint;
     els3.recentAssetList?.addEventListener("wheel", handleRecentAssetWheel, { passive: false });
     els3.recentAssetList?.addEventListener("scroll", handleRecentAssetScroll, { passive: true });
     els3.recentAssetList?.addEventListener("click", handleRecentAssetClick);
+    els3.recentAssetStatus?.addEventListener("click", (event) => {
+      const target = event.target instanceof Element ? event.target : null;
+      if (!target?.closest("[data-recent-assets-retry]")) return;
+      void refreshRecentAssets();
+    });
+    els3.recentAssetVisibilityToggle?.addEventListener("click", toggleRecentAssetPreviews);
     document.addEventListener(LOCALE_CHANGE_EVENT, renderRecentAssets);
     Object.assign(getLegacyBridge().methods, {
       refreshRecentAssets,
       renderRecentAssets,
       handleRecentAssetWheel,
       handleRecentAssetScroll,
+      toggleRecentAssetPreviews,
+      hideRecentAsset,
       deleteRecentAsset
     });
   }
@@ -32520,23 +35729,23 @@ ${instructionMarksHint}` : instructionMarksHint;
     return eligible[0]?.id ?? null;
   }
   function selectedProviderBinding() {
-    const { state: state32 } = getLegacyBridge();
-    const provider = state32.generationCatalog?.providers.find((item) => item.id === state32.selectedProviderId);
-    const candidates = provider?.bindings.filter((binding) => binding.canonical_model_id === state32.selectedModelId && binding.operations.includes(state32.mode) && binding.available !== false) || [];
-    return candidates.find((binding) => binding.id === state32.selectedProviderBindingId) || candidates[0] || null;
+    const { state: state33 } = getLegacyBridge();
+    const provider = state33.generationCatalog?.providers.find((item) => item.id === state33.selectedProviderId);
+    const candidates = provider?.bindings.filter((binding) => binding.canonical_model_id === state33.selectedModelId && binding.operations.includes(state33.mode) && binding.available !== false) || [];
+    return candidates.find((binding) => binding.id === state33.selectedProviderBindingId) || candidates[0] || null;
   }
   function syncCodexCatalogMode(mode) {
-    const { state: state32 } = getLegacyBridge();
-    const catalog = state32.generationCatalog;
+    const { state: state33 } = getLegacyBridge();
+    const catalog = state33.generationCatalog;
     if (!catalog) return;
     catalog.codex.mode = mode;
-    if (state32.selectedProviderId !== "codex") return;
+    if (state33.selectedProviderId !== "codex") return;
     const selected = preferredProviderBinding(
-      eligibleProviderBindings(catalog, state32.selectedModelId, state32.mode),
+      eligibleProviderBindings(catalog, state33.selectedModelId, state33.mode),
       "codex",
       mode
     );
-    if (selected) state32.selectedProviderBindingId = selected.binding.id;
+    if (selected) state33.selectedProviderBindingId = selected.binding.id;
     renderProviderSelection();
   }
   function settingsTabForProvider(_providerId) {
@@ -32557,20 +35766,20 @@ ${instructionMarksHint}` : instructionMarksHint;
     }
   }
   function renderProviderSelection() {
-    const { state: state32, els: els43 } = getLegacyBridge();
-    const select = els43.generationProviderSelect;
-    const catalog = state32.generationCatalog;
-    const entries = catalog ? eligibleProviderBindings(catalog, state32.selectedModelId, state32.mode) : [];
+    const { state: state33, els: els44 } = getLegacyBridge();
+    const select = els44.generationProviderSelect;
+    const catalog = state33.generationCatalog;
+    const entries = catalog ? eligibleProviderBindings(catalog, state33.selectedModelId, state33.mode) : [];
     const resolved = catalog ? resolveProviderSelection(
       entries,
-      state32.lastProviderSelectionByModel[state32.selectedModelId || ""],
-      state32.lastProviderByModel[state32.selectedModelId || ""],
-      catalog.default_provider_by_model[state32.selectedModelId || ""],
+      state33.lastProviderSelectionByModel[state33.selectedModelId || ""],
+      state33.lastProviderByModel[state33.selectedModelId || ""],
+      catalog.default_provider_by_model[state33.selectedModelId || ""],
       catalog.codex.mode
     ) : null;
-    state32.selectedProviderId = resolved?.provider.id || null;
-    state32.selectedProviderBindingId = resolved?.binding.id || null;
-    state32.authAvailable = Boolean(resolved);
+    state33.selectedProviderId = resolved?.provider.id || null;
+    state33.selectedProviderBindingId = resolved?.binding.id || null;
+    state33.authAvailable = Boolean(resolved);
     if (select) {
       select.replaceChildren();
       if (!entries.length) {
@@ -32594,22 +35803,22 @@ ${instructionMarksHint}` : instructionMarksHint;
       select.setAttribute("aria-invalid", resolved ? "false" : "true");
       syncThemedSelect(select);
     }
-    if (els43.runButton) els43.runButton.disabled = !resolved;
+    if (els44.runButton) els44.runButton.disabled = !resolved;
   }
   function selectGenerationProvider(selectionOrProviderId) {
-    const { state: state32 } = getLegacyBridge();
-    const catalog = state32.generationCatalog;
-    if (!catalog || !state32.selectedModelId) return;
-    const entries = eligibleProviderBindings(catalog, state32.selectedModelId, state32.mode);
+    const { state: state33 } = getLegacyBridge();
+    const catalog = state33.generationCatalog;
+    if (!catalog || !state33.selectedModelId) return;
+    const entries = eligibleProviderBindings(catalog, state33.selectedModelId, state33.mode);
     const selected = entries.find((entry) => entry.selectionKey === selectionOrProviderId) || preferredProviderBinding(entries, selectionOrProviderId, catalog.codex.mode);
     if (!selected) {
       renderProviderSelection();
       return;
     }
-    state32.selectedProviderId = selected.provider.id;
-    state32.selectedProviderBindingId = selected.binding.id;
-    state32.lastProviderByModel[state32.selectedModelId] = selected.provider.id;
-    state32.lastProviderSelectionByModel[state32.selectedModelId] = selected.selectionKey;
+    state33.selectedProviderId = selected.provider.id;
+    state33.selectedProviderBindingId = selected.binding.id;
+    state33.lastProviderByModel[state33.selectedModelId] = selected.provider.id;
+    state33.lastProviderSelectionByModel[state33.selectedModelId] = selected.selectionKey;
     getLegacyBridge().methods.persistModelSelection?.();
     renderProviderSelection();
     getLegacyBridge().methods.updateModeSpecificSettings?.();
@@ -33008,11 +36217,12 @@ ${instructionMarksHint}` : instructionMarksHint;
     ".radio-group:not(.ratio-group):not(.model-parameter-segmented-multiline):not(.model-aspect-ratio-grid)",
     "#authSourceGroup",
     "#systemSettingsTabs",
+    ".network-egress-mode-selector",
     ".history-view-toggle",
     ".history-sort-toggle"
   ];
   var HOST_SELECTOR = HOST_SELECTORS.join(", ");
-  var BUTTON_SELECTOR = ".radio-btn, .auth-source-button, .system-settings-tab, .history-view-button, .history-sort-button";
+  var BUTTON_SELECTOR = ".radio-btn, .auth-source-button, .system-settings-tab, .network-egress-mode-button, .history-view-button, .history-sort-button";
   var INDICATOR_CLASS = "segmented-indicator";
   var HOST_CLASS = "segmented-indicator-host";
   var READY_CLASS = "segmented-indicator-ready";
@@ -33021,7 +36231,7 @@ ${instructionMarksHint}` : instructionMarksHint;
   var segmentedIndicatorsInitialized = false;
   var resizeObserver = null;
   function activeSegment(host) {
-    return host.querySelector(".radio-btn.active, .auth-source-button.active, .system-settings-tab.active, .history-view-button.active, .history-sort-button.active");
+    return host.querySelector(".radio-btn.active, .auth-source-button.active, .system-settings-tab.active, .network-egress-mode-button.active, .history-view-button.active, .history-sort-button.active");
   }
   function ensureIndicator(host) {
     const existing = Array.from(host.children).find((child) => child.classList.contains(INDICATOR_CLASS));
@@ -33218,11 +36428,11 @@ ${instructionMarksHint}` : instructionMarksHint;
     return Object.fromEntries(model.parameters.filter((definition) => definition.operations.includes(operation)).filter((definition) => definition.control !== "notice").filter((definition) => definition.visible_when.every((condition) => conditionMatches(condition, values))).map((definition) => [definition.id, cloneValue(values[definition.id])]));
   }
   function activeParameterValues(model) {
-    const { state: state32 } = getLegacyBridge();
+    const { state: state33 } = getLegacyBridge();
     return activeParameterValuesFor(
       model,
-      state32.mode,
-      state32.parameterDraftsByModel[model.id] || {}
+      state33.mode,
+      state33.parameterDraftsByModel[model.id] || {}
     );
   }
   function fieldShell(definition) {
@@ -33243,8 +36453,8 @@ ${instructionMarksHint}` : instructionMarksHint;
   }
   function interactiveModel(context) {
     if (context.readOnly) return context.model;
-    const { state: state32 } = getLegacyBridge();
-    return state32.generationCatalog?.models.find((model) => model.id === state32.selectedModelId) || context.model;
+    const { state: state33 } = getLegacyBridge();
+    return state33.generationCatalog?.models.find((model) => model.id === state33.selectedModelId) || context.model;
   }
   function commitValue(context, definition, value, rerender = false) {
     if (context.readOnly) return;
@@ -33423,12 +36633,12 @@ ${instructionMarksHint}` : instructionMarksHint;
     return renderNumeric(definition, value, context, false);
   }
   function setValidationError(modelId, parameterId, message) {
-    const { state: state32, els: els43 } = getLegacyBridge();
-    const errors = state32.parameterValidationErrorsByModel[modelId] || {};
+    const { state: state33, els: els44 } = getLegacyBridge();
+    const errors = state33.parameterValidationErrorsByModel[modelId] || {};
     if (message) errors[parameterId] = message;
     else delete errors[parameterId];
-    state32.parameterValidationErrorsByModel[modelId] = errors;
-    if (els43.runButton) els43.runButton.disabled = !state32.authAvailable || Object.keys(errors).length > 0;
+    state33.parameterValidationErrorsByModel[modelId] = errors;
+    if (els44.runButton) els44.runButton.disabled = !state33.authAvailable || Object.keys(errors).length > 0;
   }
   function renderText(definition, value, context) {
     const field = fieldShell(definition);
@@ -33698,69 +36908,69 @@ ${instructionMarksHint}` : instructionMarksHint;
     refreshSegmentedIndicators();
   }
   function ensureModelDraft(model) {
-    const { state: state32 } = getLegacyBridge();
-    const previous = state32.parameterDraftsByModel[model.id] || {};
+    const { state: state33 } = getLegacyBridge();
+    const previous = state33.parameterDraftsByModel[model.id] || {};
     const report = initializeParameterDraft(model, previous);
-    state32.parameterDraftsByModel[model.id] = report.values;
-    state32.parameterDraftVersionsByModel[model.id] = model.version;
+    state33.parameterDraftsByModel[model.id] = report.values;
+    state33.parameterDraftVersionsByModel[model.id] = model.version;
     return report;
   }
   function renderModelParameters(model, options = { readOnly: false }) {
-    const { state: state32, els: els43 } = getLegacyBridge();
-    const root = options.root || els43.modelParameterGrid;
+    const { state: state33, els: els44 } = getLegacyBridge();
+    const root = options.root || els44.modelParameterGrid;
     if (!root) return;
     if (options.readOnly) {
-      renderParameterDefinitionsInto(root, model, options.values || {}, { readOnly: true, operation: state32.mode });
+      renderParameterDefinitionsInto(root, model, options.values || {}, { readOnly: true, operation: state33.mode });
       return;
     }
     ensureModelDraft(model);
-    const visibility = legacyParameterVisibility(model.id, els43.size?.value);
+    const visibility = legacyParameterVisibility(model.id, els44.size?.value);
     const legacyGpt = visibility.legacyGpt;
-    state32.customSizeTransitionSeq += 1;
-    state32.customSizeMode = visibility.customSize;
+    state33.customSizeTransitionSeq += 1;
+    state33.customSizeMode = visibility.customSize;
     const legacyElements = [
-      els43.sizeModeGroup?.closest(".custom-size-control"),
-      els43.orientation?.closest(".orientation-field"),
-      els43.resolution?.closest(".resolution-field"),
-      els43.ratio?.closest(".ratio-field"),
-      els43.quality?.closest(".quantity-quality-row"),
-      els43.pixelPreview,
-      els43.outputFormatField,
-      els43.moderation?.closest(".moderation-field")
+      els44.sizeModeGroup?.closest(".custom-size-control"),
+      els44.orientation?.closest(".orientation-field"),
+      els44.resolution?.closest(".resolution-field"),
+      els44.ratio?.closest(".ratio-field"),
+      els44.quality?.closest(".quantity-quality-row"),
+      els44.pixelPreview,
+      els44.outputFormatField,
+      els44.moderation?.closest(".moderation-field")
     ].filter(Boolean);
     legacyElements.forEach((element2) => {
       element2.classList.toggle("hidden", !legacyGpt);
     });
-    if (els43.customSize) {
-      els43.customSize.classList.toggle("hidden", !visibility.customSize);
-      els43.customSize.classList.toggle("custom-size-collapsed", !visibility.customSize);
-      els43.customSize.setAttribute("aria-hidden", visibility.customSize ? "false" : "true");
+    if (els44.customSize) {
+      els44.customSize.classList.toggle("hidden", !visibility.customSize);
+      els44.customSize.classList.toggle("custom-size-collapsed", !visibility.customSize);
+      els44.customSize.setAttribute("aria-hidden", visibility.customSize ? "false" : "true");
     }
-    els43.settingsGrid?.classList.toggle("custom-size-mode", visibility.customSize);
-    els43.webSearchField?.classList.toggle("hidden", !legacyGpt);
+    els44.settingsGrid?.classList.toggle("custom-size-mode", visibility.customSize);
+    els44.webSearchField?.classList.toggle("hidden", !legacyGpt);
     root.classList.toggle("hidden", legacyGpt);
     if (legacyGpt) root.replaceChildren();
     else renderInteractiveParameterDefinitionsInto(
       root,
       model,
-      state32.parameterDraftsByModel[model.id] || {},
-      state32.mode
+      state33.parameterDraftsByModel[model.id] || {},
+      state33.mode
     );
   }
   function setParameterValue(modelId, parameterId, value) {
-    const { state: state32 } = getLegacyBridge();
-    const model = state32.generationCatalog?.models.find((item) => item.id === modelId);
+    const { state: state33 } = getLegacyBridge();
+    const model = state33.generationCatalog?.models.find((item) => item.id === modelId);
     const definition = model?.parameters.find((item) => item.id === parameterId);
     if (!model || !definition || !parameterValueValid(definition, value)) return;
-    state32.parameterDraftsByModel[modelId] = {
-      ...state32.parameterDraftsByModel[modelId] || {},
+    state33.parameterDraftsByModel[modelId] = {
+      ...state33.parameterDraftsByModel[modelId] || {},
       [parameterId]: cloneValue(value)
     };
     if (definition.scope === "application") {
-      state32.generationCatalog?.models.forEach((item) => {
+      state33.generationCatalog?.models.forEach((item) => {
         if (item.parameters.some((parameter) => parameter.id === parameterId)) {
-          state32.parameterDraftsByModel[item.id] = {
-            ...state32.parameterDraftsByModel[item.id] || {},
+          state33.parameterDraftsByModel[item.id] = {
+            ...state33.parameterDraftsByModel[item.id] || {},
             [parameterId]: cloneValue(value)
           };
         }
@@ -33770,8 +36980,8 @@ ${instructionMarksHint}` : instructionMarksHint;
     getLegacyBridge().methods.updateRequestPreview?.();
   }
   function renderCurrentModelParameters() {
-    const { state: state32 } = getLegacyBridge();
-    const model = state32.generationCatalog?.models.find((item) => item.id === state32.selectedModelId);
+    const { state: state33 } = getLegacyBridge();
+    const model = state33.generationCatalog?.models.find((item) => item.id === state33.selectedModelId);
     if (model) renderModelParameters(model, { readOnly: false });
   }
   function initModelParametersFeature() {
@@ -33841,8 +37051,8 @@ ${instructionMarksHint}` : instructionMarksHint;
     }));
   }
   function saveCurrentModelParameterDraft() {
-    const { state: state32, methods } = getLegacyBridge();
-    const model = state32.generationCatalog?.models.find((item) => item.id === state32.selectedModelId);
+    const { state: state33, methods } = getLegacyBridge();
+    const model = state33.generationCatalog?.models.find((item) => item.id === state33.selectedModelId);
     if (!model || typeof methods.currentTaskParams !== "function") return;
     if (model.id !== "gpt-image-2") {
       methods.persistModelSelection?.();
@@ -33850,16 +37060,16 @@ ${instructionMarksHint}` : instructionMarksHint;
     }
     const values = canonicalControlValues(methods.currentTaskParams(), selectedProviderBinding()?.protocol_profile || "");
     const allowed = new Set(model.parameters.map((parameter) => parameter.id));
-    state32.parameterDraftsByModel[model.id] = {
-      ...state32.parameterDraftsByModel[model.id] || {},
+    state33.parameterDraftsByModel[model.id] = {
+      ...state33.parameterDraftsByModel[model.id] || {},
       ...Object.fromEntries(Object.entries(values).filter(([id]) => allowed.has(id)))
     };
     methods.persistModelSelection?.();
   }
   function restoreCurrentModelParameterDraft() {
-    const { state: state32, els: els43, methods } = getLegacyBridge();
-    const modelId = state32.selectedModelId || "";
-    const model = state32.generationCatalog?.models.find((item) => item.id === modelId);
+    const { state: state33, els: els44, methods } = getLegacyBridge();
+    const modelId = state33.selectedModelId || "";
+    const model = state33.generationCatalog?.models.find((item) => item.id === modelId);
     if (!model) return;
     if (model.id !== "gpt-image-2") {
       renderCurrentModelParameters();
@@ -33867,23 +37077,23 @@ ${instructionMarksHint}` : instructionMarksHint;
     }
     const draft = {
       ...Object.fromEntries(model.parameters.map((parameter) => [parameter.id, parameter.default])),
-      ...state32.parameterDraftsByModel[modelId] || {}
+      ...state33.parameterDraftsByModel[modelId] || {}
     };
-    if (typeof draft["canvas.resolution"] === "string" && els43.resolution) els43.resolution.value = draft["canvas.resolution"];
-    if (typeof draft["canvas.aspect_ratio"] === "string" && els43.ratio) els43.ratio.value = draft["canvas.aspect_ratio"];
+    if (typeof draft["canvas.resolution"] === "string" && els44.resolution) els44.resolution.value = draft["canvas.resolution"];
+    if (typeof draft["canvas.aspect_ratio"] === "string" && els44.ratio) els44.ratio.value = draft["canvas.aspect_ratio"];
     if ((draft["canvas.resolution"] || draft["canvas.aspect_ratio"]) && typeof methods.updateSizeFromPreset === "function") {
       methods.updateSizeFromPreset();
     }
     if (typeof draft["canvas.size"] === "string") methods.syncSizeControlsFromSize?.(draft["canvas.size"]);
-    if (typeof draft["gpt.quality"] === "string" && els43.quality) els43.quality.value = draft["gpt.quality"];
-    if (typeof draft["output.format"] === "string" && els43.outputFormat) els43.outputFormat.value = draft["output.format"];
-    if (typeof draft["gpt.moderation"] === "string" && els43.moderation) els43.moderation.value = draft["gpt.moderation"];
-    if (typeof draft["gpt.output_compression"] === "number" && els43.compression) els43.compression.value = String(draft["gpt.output_compression"]);
-    if (typeof draft["gpt.web_search"] === "boolean" && els43.webSearch) {
-      els43.webSearch.checked = draft["gpt.web_search"] && (selectedProviderBinding()?.protocol_profile || "").endsWith("_responses");
+    if (typeof draft["gpt.quality"] === "string" && els44.quality) els44.quality.value = draft["gpt.quality"];
+    if (typeof draft["output.format"] === "string" && els44.outputFormat) els44.outputFormat.value = draft["output.format"];
+    if (typeof draft["gpt.moderation"] === "string" && els44.moderation) els44.moderation.value = draft["gpt.moderation"];
+    if (typeof draft["gpt.output_compression"] === "number" && els44.compression) els44.compression.value = String(draft["gpt.output_compression"]);
+    if (typeof draft["gpt.web_search"] === "boolean" && els44.webSearch) {
+      els44.webSearch.checked = draft["gpt.web_search"] && (selectedProviderBinding()?.protocol_profile || "").endsWith("_responses");
     }
-    if (typeof draft["output.count"] === "number" && els43.nInput) els43.nInput.value = String(draft["output.count"]);
-    methods.syncRadioButtons?.(els43.quality, els43.outputFormat, els43.moderation);
+    if (typeof draft["output.count"] === "number" && els44.nInput) els44.nInput.value = String(draft["output.count"]);
+    methods.syncRadioButtons?.(els44.quality, els44.outputFormat, els44.moderation);
     methods.updateQuantity?.();
     methods.updateCompression?.();
     renderCurrentModelParameters();
@@ -33935,18 +37145,18 @@ ${instructionMarksHint}` : instructionMarksHint;
     });
   }
   function selectModelFamily(familyId) {
-    const { state: state32 } = getLegacyBridge();
-    const catalog = state32.generationCatalog;
+    const { state: state33 } = getLegacyBridge();
+    const catalog = state33.generationCatalog;
     const family = catalog?.families.find((item) => item.id === familyId);
     if (!catalog || !family) return;
     const models = modelsForFamily(catalog, familyId);
-    const remembered = state32.lastModelByFamily[familyId];
+    const remembered = state33.lastModelByFamily[familyId];
     const model = models.find((item) => item.id === remembered) || models[0];
     if (!model) return;
     saveCurrentModelParameterDraft();
-    state32.selectedFamilyId = familyId;
-    state32.selectedModelId = model.id;
-    state32.lastModelByFamily[familyId] = model.id;
+    state33.selectedFamilyId = familyId;
+    state33.selectedModelId = model.id;
+    state33.lastModelByFamily[familyId] = model.id;
     getLegacyBridge().methods.persistModelSelection?.();
     renderModelSelectors();
     renderProviderSelection();
@@ -33958,23 +37168,23 @@ ${instructionMarksHint}` : instructionMarksHint;
     focusFamilyOption(familyId);
   }
   function selectConcreteModel(modelId) {
-    const { state: state32 } = getLegacyBridge();
-    const model = state32.generationCatalog?.models.find((item) => item.id === modelId);
+    const { state: state33 } = getLegacyBridge();
+    const model = state33.generationCatalog?.models.find((item) => item.id === modelId);
     if (!model) return;
-    const sourceModel = state32.generationCatalog?.models.find((item) => item.id === state32.selectedModelId);
+    const sourceModel = state33.generationCatalog?.models.find((item) => item.id === state33.selectedModelId);
     const familyChanged = sourceModel?.family_id !== model.family_id;
     saveCurrentModelParameterDraft();
     if (sourceModel?.family_id === model.family_id) {
-      state32.parameterDraftsByModel[model.id] = migratePortableModelDraft(
+      state33.parameterDraftsByModel[model.id] = migratePortableModelDraft(
         sourceModel,
         model,
-        state32.parameterDraftsByModel[sourceModel.id] || {},
-        state32.parameterDraftsByModel[model.id] || {}
+        state33.parameterDraftsByModel[sourceModel.id] || {},
+        state33.parameterDraftsByModel[model.id] || {}
       );
     }
-    state32.selectedModelId = model.id;
-    state32.selectedFamilyId = model.family_id;
-    state32.lastModelByFamily[model.family_id] = model.id;
+    state33.selectedModelId = model.id;
+    state33.selectedFamilyId = model.family_id;
+    state33.lastModelByFamily[model.family_id] = model.id;
     getLegacyBridge().methods.persistModelSelection?.();
     if (familyChanged) renderModelSelectors();
     else updateConcreteModelSelection(model.id);
@@ -33986,25 +37196,25 @@ ${instructionMarksHint}` : instructionMarksHint;
     getLegacyBridge().methods.updateRequestPreview?.();
   }
   function updateConcreteModelSelection(modelId) {
-    const { state: state32, els: els43 } = getLegacyBridge();
-    const modelSelect = els43.concreteModelSelect;
-    const modelOptions = els43.concreteModelOptions;
+    const { state: state33, els: els44 } = getLegacyBridge();
+    const modelSelect = els44.concreteModelSelect;
+    const modelOptions = els44.concreteModelOptions;
     if (modelSelect) modelSelect.value = modelId;
     modelOptions?.querySelectorAll("[data-model-id]").forEach((button) => {
       const active = button.dataset.modelId === modelId;
       button.classList.toggle("active", active);
       button.setAttribute("aria-pressed", active ? "true" : "false");
     });
-    const model = state32.generationCatalog?.models.find((item) => item.id === modelId);
+    const model = state33.generationCatalog?.models.find((item) => item.id === modelId);
     if (modelSelect) modelSelect.title = model?.display_name || "";
     refreshSegmentedIndicators();
   }
   function renderModelSelectors() {
-    const { state: state32, els: els43 } = getLegacyBridge();
-    const catalog = state32.generationCatalog;
-    const familyOptions = els43.modelFamilyOptions;
-    const modelSelect = els43.concreteModelSelect;
-    const modelOptions = els43.concreteModelOptions;
+    const { state: state33, els: els44 } = getLegacyBridge();
+    const catalog = state33.generationCatalog;
+    const familyOptions = els44.modelFamilyOptions;
+    const modelSelect = els44.concreteModelSelect;
+    const modelOptions = els44.concreteModelOptions;
     const modelField = modelSelect?.closest(".concrete-model-field");
     if (!catalog) {
       if (familyOptions) {
@@ -34017,7 +37227,7 @@ ${instructionMarksHint}` : instructionMarksHint;
       modelField?.classList.add("hidden");
       return;
     }
-    const selectedFamily = catalog.families.find((family) => family.id === state32.selectedFamilyId);
+    const selectedFamily = catalog.families.find((family) => family.id === state33.selectedFamilyId);
     if (familyOptions) {
       familyOptions.querySelectorAll("[data-family-id]").forEach((item) => item.remove());
       familyOptions.removeAttribute("aria-disabled");
@@ -34025,7 +37235,7 @@ ${instructionMarksHint}` : instructionMarksHint;
         const item = document.createElement("button");
         item.type = "button";
         item.role = "radio";
-        const active = family.id === state32.selectedFamilyId;
+        const active = family.id === state33.selectedFamilyId;
         item.className = `model-family-segment radio-btn${active ? " active" : ""}`;
         item.dataset.familyId = family.id;
         item.title = family.display_name;
@@ -34054,9 +37264,9 @@ ${instructionMarksHint}` : instructionMarksHint;
         option2.title = model.display_name;
         modelSelect.append(option2);
       });
-      modelSelect.value = state32.selectedModelId || "";
+      modelSelect.value = state33.selectedModelId || "";
       modelSelect.disabled = modelSelect.options.length === 0;
-      modelSelect.title = catalog.models.find((model) => model.id === state32.selectedModelId)?.display_name || "";
+      modelSelect.title = catalog.models.find((model) => model.id === state33.selectedModelId)?.display_name || "";
       modelSelect.classList.toggle("hidden", expanded);
       if (modelOptions) {
         modelOptions.replaceChildren();
@@ -34064,7 +37274,7 @@ ${instructionMarksHint}` : instructionMarksHint;
         if (expanded) {
           familyModels.forEach((model) => {
             const button = document.createElement("button");
-            const active = model.id === state32.selectedModelId;
+            const active = model.id === state33.selectedModelId;
             button.type = "button";
             button.className = `radio-btn${active ? " active" : ""}`;
             button.dataset.modelId = model.id;
@@ -34134,26 +37344,26 @@ ${instructionMarksHint}` : instructionMarksHint;
   function restoreModelSelection() {
     try {
       const stored = JSON.parse(localStorage.getItem(MODEL_SELECTION_STORAGE_KEY) || "{}");
-      const { state: state32 } = getLegacyBridge();
-      state32.selectedModelId = typeof stored.selectedModelId === "string" ? stored.selectedModelId : null;
-      state32.lastModelByFamily = stringRecord(stored.lastModelByFamily);
-      state32.lastProviderByModel = stringRecord(stored.lastProviderByModel);
-      state32.lastProviderSelectionByModel = stringRecord(stored.lastProviderSelectionByModel);
-      state32.parameterDraftsByModel = draftRecord(stored.parameterDraftsByModel);
-      state32.parameterDraftVersionsByModel = positiveIntegerRecord(stored.parameterDraftVersionsByModel);
+      const { state: state33 } = getLegacyBridge();
+      state33.selectedModelId = typeof stored.selectedModelId === "string" ? stored.selectedModelId : null;
+      state33.lastModelByFamily = stringRecord(stored.lastModelByFamily);
+      state33.lastProviderByModel = stringRecord(stored.lastProviderByModel);
+      state33.lastProviderSelectionByModel = stringRecord(stored.lastProviderSelectionByModel);
+      state33.parameterDraftsByModel = draftRecord(stored.parameterDraftsByModel);
+      state33.parameterDraftVersionsByModel = positiveIntegerRecord(stored.parameterDraftVersionsByModel);
     } catch {
       localStorage.removeItem(MODEL_SELECTION_STORAGE_KEY);
     }
   }
   function persistModelSelection() {
-    const { state: state32 } = getLegacyBridge();
+    const { state: state33 } = getLegacyBridge();
     const stored = {
-      ...state32.selectedModelId ? { selectedModelId: state32.selectedModelId } : {},
-      lastModelByFamily: stringRecord(state32.lastModelByFamily),
-      lastProviderByModel: stringRecord(state32.lastProviderByModel),
-      lastProviderSelectionByModel: stringRecord(state32.lastProviderSelectionByModel),
-      parameterDraftsByModel: draftRecord(state32.parameterDraftsByModel),
-      parameterDraftVersionsByModel: positiveIntegerRecord(state32.parameterDraftVersionsByModel)
+      ...state33.selectedModelId ? { selectedModelId: state33.selectedModelId } : {},
+      lastModelByFamily: stringRecord(state33.lastModelByFamily),
+      lastProviderByModel: stringRecord(state33.lastProviderByModel),
+      lastProviderSelectionByModel: stringRecord(state33.lastProviderSelectionByModel),
+      parameterDraftsByModel: draftRecord(state33.parameterDraftsByModel),
+      parameterDraftVersionsByModel: positiveIntegerRecord(state33.parameterDraftVersionsByModel)
     };
     localStorage.setItem(MODEL_SELECTION_STORAGE_KEY, JSON.stringify(stored));
   }
@@ -34225,36 +37435,36 @@ ${instructionMarksHint}` : instructionMarksHint;
     };
   }
   async function refreshGenerationCatalog() {
-    const { state: state32 } = getLegacyBridge();
+    const { state: state33 } = getLegacyBridge();
     try {
       const response = await fetch("/api/generation-catalog", { headers: { Accept: "application/json" } });
       const payload2 = await response.json();
       if (!response.ok || !isGenerationCatalog(payload2)) throw new Error("generation catalog unavailable");
-      state32.generationCatalog = payload2;
-      state32.generationCatalogError = null;
+      state33.generationCatalog = payload2;
+      state33.generationCatalogError = null;
       const selection = initialCatalogSelection(
         payload2,
-        state32.selectedModelId,
-        state32.lastProviderByModel,
-        state32.mode,
-        state32.lastProviderSelectionByModel
+        state33.selectedModelId,
+        state33.lastProviderByModel,
+        state33.mode,
+        state33.lastProviderSelectionByModel
       );
-      state32.selectedFamilyId = selection.familyId;
-      state32.selectedModelId = selection.modelId;
-      state32.selectedProviderId = selection.providerId;
-      state32.selectedProviderBindingId = selection.bindingId;
+      state33.selectedFamilyId = selection.familyId;
+      state33.selectedModelId = selection.modelId;
+      state33.selectedProviderId = selection.providerId;
+      state33.selectedProviderBindingId = selection.bindingId;
       if (selection.modelId && selection.providerId && selection.bindingId) {
-        state32.lastProviderByModel[selection.modelId] = selection.providerId;
-        state32.lastProviderSelectionByModel[selection.modelId] = `${selection.providerId}::${selection.bindingId}`;
+        state33.lastProviderByModel[selection.modelId] = selection.providerId;
+        state33.lastProviderSelectionByModel[selection.modelId] = `${selection.providerId}::${selection.bindingId}`;
       }
       persistModelSelection();
     } catch (error) {
-      state32.generationCatalog = null;
-      state32.generationCatalogError = error instanceof Error ? error.message : "generation catalog unavailable";
-      state32.selectedFamilyId = null;
-      state32.selectedModelId = null;
-      state32.selectedProviderId = null;
-      state32.selectedProviderBindingId = null;
+      state33.generationCatalog = null;
+      state33.generationCatalogError = error instanceof Error ? error.message : "generation catalog unavailable";
+      state33.selectedFamilyId = null;
+      state33.selectedModelId = null;
+      state33.selectedProviderId = null;
+      state33.selectedProviderBindingId = null;
     }
     renderModelSelectors();
     renderProviderSelection();
@@ -34286,12 +37496,12 @@ ${instructionMarksHint}` : instructionMarksHint;
     if (typeof method === "function") method(...args);
   }
   function systemSettingsPanel() {
-    const { els: els43 } = getLegacyBridge();
-    return els43.systemSettingsModal?.querySelector(".system-settings-modal-panel") || null;
+    const { els: els44 } = getLegacyBridge();
+    return els44.systemSettingsModal?.querySelector(".system-settings-modal-panel") || null;
   }
   function shouldAnimateSystemSettingsHeight() {
-    const { els: els43 } = getLegacyBridge();
-    if (els43.systemSettingsModal?.classList.contains("hidden")) return false;
+    const { els: els44 } = getLegacyBridge();
+    if (els44.systemSettingsModal?.classList.contains("hidden")) return false;
     return !window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches;
   }
   function clearSystemSettingsHeightAnimation(panel) {
@@ -34304,8 +37514,8 @@ ${instructionMarksHint}` : instructionMarksHint;
     panel.style.height = "";
   }
   function positionSystemSettingsModal() {
-    const { els: els43 } = getLegacyBridge();
-    const modal = els43.systemSettingsModal;
+    const { els: els44 } = getLegacyBridge();
+    const modal = els44.systemSettingsModal;
     const panel = systemSettingsPanel();
     if (!modal || !panel || modal.classList.contains("hidden")) return;
     const viewportHeight = window.innerHeight || document.documentElement.clientHeight || 0;
@@ -34353,12 +37563,12 @@ ${instructionMarksHint}` : instructionMarksHint;
   }
   function setSystemSettingsTab(tab, options = {}) {
     const selected = normalizedTab(tab);
-    const { els: els43 } = getLegacyBridge();
+    const { els: els44 } = getLegacyBridge();
     const panel = systemSettingsPanel();
     const animateHeight = Boolean(panel && shouldAnimateSystemSettingsHeight());
     const beforeHeight = animateHeight && panel ? panel.getBoundingClientRect().height : 0;
     if (animateHeight && panel) clearSystemSettingsHeightAnimation(panel);
-    const buttons = Array.from(els43.systemSettingsTabs?.querySelectorAll("[data-system-settings-tab]") || []);
+    const buttons = Array.from(els44.systemSettingsTabs?.querySelectorAll("[data-system-settings-tab]") || []);
     buttons.forEach((button) => {
       const active = button.dataset.systemSettingsTab === selected;
       button.classList.toggle("active", active);
@@ -34366,10 +37576,10 @@ ${instructionMarksHint}` : instructionMarksHint;
       button.tabIndex = active ? 0 : -1;
     });
     [
-      ["api", els43.systemSettingsApiPanel],
-      ["network", els43.systemSettingsNetworkPanel],
-      ["language", els43.systemSettingsLanguagePanel],
-      ["storage", els43.systemSettingsStoragePanel]
+      ["api", els44.systemSettingsApiPanel],
+      ["network", els44.systemSettingsNetworkPanel],
+      ["language", els44.systemSettingsLanguagePanel],
+      ["storage", els44.systemSettingsStoragePanel]
     ].forEach(([name, panel2]) => {
       if (!panel2) return;
       const active = name === selected;
@@ -34388,8 +37598,8 @@ ${instructionMarksHint}` : instructionMarksHint;
     if (animateHeight && panel) animateSystemSettingsPanelHeight(panel, beforeHeight);
   }
   function openSystemSettingsModal(tab = "api") {
-    const { els: els43 } = getLegacyBridge();
-    const modal = els43.systemSettingsModal;
+    const { els: els44 } = getLegacyBridge();
+    const modal = els44.systemSettingsModal;
     const wasHidden = modal?.classList.contains("hidden") ?? true;
     if (wasHidden) {
       const activeElement = document.activeElement;
@@ -34402,8 +37612,8 @@ ${instructionMarksHint}` : instructionMarksHint;
     refreshSegmentedIndicators();
   }
   function closeSystemSettingsModal() {
-    const { els: els43 } = getLegacyBridge();
-    const modal = els43.systemSettingsModal;
+    const { els: els44 } = getLegacyBridge();
+    const modal = els44.systemSettingsModal;
     const activeElement = document.activeElement;
     if (modal && activeElement instanceof HTMLElement && modal.contains(activeElement)) {
       const returnFocus = systemSettingsReturnFocus;
@@ -34442,8 +37652,8 @@ ${instructionMarksHint}` : instructionMarksHint;
   function initSystemSettingsFeature() {
     if (systemSettingsFeatureInitialized) return;
     systemSettingsFeatureInitialized = true;
-    const { els: els43 } = getLegacyBridge();
-    els43.systemSettingsTabs?.addEventListener("click", handleSystemSettingsTabClick);
+    const { els: els44 } = getLegacyBridge();
+    els44.systemSettingsTabs?.addEventListener("click", handleSystemSettingsTabClick);
     window.addEventListener("resize", handleSystemSettingsResize);
     Object.assign(getLegacyBridge().methods, {
       setSystemSettingsTab,
@@ -34538,6 +37748,259 @@ ${instructionMarksHint}` : instructionMarksHint;
       }
       grid.scrollTo({ top: Math.max(0, targetTop), behavior: "auto" });
     });
+  }
+
+  // codex_image/webui/frontend/src/api-provider-sort.ts
+  var DRAG_START_THRESHOLD_PX = 6;
+  var AUTO_SCROLL_EDGE_PX = 36;
+  var AUTO_SCROLL_MAX_STEP_PX = 12;
+  var initialized2 = false;
+  var providerList = null;
+  var dragSession = null;
+  function isCompleteProviderOrder(candidate, current) {
+    if (candidate.length !== current.length || new Set(candidate).size !== candidate.length) return false;
+    const currentIds = new Set(current);
+    return candidate.every((id) => currentIds.has(id));
+  }
+  function moveProviderId(order, providerId, targetIndex) {
+    const sourceIndex = order.indexOf(providerId);
+    if (sourceIndex < 0) return [...order];
+    const boundedTarget = Math.max(0, Math.min(order.length - 1, targetIndex));
+    if (sourceIndex === boundedTarget) return [...order];
+    const next = [...order];
+    const [provider] = next.splice(sourceIndex, 1);
+    if (provider === void 0) return [...order];
+    next.splice(boundedTarget, 0, provider);
+    return next;
+  }
+  function providerOrderFromRows(list) {
+    return Array.from(list.querySelectorAll(".api-provider-sort-row[data-api-provider-id]")).map((row) => row.dataset.apiProviderId || "").filter(Boolean);
+  }
+  function sortModeEnabled() {
+    const bridge40 = getLegacyBridge();
+    return Boolean(bridge40.state.apiProviderSortMode && providerList?.classList.contains("is-sorting"));
+  }
+  function sameOrder(left, right) {
+    return left.length === right.length && left.every((id, index) => id === right[index]);
+  }
+  function restoreProviderRows(list, order) {
+    const rowsById = new Map(
+      Array.from(list.querySelectorAll(".api-provider-sort-row[data-api-provider-id]")).map((row) => [row.dataset.apiProviderId || "", row])
+    );
+    order.forEach((providerId) => {
+      const row = rowsById.get(providerId);
+      if (row) list.append(row);
+    });
+  }
+  function removeDragListeners() {
+    window.removeEventListener("pointermove", handlePointerMove);
+    window.removeEventListener("pointerup", handlePointerUp);
+    window.removeEventListener("pointercancel", handlePointerCancel);
+    window.removeEventListener("keydown", handleWindowKeydown);
+  }
+  function cleanUpDrag(restoreOrder) {
+    const session = dragSession;
+    if (!session) return null;
+    dragSession = null;
+    removeDragListeners();
+    if (session.animationFrameId !== null) window.cancelAnimationFrame(session.animationFrameId);
+    if (restoreOrder && providerList) restoreProviderRows(providerList, session.originalOrder);
+    session.row.classList.remove("is-dragging");
+    session.layer?.remove();
+    document.body.classList.remove("api-provider-sort-dragging");
+    try {
+      if (session.handle.hasPointerCapture(session.pointerId)) {
+        session.handle.releasePointerCapture(session.pointerId);
+      }
+    } catch {
+    }
+    return session;
+  }
+  function cancelApiProviderSortInteraction(restoreOrder = true) {
+    cleanUpDrag(restoreOrder);
+  }
+  function positionPreview(session) {
+    if (!session.preview) return;
+    const left = session.latestX - session.offsetX;
+    const top = session.latestY - session.offsetY;
+    session.preview.style.transform = `translate3d(${left}px, ${top}px, 0)`;
+  }
+  function createDragPreview(session) {
+    const rect = session.row.getBoundingClientRect();
+    const layer = document.createElement("div");
+    layer.className = "api-provider-sort-drag-layer";
+    layer.setAttribute("aria-hidden", "true");
+    const preview = session.row.cloneNode(true);
+    preview.classList.remove("is-dragging");
+    preview.classList.add("api-provider-sort-drag-preview");
+    preview.removeAttribute("role");
+    preview.style.width = `${rect.width}px`;
+    preview.style.height = `${rect.height}px`;
+    preview.querySelectorAll("button, [tabindex]").forEach((element2) => {
+      element2.setAttribute("tabindex", "-1");
+    });
+    layer.append(preview);
+    document.body.append(layer);
+    session.layer = layer;
+    session.preview = preview;
+    session.offsetX = session.startX - rect.left;
+    session.offsetY = session.startY - rect.top;
+    session.row.classList.add("is-dragging");
+    document.body.classList.add("api-provider-sort-dragging");
+    positionPreview(session);
+  }
+  function rowAtPoint(clientX, clientY) {
+    if (!providerList) return null;
+    for (const element2 of document.elementsFromPoint(clientX, clientY)) {
+      const row = element2.closest(".api-provider-sort-row[data-api-provider-id]");
+      if (row && row.parentElement === providerList && row !== dragSession?.row) return row;
+    }
+    return null;
+  }
+  function reorderRowAtPoint(clientX, clientY) {
+    const session = dragSession;
+    const target = rowAtPoint(clientX, clientY);
+    if (!session?.active || !target) return;
+    const targetRect = target.getBoundingClientRect();
+    if (clientY < targetRect.top + targetRect.height / 2) {
+      if (target.previousElementSibling !== session.row) target.before(session.row);
+    } else if (target.nextElementSibling !== session.row) {
+      target.after(session.row);
+    }
+  }
+  function scrollContainer() {
+    return providerList?.closest(".api-provider-choice-grid") || null;
+  }
+  function autoScrollStep() {
+    const session = dragSession;
+    if (!session?.active) return;
+    const container = scrollContainer();
+    if (container && container.scrollHeight > container.clientHeight) {
+      const rect = container.getBoundingClientRect();
+      let step = 0;
+      if (session.latestY < rect.top + AUTO_SCROLL_EDGE_PX) {
+        const intensity = Math.min(1, (rect.top + AUTO_SCROLL_EDGE_PX - session.latestY) / AUTO_SCROLL_EDGE_PX);
+        step = -Math.ceil(AUTO_SCROLL_MAX_STEP_PX * intensity);
+      } else if (session.latestY > rect.bottom - AUTO_SCROLL_EDGE_PX) {
+        const intensity = Math.min(1, (session.latestY - (rect.bottom - AUTO_SCROLL_EDGE_PX)) / AUTO_SCROLL_EDGE_PX);
+        step = Math.ceil(AUTO_SCROLL_MAX_STEP_PX * intensity);
+      }
+      if (step !== 0) {
+        const previousScrollTop = container.scrollTop;
+        container.scrollTop += step;
+        if (container.scrollTop !== previousScrollTop) {
+          reorderRowAtPoint(session.latestX, session.latestY);
+        }
+      }
+    }
+    session.animationFrameId = window.requestAnimationFrame(autoScrollStep);
+  }
+  function activateDrag(session) {
+    if (session.active) return;
+    session.active = true;
+    try {
+      session.handle.setPointerCapture(session.pointerId);
+    } catch {
+    }
+    createDragPreview(session);
+    session.animationFrameId = window.requestAnimationFrame(autoScrollStep);
+  }
+  function handlePointerMove(event) {
+    const session = dragSession;
+    if (!session || event.pointerId !== session.pointerId) return;
+    session.latestX = event.clientX;
+    session.latestY = event.clientY;
+    if (!session.active) {
+      const deltaX = event.clientX - session.startX;
+      const deltaY = event.clientY - session.startY;
+      if (Math.hypot(deltaX, deltaY) < DRAG_START_THRESHOLD_PX) return;
+      activateDrag(session);
+    }
+    event.preventDefault();
+    positionPreview(session);
+    reorderRowAtPoint(event.clientX, event.clientY);
+  }
+  function submitProviderOrder(order, focusProviderId) {
+    const method = getLegacyBridge().methods.reorderApiProviders;
+    if (typeof method === "function") method(order, focusProviderId);
+  }
+  function handlePointerUp(event) {
+    const session = dragSession;
+    if (!session || event.pointerId !== session.pointerId) return;
+    const nextOrder = session.active && providerList ? providerOrderFromRows(providerList) : session.originalOrder;
+    const providerId = session.row.dataset.apiProviderId || "";
+    const wasActive = session.active;
+    const originalOrder = session.originalOrder;
+    cleanUpDrag(false);
+    if (wasActive) event.preventDefault();
+    if (wasActive && !sameOrder(nextOrder, originalOrder)) submitProviderOrder(nextOrder, providerId);
+  }
+  function handlePointerCancel(event) {
+    if (event.pointerId !== dragSession?.pointerId) return;
+    cleanUpDrag(true);
+  }
+  function handleWindowKeydown(event) {
+    if (event.key === "Escape" && dragSession) {
+      event.preventDefault();
+      cleanUpDrag(true);
+    }
+  }
+  function handlePointerDown(event) {
+    if (!providerList || !sortModeEnabled() || event.button !== 0 || dragSession) return;
+    const handle = event.target?.closest(
+      "button[data-api-provider-sort-handle]"
+    );
+    const row = handle?.closest(".api-provider-sort-row[data-api-provider-id]");
+    if (!handle || !row || row.parentElement !== providerList) return;
+    dragSession = {
+      pointerId: event.pointerId,
+      handle,
+      row,
+      originalOrder: providerOrderFromRows(providerList),
+      startX: event.clientX,
+      startY: event.clientY,
+      offsetX: 0,
+      offsetY: 0,
+      latestX: event.clientX,
+      latestY: event.clientY,
+      active: false,
+      layer: null,
+      preview: null,
+      animationFrameId: null
+    };
+    window.addEventListener("pointermove", handlePointerMove, { passive: false });
+    window.addEventListener("pointerup", handlePointerUp);
+    window.addEventListener("pointercancel", handlePointerCancel);
+    window.addEventListener("keydown", handleWindowKeydown);
+  }
+  function handleSortKeydown(event) {
+    if (!providerList || !sortModeEnabled() || dragSession) return;
+    const handle = event.target?.closest(
+      "button[data-api-provider-sort-handle]"
+    );
+    const providerId = handle?.dataset.apiProviderId || "";
+    if (!handle || !providerId) return;
+    const order = providerOrderFromRows(providerList);
+    const index = order.indexOf(providerId);
+    if (index < 0) return;
+    let targetIndex = null;
+    if (event.key === "ArrowUp") targetIndex = index - 1;
+    else if (event.key === "ArrowDown") targetIndex = index + 1;
+    else if (event.key === "Home") targetIndex = 0;
+    else if (event.key === "End") targetIndex = order.length - 1;
+    if (targetIndex === null) return;
+    event.preventDefault();
+    const nextOrder = moveProviderId(order, providerId, targetIndex);
+    if (!sameOrder(nextOrder, order)) submitProviderOrder(nextOrder, providerId);
+  }
+  function initApiProviderSortFeature() {
+    if (initialized2) return;
+    const list = getLegacyBridge().els.apiProviderList;
+    if (!list) return;
+    initialized2 = true;
+    providerList = list;
+    list.addEventListener("pointerdown", handlePointerDown);
+    list.addEventListener("keydown", handleSortKeydown);
   }
 
   // codex_image/webui/frontend/src/provider-model-bindings.ts
@@ -35154,6 +38617,7 @@ ${instructionMarksHint}` : instructionMarksHint;
     return defaults;
   }
   function renderApiProviderList() {
+    cancelApiProviderSortInteraction(true);
     const settings = normalizeApiSettings(state9.apiSettings);
     state9.apiSettings = settings;
     const sorting = Boolean(state9.apiProviderSortMode && settings.providers.length > 1);
@@ -35174,7 +38638,7 @@ ${instructionMarksHint}` : instructionMarksHint;
     els10.apiProviderList.classList.toggle("is-sorting", sorting);
     els10.apiProviderList.setAttribute("role", sorting ? "list" : "listbox");
     if (sorting) {
-      const rows = settings.providers.map((provider, index) => {
+      const rows = settings.providers.map((provider) => {
         const row = document.createElement("div");
         row.className = `api-provider-sort-row${provider.id === settings.active_provider_id ? " active" : ""}`;
         row.dataset.apiProviderId = provider.id;
@@ -35187,23 +38651,24 @@ ${instructionMarksHint}` : instructionMarksHint;
         const meta = document.createElement("span");
         meta.textContent = providerMetaLabel(provider);
         content.append(name, meta);
-        const controls = document.createElement("div");
-        controls.className = "api-provider-sort-actions";
-        [
-          ["up", "apiSettings.moveProviderUp", "apiSettings.moveProviderUpAria", index <= 0],
-          ["down", "apiSettings.moveProviderDown", "apiSettings.moveProviderDownAria", index >= settings.providers.length - 1]
-        ].forEach(([direction, labelKey, ariaKey, disabled]) => {
-          const button = document.createElement("button");
-          button.type = "button";
-          button.className = "ghost-button api-provider-sort-button";
-          button.dataset.apiProviderId = provider.id;
-          button.dataset.apiProviderSort = direction;
-          button.disabled = Boolean(disabled);
-          button.textContent = translate(labelKey);
-          button.setAttribute("aria-label", formatTranslation(ariaKey, { provider: provider.name || provider.id }));
-          controls.append(button);
+        const handle = document.createElement("button");
+        handle.type = "button";
+        handle.className = "api-provider-sort-handle";
+        handle.dataset.apiProviderId = provider.id;
+        handle.dataset.apiProviderSortHandle = "";
+        const handleLabel = formatTranslation("apiSettings.sortProviderHandleAria", {
+          provider: provider.name || provider.id
         });
-        row.append(content, controls);
+        handle.setAttribute("aria-label", handleLabel);
+        handle.setAttribute("title", handleLabel);
+        const grip = document.createElement("span");
+        grip.className = "api-provider-sort-grip";
+        grip.setAttribute("aria-hidden", "true");
+        for (let dotIndex = 0; dotIndex < 6; dotIndex += 1) {
+          grip.append(document.createElement("span"));
+        }
+        handle.append(grip);
+        row.append(content, handle);
         return row;
       });
       els10.apiProviderList.replaceChildren(...rows);
@@ -35568,20 +39033,37 @@ ${instructionMarksHint}` : instructionMarksHint;
     }
     const settings = normalizeApiSettings(state9.apiSettings);
     if (settings.providers.length <= 1) return;
+    cancelApiProviderSortInteraction(true);
     state9.apiProviderSortMode = !state9.apiProviderSortMode;
     renderApiProviderList();
     if (!state9.apiProviderSortMode) scrollActiveApiProviderCardIntoView(settings.active_provider_id, "center");
     setApiSettingsFeedback(state9.apiProviderSortMode ? translate("apiSettings.sortProviderModeStatus") : "", state9.apiProviderSortMode ? "running" : "");
   }
-  function moveApiProvider(providerId, direction) {
-    if (!state9.apiProviderSortMode || apiProviderEditorActive()) return;
+  function focusedApiProviderSortId() {
+    if (!state9.apiProviderSortMode) return "";
+    const handle = document.activeElement?.closest(
+      "button[data-api-provider-sort-handle][data-api-provider-id]"
+    );
+    return handle?.dataset.apiProviderId || "";
+  }
+  function focusApiProviderSortHandle(providerId) {
+    if (!providerId) return;
+    window.requestAnimationFrame(() => {
+      const escapedId = CSS.escape(providerId);
+      els10.apiProviderList?.querySelector(`button[data-api-provider-sort-handle][data-api-provider-id="${escapedId}"]`)?.focus({ preventScroll: true });
+    });
+  }
+  function reorderApiProviders(orderedIds, focusProviderId = "") {
+    if (!state9.apiProviderSortMode || apiProviderEditorActive() || !Array.isArray(orderedIds)) return false;
     const settings = normalizeApiSettings(state9.apiSettings);
-    const index = settings.providers.findIndex((provider) => provider.id === providerId);
-    const offset = direction === "up" ? -1 : direction === "down" ? 1 : 0;
-    const nextIndex = index + offset;
-    if (index < 0 || nextIndex < 0 || nextIndex >= settings.providers.length) return;
-    const providers = [...settings.providers];
-    [providers[index], providers[nextIndex]] = [providers[nextIndex], providers[index]];
+    const currentIds = settings.providers.map((provider) => provider.id);
+    const candidate = orderedIds.map((id) => String(id || ""));
+    if (!isCompleteProviderOrder(candidate, currentIds)) return false;
+    if (candidate.every((id, index) => id === currentIds[index])) return false;
+    const providersById = new Map(
+      settings.providers.map((provider) => [provider.id, provider])
+    );
+    const providers = candidate.map((id) => providersById.get(id));
     state9.apiSettings = normalizeApiSettings({
       ...settings,
       providers,
@@ -35591,6 +39073,8 @@ ${instructionMarksHint}` : instructionMarksHint;
     renderApiProviderList();
     setApiSettingsFeedback(translate("apiSettings.sortProviderStatus"), "running");
     queueApiSettingsAutosave();
+    focusApiProviderSortHandle(focusProviderId);
+    return true;
   }
   async function saveApiProviderEdit() {
     if (!apiProviderEditorActive()) return;
@@ -35874,6 +39358,7 @@ ${instructionMarksHint}` : instructionMarksHint;
   async function saveApiSettings(options = {}) {
     const autoSave = Boolean(options.auto);
     if (autoSave && apiProviderEditorActive()) return true;
+    const sortFocusId = autoSave ? focusedApiProviderSortId() : "";
     if (state9.apiSettingsSaveTimerId) {
       window.clearTimeout(state9.apiSettingsSaveTimerId);
       state9.apiSettingsSaveTimerId = null;
@@ -35940,6 +39425,7 @@ ${instructionMarksHint}` : instructionMarksHint;
       state9.apiProviderDraftIsNew = false;
       persistApiSettings();
       populateApiSettingsForm();
+      focusApiProviderSortHandle(sortFocusId);
       setApiSettingsFeedback(autoSave ? translate("apiSettings.autoSaved") : formatTranslation("apiSettings.savedSummary", {
         codex: codexModeLabel2(currentCodexMode3()),
         provider: activeApiProvider().name,
@@ -35964,6 +39450,7 @@ ${instructionMarksHint}` : instructionMarksHint;
       state9.apiProviderDraftIsNew = previousDraftIsNew;
       persistApiSettings();
       populateApiSettingsForm();
+      focusApiProviderSortHandle(sortFocusId);
       setApiSettingsFeedback(error.message || translate("apiSettings.saveFailed"), "error");
       if (!autoSave) setSaveButtonText("failed");
       setStatus8(error.message || translate("apiSettings.saveFailed"), "error");
@@ -35985,9 +39472,9 @@ ${instructionMarksHint}` : instructionMarksHint;
     if (apiSettingsFeatureInitialized) return;
     apiSettingsFeatureInitialized = true;
     document.addEventListener(LOCALE_CHANGE_EVENT, () => {
-      const bridge39 = getLegacyBridge();
-      renderAuthSource(bridge39.state.authStatus);
-      if (!bridge39.els.systemSettingsModal?.classList.contains("hidden") && !bridge39.els.systemSettingsApiPanel?.hidden) {
+      const bridge40 = getLegacyBridge();
+      renderAuthSource(bridge40.state.authStatus);
+      if (!bridge40.els.systemSettingsModal?.classList.contains("hidden") && !bridge40.els.systemSettingsApiPanel?.hidden) {
         setApiSettingsFeedback("", "");
       }
     });
@@ -36035,7 +39522,7 @@ ${instructionMarksHint}` : instructionMarksHint;
       revealApiKeyWhilePressed,
       renderApiProviderList,
       syncCodexModeNotes,
-      moveApiProvider,
+      reorderApiProviders,
       removeProviderBinding,
       toggleApiProviderSortMode,
       openGenerationProviderSettings,
@@ -36055,6 +39542,7 @@ ${instructionMarksHint}` : instructionMarksHint;
       setApiSettingsFeedback,
       saveApiSettings
     });
+    initApiProviderSortFeature();
   }
 
   // codex_image/webui/frontend/src/storage-settings.ts
@@ -36145,6 +39633,53 @@ ${instructionMarksHint}` : instructionMarksHint;
     });
   }
 
+  // codex_image/webui/frontend/src/network-request-policy.ts
+  var DEFAULT_TIMEOUT_MINUTES = 10;
+  function boundedInteger(raw, minimum, maximum) {
+    const candidate = raw.trim();
+    if (!/^\d+$/.test(candidate)) return null;
+    const value = Number(candidate);
+    if (!Number.isSafeInteger(value) || value < minimum || value > maximum) {
+      return null;
+    }
+    return value;
+  }
+  function parseNetworkRequestPolicy(timeoutMinutesRaw, retryCountRaw) {
+    const timeoutMinutes = boundedInteger(timeoutMinutesRaw, 1, 30);
+    if (timeoutMinutes === null) {
+      return {
+        ok: false,
+        field: "timeout",
+        errorKey: "networkEgress.timeoutInvalid"
+      };
+    }
+    const retryCount = boundedInteger(retryCountRaw, 0, 5);
+    if (retryCount === null) {
+      return {
+        ok: false,
+        field: "retry",
+        errorKey: "networkEgress.retryInvalid"
+      };
+    }
+    return {
+      ok: true,
+      value: {
+        image_request_timeout_seconds: timeoutMinutes * 60,
+        image_request_retry_count: retryCount
+      }
+    };
+  }
+  function editableTimeoutMinutes(timeoutSeconds) {
+    const minutes = timeoutSeconds / 60;
+    return Number.isInteger(minutes) && minutes >= 1 && minutes <= 30 ? minutes : DEFAULT_TIMEOUT_MINUTES;
+  }
+  function networkEgressRoutePayload(payload2) {
+    return {
+      mode: payload2.mode,
+      custom_proxy_url: payload2.custom_proxy_url
+    };
+  }
+
   // codex_image/webui/frontend/src/network-egress-settings.ts
   var networkEgressFeatureInitialized = false;
   var currentNetworkEgress = null;
@@ -36155,53 +39690,109 @@ ${instructionMarksHint}` : instructionMarksHint;
     return `networkEgress.${mode}`;
   }
   function setNetworkEgressFeedback(message, type = "") {
-    const { els: els43 } = getLegacyBridge();
-    if (!els43.networkEgressStatus) return;
-    els43.networkEgressStatus.textContent = message;
-    els43.networkEgressStatus.classList.toggle("ok", type === "ok");
-    els43.networkEgressStatus.classList.toggle("error", type === "error");
-    els43.networkEgressStatus.classList.toggle("running", type === "running");
+    const { els: els44 } = getLegacyBridge();
+    if (!els44.networkEgressStatus) return;
+    els44.networkEgressStatus.textContent = message;
+    els44.networkEgressStatus.classList.toggle("ok", type === "ok");
+    els44.networkEgressStatus.classList.toggle("error", type === "error");
+    els44.networkEgressStatus.classList.toggle("running", type === "running");
   }
   function selectedNetworkEgressMode() {
-    const { els: els43 } = getLegacyBridge();
-    return normalizedMode(els43.networkEgressMode?.value);
+    const { els: els44 } = getLegacyBridge();
+    return normalizedMode(els44.networkEgressMode?.value);
+  }
+  function clearNetworkRequestPolicyError(field) {
+    const { els: els44 } = getLegacyBridge();
+    const fields = field ? [field] : ["timeout", "retry"];
+    fields.forEach((name) => {
+      const input = name === "timeout" ? els44.networkEgressTimeoutMinutes : els44.networkEgressRetryCount;
+      const error = name === "timeout" ? els44.networkEgressTimeoutError : els44.networkEgressRetryError;
+      input?.removeAttribute("aria-invalid");
+      if (error) error.hidden = true;
+    });
+  }
+  function showNetworkRequestPolicyError(result) {
+    const { els: els44 } = getLegacyBridge();
+    clearNetworkRequestPolicyError();
+    const input = result.field === "timeout" ? els44.networkEgressTimeoutMinutes : els44.networkEgressRetryCount;
+    const error = result.field === "timeout" ? els44.networkEgressTimeoutError : els44.networkEgressRetryError;
+    input?.setAttribute("aria-invalid", "true");
+    if (error) {
+      error.textContent = translate(result.errorKey);
+      error.hidden = false;
+    }
+    input?.focus();
   }
   function renderNetworkEgressMode(mode) {
-    const { els: els43 } = getLegacyBridge();
-    if (els43.networkEgressMode) els43.networkEgressMode.value = mode;
+    const { els: els44 } = getLegacyBridge();
+    if (els44.networkEgressMode) els44.networkEgressMode.value = mode;
     const buttons = Array.from(
-      els43.systemSettingsNetworkPanel?.querySelectorAll("[data-network-egress-mode]") || []
+      els44.systemSettingsNetworkPanel?.querySelectorAll("[data-network-egress-mode]") || []
     );
     buttons.forEach((button) => {
       const active = button.dataset.networkEgressMode === mode;
       button.classList.toggle("active", active);
       button.setAttribute("aria-pressed", active ? "true" : "false");
     });
-    if (els43.networkEgressCustomProxyField) {
-      els43.networkEgressCustomProxyField.hidden = mode !== "custom";
+    if (els44.networkEgressCustomProxyField) {
+      els44.networkEgressCustomProxyField.hidden = mode !== "custom";
     }
   }
   function renderNetworkEgress(payload2) {
-    const { els: els43 } = getLegacyBridge();
+    const { els: els44 } = getLegacyBridge();
     currentNetworkEgress = payload2;
     const mode = normalizedMode(payload2.settings?.mode);
     renderNetworkEgressMode(mode);
-    if (els43.networkEgressCustomProxy) {
-      els43.networkEgressCustomProxy.value = payload2.settings?.custom_proxy_url || "";
+    if (els44.networkEgressCustomProxy) {
+      els44.networkEgressCustomProxy.value = payload2.settings?.custom_proxy_url || "";
     }
-    if (els43.networkEgressCurrentRoute) {
+    if (els44.networkEgressTimeoutMinutes) {
+      els44.networkEgressTimeoutMinutes.value = String(
+        editableTimeoutMinutes(payload2.settings?.image_request_timeout_seconds)
+      );
+    }
+    if (els44.networkEgressRetryCount) {
+      els44.networkEgressRetryCount.value = String(
+        payload2.settings?.image_request_retry_count ?? 2
+      );
+    }
+    clearNetworkRequestPolicyError();
+    if (els44.networkEgressCompatibilityNotice) {
+      const environmentFallback = payload2.resolved?.image_request_timeout_source === "environment";
+      els44.networkEgressCompatibilityNotice.hidden = !environmentFallback;
+      els44.networkEgressCompatibilityNotice.textContent = environmentFallback ? formatTranslation("networkEgress.environmentTimeoutActive", {
+        seconds: payload2.resolved.image_request_timeout_seconds
+      }) : "";
+    }
+    if (els44.networkEgressCurrentRoute) {
       const resolvedMode = normalizedMode(payload2.resolved?.mode);
-      els43.networkEgressCurrentRoute.textContent = formatTranslation(
+      els44.networkEgressCurrentRoute.textContent = formatTranslation(
         "networkEgress.currentRoute",
         { route: translate(modeTranslationKey(resolvedMode)) }
       );
     }
   }
-  function networkEgressFormPayload() {
-    const { els: els43 } = getLegacyBridge();
+  function networkEgressRouteFormPayload() {
+    const { els: els44 } = getLegacyBridge();
     return {
       mode: selectedNetworkEgressMode(),
-      custom_proxy_url: String(els43.networkEgressCustomProxy?.value || "").trim()
+      custom_proxy_url: String(els44.networkEgressCustomProxy?.value || "").trim()
+    };
+  }
+  function networkEgressFormPayload() {
+    const { els: els44 } = getLegacyBridge();
+    const routePayload = networkEgressRouteFormPayload();
+    const policy = parseNetworkRequestPolicy(
+      String(els44.networkEgressTimeoutMinutes?.value || ""),
+      String(els44.networkEgressRetryCount?.value || "")
+    );
+    if (!policy.ok) return policy;
+    return {
+      ok: true,
+      payload: {
+        ...routePayload,
+        ...policy.value
+      }
     };
   }
   function networkEgressPayloadIsValid(payload2) {
@@ -36228,19 +39819,26 @@ ${instructionMarksHint}` : instructionMarksHint;
     }
   }
   async function saveNetworkEgress() {
-    const { els: els43 } = getLegacyBridge();
-    if (!els43.saveNetworkEgressButton) return;
-    const payload2 = networkEgressFormPayload();
-    if (!networkEgressPayloadIsValid(payload2)) {
+    const { els: els44 } = getLegacyBridge();
+    if (!els44.saveNetworkEgressButton) return;
+    const routePayload = networkEgressRouteFormPayload();
+    if (!networkEgressPayloadIsValid(routePayload)) {
       setNetworkEgressFeedback(translate("networkEgress.saveFailed"), "error");
       return;
     }
-    els43.saveNetworkEgressButton.disabled = true;
+    const form = networkEgressFormPayload();
+    if (!form.ok) {
+      showNetworkRequestPolicyError(form);
+      setNetworkEgressFeedback(translate(form.errorKey), "error");
+      return;
+    }
+    clearNetworkRequestPolicyError();
+    els44.saveNetworkEgressButton.disabled = true;
     try {
       const response = await fetch("/api/network-egress", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload2)
+        body: JSON.stringify(form.payload)
       });
       const data = await response.json();
       if (!response.ok) throw new Error(data.detail || translate("networkEgress.saveFailed"));
@@ -36252,24 +39850,30 @@ ${instructionMarksHint}` : instructionMarksHint;
         "error"
       );
     } finally {
-      els43.saveNetworkEgressButton.disabled = false;
+      els44.saveNetworkEgressButton.disabled = false;
     }
   }
   async function testNetworkEgress() {
-    const { els: els43 } = getLegacyBridge();
-    if (!els43.testNetworkEgressButton) return;
-    const payload2 = networkEgressFormPayload();
-    if (!networkEgressPayloadIsValid(payload2)) {
+    const { els: els44, state: state33 } = getLegacyBridge();
+    if (!els44.testNetworkEgressButton) return;
+    const routePayload = networkEgressRouteFormPayload();
+    if (!networkEgressPayloadIsValid(routePayload)) {
       setNetworkEgressFeedback(translate("networkEgress.testFailed"), "error");
       return;
     }
-    els43.testNetworkEgressButton.disabled = true;
+    els44.testNetworkEgressButton.disabled = true;
     setNetworkEgressFeedback(translate("networkEgress.test"), "running");
     try {
+      const selectedProviderId = String(state33.selectedProviderId || "").trim();
+      const payload2 = networkEgressRoutePayload(routePayload);
+      const testPayload = {
+        ...payload2,
+        ...selectedProviderId ? { provider_id: selectedProviderId } : {}
+      };
       const response = await fetch("/api/network-egress/test", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload2)
+        body: JSON.stringify(testPayload)
       });
       const data = await response.json();
       if (!response.ok || !data.ok) {
@@ -36288,7 +39892,7 @@ ${instructionMarksHint}` : instructionMarksHint;
         "error"
       );
     } finally {
-      els43.testNetworkEgressButton.disabled = false;
+      els44.testNetworkEgressButton.disabled = false;
     }
   }
   function handleNetworkEgressModeClick(event) {
@@ -36301,13 +39905,19 @@ ${instructionMarksHint}` : instructionMarksHint;
   function initNetworkEgressSettingsFeature() {
     if (networkEgressFeatureInitialized) return;
     networkEgressFeatureInitialized = true;
-    const { els: els43 } = getLegacyBridge();
-    els43.systemSettingsNetworkPanel?.addEventListener(
+    const { els: els44 } = getLegacyBridge();
+    els44.systemSettingsNetworkPanel?.addEventListener(
       "click",
       handleNetworkEgressModeClick
     );
-    els43.testNetworkEgressButton?.addEventListener("click", testNetworkEgress);
-    els43.saveNetworkEgressButton?.addEventListener("click", saveNetworkEgress);
+    els44.testNetworkEgressButton?.addEventListener("click", testNetworkEgress);
+    els44.saveNetworkEgressButton?.addEventListener("click", saveNetworkEgress);
+    els44.networkEgressTimeoutMinutes?.addEventListener("input", () => {
+      clearNetworkRequestPolicyError("timeout");
+    });
+    els44.networkEgressRetryCount?.addEventListener("input", () => {
+      clearNetworkRequestPolicyError("retry");
+    });
     document.addEventListener(LOCALE_CHANGE_EVENT, () => {
       if (currentNetworkEgress) renderNetworkEgress(currentNetworkEgress);
     });
@@ -37366,10 +40976,21 @@ ${instructionMarksHint}` : instructionMarksHint;
   }
   function expandPromptSnippets(prompt) {
     const text = String(prompt || "");
-    return text.replace(/(^|[\s\n，。,.；;：:！？!?、（）()\[\]【】"'“”‘’])([~～〜∼˜]+)([^\s~～〜∼˜@#，。,.；;：:！？!?、（）()\[\]【】"'“”‘’]+)/g, (full, prefix, _trigger, tag) => {
+    let previousSnippetEnd = -1;
+    return text.replace(/([~～〜∼˜]+)([^\s~～〜∼˜@#，。,.；;：:！？!?、（）()\[\]【】"'“”‘’]+)/g, (full, _trigger, tag, offset) => {
+      const previous = offset > 0 ? text[offset - 1] : "";
+      const followsSnippet = offset === previousSnippetEnd;
+      if (!isPromptSnippetBoundaryChar(previous) && !followsSnippet) {
+        previousSnippetEnd = -1;
+        return full;
+      }
       const snippet = findPromptSnippetByTag(tag);
-      if (!snippet) return full;
-      return `${prefix}${snippet.content}`;
+      if (!snippet) {
+        previousSnippetEnd = -1;
+        return full;
+      }
+      previousSnippetEnd = offset + full.length;
+      return snippet.content;
     });
   }
   function getPromptSelectionForSnippet() {
@@ -37472,6 +41093,8 @@ ${instructionMarksHint}` : instructionMarksHint;
     button?.classList.add("hidden");
     button?.style.removeProperty("--prompt-snippet-save-left");
     button?.style.removeProperty("--prompt-snippet-save-top");
+    state12.promptSnippetSelectionRange = null;
+    state12.promptSnippetSelectionText = "";
   }
   function openPromptSnippetSavePopover() {
     if (!state12.promptSnippetSelectionText || !state12.promptSnippetSelectionRange) return;
@@ -37781,6 +41404,8 @@ ${instructionMarksHint}` : instructionMarksHint;
   var els15 = bridge14.els;
   var promptTemplateSearchAcceptManualInput = false;
   var lastPromptTemplateTrigger = null;
+  var promptTemplateLoading = false;
+  var promptTemplateLoadError = "";
   function legacyMethod19(name, ...args) {
     const method = getLegacyBridge().methods[name];
     if (typeof method !== "function") {
@@ -37882,20 +41507,22 @@ ${instructionMarksHint}` : instructionMarksHint;
     return Boolean(els15.promptTemplateDrawer?.classList.contains("open"));
   }
   async function refreshPromptTemplates() {
+    promptTemplateLoading = true;
+    promptTemplateLoadError = "";
+    els15.promptTemplateList?.setAttribute("aria-busy", "true");
+    if (promptTemplateDrawerIsOpen()) renderPromptTemplateList();
     try {
       const response = await fetch(PROMPT_TEMPLATES_ENDPOINT);
       const data = await response.json();
       if (!response.ok) throw new Error(data.detail || translate("templates.loadFailed"));
       applyPromptTemplateSettingsResponse(data);
     } catch (error) {
-      console.warn(error.message || translate("templates.loadFailed"));
-      state13.promptTemplates = [];
-      state13.promptTemplateCategories = normalizePromptTemplateCategoryList([]);
-      renderPromptTemplateRecentDock();
-      if (promptTemplateDrawerIsOpen()) {
-        renderPromptTemplateCategories();
-        renderPromptTemplateList();
-      }
+      promptTemplateLoadError = error.message || translate("templates.loadFailed");
+      console.warn(promptTemplateLoadError);
+    } finally {
+      promptTemplateLoading = false;
+      els15.promptTemplateList?.removeAttribute("aria-busy");
+      if (promptTemplateDrawerIsOpen()) renderPromptTemplateList();
     }
   }
   function syncPromptTemplateSearchInput() {
@@ -38053,15 +41680,19 @@ ${instructionMarksHint}` : instructionMarksHint;
   function renderPromptTemplateList() {
     if (!els15.promptTemplateList) return;
     const templates = promptTemplatesForDisplay();
+    const statusHtml = promptTemplateLoading ? `<div class="prompt-template-load-state is-loading" role="status">${escapeHtml10(translate("history.loading"))}</div>` : promptTemplateLoadError ? `<div class="prompt-template-load-state is-error" role="alert">
+          <span>${escapeHtml10(promptTemplateLoadError)}</span>
+          <button class="ghost-button text-sm" type="button" data-prompt-template-retry>${escapeHtml10(translate("action.refresh"))}</button>
+        </div>` : "";
     if (els15.promptTemplateSummary) {
-      els15.promptTemplateSummary.className = "prompt-template-summary";
-      els15.promptTemplateSummary.textContent = templates.length ? formatTranslation("templates.availableCount", { count: templates.length }) : translate("templates.noMatch");
+      els15.promptTemplateSummary.className = `prompt-template-summary${promptTemplateLoadError ? " is-error" : ""}`;
+      els15.promptTemplateSummary.textContent = promptTemplateLoadError ? promptTemplateLoadError : templates.length ? formatTranslation("templates.availableCount", { count: templates.length }) : translate("templates.noMatch");
     }
     if (!templates.length) {
-      els15.promptTemplateList.innerHTML = `<div class="prompt-template-empty">${translate("templates.empty")}</div>`;
+      els15.promptTemplateList.innerHTML = statusHtml || `<div class="prompt-template-empty">${translate("templates.empty")}</div>`;
       return;
     }
-    els15.promptTemplateList.innerHTML = templates.map((template) => `
+    els15.promptTemplateList.innerHTML = statusHtml + templates.map((template) => `
     <button class="prompt-template-card" type="button" data-prompt-template-id="${escapeHtml10(template.id)}">
       ${template.thumbnail_url ? `<span class="prompt-template-card-thumb"><img src="${escapeHtml10(template.thumbnail_url)}" alt="" loading="lazy" decoding="async"></span>` : ""}
       <span class="prompt-template-card-title">${escapeHtml10(promptTemplateCardTitle(template))}</span>
@@ -38532,6 +42163,7 @@ ${instructionMarksHint}` : instructionMarksHint;
     });
     els15.promptTemplateDrawer?.addEventListener("click", (event) => {
       const target = event.target;
+      const retry = target?.closest("[data-prompt-template-retry]");
       const filter = target?.closest("[data-prompt-template-filter]");
       const category = target?.closest("[data-prompt-template-category]");
       const categoryCreate = target?.closest("[data-prompt-template-category-create]");
@@ -38546,6 +42178,10 @@ ${instructionMarksHint}` : instructionMarksHint;
       const edit = target?.closest("[data-prompt-template-edit]");
       const remove = target?.closest("[data-prompt-template-delete]");
       const back = target?.closest("[data-prompt-template-back]");
+      if (retry) {
+        void refreshPromptTemplates();
+        return;
+      }
       if (filter) {
         state13.promptTemplateFilter = filter.dataset.promptTemplateFilter || "all";
         els15.promptTemplateDrawer?.querySelectorAll("[data-prompt-template-filter]").forEach((button) => {
@@ -38821,6 +42457,7 @@ ${instructionMarksHint}` : instructionMarksHint;
     const refList = Array.isArray(refs) ? refs : [];
     const sortedRefs = galleryRefsByMentionLength(refList);
     const promptText = normalizePromptEditorText(text);
+    clearPromptEditorSelection();
     els16.promptEditor.innerHTML = "";
     let cursor = 0;
     let plainStart = 0;
@@ -38858,6 +42495,14 @@ ${instructionMarksHint}` : instructionMarksHint;
     hideMentionSuggest();
     hideColorSuggest2();
     hidePromptSnippetSuggest2();
+    hidePromptSnippetSelectionButton2();
+    closePromptSnippetPopover2();
+  }
+  function clearPromptEditorSelection() {
+    const selection = window.getSelection();
+    if (!selection?.rangeCount || !els16.promptEditor) return;
+    const intersectsEditor = Array.from({ length: selection.rangeCount }, (_, index) => selection.getRangeAt(index)).some((range) => rangeIntersectsNode2(range, els16.promptEditor));
+    if (intersectsEditor) selection.removeAllRanges();
   }
   function appendPromptText4(text) {
     const { fragment } = createPromptTextFragment(text);
@@ -39506,6 +43151,12 @@ ${instructionMarksHint}` : instructionMarksHint;
     return key === "ArrowUp" || key === "ArrowDown" || key === "ArrowLeft" || key === "ArrowRight";
   }
   function handlePromptEditorClick(event) {
+    if (event.detail >= 3 && !event.target.closest?.("button")) {
+      event.preventDefault();
+      event.stopPropagation();
+      selectPromptEditorContents2();
+      return;
+    }
     const removeButton = event.target.closest?.("[data-remove-gallery-chip], [data-remove-color-chip], [data-remove-prompt-snippet-chip]");
     if (removeButton && els19.promptEditor.contains(removeButton)) {
       event.preventDefault();
@@ -39873,8 +43524,8 @@ ${galleryText}`;
     return ["strict", "original", "off"].includes(value) ? value : "strict";
   }
   function supportsGptPromptProcessing() {
-    const { state: state32 } = getLegacyBridge();
-    return !state32.generationCatalog || state32.selectedModelId === "gpt-image-2";
+    const { state: state33 } = getLegacyBridge();
+    return !state33.generationCatalog || state33.selectedModelId === "gpt-image-2";
   }
   function initPromptModelFeature() {
     Object.assign(getLegacyBridge().methods, {
@@ -40645,8 +44296,8 @@ ${galleryText}`;
       moderation: els25.moderation.value,
       output_compression: els25.outputFormat.value === "png" ? null : Number(els25.compression.value)
     };
-    const { state: state32 } = getLegacyBridge();
-    if (!state32.generationCatalog || state32.selectedModelId === "gpt-image-2") {
+    const { state: state33 } = getLegacyBridge();
+    if (!state33.generationCatalog || state33.selectedModelId === "gpt-image-2") {
       params.main_model = currentMainModel();
       params.prompt_fidelity = currentPromptFidelity3();
     }
@@ -41303,7 +44954,7 @@ ${galleryText}`;
 
   // codex_image/webui/frontend/src/output-settings-lock.ts
   var STORAGE_KEY = "codex-image-output-settings-lock-v1";
-  var initialized2 = false;
+  var initialized3 = false;
   var locked = false;
   var lockedSnapshot = null;
   var taskSnapshot = null;
@@ -41473,10 +45124,10 @@ ${galleryText}`;
     });
   }
   function snapshotFromCurrentSelection() {
-    const bridge39 = getLegacyBridge();
+    const bridge40 = getLegacyBridge();
     const legacy = legacyMethod30("currentTaskParams");
-    const model = bridge39.state.generationCatalog?.models.find((item) => item.id === bridge39.state.selectedModelId);
-    const parameters = model && model.id !== "gpt-image-2" && typeof bridge39.methods.activeParameterValues === "function" ? bridge39.methods.activeParameterValues(model) : typeof bridge39.methods.currentCanonicalParameters === "function" ? bridge39.methods.currentCanonicalParameters() : {};
+    const model = bridge40.state.generationCatalog?.models.find((item) => item.id === bridge40.state.selectedModelId);
+    const parameters = model && model.id !== "gpt-image-2" && typeof bridge40.methods.activeParameterValues === "function" ? bridge40.methods.activeParameterValues(model) : typeof bridge40.methods.currentCanonicalParameters === "function" ? bridge40.methods.currentCanonicalParameters() : {};
     return normalizeOutputSettingsSnapshot({
       ...legacy,
       canonical_model_id: model?.id || "gpt-image-2",
@@ -41532,12 +45183,12 @@ ${galleryText}`;
     return card;
   }
   function renderSummary(snapshot, context) {
-    const els43 = getLegacyBridge().els;
-    const root = els43.outputSettingsSummaryContent;
+    const els44 = getLegacyBridge().els;
+    const root = els44.outputSettingsSummaryContent;
     if (!root) return;
     const model = buildOutputSettingsSummaryModel(snapshot, context);
     root.replaceChildren();
-    els43.outputSettingsLockedSummary?.classList.toggle("is-task-context", context.task);
+    els44.outputSettingsLockedSummary?.classList.toggle("is-task-context", context.task);
     const intro = createElement("div", "output-settings-summary-intro");
     if (model.contextLabel) {
       intro.append(createElement("span", "output-settings-summary-context", model.contextLabel));
@@ -41568,9 +45219,9 @@ ${galleryText}`;
     const footer = createElement("div", "output-settings-summary-footer");
     const hint = createElement("p", "output-settings-summary-hint", model.hint);
     footer.append(hint);
-    if (els43.outputSettingsTaskAction) {
-      els43.outputSettingsTaskAction.classList.toggle("hidden", !context.task);
-      footer.append(els43.outputSettingsTaskAction);
+    if (els44.outputSettingsTaskAction) {
+      els44.outputSettingsTaskAction.classList.toggle("hidden", !context.task);
+      footer.append(els44.outputSettingsTaskAction);
     }
     root.append(main, footer);
   }
@@ -41584,13 +45235,13 @@ ${galleryText}`;
     button.title = label;
   }
   function setLockedViewVisible(visible) {
-    const els43 = getLegacyBridge().els;
-    const panel = els43.outputSettingsHeader?.closest(".output-panel");
+    const els44 = getLegacyBridge().els;
+    const panel = els44.outputSettingsHeader?.closest(".output-panel");
     panel?.classList.toggle("is-locked-view", visible);
-    els43.settingsGrid?.toggleAttribute("inert", visible);
-    els43.settingsGrid?.setAttribute("aria-hidden", visible ? "true" : "false");
-    els43.outputSettingsLockedSummary?.classList.toggle("hidden", !visible);
-    els43.outputSettingsLockedSummary?.setAttribute("aria-hidden", visible ? "false" : "true");
+    els44.settingsGrid?.toggleAttribute("inert", visible);
+    els44.settingsGrid?.setAttribute("aria-hidden", visible ? "true" : "false");
+    els44.outputSettingsLockedSummary?.classList.toggle("hidden", !visible);
+    els44.outputSettingsLockedSummary?.setAttribute("aria-hidden", visible ? "false" : "true");
   }
   function persistLockState() {
     try {
@@ -41644,8 +45295,8 @@ ${galleryText}`;
   }
   function adoptTaskOutputSettings() {
     if (!locked || !taskSnapshot) return;
-    const state32 = getLegacyBridge().state;
-    const task = state32.tasks.find((item) => String(item.task_id) === String(state32.selectedTaskId));
+    const state33 = getLegacyBridge().state;
+    const task = state33.tasks.find((item) => String(item.task_id) === String(state33.selectedTaskId));
     if (task) legacyMethod30("adoptTaskParameters", task);
     applySnapshot(taskSnapshot);
     lockedSnapshot = snapshotFromCurrentSelection();
@@ -41695,8 +45346,8 @@ ${galleryText}`;
     updateLockButton();
   }
   function initOutputSettingsLockFeature() {
-    if (initialized2) return;
-    initialized2 = true;
+    if (initialized3) return;
+    initialized3 = true;
     Object.assign(getLegacyBridge().methods, {
       isOutputSettingsLocked,
       restoreOutputSettingsLock,
@@ -41981,6 +45632,158 @@ ${galleryText}`;
     return "";
   }
 
+  // codex_image/webui/frontend/src/task-card-swipe-logic.ts
+  var TASK_CARD_SWIPE_DIRECTION_LOCK_PX = 8;
+  var TASK_CARD_ARCHIVE_REVEAL_PX = 30;
+  var TASK_CARD_DELETE_REVEAL_PX = 38;
+  var TASK_CARD_STOP_REVEAL_PX = 52;
+  var TASK_CARD_SWIPE_OPEN_PX = 64;
+  var TASK_CARD_SWIPE_MAX_PX = 78;
+  var TASK_CARD_BLOCKED_SWIPE_MAX_PX = 16;
+  var TASK_QUEUE_REORDER_DIRECTION_LOCK_PX = TASK_CARD_SWIPE_DIRECTION_LOCK_PX;
+  var TASK_QUEUE_TOUCH_HOLD_MS = 280;
+  var TASK_QUEUE_REORDER_HINT_STORAGE_KEY = "ilab-conjure-queue-reorder-hint-v1";
+  var TASK_CARD_GESTURE_AXIS_DOMINANCE_RATIO = 1.25;
+  var TASK_CARD_GESTURE_FORCE_COMMIT_PX = 18;
+  function taskCardSwipeActionRequiresConfirmation(action) {
+    return action === "stop";
+  }
+  function resolveTaskCardGestureAxis(deltaX, deltaY, directionLockPx = TASK_CARD_SWIPE_DIRECTION_LOCK_PX) {
+    const absX = Math.abs(deltaX);
+    const absY = Math.abs(deltaY);
+    const distance = Math.hypot(deltaX, deltaY);
+    if (distance < directionLockPx) return "pending";
+    if (absX >= absY * TASK_CARD_GESTURE_AXIS_DOMINANCE_RATIO) return "horizontal";
+    if (absY >= absX * TASK_CARD_GESTURE_AXIS_DOMINANCE_RATIO) return "vertical";
+    if (distance < TASK_CARD_GESTURE_FORCE_COMMIT_PX) return "pending";
+    return absX >= absY ? "horizontal" : "vertical";
+  }
+  function resolveTaskQueueReorderIntent(pointerType, holdReady, deltaX, deltaY) {
+    const axis = resolveTaskCardGestureAxis(
+      deltaX,
+      deltaY,
+      TASK_QUEUE_REORDER_DIRECTION_LOCK_PX
+    );
+    if (axis === "pending") return "pending";
+    if (axis === "horizontal") return "horizontal";
+    if (pointerType === "mouse" || holdReady) return "reorder";
+    return "scroll";
+  }
+  function mergeTaskQueueReorderIds(currentIds, renderedIds) {
+    const currentSet = new Set(currentIds);
+    const reorderedVisibleIds = renderedIds.filter((taskId) => currentSet.has(taskId));
+    const reorderedVisibleSet = new Set(reorderedVisibleIds);
+    let visibleIndex = 0;
+    return currentIds.map((taskId) => {
+      if (!reorderedVisibleSet.has(taskId)) return taskId;
+      return reorderedVisibleIds[visibleIndex++] || taskId;
+    });
+  }
+  var TERMINAL_TASK_CARD_SWIPE_ACTIONS = {
+    positive: "archive",
+    negative: "delete"
+  };
+  function taskCardSwipeActionsForState(queueSection, status, localPending = false) {
+    if (localPending || ["submitting", "cancelling"].includes(status)) {
+      return { positive: null, negative: null };
+    }
+    if (queueSection === "running") return { positive: null, negative: "stop" };
+    if (queueSection === "waiting") return { positive: "promote", negative: "cancel" };
+    if (["queued", "running"].includes(status)) return { positive: null, negative: null };
+    return { ...TERMINAL_TASK_CARD_SWIPE_ACTIONS };
+  }
+  function resolveTaskCardSwipeSurfaceOffset(offset) {
+    const normalizedOffset = Number.isFinite(offset) ? offset : 0;
+    return Math.max(
+      -TASK_CARD_SWIPE_MAX_PX,
+      Math.min(TASK_CARD_SWIPE_MAX_PX, normalizedOffset)
+    );
+  }
+  function resolveTaskCardSwipe(deltaX, deltaY, cardWidth, startOffset = 0, actions = TERMINAL_TASK_CARD_SWIPE_ACTIONS) {
+    const safeWidth = Math.max(1, cardWidth);
+    const axis = resolveTaskCardGestureAxis(deltaX, deltaY);
+    if (axis === "pending") {
+      return {
+        axis: "pending",
+        direction: null,
+        revealDirection: null,
+        offset: startOffset,
+        ready: false
+      };
+    }
+    if (axis === "vertical") {
+      return {
+        axis: "vertical",
+        direction: null,
+        revealDirection: null,
+        offset: startOffset,
+        ready: false
+      };
+    }
+    const maxOffset = Math.min(TASK_CARD_SWIPE_MAX_PX, safeWidth * 0.36);
+    const rawOffset = startOffset + deltaX;
+    const positive = rawOffset >= 0;
+    const direction = positive ? actions.positive : actions.negative;
+    const allowedOffset = Math.max(-maxOffset, Math.min(maxOffset, rawOffset));
+    const blockedOffset = Math.max(
+      -TASK_CARD_BLOCKED_SWIPE_MAX_PX,
+      Math.min(TASK_CARD_BLOCKED_SWIPE_MAX_PX, rawOffset * 0.2)
+    );
+    const offset = direction ? allowedOffset : blockedOffset;
+    const revealDistance = direction === "stop" ? TASK_CARD_STOP_REVEAL_PX : positive ? TASK_CARD_ARCHIVE_REVEAL_PX : TASK_CARD_DELETE_REVEAL_PX;
+    const ready = Boolean(direction) && Math.abs(offset) >= revealDistance;
+    return {
+      axis: "horizontal",
+      direction,
+      revealDirection: ready ? direction : null,
+      offset,
+      ready
+    };
+  }
+
+  // codex_image/webui/frontend/src/history-task-reveal-model.ts
+  function sidebarTaskDateBucket(task, nowMs = Date.now()) {
+    const rawTimestamp = task?.terminal_at || task?.completed_at || task?.created_at;
+    const timestamp = Date.parse(String(rawTimestamp || ""));
+    if (!Number.isFinite(timestamp)) return "older";
+    const now2 = new Date(nowMs);
+    const taskDate = new Date(timestamp);
+    const todayStart = new Date(now2.getFullYear(), now2.getMonth(), now2.getDate()).getTime();
+    const taskDayStart = new Date(taskDate.getFullYear(), taskDate.getMonth(), taskDate.getDate()).getTime();
+    const dayDiff = Math.floor((todayStart - taskDayStart) / 864e5);
+    if (dayDiff <= 0) return "today";
+    if (dayDiff === 1) return "yesterday";
+    if (dayDiff <= 6) return "last7";
+    return "older";
+  }
+  function historyTaskRevealDestination(task, options = {}) {
+    const archived = options.archived ?? Boolean(task?.archived_at);
+    if (archived) return { kind: "transient", groupKey: "current" };
+    const groupKey = sidebarTaskDateBucket(task, options.nowMs ?? Date.now());
+    if (groupKey === "older") return { kind: "transient", groupKey: "current" };
+    return { kind: "group", groupKey };
+  }
+  function sidebarTaskRevealPagePlan(input) {
+    const targetIndex = Math.floor(Number(input.targetIndex));
+    if (targetIndex < 0) return { found: false, targetIndex: -1, offsets: [] };
+    if (input.targetLoaded) {
+      return { found: true, targetIndex, offsets: [] };
+    }
+    const pageSize = Math.max(1, Math.floor(Number(input.pageSize) || 1));
+    const loadedCount = Math.max(0, Math.floor(Number(input.loadedCount) || 0));
+    const firstOffset = targetIndex < loadedCount ? Math.floor(targetIndex / pageSize) * pageSize : loadedCount;
+    const offsets = [];
+    for (let offset = firstOffset; offset <= targetIndex; offset += pageSize) {
+      offsets.push(offset);
+    }
+    return { found: true, targetIndex, offsets };
+  }
+  function historyTaskRevealLayoutReady(state33) {
+    return Boolean(
+      state33.cardFound && state33.groupRenderComplete && state33.groupLayoutStable
+    );
+  }
+
   // codex_image/webui/frontend/src/task-list-render.ts
   var bridge25 = getLegacyBridge();
   var state19 = bridge25.state;
@@ -41989,9 +45792,13 @@ ${galleryText}`;
   var EXPANDED_TASK_GROUP_CHUNK_SIZE = 48;
   var TASK_SIDEBAR_GROUP_PAGE_SIZE = 50;
   var EXPANDED_TASK_GROUP_ANIMATION_FALLBACK_MS = 320;
+  var TASK_THUMB_OUTER_SPIN_DURATION_MS = 1300;
+  var TASK_THUMB_INNER_SPIN_DURATION_MS = 950;
+  var TASK_THUMB_INNER_SPIN_OFFSET_MS = 280;
   var expandedTaskGroupRenderToken = 0;
   var queueTaskIdsCacheKey = "";
   var queueTaskIdsCache = null;
+  var deferredActiveTaskHtml = null;
   function legacyMethod31(name, ...args) {
     const method = getLegacyBridge().methods[name];
     if (typeof method !== "function") {
@@ -42080,9 +45887,12 @@ ${galleryText}`;
     const scrollAnchors = options.preserveScroll ? captureTaskListScrollAnchors() : [];
     const query = taskSearchQuery();
     const filters = taskFilterValues();
-    const visibleTasks = state19.tasks.filter((task) => !isTaskArchived(task.task_id));
+    const revealedTaskId = String(
+      state19.historyTaskReveal?.ready && String(state19.historyTaskReveal?.taskId || "") === String(state19.selectedTaskId || "") ? state19.historyTaskReveal.taskId : ""
+    );
+    const visibleTasks = state19.tasks.filter((task) => !isTaskArchived(task.task_id) || String(task?.task_id || "") === revealedTaskId);
     const tasks = visibleTasks.filter((task) => {
-      return taskMatchesSearch(task, query) && taskMatchesFilters(task, filters);
+      return String(task?.task_id || "") === revealedTaskId || taskMatchesSearch(task, query) && taskMatchesFilters(task, filters);
     });
     const visibleTaskIds = visibleTasks.map((task) => String(task.task_id));
     if (!state19.batchSelectionIncludesUnloaded) {
@@ -42107,6 +45917,7 @@ ${galleryText}`;
     renderActiveTaskGroup(activeHtml);
     if (!tasks.length) {
       expandedTaskGroupRenderToken += 1;
+      renderExpandedTaskGroupHeader(null);
       els28.taskList.innerHTML = `<div class="task-meta">${escapeHtml13(translate("taskList.empty"))}</div>`;
       updateDocumentTitle();
       restoreTaskListScrollAnchors(scrollAnchors);
@@ -42115,6 +45926,7 @@ ${galleryText}`;
     }
     if (!layout.expandedGroup) {
       expandedTaskGroupRenderToken += 1;
+      renderExpandedTaskGroupHeader(null);
       els28.taskList.innerHTML = "";
       updateDocumentTitle();
       restoreTaskListScrollAnchors(scrollAnchors);
@@ -42123,9 +45935,10 @@ ${galleryText}`;
     }
     const group = layout.expandedGroup;
     const shouldAnimateExpandedGroup = state19.expandedTaskGroupAnimationPending === true;
-    els28.taskList.innerHTML = renderExpandedTaskGroupShellHtml(group, {
+    renderExpandedTaskGroupHeader(group, {
       startExpanded: !shouldAnimateExpandedGroup
     });
+    els28.taskList.innerHTML = renderExpandedTaskGroupBodyShellHtml(group);
     scheduleExpandedTaskGroupItemsRender(group, layout.expandedKey || group?.key || null);
     updateDocumentTitle();
     restoreTaskListScrollAnchors(scrollAnchors);
@@ -42194,10 +46007,43 @@ ${galleryText}`;
     els28.taskHistoryLibrarySlot.innerHTML = html;
     els28.taskHistoryLibrarySlot.classList.toggle("hidden", !html);
   }
-  function renderActiveTaskGroup(activeHtml) {
+  function applyActiveTaskGroupHtml(activeHtml) {
     if (!els28.taskActiveList) return;
     els28.taskActiveList.innerHTML = activeHtml;
     els28.taskActiveList.classList.toggle("hidden", !activeHtml);
+  }
+  function draggedTaskStillWaiting() {
+    const taskId = String(state19.queueDragTaskId || "");
+    return Boolean(taskId && (state19.queue.waiting || []).some(
+      (task) => String(task?.task_id || "") === taskId
+    ));
+  }
+  function renderActiveTaskGroup(activeHtml) {
+    if (!els28.taskActiveList) return;
+    if (state19.queueDragTaskId && draggedTaskStillWaiting()) {
+      deferredActiveTaskHtml = activeHtml;
+      return;
+    }
+    if (state19.queueDragTaskId) {
+      getLegacyBridge().methods.cancelActiveTaskQueueReorder?.({ flushDeferred: false });
+    }
+    deferredActiveTaskHtml = null;
+    applyActiveTaskGroupHtml(activeHtml);
+  }
+  function flushDeferredActiveTaskGroupRender() {
+    if (state19.queueDragTaskId || deferredActiveTaskHtml === null) return false;
+    const activeHtml = deferredActiveTaskHtml;
+    deferredActiveTaskHtml = null;
+    const anchor = captureTaskListScrollAnchor(els28.taskActiveList, els28.taskActiveList);
+    applyActiveTaskGroupHtml(activeHtml);
+    restoreTaskListScrollAnchor(anchor);
+    updateTaskElapsedDisplays2();
+    return true;
+  }
+  function discardDeferredActiveTaskGroupRender() {
+    if (deferredActiveTaskHtml === null) return false;
+    deferredActiveTaskHtml = null;
+    return true;
   }
   function taskAnchorLayout(groups, expandedKey, query) {
     if (query) {
@@ -42232,8 +46078,8 @@ ${galleryText}`;
     const body = els28.taskList?.querySelector(
       `.task-group-items-expanded[data-expanded-task-group-items-key="${escapedGroupKey}"]`
     );
-    const headerButton = els28.taskList?.querySelector(
-      `.task-group[data-task-group="${escapedGroupKey}"] .task-group-header-split`
+    const headerButton = els28.taskHistoryCurrentAnchor?.querySelector(
+      `.task-group-header-split[data-task-group-toggle-key="${escapedGroupKey}"]`
     );
     return { body, headerButton };
   }
@@ -42424,37 +46270,57 @@ ${galleryText}`;
       legacyMethod31("setStatus", translate("status.shownActiveTasks"), "ok");
     }
   }
-  function renderExpandedTaskGroupShellHtml(group, options = {}) {
+  function expandedTaskGroupHeaderHtml(group, options = {}) {
     const groupKey = escapeHtml13(group.key);
     const startExpanded = options.startExpanded !== false;
     return `
-    <section class="task-group task-group-expanded" data-task-group="${groupKey}">
-      <button
-        class="task-group-header task-group-header-split"
-        type="button"
-        data-task-group-toggle-key="${groupKey}"
-        data-task-group-expanded="true"
-        aria-expanded="${startExpanded ? "true" : "false"}"
-        aria-label="${escapeHtml13(formatTranslation("taskGroup.collapse", { label: group.label }))}"
+    <button
+      class="task-group-header task-group-header-split"
+      type="button"
+      data-task-group-toggle-key="${groupKey}"
+      data-task-group-expanded="true"
+      aria-expanded="${startExpanded ? "true" : "false"}"
+      aria-label="${escapeHtml13(formatTranslation("taskGroup.collapse", { label: group.label }))}"
+    >
+      <span class="task-group-label-button">
+        <span class="task-group-title">
+          <span class="task-group-label">${escapeHtml13(group.label)}</span>
+          <span class="task-group-count-separator" aria-hidden="true">\xB7</span>
+          <span class="task-group-count">${taskGroupCount(group)}</span>
+        </span>
+      </span>
+      <span
+        class="task-group-arrow-button"
+        aria-hidden="true"
       >
-        <span class="task-group-label-button">
-          <span class="task-group-title">
-            <span class="task-group-label">${escapeHtml13(group.label)}</span>
-            <span class="task-group-count-separator" aria-hidden="true"> \xB7 </span>
-            <span class="task-group-count">${taskGroupCount(group)}</span>
-          </span>
+        <span class="task-group-toggle" aria-hidden="true">
+          <svg class="task-group-toggle-icon" viewBox="0 0 12 12" focusable="false">
+            <path d="M4 2.5 8 6 4 9.5" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"/>
+          </svg>
         </span>
-        <span
-          class="task-group-arrow-button"
-          aria-hidden="true"
-        >
-          <span class="task-group-toggle" aria-hidden="true">
-            <svg class="task-group-toggle-icon" viewBox="0 0 12 12" focusable="false">
-              <path d="M4 2.5 8 6 4 9.5" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"/>
-            </svg>
-          </span>
-        </span>
-      </button>
+      </span>
+    </button>
+  `;
+  }
+  function renderExpandedTaskGroupHeader(group, options = {}) {
+    if (!els28.taskHistoryCurrentAnchor) return;
+    const html = group ? expandedTaskGroupHeaderHtml(group, options) : "";
+    els28.taskHistoryCurrentAnchor.innerHTML = html;
+    els28.taskHistoryCurrentAnchor.classList.toggle("hidden", !html);
+  }
+  function renderExpandedTaskGroupBodyShellHtml(group) {
+    const groupKey = escapeHtml13(group.key);
+    return `
+    <section class="task-group task-group-expanded" data-task-group="${groupKey}">
+      <div class="task-group-items task-group-items-expanded" data-expanded-task-group-items-key="${groupKey}"></div>
+    </section>
+  `;
+  }
+  function renderExpandedTaskGroupShellHtml(group, options = {}) {
+    const groupKey = escapeHtml13(group.key);
+    return `
+    <section class="task-group task-group-expanded" data-task-group="${groupKey}">
+      ${expandedTaskGroupHeaderHtml(group, options)}
       <div class="task-group-items task-group-items-expanded" data-expanded-task-group-items-key="${groupKey}"></div>
     </section>
   `;
@@ -42466,7 +46332,7 @@ ${galleryText}`;
     tasks.forEach((task) => {
       const taskId = String(task?.task_id || "");
       const status = String(task?.status || "");
-      if (queueIds.running.has(taskId) || status === "running") {
+      if (queueIds.running.has(taskId) || status === "running" || status === "cancelling") {
         running.push(task);
       } else if (queueIds.waiting.has(taskId) || task?.local_pending || ["submitting", "queued"].includes(status)) {
         waiting.push(task);
@@ -42478,11 +46344,16 @@ ${galleryText}`;
     if (!tasks.length) return "";
     const sectionClass = key === "running" ? 'class="task-active-section task-active-section-running"' : 'class="task-active-section task-active-section-waiting"';
     const sectionData = key === "running" ? 'data-active-task-section="running"' : 'data-active-task-section="waiting"';
+    const reorderHint = key === "waiting" ? taskQueueReorderHintHtml(tasks.length) : "";
     return `
     <div ${sectionClass} ${sectionData}>
       <div class="task-active-section-title">
-        <span>${escapeHtml13(label)}</span>
-        <span class="task-active-section-count">${tasks.length}</span>
+        <span class="task-active-section-heading">
+          <span>${escapeHtml13(label)}</span>
+          <span class="task-active-section-count-separator" aria-hidden="true">\xB7</span>
+          <span class="task-active-section-count">${tasks.length}</span>
+        </span>
+        ${reorderHint}
       </div>
       <div class="task-active-section-items">
         ${tasks.map((task) => taskCardHtml(task)).join("")}
@@ -42534,7 +46405,7 @@ ${galleryText}`;
         <span class="task-group-label-button">
           <span class="task-group-title">
             <span class="task-group-label">${activeLabel}</span>
-            <span class="task-group-count-separator" aria-hidden="true"> \xB7 </span>
+            <span class="task-group-count-separator" aria-hidden="true">\xB7</span>
             <span class="task-group-count">${activeCount}</span>
           </span>
         </span>
@@ -42556,32 +46427,7 @@ ${galleryText}`;
     const groupKey = escapeHtml13(group.key);
     return `
     <section class="task-group task-group-expanded" data-task-group="${groupKey}">
-      <button
-        class="task-group-header task-group-header-split"
-        type="button"
-        data-task-group-toggle-key="${groupKey}"
-        data-task-group-expanded="true"
-        aria-expanded="true"
-        aria-label="${escapeHtml13(formatTranslation("taskGroup.collapse", { label: group.label }))}"
-      >
-        <span class="task-group-label-button">
-          <span class="task-group-title">
-            <span class="task-group-label">${escapeHtml13(group.label)}</span>
-            <span class="task-group-count-separator" aria-hidden="true"> \xB7 </span>
-            <span class="task-group-count">${taskGroupCount(group)}</span>
-          </span>
-        </span>
-        <span
-          class="task-group-arrow-button"
-          aria-hidden="true"
-        >
-          <span class="task-group-toggle" aria-hidden="true">
-            <svg class="task-group-toggle-icon" viewBox="0 0 12 12" focusable="false">
-              <path d="M4 2.5 8 6 4 9.5" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"/>
-            </svg>
-          </span>
-        </span>
-      </button>
+      ${expandedTaskGroupHeaderHtml(group)}
       <div class="task-group-items task-group-items-expanded">
         ${group.tasks.map((task) => taskCardHtml(task)).join("")}
       </div>
@@ -42605,101 +46451,53 @@ ${galleryText}`;
     const normalizedTaskId = String(taskId || "");
     return queueIds.waiting.get(normalizedTaskId) ?? -1;
   }
-  function taskQueueActionIconHtml(icon) {
-    if (icon === "cancel") {
-      return `<svg class="task-queue-action-icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
-        <path d="M5.25 5.25h5.5v5.5h-5.5z" />
-      </svg>`;
+  function taskQueueReorderHintVisible(waitingCount) {
+    if (waitingCount < 2) return false;
+    try {
+      return window.localStorage.getItem(TASK_QUEUE_REORDER_HINT_STORAGE_KEY) !== "1";
+    } catch {
+      return true;
     }
-    if (icon === "up") {
-      return `<svg class="task-queue-action-icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
-        <path d="M8 12V4.5" />
-        <path d="M4.75 7.75 8 4.5l3.25 3.25" />
-      </svg>`;
-    }
-    if (icon === "down") {
-      return `<svg class="task-queue-action-icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
-        <path d="M8 4v7.5" />
-        <path d="M4.75 8.25 8 11.5l3.25-3.25" />
-      </svg>`;
-    }
-    if (icon === "top") {
-      return `<svg class="task-queue-action-icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
-        <path d="M4.5 3.5h7" />
-        <path d="M8 12.5V6" />
-        <path d="M5.25 8.75 8 6l2.75 2.75" />
-      </svg>`;
-    }
-    return `<svg class="task-queue-action-icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
-      <path d="M5.25 6.25v5.5" />
-      <path d="M8 6.25v5.5" />
-      <path d="M10.75 6.25v5.5" />
-      <path d="M4.25 4.25h7.5" />
-      <path d="M6.25 4.25l.5-1h2.5l.5 1" />
-      <path d="M5 4.25h6l-.45 9H5.45z" />
-    </svg>`;
   }
-  function taskQueueActionStripHtml(task, queueSection = taskQueueSection(task), waitingIndex = waitingQueueIndex(task?.task_id)) {
-    if (!queueSection) return "";
-    const taskId = escapeHtml13(task.task_id);
-    if (queueSection === "running") {
-      const runningActionsLabel = escapeHtml13(translate("queue.runningActions"));
-      const cancelTitle = escapeHtml13(translate("queue.cancelRunningTitle"));
-      return `
-      <div class="task-queue-actions task-queue-actions-running" role="group" aria-label="${runningActionsLabel}" data-task-queue-section="${escapeHtml13(queueSection)}">
-        <button class="task-queue-action task-queue-cancel-button" type="button" data-task-queue-cancel-id="${taskId}" aria-label="${cancelTitle}" title="${cancelTitle}">${taskQueueActionIconHtml("cancel")}</button>
-      </div>
-    `;
-    }
-    const waitingCount = (state19.queue.waiting || []).length;
-    const disableMoveUp = waitingIndex <= 0;
-    const disableMoveDown = waitingIndex < 0 || waitingIndex >= waitingCount - 1;
-    const waitingActionsLabel = escapeHtml13(translate("queue.waitingActions"));
-    const dragWaitingLabel = escapeHtml13(translate("queue.dragWaiting"));
-    const dragSortLabel = escapeHtml13(translate("queue.dragSort"));
-    const moveUpTitle = escapeHtml13(translate("queue.moveUpTitle"));
-    const moveDownTitle = escapeHtml13(translate("queue.moveDownTitle"));
-    const promoteTitle = escapeHtml13(translate("queue.promoteTitle"));
-    const deleteTitle = escapeHtml13(translate("queue.deleteWaitingTitle"));
-    return `
-    <div class="task-queue-actions task-queue-actions-waiting" role="group" aria-label="${waitingActionsLabel}" data-task-queue-section="${escapeHtml13(queueSection)}">
-      <button class="task-queue-drag-handle" type="button" draggable="true" data-task-queue-drag-handle-id="${taskId}" aria-label="${dragWaitingLabel}" title="${dragSortLabel}">
-        <svg class="task-queue-drag-icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
-          <path d="M5 3.5h.1M5 8h.1M5 12.5h.1M10.5 3.5h.1M10.5 8h.1M10.5 12.5h.1" />
-        </svg>
-      </button>
-      <button class="task-queue-action" type="button" data-task-queue-move-id="${taskId}" data-task-queue-direction="up" aria-label="${moveUpTitle}" title="${moveUpTitle}"${disableMoveUp ? " disabled" : ""}>${taskQueueActionIconHtml("up")}</button>
-      <button class="task-queue-action" type="button" data-task-queue-move-id="${taskId}" data-task-queue-direction="down" aria-label="${moveDownTitle}" title="${moveDownTitle}"${disableMoveDown ? " disabled" : ""}>${taskQueueActionIconHtml("down")}</button>
-      <button class="task-queue-action" type="button" data-task-queue-promote-id="${taskId}" aria-label="${promoteTitle}" title="${promoteTitle}">${taskQueueActionIconHtml("top")}</button>
-      <button class="task-queue-action task-queue-delete-button" type="button" data-task-queue-delete-id="${taskId}" aria-label="${deleteTitle}" title="${deleteTitle}">${taskQueueActionIconHtml("delete")}</button>
-    </div>
-  `;
+  function taskQueueReorderHintHtml(waitingCount) {
+    if (!taskQueueReorderHintVisible(waitingCount)) return "";
+    return `<span class="task-queue-reorder-hint">${escapeHtml13(translate("queue.dragWaiting"))}</span>`;
   }
-  function taskCardActionsHtml(taskId, queueSection = "") {
-    if (queueSection) return "";
+  function taskCardSwipeActionLabel(action) {
+    if (action === "archive") return translate("action.archive");
+    if (action === "delete") return translate("action.delete");
+    if (action === "stop") return translate("action.stop");
+    if (action === "promote") return translate("queue.promote");
+    return translate("action.cancel");
+  }
+  function taskCardSwipeActionTitle(action) {
+    if (action === "stop") return translate("queue.cancelRunningTitle");
+    if (action === "promote") return translate("queue.promoteTitle");
+    if (action === "cancel") return translate("batch.cancelSelected");
+    return taskCardSwipeActionLabel(action);
+  }
+  function taskCardSwipeActionHtml(action) {
+    if (!action) return "";
+    const label = escapeHtml13(taskCardSwipeActionLabel(action));
+    const title = escapeHtml13(taskCardSwipeActionTitle(action));
+    return `<button class="task-card-swipe-action task-card-swipe-${action}" type="button" data-task-card-action="${action}" aria-label="${title}" title="${title}" tabindex="-1" disabled>${label}</button>`;
+  }
+  function taskCardSwipeActionsHtml(actions) {
+    if (!actions.positive && !actions.negative) return "";
     const actionGroupLabel = escapeHtml13(translate("taskActions.group"));
-    const archiveLabel = escapeHtml13(translate("taskContext.archive"));
-    const deleteLabel = escapeHtml13(translate("taskContext.delete"));
     return `
-      <div class="task-card-actions" role="group" aria-label="${actionGroupLabel}">
-        <button class="task-archive-button" type="button" data-archive-task-id="${taskId}" aria-label="${archiveLabel}" title="${archiveLabel}">
-          <svg class="task-action-icon" viewBox="0 0 20 20" aria-hidden="true" focusable="false">
-            <path d="M4 6h12v11H4z" />
-            <path d="M6 3h8l2 3H4l2-3z" />
-            <path d="M10 8v5" />
-            <path d="M7.5 10.5L10 13l2.5-2.5" />
-          </svg>
-        </button>
-        <button class="task-delete-button" type="button" data-delete-task-id="${taskId}" aria-label="${deleteLabel}" title="${deleteLabel}">
-          <svg class="task-action-icon task-delete-icon" viewBox="0 0 20 20" aria-hidden="true" focusable="false">
-            <path d="M5 5h10" />
-            <path d="M8 5l1-2h2l1 2" />
-            <path d="M6 5l1 12h6l1-12" />
-            <path d="M8.5 8v6M11.5 8v6" />
-          </svg>
-        </button>
+      <div class="task-card-swipe-actions" role="group" aria-label="${actionGroupLabel}" aria-hidden="true" inert>
+        ${taskCardSwipeActionHtml(actions.positive)}
+        ${taskCardSwipeActionHtml(actions.negative)}
       </div>
   `;
+  }
+  function taskCardSwipeKeyboardShortcuts(actions, queueReorderable = false) {
+    const shortcuts = ["Shift+F10"];
+    if (actions.negative) shortcuts.push("Delete", "Shift+ArrowLeft");
+    if (actions.positive) shortcuts.push("Shift+ArrowRight");
+    if (queueReorderable) shortcuts.push("Alt+ArrowUp", "Alt+ArrowDown");
+    return shortcuts.join(" ");
   }
   function taskCardHtml(task) {
     const image = taskThumbHtml(task);
@@ -42758,34 +46556,45 @@ ${galleryText}`;
     const queueIds = queueTaskIdsBySection();
     const queueSection = taskQueueSection(task, queueIds);
     const queueClass = queueSection ? ` queue-${escapeHtml13(queueSection)}` : "";
-    const queueTaskData = queueSection === "waiting" ? ` data-queue-task-id="${taskId}"` : "";
-    const queueActions = taskQueueActionStripHtml(task, queueSection, waitingQueueIndex(task.task_id, queueIds));
-    const taskActions = taskCardActionsHtml(taskId, queueSection);
+    const waitingIndexValue = waitingQueueIndex(task.task_id, queueIds);
+    const queueReorderable = queueSection === "waiting" && waitingIndexValue >= 0 && (state19.queue.waiting || []).length > 1;
+    const queueReorderDescription = queueReorderable ? escapeHtml13(translate("queue.dragWaiting")) : "";
+    const queueReorderData = queueReorderable ? ` data-queue-reorderable="true" aria-description="${queueReorderDescription}"` : "";
+    const queueTaskData = queueSection === "waiting" ? ` data-queue-task-id="${taskId}"${queueReorderData}` : "";
+    const swipeActions = taskCardSwipeActionsForState(
+      queueSection,
+      String(task.status || ""),
+      Boolean(task.local_pending)
+    );
+    const swipeEnabled = Boolean(swipeActions.positive || swipeActions.negative);
+    const swipeActionsHtml = taskCardSwipeActionsHtml(swipeActions);
+    const swipeKeyboardShortcuts = escapeHtml13(taskCardSwipeKeyboardShortcuts(swipeActions, queueReorderable));
     const batchSelect = state19.batchMode ? `
-      <button class="task-select-button" type="button" data-batch-select-task-id="${taskId}" aria-pressed="${batchSelected ? "true" : "false"}" aria-label="${escapeHtml13(translate("taskList.selectSession"))}">
+      <button class="task-select-button" type="button" role="checkbox" data-batch-select-task-id="${taskId}" aria-checked="${batchSelected ? "true" : "false"}" aria-label="${escapeHtml13(translate("taskList.selectSession"))}">
         <span></span>
       </button>
     ` : "";
     const unreadDot = unread ? `<span class="task-unread-dot" aria-label="${escapeHtml13(translate("taskList.unreadUpdate"))}"></span>` : "";
     const activeLabel = escapeHtml13(translate("taskList.viewing"));
     return `
-    <div class="task-card${active}${unreadClass}${statusClass}${batchClass}${batchSelectedClass}${queueClass}" role="button" tabindex="0" data-task-id="${taskId}" data-task-unread="${unread ? "true" : "false"}" data-active-label="${activeLabel}"${activeCurrent}${queueTaskData}>
-      ${batchSelect}
-      ${image}
-      <div class="task-info">
-        <div class="task-meta-row">
-          ${imageRow}
-          ${topTimeHtml}
+    <div class="task-card${active}${unreadClass}${statusClass}${batchClass}${batchSelectedClass}${queueClass}" role="button" tabindex="0" data-task-id="${taskId}" data-task-unread="${unread ? "true" : "false"}" data-task-swipe-enabled="${swipeEnabled ? "true" : "false"}" data-task-swipe-positive-action="${escapeHtml13(swipeActions.positive || "")}" data-task-swipe-negative-action="${escapeHtml13(swipeActions.negative || "")}" data-active-label="${activeLabel}" aria-keyshortcuts="${swipeKeyboardShortcuts}"${activeCurrent}${queueTaskData}>
+      ${swipeActionsHtml}
+      <div class="task-card-swipe-surface">
+        ${batchSelect}
+        ${image}
+        <div class="task-info">
+          <div class="task-meta-row">
+            ${imageRow}
+            ${topTimeHtml}
+          </div>
+          <div class="task-title-row">
+            ${unreadDot}
+            <div class="task-title">${title}</div>
+          </div>
+          ${detailRow}
+          ${groundingHtml}
         </div>
-        <div class="task-title-row">
-          ${unreadDot}
-          <div class="task-title">${title}</div>
-        </div>
-        ${detailRow}
-        ${groundingHtml}
       </div>
-      ${queueActions}
-      ${taskActions}
     </div>
   `;
   }
@@ -42832,6 +46641,16 @@ ${galleryText}`;
     const serverCount = (key) => useServerCounts ? Math.max(0, Number(state19.taskSidebarGroupCounts?.[key] || 0)) : 0;
     const historicalTasks = tasks.filter((task) => !isAlwaysVisibleTask(task)).slice().sort((left, right) => taskHistoryActivityTimestamp(right) - taskHistoryActivityTimestamp(left) || String(right?.task_id || "").localeCompare(String(left?.task_id || "")));
     const unassignedTasks = () => historicalTasks.filter((task) => !assignedTaskIds.has(String(task.task_id)));
+    const reveal = state19.historyTaskReveal;
+    const transientTaskId = reveal?.ready && reveal?.kind === "transient" && String(reveal?.taskId || "") === String(state19.selectedTaskId || "") ? String(reveal.taskId) : "";
+    if (transientTaskId) {
+      addGroup(
+        "current",
+        translate("taskGroup.current"),
+        unassignedTasks().filter((task) => String(task?.task_id || "") === transientTaskId),
+        { collapsible: true, defaultCollapsed: false }
+      );
+    }
     addGroup(
       "today",
       translate("taskGroup.today"),
@@ -42895,17 +46714,7 @@ ${galleryText}`;
     return timestamp === null ? Number.NEGATIVE_INFINITY : timestamp;
   }
   function taskDateBucket(task) {
-    const timestamp = taskHistoryActivityTimestamp(task);
-    if (!Number.isFinite(timestamp)) return "older";
-    const now2 = /* @__PURE__ */ new Date();
-    const taskDate = new Date(timestamp);
-    const todayStart = new Date(now2.getFullYear(), now2.getMonth(), now2.getDate()).getTime();
-    const taskDayStart = new Date(taskDate.getFullYear(), taskDate.getMonth(), taskDate.getDate()).getTime();
-    const dayDiff = Math.floor((todayStart - taskDayStart) / 864e5);
-    if (dayDiff <= 0) return "today";
-    if (dayDiff === 1) return "yesterday";
-    if (dayDiff <= 6) return "last7";
-    return "older";
+    return sidebarTaskDateBucket(task);
   }
   function taskGroupCount(group) {
     const loadedCount = Array.isArray(group?.tasks) ? group.tasks.length : 0;
@@ -42938,6 +46747,7 @@ ${galleryText}`;
       batchSelectedTaskIds: state19.batchSelectedTaskIds.map(String).sort(),
       archivedTaskIds: state19.tasks.filter(taskArchived).map((task) => String(task.task_id)).sort(),
       expandedTaskGroupKey: state19.expandedTaskGroupKey,
+      historyTaskReveal: state19.historyTaskReveal?.ready ? [state19.historyTaskReveal.kind, state19.historyTaskReveal.groupKey, state19.historyTaskReveal.taskId] : null,
       queryMode: Boolean(layout.queryMode),
       expandedGroup: layout.expandedGroup ? [layout.expandedGroup.key, layout.expandedGroup.label, taskGroupCount(layout.expandedGroup)] : null,
       anchorGroups: [
@@ -42990,30 +46800,49 @@ ${galleryText}`;
     const status = String(task?.status || "");
     return Boolean(task?.local_pending || ["submitting", "queued", "running"].includes(status));
   }
+  function taskThumbSpinnerStyle(task) {
+    const origin = timestampMs2(task?.created_at);
+    if (origin === null) return "";
+    const elapsed = Math.max(0, Date.now() - origin);
+    const outerDelay = -(elapsed % TASK_THUMB_OUTER_SPIN_DURATION_MS);
+    const innerDelay = -((elapsed + TASK_THUMB_INNER_SPIN_OFFSET_MS) % TASK_THUMB_INNER_SPIN_DURATION_MS);
+    return ` style="--task-spinner-outer-delay: ${outerDelay}ms; --task-spinner-inner-delay: ${innerDelay}ms"`;
+  }
   function taskThumbHtml(task, className = "task-thumb") {
     const outputUrl = taskOutputUrls(task)[0];
     const outputThumbnailUrl = taskThumbnailUrls(task)[0];
     const inputPreviewUrl = taskInputPreviewUrls(task)[0];
-    const imageUrl = outputThumbnailUrl || outputUrl || task.preview_url || inputPreviewUrl;
+    const loading = taskThumbShowsLoading(task);
+    const outputImageUrl = outputThumbnailUrl || outputUrl || (!loading ? task.preview_url : "");
+    const imageUrl = outputImageUrl || inputPreviewUrl || task.preview_url;
     const safeClassName = escapeHtml13(className);
-    if (imageUrl && inputPreviewUrl) {
-      const loadingSpinner = taskThumbShowsLoading(task) ? '<span class="task-thumb-stack-spinner" aria-hidden="true"></span>' : "";
+    const loadingSpinner = loading ? `<span class="task-thumb-stack-spinner" aria-hidden="true"${taskThumbSpinnerStyle(task)}></span>` : "";
+    if (outputImageUrl && inputPreviewUrl && outputImageUrl !== inputPreviewUrl) {
       const imageToImageLabel = escapeHtml13(translate("taskCard.imageToImageThumb"));
       return `
       <div class="${safeClassName} task-thumb-stack" aria-label="${imageToImageLabel}">
-        <img class="task-thumb-reference" src="${escapeHtml13(inputPreviewUrl)}" alt="" loading="lazy" decoding="async" draggable="false">
-        <img class="task-thumb-output" src="${escapeHtml13(imageUrl)}" alt="" loading="lazy" decoding="async" draggable="false">
+        <img class="task-thumb-output" src="${escapeHtml13(outputImageUrl)}" alt="" loading="lazy" decoding="async" draggable="false">
+        <span class="task-thumb-reference-badge" aria-hidden="true">
+          <img class="task-thumb-reference" src="${escapeHtml13(inputPreviewUrl)}" alt="" loading="lazy" decoding="async" draggable="false">
+        </span>
+        ${loadingSpinner}
+      </div>
+    `;
+    }
+    if (inputPreviewUrl && loading) {
+      const imageToImageLabel = escapeHtml13(translate("taskCard.imageToImageThumb"));
+      return `
+      <div class="${safeClassName} task-thumb-single task-thumb-loading-reference" aria-label="${imageToImageLabel}">
+        <img class="task-thumb-single-image" src="${escapeHtml13(inputPreviewUrl)}" alt="" loading="lazy" decoding="async" draggable="false">
         ${loadingSpinner}
       </div>
     `;
     }
     if (imageUrl) {
-      const textToImageLabel = escapeHtml13(translate("taskCard.textToImageThumb"));
-      const textBadge = escapeHtml13(translate("taskCard.textBadge"));
+      const thumbnailLabel = escapeHtml13(translate(inputPreviewUrl ? "taskCard.imageToImageThumb" : "taskCard.textToImageThumb"));
       return `
-      <div class="${safeClassName} task-thumb-single" aria-label="${textToImageLabel}">
+      <div class="${safeClassName} task-thumb-single" aria-label="${thumbnailLabel}">
         <img class="task-thumb-single-image" src="${escapeHtml13(imageUrl)}" alt="" loading="lazy" decoding="async" draggable="false">
-        <span class="task-thumb-mode-badge" aria-hidden="true">${textBadge}</span>
       </div>
     `;
     }
@@ -43023,7 +46852,7 @@ ${galleryText}`;
     if (task.status === "failed") {
       return `<div class="${safeClassName} failed-thumb" aria-label="${escapeHtml13(translate("taskCard.failedThumb"))}"><span>!</span></div>`;
     }
-    return `<div class="${safeClassName} running-thumb"><span></span></div>`;
+    return `<div class="${safeClassName} running-thumb"><span${taskThumbSpinnerStyle(task)}></span></div>`;
   }
   function taskStatusLabelHtml(task) {
     const label = escapeHtml13(formatTaskCardStatus2(task) || translate("taskStatus.unknown"));
@@ -43061,7 +46890,7 @@ ${galleryText}`;
     return formatTranslation(key, { ...values, elapsed: marker }).split(marker).map((part) => escapeHtml13(part)).join(elapsedHtml);
   }
   function taskCardRunningTimerHtml(task, taskId) {
-    if (task?.status !== "running") return "";
+    if (!["running", "cancelling"].includes(String(task?.status || ""))) return "";
     const startedAt = taskProgressStartValue2(task);
     if (!startedAt) return "";
     const elapsed = elapsedTimerSpan("task-card-running", startedAt);
@@ -43122,12 +46951,16 @@ ${galleryText}`;
     });
     Object.assign(getLegacyBridge().methods, {
       renderTasks: renderTasks2,
+      flushDeferredActiveTaskGroupRender,
+      discardDeferredActiveTaskGroupRender,
       taskSearchQuery,
       taskFilterValues,
       taskMatchesSearch,
       taskMatchesFilters,
       filteredVisibleTasks,
       taskAnchorLayout,
+      renderExpandedTaskGroupHeader,
+      renderExpandedTaskGroupBodyShellHtml,
       renderExpandedTaskGroupShellHtml,
       scheduleExpandedTaskGroupItemsRender,
       expandedTaskGroupHtml,
@@ -43164,14 +46997,13 @@ ${galleryText}`;
   var bridge26 = getLegacyBridge();
   var state20 = bridge26.state;
   var els29 = bridge26.els;
-  var taskHistoryAnchorInsetObserver = null;
   var latestTaskNavigationFrameId = 0;
   var latestTaskNavigationPinToken = 0;
   var latestTaskNavigationInitialized = false;
   var latestTaskNavigationPreRenderAtLatest = null;
   var TASK_HISTORY_LAYOUT_EASING = "ease";
   var TASK_HISTORY_LAYOUT_DURATION_MS = 180;
-  var TASK_GROUP_ORDER = ["active", "today", "yesterday", "last7", "older", "search"];
+  var TASK_GROUP_ORDER = ["active", "current", "today", "yesterday", "last7", "older", "search"];
   var TASK_HISTORY_ALL_COLLAPSED_SENTINEL = "__all_collapsed__";
   function legacyMethod32(name, ...args) {
     const method = getLegacyBridge().methods[name];
@@ -43295,13 +47127,6 @@ ${galleryText}`;
     } catch {
     }
   }
-  function syncTaskHistoryAnchorInset() {
-    const shell = element(els29.taskHistoryShell);
-    const sidebarContent = element(els29.sidebarContent);
-    if (!shell || !sidebarContent) return;
-    const scrollbarInset = Math.max(0, sidebarContent.offsetWidth - sidebarContent.clientWidth);
-    shell.style.setProperty("--task-history-scrollbar-offset", `${scrollbarInset}px`);
-  }
   function nearestVisibleGroupKey(groups, currentKey) {
     const visibleKeys = groups.map((group) => String(group.key));
     const currentIndex = TASK_GROUP_ORDER.indexOf(String(currentKey || ""));
@@ -43401,7 +47226,7 @@ ${galleryText}`;
     latestTaskNavigationPreRenderAtLatest = latestTaskNavigationCurrentViewModel().atLatest;
   }
   function focusExpandedTaskGroupHeader() {
-    const header = els29.taskList?.querySelector?.(".task-group-header-split");
+    const header = els29.taskHistoryCurrentAnchor?.querySelector?.(".task-group-header-split");
     if (header instanceof HTMLElement) header.focus({ preventScroll: true });
   }
   function refreshLatestTaskNavigation() {
@@ -43481,7 +47306,7 @@ ${galleryText}`;
       <span class="task-history-anchor-label">
         <span class="task-group-title">
           <span class="task-group-label">${escapeHtml14(group.label)}</span>
-          <span class="task-group-count-separator" aria-hidden="true"> \xB7 </span>
+          <span class="task-group-count-separator" aria-hidden="true">\xB7</span>
           <span class="task-group-count">${taskGroupCount2(group)}</span>
         </span>
       </span>
@@ -43502,7 +47327,6 @@ ${galleryText}`;
     const topAnchors = element(els29.taskHistoryTopAnchors);
     const bottomAnchors = element(els29.taskHistoryBottomAnchors);
     if (!topAnchors || !bottomAnchors) return;
-    syncTaskHistoryAnchorInset();
     topAnchors.innerHTML = layout.top.map((group) => anchorRowHtml(group)).join("");
     bottomAnchors.innerHTML = layout.bottom.map((group) => anchorRowHtml(group)).join("");
     topAnchors.classList.toggle("hidden", !layout.top.length);
@@ -43598,13 +47422,6 @@ ${galleryText}`;
       consumeLatestTaskNavigationScrollAnchor: consumeLatestTaskNavigationScrollAnchor2,
       rememberLatestTaskNavigationBeforeRender: rememberLatestTaskNavigationBeforeRender2
     });
-    if (typeof ResizeObserver === "function" && !taskHistoryAnchorInsetObserver && element(els29.sidebarContent)) {
-      taskHistoryAnchorInsetObserver = new ResizeObserver(() => {
-        syncTaskHistoryAnchorInset();
-        scheduleLatestTaskNavigationRefresh2();
-      });
-      taskHistoryAnchorInsetObserver.observe(element(els29.sidebarContent));
-    }
     if (!latestTaskNavigationInitialized) {
       latestTaskNavigationInitialized = true;
       els29.sidebarContent?.addEventListener("scroll", scheduleLatestTaskNavigationRefresh2, { passive: true });
@@ -43615,7 +47432,6 @@ ${galleryText}`;
       document.addEventListener(LOCALE_CHANGE_EVENT, scheduleLatestTaskNavigationRefresh2);
       document.addEventListener("keydown", handleLatestTaskNavigationKeydown);
     }
-    syncTaskHistoryAnchorInset();
     scheduleLatestTaskNavigationRefresh2();
   }
 
@@ -43822,6 +47638,12 @@ ${galleryText}`;
     });
   }
 
+  // codex_image/webui/frontend/src/task-batch-selection-model.ts
+  function waitingBatchTaskIds(queue) {
+    const taskIds = (queue?.waiting || []).map((task) => String(task?.task_id || "")).filter(Boolean);
+    return Array.from(new Set(taskIds));
+  }
+
   // codex_image/webui/frontend/src/task-batch-controls.ts
   var bridge28 = getLegacyBridge();
   var state22 = bridge28.state;
@@ -43959,7 +47781,7 @@ ${galleryText}`;
       const selected = selectedIds.has(String(card.dataset.taskId || ""));
       card.classList.toggle("batch-selected", selected);
       const selectButton = card.querySelector("[data-batch-select-task-id]");
-      if (selectButton) selectButton.setAttribute("aria-pressed", selected ? "true" : "false");
+      if (selectButton) selectButton.setAttribute("aria-checked", selected ? "true" : "false");
     });
     renderBatchToolbar2();
   }
@@ -43977,6 +47799,7 @@ ${galleryText}`;
     els31.batchToolbar.classList.toggle("hidden", !state22.batchMode);
     els31.taskList?.classList.toggle("batch-marquee-enabled", state22.batchMode);
     els31.batchManageButton?.classList.toggle("active", state22.batchMode);
+    els31.batchManageButton?.setAttribute("aria-pressed", state22.batchMode ? "true" : "false");
     const count = state22.batchSelectedTaskIds.length;
     const activeIdSet = new Set(activeIds);
     const selectedActiveCount = state22.batchSelectedTaskIds.filter((taskId) => activeIdSet.has(String(taskId))).length;
@@ -43986,12 +47809,21 @@ ${galleryText}`;
     if (els31.batchSelectGroupButton) {
       els31.batchSelectGroupButton.disabled = !["today", "yesterday", "last7"].includes(String(state22.expandedTaskGroupKey || ""));
     }
+    if (els31.batchSelectWaitingButton) {
+      els31.batchSelectWaitingButton.disabled = waitingBatchTaskIds(state22.queue).length === 0;
+    }
     [els31.batchArchiveButton, els31.batchDeleteButton].forEach((button) => {
       if (button) button.disabled = count === 0;
     });
     if (els31.batchCancelSelectedButton) {
       els31.batchCancelSelectedButton.disabled = selectedActiveCount === 0;
     }
+  }
+  function selectWaitingTasksForBatch() {
+    const taskIds = waitingBatchTaskIds(state22.queue);
+    if (!taskIds.length) return;
+    state22.batchSelectionIncludesUnloaded = false;
+    applyBatchTaskSelection(taskIds, taskIds[0] || null);
   }
   async function selectAllMatchingTasksInExpandedGroup() {
     const groupKey = String(state22.expandedTaskGroupKey || "");
@@ -44072,6 +47904,7 @@ ${galleryText}`;
       const statusType = Number(summary.failed || 0) > 0 ? "error" : "ok";
       setStatus15(formatTranslation("batch.cancelResult", {
         cancelled: Number(summary.cancelled || 0),
+        requested: Number(summary.cancellation_requested || 0),
         skipped: Number(summary.skipped || 0),
         failed: Number(summary.failed || 0)
       }), statusType);
@@ -44247,7 +48080,7 @@ ${galleryText}`;
       const selected = nextSet.has(String(card.dataset.taskId));
       card.classList.toggle("batch-selected", selected);
       const selectButton = card.querySelector("[data-batch-select-task-id]");
-      if (selectButton) selectButton.setAttribute("aria-pressed", selected ? "true" : "false");
+      if (selectButton) selectButton.setAttribute("aria-checked", selected ? "true" : "false");
     });
     renderBatchToolbar2();
   }
@@ -44292,6 +48125,7 @@ ${galleryText}`;
       renderBatchToolbar: renderBatchToolbar2,
       activeTaskIds,
       selectActiveTasksForBatchCancel,
+      selectWaitingTasksForBatch,
       selectAllMatchingTasksInExpandedGroup,
       openBatchCancelConfirm,
       cancelSelectedActiveTasks,
@@ -44314,7 +48148,7 @@ ${galleryText}`;
   var state23 = bridge29.state;
   var els32 = bridge29.els;
   var TASK_CARD_REMOVING_CLASS = "task-card-removing";
-  var TASK_CARD_REMOVAL_FALLBACK_MS = 240;
+  var TASK_CARD_REMOVAL_FALLBACK_MS = 320;
   var TASK_CARD_REFLOW_DURATION_MS = 180;
   var TASK_CARD_REFLOW_EASING = "cubic-bezier(0.22, 1, 0.36, 1)";
   function legacyMethod35(name, ...args) {
@@ -44422,10 +48256,12 @@ ${galleryText}`;
         const dx = previous.left - rect.left;
         const dy = previous.top - rect.top;
         if (Math.abs(dx) <= 0.5 && Math.abs(dy) <= 0.5) return;
+        const computedTransform = getComputedStyle(card).transform;
+        const settledTransform = computedTransform === "none" ? "translate(0px, 0px)" : computedTransform;
         card.animate(
           [
-            { transform: `translate(${dx}px, ${dy}px)` },
-            { transform: "translate(0px, 0px)" }
+            { transform: `translate(${dx}px, ${dy}px) ${settledTransform}` },
+            { transform: settledTransform }
           ],
           {
             duration: TASK_CARD_REFLOW_DURATION_MS,
@@ -44435,7 +48271,7 @@ ${galleryText}`;
       });
     });
   }
-  function waitForTaskCardRemoval(card) {
+  function waitForTaskCardRemoval(card, action) {
     return new Promise((resolve) => {
       let settled = false;
       const finish = () => {
@@ -44446,11 +48282,12 @@ ${galleryText}`;
       card.addEventListener("animationend", finish, { once: true });
       window.setTimeout(finish, TASK_CARD_REMOVAL_FALLBACK_MS);
       card.classList.add(TASK_CARD_REMOVING_CLASS);
+      card.dataset.taskRemovalAction = action;
       card.setAttribute("aria-busy", "true");
       card.tabIndex = -1;
     });
   }
-  async function runTaskCardRemovalTransition2(taskIds, commit) {
+  async function runTaskCardRemovalTransition2(taskIds, commit, action = "default") {
     const removingIds = normalizedTaskIdSet(taskIds);
     const previousCardLayout = captureTaskCardLayout([...removingIds]);
     const previousHistoryLayout = captureTaskHistoryLayout3();
@@ -44458,7 +48295,7 @@ ${galleryText}`;
       (card) => removingIds.has(String(card.dataset.taskId || ""))
     );
     if (!prefersReducedMotion() && removingCards.length) {
-      await Promise.all(removingCards.map(waitForTaskCardRemoval));
+      await Promise.all(removingCards.map((card) => waitForTaskCardRemoval(card, action)));
     }
     commit();
     animateTaskCardReflow(previousCardLayout);
@@ -44512,7 +48349,7 @@ ${galleryText}`;
   }
   async function archiveTask(taskId) {
     const task = state23.tasks.find((item) => String(item.task_id) === String(taskId));
-    if (!task) return;
+    if (!task) return false;
     try {
       const updatedTask = await setTaskArchiveState3(taskId, true);
       replaceTask3(updatedTask);
@@ -44520,27 +48357,31 @@ ${galleryText}`;
       if (String(state23.selectedTaskId) === String(taskId)) {
         state23.selectedTaskId = firstVisibleTaskId3();
       }
-      renderTasks5();
+      await runTaskCardRemovalTransition2([taskId], renderTasks5, "archive");
       renderArchiveButton3();
       renderArchiveModal3();
       renderPreview3();
       setStatus16(translate("taskActions.archived"), "ok");
+      return true;
     } catch (error) {
       setStatus16(errorMessage3(error, translate("taskActions.archiveFailed")), "error");
+      return false;
     }
   }
   async function deleteTask(taskId) {
     closePromptPopover5();
     try {
       await deleteTaskById(taskId);
-      await runTaskCardRemovalTransition2([taskId], renderTasks5);
+      await runTaskCardRemovalTransition2([taskId], renderTasks5, "delete");
       await refreshTasksAfterDeletion2();
       renderArchiveButton3();
       renderArchiveModal3();
       renderPreview3();
       setStatus16(translate("taskActions.deleted"), "ok");
+      return true;
     } catch (error) {
       setStatus16(errorMessage3(error, translate("taskActions.deleteFailed")), "error");
+      return false;
     }
   }
   async function deleteTaskById(taskId) {
@@ -44652,7 +48493,7 @@ ${galleryText}`;
     closePromptPopover5();
     const task = state23.tasks.find((item) => String(item.task_id) === String(taskId));
     if (!task) return;
-    if (task.status === "running" || task.local_pending) {
+    if (task.status === "running" || task.status === "cancelling" || task.local_pending) {
       setStatus16(translate("taskActions.runningCannotDelete"), "error");
       return;
     }
@@ -44725,24 +48566,24 @@ ${galleryText}`;
     return Object.fromEntries(Object.keys(values).sort().map((key) => [key, values[key]]));
   }
   function currentGenerationSelection() {
-    const { state: state32, methods } = getLegacyBridge();
-    const model = state32.generationCatalog?.models.find((item) => item.id === state32.selectedModelId);
-    if (!model || !state32.selectedProviderId) {
+    const { state: state33, methods } = getLegacyBridge();
+    const model = state33.generationCatalog?.models.find((item) => item.id === state33.selectedModelId);
+    if (!model || !state33.selectedProviderId) {
       return { canonicalModelId: "", providerId: "", bindingId: "", parameters: {} };
     }
-    let draft = state32.parameterDraftsByModel[model.id] || {};
+    let draft = state33.parameterDraftsByModel[model.id] || {};
     if (model.id === "gpt-image-2" && typeof methods.currentTaskParams === "function") {
       draft = {
         ...draft,
         ...canonicalControlValues(methods.currentTaskParams(), selectedProviderBinding()?.protocol_profile || "")
       };
-      state32.parameterDraftsByModel[model.id] = draft;
+      state33.parameterDraftsByModel[model.id] = draft;
     }
     return {
       canonicalModelId: model.id,
-      providerId: state32.selectedProviderId,
+      providerId: state33.selectedProviderId,
       bindingId: selectedProviderBinding()?.id || "",
-      parameters: activeParameterValuesFor(model, state32.mode, draft)
+      parameters: activeParameterValuesFor(model, state33.mode, draft)
     };
   }
   function appendCanonicalGenerationFields(form, selection) {
@@ -45274,16 +49115,16 @@ ${galleryText}`;
     return String(request?.requested_backend || "").endsWith("_responses") || request?.endpoint === "/responses" || request?.api_mode === "responses" || request?.codex_mode === "responses";
   }
   async function inspectCurrentEditRequest(request) {
-    const state32 = getLegacyBridge().state;
-    const primary = state32.images[0];
+    const state33 = getLegacyBridge().state;
+    const primary = state33.images[0];
     const maskFile = primary?.activeGuidance === "edit-region" ? primary.editMaskFile : null;
     const primaryFile = primary?.baseFile || primary?.originalFile || primary?.file;
-    if (state32.mode !== "edit" || !primary) {
+    if (state33.mode !== "edit" || !primary) {
       return { issues: [] };
     }
     if (!(maskFile instanceof File)) {
       return evaluateEditRequestPreflight({
-        mode: state32.mode,
+        mode: state33.mode,
         hasMask: false,
         usesResponses: requestUsesResponses(request),
         primaryName: primary.name || primaryFile?.name || "",
@@ -45303,7 +49144,7 @@ ${galleryText}`;
         maskMetrics(maskFile)
       ]);
       return evaluateEditRequestPreflight({
-        mode: state32.mode,
+        mode: state33.mode,
         hasMask: true,
         usesResponses: requestUsesResponses(request),
         primaryName: primary.name || primaryFile.name,
@@ -45320,16 +49161,16 @@ ${galleryText}`;
     }
   }
   function setEditRequestPreflightOpen(open) {
-    const { els: els43 } = getLegacyBridge();
-    els43.editPreflightList?.classList.toggle("hidden", !open);
-    els43.editPreflightToggle?.setAttribute("aria-expanded", String(open));
-    els43.editPreflight?.closest(".prompt-panel")?.classList.toggle("edit-preflight-open", open);
+    const { els: els44 } = getLegacyBridge();
+    els44.editPreflightList?.classList.toggle("hidden", !open);
+    els44.editPreflightToggle?.setAttribute("aria-expanded", String(open));
+    els44.editPreflight?.closest(".prompt-panel")?.classList.toggle("edit-preflight-open", open);
   }
   function renderEditRequestPreflight(result) {
-    const { els: els43 } = getLegacyBridge();
-    const panel = els43.editPreflight;
-    const summary = els43.editPreflightSummary;
-    const list = els43.editPreflightList;
+    const { els: els44 } = getLegacyBridge();
+    const panel = els44.editPreflight;
+    const summary = els44.editPreflightSummary;
+    const list = els44.editPreflightList;
     lastRenderedResult = result;
     if (!panel || !list) return;
     list.replaceChildren();
@@ -45362,14 +49203,14 @@ ${galleryText}`;
     return result;
   }
   function initEditRequestPreflightFeature() {
-    const { els: els43, methods } = getLegacyBridge();
+    const { els: els44, methods } = getLegacyBridge();
     Object.assign(methods, { updateEditRequestPreflight: updateEditRequestPreflight2 });
-    els43.editPreflightToggle?.addEventListener("click", () => {
-      const open = els43.editPreflightToggle?.getAttribute("aria-expanded") !== "true";
+    els44.editPreflightToggle?.addEventListener("click", () => {
+      const open = els44.editPreflightToggle?.getAttribute("aria-expanded") !== "true";
       setEditRequestPreflightOpen(open);
     });
     document.addEventListener("click", (event) => {
-      if (!els43.editPreflight?.contains(event.target)) setEditRequestPreflightOpen(false);
+      if (!els44.editPreflight?.contains(event.target)) setEditRequestPreflightOpen(false);
     });
     document.addEventListener("keydown", (event) => {
       if (event.key === "Escape") setEditRequestPreflightOpen(false);
@@ -45394,13 +49235,14 @@ ${galleryText}`;
   var scrollExpandedTaskGroupToTop3 = (...args) => legacyMethod37("scrollExpandedTaskGroupToTop", ...args);
   var captureTaskHistoryLayout4 = (...args) => legacyMethod37("captureTaskHistoryLayout", ...args);
   var animateTaskHistoryLayout4 = (...args) => legacyMethod37("animateTaskHistoryLayout", ...args);
-  var archiveTask2 = (...args) => legacyMethod37("archiveTask", ...args);
-  var openTaskDeleteConfirm3 = (...args) => legacyMethod37("openTaskDeleteConfirm", ...args);
+  var revealTaskCardAction = (...args) => legacyMethod37("revealTaskCardAction", ...args);
+  var closeOpenTaskCardDrawer = (...args) => legacyMethod37("closeOpenTaskCardDrawer", ...args);
   var toggleBatchMode2 = (...args) => legacyMethod37("toggleBatchMode", ...args);
   var toggleBatchTaskSelection2 = (...args) => legacyMethod37("toggleBatchTaskSelection", ...args);
   var handleBatchTaskShortcutSelection2 = (...args) => legacyMethod37("handleBatchTaskShortcutSelection", ...args);
   var archiveSelectedTasks2 = (...args) => legacyMethod37("archiveSelectedTasks", ...args);
   var selectActiveTasksForBatchCancel2 = (...args) => legacyMethod37("selectActiveTasksForBatchCancel", ...args);
+  var selectWaitingTasksForBatch2 = (...args) => legacyMethod37("selectWaitingTasksForBatch", ...args);
   var openBatchCancelConfirm2 = (...args) => legacyMethod37("openBatchCancelConfirm", ...args);
   var openBatchDeleteConfirm2 = (...args) => legacyMethod37("openBatchDeleteConfirm", ...args);
   var selectAllMatchingTasksInExpandedGroup2 = (...args) => legacyMethod37("selectAllMatchingTasksInExpandedGroup", ...args);
@@ -45479,10 +49321,10 @@ ${galleryText}`;
     els34.batchCancelTasksButton?.addEventListener("click", selectActiveTasksForBatchCancel2);
     els34.batchManageButton?.addEventListener("click", () => toggleBatchMode2());
     els34.batchSelectGroupButton?.addEventListener("click", selectAllMatchingTasksInExpandedGroup2);
+    els34.batchSelectWaitingButton?.addEventListener("click", selectWaitingTasksForBatch2);
     els34.batchArchiveButton?.addEventListener("click", archiveSelectedTasks2);
     els34.batchCancelSelectedButton?.addEventListener("click", openBatchCancelConfirm2);
     els34.batchDeleteButton?.addEventListener("click", openBatchDeleteConfirm2);
-    els34.batchCancelButton?.addEventListener("click", () => toggleBatchMode2(false));
     els34.taskSearch.addEventListener("input", handleTaskSearchInput);
     els34.taskSearchClearButton?.addEventListener("click", clearTaskSearch);
     els34.taskFilterButton?.addEventListener("click", toggleTaskFilterPopover);
@@ -45590,27 +49432,20 @@ ${galleryText}`;
       animateTaskHistoryLayout4(previousLayout);
       return;
     }
-    const archiveButton = event.target.closest("[data-archive-task-id]");
-    if (archiveButton) {
-      event.stopPropagation();
-      archiveTask2(archiveButton.dataset.archiveTaskId);
-      return;
-    }
     const batchButton = event.target.closest("[data-batch-select-task-id]");
     if (batchButton) {
       event.stopPropagation();
       toggleBatchTaskSelection2(batchButton.dataset.batchSelectTaskId);
       return;
     }
-    const deleteButton = event.target.closest("[data-delete-task-id]");
-    if (deleteButton) {
-      event.stopPropagation();
-      openTaskDeleteConfirm3(deleteButton, deleteButton.dataset.deleteTaskId);
-      return;
-    }
+    if (event.target.closest("[data-task-card-action]")) return;
     const card = event.target.closest(".task-card[data-task-id]");
     const root = taskHistoryInteractiveRoot();
     if (!card || !root?.contains(card)) return;
+    if (card.classList.contains("task-card-swipe-open")) {
+      closeOpenTaskCardDrawer({ focusCard: true });
+      return;
+    }
     if (handleBatchTaskShortcutSelection2(card.dataset.taskId, event)) return;
     if (state25.batchMode) {
       toggleBatchTaskSelection2(card.dataset.taskId);
@@ -45624,6 +49459,14 @@ ${galleryText}`;
     const root = taskHistoryInteractiveRoot();
     if (!card || !root?.contains(card)) return;
     if (handleTaskCardArrowNavigation(card, event)) return;
+    if (event.key === "Delete" && !state25.batchMode) {
+      const action = card.dataset.taskSwipeNegativeAction;
+      if (!action) return;
+      event.preventDefault();
+      event.stopPropagation();
+      revealTaskCardAction(card.dataset.taskId, action, true);
+      return;
+    }
     if (event.key !== "Enter" && event.key !== " ") return;
     event.preventDefault();
     if (handleBatchTaskShortcutSelection2(card.dataset.taskId, event)) return;
@@ -45654,12 +49497,15 @@ ${galleryText}`;
   var REALTIME_EVENTS_URL = "/api/events?stream=1";
   var QUEUE_DISPATCH_RESYNC_DELAY_MS = 1500;
   var queueFeatureInitialized = false;
+  var realtimeConnectionNeedsResync = false;
+  var realtimeResyncRequested = false;
+  var realtimeResyncPromise = null;
   function initializeQueueFeature() {
     if (queueFeatureInitialized) return;
     queueFeatureInitialized = true;
     exposeQueueWindowApi();
     bindQueueControls();
-    document.addEventListener(LOCALE_CHANGE_EVENT, renderQueue);
+    document.addEventListener(LOCALE_CHANGE_EVENT, () => renderQueue());
   }
   function exposeQueueWindowApi() {
     window.startRealtimeUpdates = startRealtimeUpdates;
@@ -45670,16 +49516,24 @@ ${galleryText}`;
     window.updateQueueElapsedDisplays = updateQueueElapsedDisplays;
   }
   function bindQueueControls() {
-    const els43 = getEls();
-    els43.queueButton?.addEventListener("click", jumpToActiveTaskGroup);
+    const els44 = getEls();
+    els44.queueButton?.addEventListener("click", jumpToActiveTaskGroup);
   }
   function startRealtimeUpdates({ migrateLegacyArchives = false } = {}) {
-    const state32 = getState();
+    const state33 = getState();
     if (!window.EventSource) return false;
     closeRealtimeUpdates();
-    state32.realtimeSnapshotNeedsArchiveMigration = migrateLegacyArchives;
+    state33.realtimeSnapshotNeedsArchiveMigration = migrateLegacyArchives;
+    realtimeConnectionNeedsResync = false;
     const source = new EventSource(REALTIME_EVENTS_URL);
-    state32.realtimeSource = source;
+    state33.realtimeSource = source;
+    source.onopen = () => {
+      if (state33.realtimeSource !== source) return;
+      if (!realtimeConnectionNeedsResync) return;
+      realtimeConnectionNeedsResync = false;
+      void requestRealtimeResync();
+      clearRealtimeReconnectStatus();
+    };
     source.onmessage = (event) => {
       handleRealtimeMessage(event).catch((error) => {
         console.error(error);
@@ -45687,21 +49541,56 @@ ${galleryText}`;
       });
     };
     source.onerror = () => {
-      if (state32.realtimeSource !== source) return;
-      const shouldMigrateArchives = state32.realtimeSnapshotNeedsArchiveMigration;
-      closeRealtimeUpdates();
-      state32.realtimeSnapshotNeedsArchiveMigration = false;
-      void refreshQueue();
-      void getLegacyBridge().methods.refreshTasks({ migrateLegacyArchives: shouldMigrateArchives });
+      if (state33.realtimeSource !== source) return;
+      realtimeConnectionNeedsResync = true;
+      void requestRealtimeResync();
       getLegacyBridge().methods.setStatus(translate("queue.realtimeDisconnected"), "error");
     };
     return true;
   }
   function closeRealtimeUpdates() {
-    const state32 = getState();
-    if (!state32.realtimeSource) return;
-    state32.realtimeSource.close();
-    state32.realtimeSource = null;
+    const state33 = getState();
+    realtimeConnectionNeedsResync = false;
+    realtimeResyncRequested = false;
+    if (!state33.realtimeSource) return;
+    state33.realtimeSource.close();
+    state33.realtimeSource = null;
+  }
+  async function resyncRealtimeState() {
+    const bridge40 = getLegacyBridge();
+    const state33 = bridge40.state;
+    const shouldMigrateArchives = state33.realtimeSnapshotNeedsArchiveMigration;
+    await Promise.all([refreshQueue(), bridge40.methods.refreshTasks({ migrateLegacyArchives: shouldMigrateArchives })]);
+    if (shouldMigrateArchives) {
+      state33.realtimeSnapshotNeedsArchiveMigration = false;
+    }
+  }
+  function requestRealtimeResync() {
+    realtimeResyncRequested = true;
+    if (realtimeResyncPromise) return realtimeResyncPromise;
+    const resyncPromise = (async () => {
+      while (realtimeResyncRequested) {
+        realtimeResyncRequested = false;
+        await resyncRealtimeState();
+      }
+    })().catch((error) => {
+      const bridge40 = getLegacyBridge();
+      if (realtimeConnectionNeedsResync) {
+        bridge40.methods.setStatus(translate("queue.realtimeDisconnected"), "error");
+        return;
+      }
+      console.error(error);
+      bridge40.methods.setStatus(errorMessage5(error, translate("queue.realtimeUpdateFailed")), "error");
+    }).finally(() => {
+      realtimeResyncPromise = null;
+    });
+    realtimeResyncPromise = resyncPromise;
+    return resyncPromise;
+  }
+  function clearRealtimeReconnectStatus() {
+    const bridge40 = getLegacyBridge();
+    if (bridge40.els.statusText?.textContent !== translate("queue.realtimeDisconnected")) return;
+    bridge40.methods.setStatus("", "");
   }
   async function handleRealtimeMessage(event) {
     if (!event.data) return;
@@ -45709,22 +49598,26 @@ ${galleryText}`;
     await handleRealtimePayload(payload2);
   }
   async function handleRealtimePayload(payload2) {
-    const bridge39 = getLegacyBridge();
-    const state32 = bridge39.state;
+    const bridge40 = getLegacyBridge();
+    const state33 = bridge40.state;
     if (payload2?.type === "snapshot") {
       applyQueueState(payload2.queue);
-      await bridge39.methods.applyTasksSnapshot(payload2.tasks || [], {
-        migrateLegacyArchives: state32.realtimeSnapshotNeedsArchiveMigration,
+      await bridge40.methods.applyTasksSnapshot(payload2.tasks || [], {
+        migrateLegacyArchives: state33.realtimeSnapshotNeedsArchiveMigration,
         ...payload2.task_groups ? { taskGroups: payload2.task_groups } : {}
       });
       applyQueueTasks(payload2.queue);
-      state32.realtimeSnapshotNeedsArchiveMigration = false;
+      state33.realtimeSnapshotNeedsArchiveMigration = false;
       return;
     }
     if (payload2?.type === "queue") {
-      applyQueueState(payload2.queue);
-      await applyRealtimeTaskPayloads(payload2.tasks || []);
+      const updatedTasks = payload2.tasks || [];
+      applyQueueState(payload2.queue, { deferTaskListRender: true });
+      await applyRealtimeTaskPayloads(updatedTasks);
       applyQueueTasks(payload2.queue);
+      if (!updatedTasks.length && !queueTaskCount(payload2.queue)) {
+        bridge40.methods.renderTasks?.({ preserveScroll: true });
+      }
       return;
     }
     if (payload2?.type === "task") {
@@ -45732,29 +49625,29 @@ ${galleryText}`;
     }
   }
   async function applyRealtimeTaskPayloads(tasks) {
-    const bridge39 = getLegacyBridge();
-    const state32 = bridge39.state;
+    const bridge40 = getLegacyBridge();
+    const state33 = bridge40.state;
     for (const task of tasks) {
-      const previousTask = state32.tasks.find((item) => String(item.task_id) === String(task?.task_id));
-      bridge39.methods.notifyTaskUpdate?.(previousTask, task);
-      await bridge39.methods.applyTaskUpdate(task);
+      const previousTask = state33.tasks.find((item) => String(item.task_id) === String(task?.task_id));
+      bridge40.methods.notifyTaskUpdate?.(previousTask, task);
+      await bridge40.methods.applyTaskUpdate(task);
     }
   }
   async function refreshQueue() {
-    const bridge39 = getLegacyBridge();
-    const state32 = bridge39.state;
-    const requestSeq = ++state32.queueRequestSeq;
+    const bridge40 = getLegacyBridge();
+    const state33 = bridge40.state;
+    const requestSeq = ++state33.queueRequestSeq;
     try {
       const response = await fetch("/api/queue");
       const data = await response.json();
-      if (requestSeq !== state32.queueRequestSeq) return;
+      if (requestSeq !== state33.queueRequestSeq) return;
       if (!response.ok) {
         throw new Error(data.detail || translate("queue.readFailed"));
       }
-      state32.queue = normalizeQueueState(data);
+      state33.queue = normalizeQueueState(data);
       renderQueue();
     } catch (error) {
-      bridge39.methods.setStatus(errorMessage5(error, translate("queue.readFailed")), "error");
+      bridge40.methods.setStatus(errorMessage5(error, translate("queue.readFailed")), "error");
     }
   }
   function defaultQueueState() {
@@ -45771,18 +49664,18 @@ ${galleryText}`;
   function invalidateQueueRequests() {
     getState().queueRequestSeq += 1;
   }
-  function applyQueueState(queue) {
-    const state32 = getState();
+  function applyQueueState(queue, { deferTaskListRender = false } = {}) {
+    const state33 = getState();
     invalidateQueueRequests();
-    state32.queue = normalizeQueueState(queue);
-    renderQueue();
+    state33.queue = normalizeQueueState(queue);
+    renderQueue({ deferTaskListRender });
   }
-  function renderQueue() {
-    const bridge39 = getLegacyBridge();
-    const state32 = bridge39.state;
-    const summary = state32.queue.summary || {};
-    const waitingCount = Number(summary.waiting_count ?? state32.queue.waiting.length ?? 0);
-    const runningCount = Number(summary.running_count ?? state32.queue.running.length ?? 0);
+  function renderQueue({ deferTaskListRender = false } = {}) {
+    const bridge40 = getLegacyBridge();
+    const state33 = bridge40.state;
+    const summary = state33.queue.summary || {};
+    const waitingCount = Number(summary.waiting_count ?? state33.queue.waiting.length ?? 0);
+    const runningCount = Number(summary.running_count ?? state33.queue.running.length ?? 0);
     const channelCount = Number(summary.channel_count ?? 0);
     const usableChannelCount = Number(summary.usable_channel_count ?? channelCount);
     const dispatchPending = isQueueDispatchPending();
@@ -45793,23 +49686,28 @@ ${galleryText}`;
       usableChannelCount,
       dispatchPending
     });
-    bridge39.methods.updateDocumentTitle();
+    bridge40.methods.updateDocumentTitle();
     if (dispatchPending) {
       scheduleQueueDispatchSync();
     } else {
       clearQueueDispatchSync();
     }
     const nextRenderKey = queueListRenderKey();
-    if (state32.queueRenderKey === nextRenderKey) {
+    if (state33.queueRenderKey === nextRenderKey) {
       updateQueueElapsedDisplays();
       return;
     }
-    state32.queueRenderKey = nextRenderKey;
-    renderActiveTaskGroupForQueueChange();
+    state33.queueRenderKey = nextRenderKey;
+    if (!deferTaskListRender) {
+      renderActiveTaskGroupForQueueChange();
+    }
+  }
+  function queueTaskCount(queue) {
+    return (Array.isArray(queue?.waiting) ? queue.waiting.length : 0) + (Array.isArray(queue?.running) ? queue.running.length : 0);
   }
   function renderActiveTaskGroupForQueueChange() {
-    const bridge39 = getLegacyBridge();
-    bridge39.methods.renderTasks?.({ preserveScroll: true });
+    const bridge40 = getLegacyBridge();
+    bridge40.methods.renderTasks?.({ preserveScroll: true });
   }
   function renderQueueStatusChip({
     waitingCount,
@@ -45818,55 +49716,55 @@ ${galleryText}`;
     usableChannelCount,
     dispatchPending
   }) {
-    const els43 = getEls();
+    const els44 = getEls();
     const total = waitingCount + runningCount;
     const channelText = usableChannelCount === channelCount ? formatTranslation("queue.channel", { count: channelCount }) : formatTranslation("queue.availableChannels", { usable: usableChannelCount, total: channelCount });
     const text = dispatchPending ? formatTranslation("queue.dispatching", { waiting: waitingCount }) : total ? formatTranslation("queue.runningWaiting", { running: runningCount, waiting: waitingCount }) : translate("queue.empty");
     const label = total ? formatTranslation("queue.statusLabel", { text, channelText }) : translate("queue.emptyAria");
-    if (els43.queueStatusText) els43.queueStatusText.textContent = text;
-    if (els43.queueButton) {
-      els43.queueButton.setAttribute("aria-label", label);
-      els43.queueButton.title = total ? translate("queue.jumpTitle") : translate("queue.emptyTitle");
-      els43.queueButton.classList.toggle("has-queue", total > 0 || dispatchPending);
+    if (els44.queueStatusText) els44.queueStatusText.textContent = text;
+    if (els44.queueButton) {
+      els44.queueButton.setAttribute("aria-label", label);
+      els44.queueButton.title = total ? translate("queue.jumpTitle") : translate("queue.emptyTitle");
+      els44.queueButton.classList.toggle("has-queue", total > 0 || dispatchPending);
     }
   }
   function jumpToActiveTaskGroup() {
-    const bridge39 = getLegacyBridge();
-    const state32 = bridge39.state;
-    const hasActiveTasks = Boolean((state32.queue.running || []).length || (state32.queue.waiting || []).length);
+    const bridge40 = getLegacyBridge();
+    const state33 = bridge40.state;
+    const hasActiveTasks = Boolean((state33.queue.running || []).length || (state33.queue.waiting || []).length);
     if (!hasActiveTasks) return;
-    bridge39.methods.revealActiveTaskGroup?.();
+    bridge40.methods.revealActiveTaskGroup?.();
   }
   function isQueueDispatchPending() {
-    const state32 = getState();
-    const summary = state32.queue.summary || {};
-    const waitingCount = Number(summary.waiting_count ?? state32.queue.waiting.length ?? 0);
-    const runningCount = Number(summary.running_count ?? state32.queue.running.length ?? 0);
+    const state33 = getState();
+    const summary = state33.queue.summary || {};
+    const waitingCount = Number(summary.waiting_count ?? state33.queue.waiting.length ?? 0);
+    const runningCount = Number(summary.running_count ?? state33.queue.running.length ?? 0);
     const channelCount = Number(summary.channel_count ?? 0);
     const usableChannelCount = Number(summary.usable_channel_count ?? channelCount);
     return waitingCount > 0 && runningCount === 0 && usableChannelCount > 0;
   }
   function scheduleQueueDispatchSync() {
-    const state32 = getState();
-    if (state32.queueDispatchSyncTimerId) return;
-    state32.queueDispatchSyncTimerId = window.setTimeout(() => {
-      state32.queueDispatchSyncTimerId = null;
+    const state33 = getState();
+    if (state33.queueDispatchSyncTimerId) return;
+    state33.queueDispatchSyncTimerId = window.setTimeout(() => {
+      state33.queueDispatchSyncTimerId = null;
       if (isQueueDispatchPending()) {
         void refreshQueue();
       }
     }, QUEUE_DISPATCH_RESYNC_DELAY_MS);
   }
   function clearQueueDispatchSync() {
-    const state32 = getState();
-    if (!state32.queueDispatchSyncTimerId) return;
-    window.clearTimeout(state32.queueDispatchSyncTimerId);
-    state32.queueDispatchSyncTimerId = null;
+    const state33 = getState();
+    if (!state33.queueDispatchSyncTimerId) return;
+    window.clearTimeout(state33.queueDispatchSyncTimerId);
+    state33.queueDispatchSyncTimerId = null;
   }
   function queueListRenderKey() {
-    const state32 = getState();
+    const state33 = getState();
     return JSON.stringify({
-      summary: state32.queue.summary || {},
-      running: (state32.queue.running || []).map((task) => [
+      summary: state33.queue.summary || {},
+      running: (state33.queue.running || []).map((task) => [
         task.task_id,
         task.status,
         task.viewed_at,
@@ -45876,7 +49774,7 @@ ${galleryText}`;
         task.started_at,
         task.attempts
       ]),
-      waiting: (state32.queue.waiting || []).map((task) => [
+      waiting: (state33.queue.waiting || []).map((task) => [
         task.task_id,
         task.status,
         task.prompt,
@@ -45886,11 +49784,11 @@ ${galleryText}`;
     });
   }
   function queueItemTitleText(task, position = null) {
-    const bridge39 = getLegacyBridge();
+    const bridge40 = getLegacyBridge();
     const queueTask = task;
-    const prefix = position ? `#${position}` : bridge39.methods.formatTaskStatus(task) || translate("taskStatus.task");
+    const prefix = position ? `#${position}` : bridge40.methods.formatTaskStatus(task) || translate("taskStatus.task");
     const mode = taskModeLabel(task);
-    const count = formatTranslation("taskCard.count", { count: bridge39.methods.taskTotalCount(task) });
+    const count = formatTranslation("taskCard.count", { count: bridge40.methods.taskTotalCount(task) });
     const size = queueTask.output_size || task.params?.size || "";
     return [prefix, mode, count, size].filter(Boolean).join(" \xB7 ");
   }
@@ -45900,17 +49798,19 @@ ${galleryText}`;
     return "";
   }
   async function promoteQueueTask(taskId) {
-    const bridge39 = getLegacyBridge();
-    if (!taskId) return;
+    const bridge40 = getLegacyBridge();
+    if (!taskId) return false;
     invalidateQueueRequests();
     try {
       const response = await fetch(`/api/queue/${encodeURIComponent(taskId)}/promote`, { method: "POST" });
       const data = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error(data.detail || translate("queue.promoteFailed"));
       applyQueueState(data);
-      await bridge39.methods.refreshTasks();
+      await bridge40.methods.refreshTasks();
+      return true;
     } catch (error) {
-      bridge39.methods.setStatus(errorMessage5(error, translate("queue.promoteFailed")), "error");
+      bridge40.methods.setStatus(errorMessage5(error, translate("queue.promoteFailed")), "error");
+      return false;
     }
   }
   function moveQueueTask(taskId, direction) {
@@ -45927,55 +49827,40 @@ ${galleryText}`;
     nextIds.splice(nextIndex, 0, moved);
     void reorderQueue(nextIds);
   }
-  function deleteQueuedTask(button, taskId) {
-    const bridge39 = getLegacyBridge();
-    if (!taskId) return;
-    const task = bridge39.state.queue.waiting.find((item) => item.task_id === taskId);
-    const title = task ? queueItemTitleText(task, task.queue_position || null) : taskId;
-    bridge39.methods.openConfirmPopover(button, {
-      title: translate("queue.deleteWaitingTitleConfirm"),
-      message: translate("queue.deleteWaitingMessage"),
-      detail: title,
-      confirmText: translate("action.delete"),
-      onConfirm: async () => {
-        await performDeleteQueuedTask(taskId);
-      }
-    });
-  }
-  async function performDeleteQueuedTask(taskId) {
-    const bridge39 = getLegacyBridge();
-    const state32 = bridge39.state;
+  async function performCancelWaitingTask(taskId) {
+    const bridge40 = getLegacyBridge();
     invalidateQueueRequests();
     try {
-      const response = await fetch(`/api/queue/${encodeURIComponent(taskId)}`, { method: "DELETE" });
-      const data = await response.json().catch(() => ({}));
-      if (!response.ok) throw new Error(data.detail || translate("queue.deleteQueuedFailed"));
-      state32.tasks = state32.tasks.filter((item) => item.task_id !== taskId);
-      if (state32.selectedTaskId === taskId) {
-        state32.selectedTaskId = state32.tasks[0]?.task_id || null;
-      }
-      applyQueueState({
-        ...state32.queue,
-        waiting: state32.queue.waiting.filter((item) => item.task_id !== taskId),
-        summary: {
-          ...state32.queue.summary || {},
-          waiting_count: Math.max(0, Number(state32.queue.summary?.waiting_count || 0) - 1)
-        }
+      const response = await fetch("/api/queue/cancel-batch", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ task_ids: [taskId] })
       });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(data.detail || formatTranslation("batch.cancelFailed"));
       await refreshQueue();
-      await bridge39.methods.refreshTasks();
-      bridge39.methods.renderPreview();
-      bridge39.methods.setStatus(translate("queue.queuedDeleted"), "ok");
+      await bridge40.methods.refreshTasks();
+      bridge40.methods.renderPreview();
+      const summary = data.summary || {};
+      const failed = Number(summary.failed || 0);
+      bridge40.methods.setStatus(formatTranslation("batch.cancelResult", {
+        cancelled: Number(summary.cancelled || 0),
+        requested: Number(summary.cancellation_requested || 0),
+        skipped: Number(summary.skipped || 0),
+        failed
+      }), failed > 0 ? "error" : "ok");
+      return failed === 0;
     } catch (error) {
-      bridge39.methods.setStatus(errorMessage5(error, translate("queue.deleteQueuedFailed")), "error");
+      bridge40.methods.setStatus(errorMessage5(error, formatTranslation("batch.cancelFailed")), "error");
+      return false;
     }
   }
   function cancelRunningTask(button, taskId) {
-    const bridge39 = getLegacyBridge();
+    const bridge40 = getLegacyBridge();
     if (!taskId) return;
-    const task = bridge39.state.queue.running.find((item) => item.task_id === taskId);
+    const task = bridge40.state.queue.running.find((item) => item.task_id === taskId);
     const title = task ? queueItemTitleText(task) : taskId;
-    bridge39.methods.openConfirmPopover(button, {
+    bridge40.methods.openConfirmPopover(button, {
       title: translate("queue.cancelRunningTitleConfirm"),
       message: translate("queue.cancelRunningMessage"),
       detail: title,
@@ -45986,31 +49871,25 @@ ${galleryText}`;
     });
   }
   async function performCancelRunningTask(taskId) {
-    const bridge39 = getLegacyBridge();
-    const state32 = bridge39.state;
+    const bridge40 = getLegacyBridge();
     invalidateQueueRequests();
     try {
       const response = await fetch(`/api/queue/${encodeURIComponent(taskId)}`, { method: "DELETE" });
       const data = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error(data.detail || translate("queue.cancelRunningFailed"));
-      applyQueueState({
-        ...state32.queue,
-        running: state32.queue.running.filter((item) => item.task_id !== taskId),
-        summary: {
-          ...state32.queue.summary || {},
-          running_count: Math.max(0, Number(state32.queue.summary?.running_count || 0) - 1)
-        }
-      });
       await refreshQueue();
-      await bridge39.methods.refreshTasks();
-      bridge39.methods.renderPreview();
-      bridge39.methods.setStatus(translate("queue.runningCancelled"), "ok");
+      await bridge40.methods.refreshTasks();
+      bridge40.methods.renderPreview();
+      bridge40.methods.setStatus(
+        data.cancellation_pending ? translate("queue.cancellationPending") : translate("queue.runningCancelled"),
+        data.cancellation_pending ? "running" : "ok"
+      );
     } catch (error) {
-      bridge39.methods.setStatus(errorMessage5(error, translate("queue.cancelRunningFailed")), "error");
+      bridge40.methods.setStatus(errorMessage5(error, translate("queue.cancelRunningFailed")), "error");
     }
   }
   async function reorderQueue(taskIds) {
-    const bridge39 = getLegacyBridge();
+    const bridge40 = getLegacyBridge();
     invalidateQueueRequests();
     try {
       const response = await fetch(`/api/queue/reorder`, {
@@ -46021,34 +49900,14 @@ ${galleryText}`;
       const data = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error(data.detail || translate("queue.reorderFailed"));
       applyQueueState(data);
-      await bridge39.methods.refreshTasks();
+      await bridge40.methods.refreshTasks();
     } catch (error) {
-      bridge39.methods.setStatus(errorMessage5(error, translate("queue.reorderFailed")), "error");
+      bridge40.methods.setStatus(errorMessage5(error, translate("queue.reorderFailed")), "error");
       await refreshQueue();
     }
   }
-  function handleQueueDragStart(event) {
-    const target = eventTargetElement(event);
-    const item = event.currentTarget instanceof HTMLElement && event.currentTarget.dataset.queueTaskId ? event.currentTarget : target?.closest("[data-queue-task-id]");
-    if (!(item instanceof HTMLElement)) return;
-    const draggedId = item.dataset.queueTaskId || null;
-    getState().queueDragTaskId = draggedId;
-    if (event.dataTransfer && draggedId) {
-      event.dataTransfer.effectAllowed = "move";
-      event.dataTransfer.setData("text/plain", draggedId);
-    }
-  }
-  function handleQueueDragOver(event) {
-    event.preventDefault();
-    if (event.dataTransfer) {
-      event.dataTransfer.dropEffect = "move";
-    }
-  }
-  function handleQueueDragEnd(_event) {
-    getState().queueDragTaskId = null;
-  }
   function applyQueueTasks(queue) {
-    const bridge39 = getLegacyBridge();
+    const bridge40 = getLegacyBridge();
     const tasks = [
       ...Array.isArray(queue?.waiting) ? queue.waiting : [],
       ...Array.isArray(queue?.running) ? queue.running : []
@@ -46057,121 +49916,466 @@ ${galleryText}`;
     const needsTaskReconcile = activeTasksNeedQueueReconcile(queueTaskIds);
     if (!tasks.length) {
       if (needsTaskReconcile) {
-        void bridge39.methods.refreshTasks();
+        void bridge40.methods.refreshTasks();
       }
       return;
     }
     let changed = false;
     tasks.forEach((task) => {
-      const previousTask = bridge39.state.tasks.find((item) => String(item.task_id) === String(task.task_id));
-      bridge39.methods.notifyTaskUpdate?.(previousTask, task);
-      changed = bridge39.methods.updateTaskInState(task) || changed;
-      if (String(task.task_id) === String(bridge39.state.selectedTaskId) && bridge39.methods.taskHasViewableUpdate(task)) {
-        void bridge39.methods.markTaskViewed(task.task_id);
+      const previousTask = bridge40.state.tasks.find((item) => String(item.task_id) === String(task.task_id));
+      bridge40.methods.notifyTaskUpdate?.(previousTask, task);
+      changed = bridge40.methods.updateTaskInState(task) || changed;
+      if (String(task.task_id) === String(bridge40.state.selectedTaskId) && bridge40.methods.taskHasViewableUpdate(task)) {
+        void bridge40.methods.markTaskViewed(task.task_id);
       }
     });
     if (!changed) {
       if (needsTaskReconcile) {
-        void bridge39.methods.refreshTasks();
+        void bridge40.methods.refreshTasks();
       }
       return;
     }
-    bridge39.methods.cleanupSessionSelections();
-    bridge39.methods.renderTasks({ preserveScroll: true });
-    bridge39.methods.renderArchiveButton();
-    bridge39.methods.renderArchiveModal();
-    bridge39.methods.renderPreview();
+    bridge40.methods.cleanupSessionSelections();
+    bridge40.methods.renderTasks({ preserveScroll: true });
+    bridge40.methods.renderArchiveButton();
+    bridge40.methods.renderArchiveModal();
+    bridge40.methods.renderPreview();
     if (needsTaskReconcile) {
-      void bridge39.methods.refreshTasks();
+      void bridge40.methods.refreshTasks();
     }
   }
   function activeTasksNeedQueueReconcile(queueTaskIds) {
-    const bridge39 = getLegacyBridge();
-    return bridge39.state.tasks.some((task) => {
+    const bridge40 = getLegacyBridge();
+    return bridge40.state.tasks.some((task) => {
       const taskId = String(task?.task_id || "");
       if (!taskId || queueTaskIds.has(taskId) || task?.local_pending) return false;
       const status = String(task?.status || "");
-      return status === "submitting" || status === "queued" || status === "running";
+      return status === "submitting" || status === "queued" || status === "running" || status === "cancelling";
     });
   }
   function updateQueueElapsedDisplays() {
     getLegacyBridge().methods.updateTaskElapsedDisplays?.();
   }
-  function eventTargetElement(event) {
-    return event.target instanceof Element ? event.target : null;
-  }
   function errorMessage5(error, fallback) {
     return error instanceof Error && error.message ? error.message : fallback;
   }
 
-  // codex_image/webui/frontend/src/task-list-queue-controls.ts
+  // codex_image/webui/frontend/src/task-card-swipe.ts
   var bridge32 = getLegacyBridge();
   var state26 = bridge32.state;
   var els35 = bridge32.els;
+  var TASK_CARD_SWIPE_SETTLE_MS = 180;
+  var taskCardSwipeInitialized = false;
+  var activeSwipe = null;
+  var openTaskCard = null;
+  function legacyMethod38(name, ...args) {
+    const method = getLegacyBridge().methods[name];
+    if (typeof method !== "function") {
+      throw new Error("Legacy bridge method " + name + " is not available");
+    }
+    return method(...args);
+  }
+  function taskCardSwipeRoot() {
+    return els35.taskHistoryShell || els35.sidebarContent || els35.taskList;
+  }
+  function eventTargetElement(event) {
+    return event.target instanceof Element ? event.target : null;
+  }
+  var TASK_CARD_SWIPE_ACTIONS = /* @__PURE__ */ new Set([
+    "archive",
+    "delete",
+    "stop",
+    "promote",
+    "cancel"
+  ]);
+  function taskCardSwipeAction(value) {
+    const action = String(value || "");
+    return TASK_CARD_SWIPE_ACTIONS.has(action) ? action : null;
+  }
+  function taskCardSwipeActions(card) {
+    return {
+      positive: taskCardSwipeAction(card.dataset.taskSwipePositiveAction),
+      negative: taskCardSwipeAction(card.dataset.taskSwipeNegativeAction)
+    };
+  }
+  function taskCardSwipeActionOffset(card, action) {
+    const actions = taskCardSwipeActions(card);
+    if (actions.positive === action) return TASK_CARD_SWIPE_OPEN_PX;
+    if (actions.negative === action) return -TASK_CARD_SWIPE_OPEN_PX;
+    return null;
+  }
+  function taskCardActionElements(card) {
+    const actions = card.querySelector(".task-card-swipe-actions");
+    const buttons = Array.from(card.querySelectorAll("[data-task-card-action]"));
+    return { actions, buttons };
+  }
+  function setTaskCardActionAvailability(card, direction, focusAction = false) {
+    const { actions, buttons } = taskCardActionElements(card);
+    if (actions) {
+      actions.setAttribute("aria-hidden", direction ? "false" : "true");
+      if (direction) actions.removeAttribute("inert");
+      else actions.setAttribute("inert", "");
+    }
+    buttons.forEach((button) => {
+      const open = taskCardSwipeAction(button.dataset.taskCardAction) === direction;
+      button.disabled = !open;
+      button.tabIndex = open ? 0 : -1;
+    });
+    if (focusAction) {
+      (buttons.find((button) => !button.disabled) || card).focus();
+    }
+  }
+  function clearTaskCardSwipeStyles(card) {
+    card.classList.remove(
+      "task-card-swiping",
+      "task-card-swipe-open",
+      "task-card-swipe-settling",
+      "task-card-action-pending"
+    );
+    card.removeAttribute("data-task-swipe-direction");
+    card.removeAttribute("data-task-action-pending");
+    card.removeAttribute("aria-busy");
+    card.style.removeProperty("--task-card-swipe-x");
+    setTaskCardActionAvailability(card, null);
+  }
+  function setTaskCardSwipePosition(card, offset) {
+    const surfaceOffset = resolveTaskCardSwipeSurfaceOffset(offset);
+    card.style.setProperty("--task-card-swipe-x", `${surfaceOffset}px`);
+  }
+  function closeTaskCardDrawer(card, options = {}) {
+    const immediate = options.immediate === true || prefersReducedMotion();
+    card.classList.remove("task-card-swiping", "task-card-swipe-open");
+    card.classList.toggle("task-card-swipe-settling", !immediate);
+    setTaskCardSwipePosition(card, 0);
+    card.removeAttribute("data-task-swipe-direction");
+    setTaskCardActionAvailability(card, null);
+    if (openTaskCard === card) openTaskCard = null;
+    if (options.focusCard) card.focus();
+    if (immediate) {
+      clearTaskCardSwipeStyles(card);
+      return;
+    }
+    window.setTimeout(() => {
+      if (!card.classList.contains("task-card-swipe-open") && !card.classList.contains("task-card-swiping")) {
+        clearTaskCardSwipeStyles(card);
+      }
+    }, TASK_CARD_SWIPE_SETTLE_MS);
+  }
+  function closeOpenTaskCardDrawer2(options = {}) {
+    const card = openTaskCard;
+    if (!card) return;
+    closeTaskCardDrawer(card, options);
+  }
+  function openTaskCardDrawer(card, direction, focusAction = false) {
+    const offset = taskCardSwipeActionOffset(card, direction);
+    if (offset === null) return false;
+    if (openTaskCard && openTaskCard !== card) {
+      closeTaskCardDrawer(openTaskCard, { immediate: prefersReducedMotion() });
+    }
+    card.classList.remove("task-card-swiping", "task-card-swipe-settling");
+    card.classList.add("task-card-swipe-open");
+    card.dataset.taskSwipeDirection = direction;
+    setTaskCardSwipePosition(card, offset);
+    setTaskCardActionAvailability(card, direction, focusAction);
+    openTaskCard = card;
+    return true;
+  }
+  function taskCardById(taskId) {
+    const normalizedTaskId = String(taskId || "");
+    if (!normalizedTaskId) return null;
+    const root = taskCardSwipeRoot();
+    if (!root) return null;
+    return Array.from(root.querySelectorAll('.task-card[data-task-swipe-enabled="true"]')).find((card) => String(card.dataset.taskId || "") === normalizedTaskId) || null;
+  }
+  function revealTaskCardAction2(taskId, action, focusAction = false) {
+    if (state26.batchMode) return false;
+    const card = taskCardById(taskId);
+    if (!card || card.classList.contains("task-card-removing")) return false;
+    return openTaskCardDrawer(card, action, focusAction);
+  }
+  function suppressClickAfterTaskCardSwipe() {
+    state26.suppressTaskClickAfterDrag = true;
+    window.setTimeout(() => {
+      state26.suppressTaskClickAfterDrag = false;
+    }, 0);
+  }
+  function stopTaskCardSwipeTracking(swipe, options = {}) {
+    window.removeEventListener("pointermove", handleTaskCardSwipePointerMove);
+    window.removeEventListener("pointerup", handleTaskCardSwipePointerUp);
+    window.removeEventListener("pointercancel", handleTaskCardSwipePointerCancel);
+    swipe.card.removeEventListener("lostpointercapture", handleTaskCardSwipeLostPointerCapture);
+    if (activeSwipe === swipe) activeSwipe = null;
+    if (options.releaseCapture !== false) {
+      try {
+        if (swipe.card.hasPointerCapture?.(swipe.pointerId)) {
+          swipe.card.releasePointerCapture(swipe.pointerId);
+        }
+      } catch {
+      }
+    }
+  }
+  function cancelActiveTaskCardSwipeTracking(options = {}) {
+    const swipe = activeSwipe;
+    if (!swipe) return false;
+    stopTaskCardSwipeTracking(swipe, options);
+    if (swipe.horizontal) suppressClickAfterTaskCardSwipe();
+    closeTaskCardDrawer(swipe.card, { immediate: true });
+    return true;
+  }
+  function resetInterruptedTaskCardSwipe(swipe) {
+    stopTaskCardSwipeTracking(swipe);
+    if (swipe.horizontal) suppressClickAfterTaskCardSwipe();
+    closeTaskCardDrawer(swipe.card, { immediate: true });
+  }
+  function applyTaskCardSwipeFrame(swipe, frame) {
+    swipe.horizontal = true;
+    swipe.frame = frame;
+    if (openTaskCard === swipe.card) openTaskCard = null;
+    swipe.card.classList.remove("task-card-swipe-open", "task-card-swipe-settling");
+    swipe.card.classList.add("task-card-swiping");
+    swipe.card.dataset.taskSwipeDirection = String(frame.direction || "");
+    setTaskCardSwipePosition(swipe.card, frame.offset);
+    setTaskCardActionAvailability(swipe.card, null);
+  }
+  function resolveTaskCardSwipeEventFrame(swipe, event) {
+    return resolveTaskCardSwipe(
+      event.clientX - swipe.startX,
+      event.clientY - swipe.startY,
+      swipe.width,
+      swipe.startOffset,
+      swipe.actions
+    );
+  }
+  async function performTaskCardAction(card, action, button) {
+    if (card.classList.contains("task-card-action-pending")) return;
+    const taskId = String(card.dataset.taskId || "");
+    if (!taskId || card.dataset.taskSwipeDirection !== action) return;
+    if (taskCardSwipeActionRequiresConfirmation(action) && action === "stop") {
+      cancelRunningTask(button, taskId);
+      closeTaskCardDrawer(card, { immediate: true });
+      return;
+    }
+    card.classList.add("task-card-action-pending");
+    card.dataset.taskActionPending = action;
+    card.setAttribute("aria-busy", "true");
+    setTaskCardActionAvailability(card, null);
+    if (openTaskCard === card) openTaskCard = null;
+    try {
+      const succeeded = action === "archive" ? await legacyMethod38("archiveTask", taskId) : action === "delete" ? await legacyMethod38("deleteTask", taskId) : action === "promote" ? await promoteQueueTask(taskId) : action === "cancel" ? await performCancelWaitingTask(taskId) : false;
+      if (succeeded === false && card.isConnected) {
+        card.classList.remove("task-card-action-pending");
+        card.removeAttribute("data-task-action-pending");
+        card.removeAttribute("aria-busy");
+        openTaskCardDrawer(card, action, true);
+      } else if ((action === "promote" || action === "cancel") && card.isConnected) {
+        closeTaskCardDrawer(card);
+      }
+    } catch (error) {
+      console.warn(error);
+      if (card.isConnected) {
+        card.classList.remove("task-card-action-pending");
+        card.removeAttribute("data-task-action-pending");
+        card.removeAttribute("aria-busy");
+        openTaskCardDrawer(card, action, true);
+      }
+    }
+  }
+  function handleTaskCardSwipePointerDown(event) {
+    if (state26.batchMode) return;
+    if (!event.isPrimary) return;
+    if (event.pointerType === "mouse" && event.button !== 0) return;
+    const target = eventTargetElement(event);
+    if (!target || target.closest("button, input, select, textarea, a")) return;
+    const root = taskCardSwipeRoot();
+    const card = target.closest('.task-card[data-task-swipe-enabled="true"]');
+    if (!root || !card || !root.contains(card) || card.classList.contains("task-card-removing") || card.classList.contains("task-card-action-pending")) return;
+    const surface = card.querySelector(".task-card-swipe-surface");
+    if (!surface) return;
+    if (activeSwipe) {
+      closeTaskCardDrawer(activeSwipe.card, { immediate: true });
+      stopTaskCardSwipeTracking(activeSwipe);
+    }
+    if (openTaskCard && openTaskCard !== card) {
+      closeTaskCardDrawer(openTaskCard, { immediate: prefersReducedMotion() });
+    }
+    const rect = card.getBoundingClientRect();
+    const actions = taskCardSwipeActions(card);
+    const openDirection = taskCardSwipeAction(card.dataset.taskSwipeDirection);
+    const startOffset = card.classList.contains("task-card-swipe-open") && openDirection ? taskCardSwipeActionOffset(card, openDirection) || 0 : 0;
+    activeSwipe = {
+      pointerId: event.pointerId,
+      card,
+      startX: event.clientX,
+      startY: event.clientY,
+      startOffset,
+      width: Math.max(1, rect.width),
+      actions,
+      horizontal: false,
+      frame: resolveTaskCardSwipe(0, 0, rect.width, startOffset, actions)
+    };
+    window.addEventListener("pointermove", handleTaskCardSwipePointerMove);
+    window.addEventListener("pointerup", handleTaskCardSwipePointerUp);
+    window.addEventListener("pointercancel", handleTaskCardSwipePointerCancel);
+    card.addEventListener("lostpointercapture", handleTaskCardSwipeLostPointerCapture);
+    try {
+      card.setPointerCapture?.(event.pointerId);
+    } catch {
+    }
+  }
+  function handleTaskCardSwipePointerMove(event) {
+    const swipe = activeSwipe;
+    if (!swipe || event.pointerId !== swipe.pointerId) return;
+    const frame = resolveTaskCardSwipeEventFrame(swipe, event);
+    swipe.frame = frame;
+    if (frame.axis === "pending") return;
+    if (frame.axis === "vertical") {
+      stopTaskCardSwipeTracking(swipe);
+      return;
+    }
+    if (event.cancelable) event.preventDefault();
+    applyTaskCardSwipeFrame(swipe, frame);
+  }
+  function handleTaskCardSwipePointerUp(event) {
+    const swipe = activeSwipe;
+    if (!swipe || event.pointerId !== swipe.pointerId) return;
+    const frame = resolveTaskCardSwipeEventFrame(swipe, event);
+    if (frame.axis === "horizontal") {
+      applyTaskCardSwipeFrame(swipe, frame);
+    } else {
+      swipe.frame = frame;
+    }
+    stopTaskCardSwipeTracking(swipe);
+    if (!swipe.horizontal) return;
+    if (event.cancelable) event.preventDefault();
+    suppressClickAfterTaskCardSwipe();
+    if (swipe.frame.revealDirection) {
+      openTaskCardDrawer(swipe.card, swipe.frame.revealDirection);
+    } else {
+      closeTaskCardDrawer(swipe.card);
+    }
+  }
+  function handleTaskCardSwipePointerCancel(event) {
+    const swipe = activeSwipe;
+    if (!swipe || event.pointerId !== swipe.pointerId) return;
+    stopTaskCardSwipeTracking(swipe);
+    if (!swipe.horizontal) return;
+    suppressClickAfterTaskCardSwipe();
+    const originalDirection = swipe.startOffset > 0 ? swipe.actions.positive : swipe.startOffset < 0 ? swipe.actions.negative : null;
+    if (originalDirection) openTaskCardDrawer(swipe.card, originalDirection);
+    else closeTaskCardDrawer(swipe.card, { immediate: true });
+  }
+  function handleTaskCardSwipeLostPointerCapture(event) {
+    const swipe = activeSwipe;
+    if (!swipe || event.pointerId !== swipe.pointerId) return;
+    resetInterruptedTaskCardSwipe(swipe);
+  }
+  function handleTaskCardSwipeWindowBlur() {
+    const swipe = activeSwipe;
+    if (swipe) resetInterruptedTaskCardSwipe(swipe);
+    closeOpenTaskCardDrawer2({ immediate: true });
+  }
+  function handleTaskCardSwipeVisibilityChange() {
+    if (document.visibilityState !== "hidden") return;
+    handleTaskCardSwipeWindowBlur();
+  }
+  function handleTaskCardSwipeClick(event) {
+    const target = eventTargetElement(event);
+    const button = target?.closest("[data-task-card-action]");
+    if (!button) return;
+    const root = taskCardSwipeRoot();
+    const card = button.closest('.task-card[data-task-swipe-enabled="true"]');
+    if (!root || !card || !root.contains(card) || button.disabled) return;
+    const action = taskCardSwipeAction(button.dataset.taskCardAction);
+    if (!action) return;
+    event.preventDefault();
+    event.stopPropagation();
+    void performTaskCardAction(card, action, button);
+  }
+  function handleTaskCardSwipeKeydown(event) {
+    const target = eventTargetElement(event);
+    const card = target?.closest('.task-card[data-task-swipe-enabled="true"]');
+    if (!card) return;
+    if (event.key === "Escape" && card.classList.contains("task-card-swipe-open")) {
+      event.preventDefault();
+      event.stopPropagation();
+      closeTaskCardDrawer(card, { focusCard: true });
+      return;
+    }
+    if (!event.shiftKey) return;
+    if (event.key === "ArrowRight") {
+      const action = taskCardSwipeActions(card).positive;
+      if (!action) return;
+      event.preventDefault();
+      event.stopPropagation();
+      openTaskCardDrawer(card, action, true);
+    } else if (event.key === "ArrowLeft") {
+      const action = taskCardSwipeActions(card).negative;
+      if (!action) return;
+      event.preventDefault();
+      event.stopPropagation();
+      openTaskCardDrawer(card, action, true);
+    }
+  }
+  function handleTaskCardSwipeDocumentPointerDown(event) {
+    if (!openTaskCard) return;
+    const target = eventTargetElement(event);
+    if (target && openTaskCard.contains(target)) return;
+    closeOpenTaskCardDrawer2();
+  }
+  function handleTaskCardSwipeDocumentKeydown(event) {
+    if (event.key !== "Escape" || !openTaskCard) return;
+    event.preventDefault();
+    closeOpenTaskCardDrawer2({ focusCard: true });
+  }
+  function handleTaskCardSwipeScroll() {
+    closeOpenTaskCardDrawer2({ immediate: prefersReducedMotion() });
+  }
+  function initTaskCardSwipeFeature() {
+    if (taskCardSwipeInitialized) return;
+    taskCardSwipeInitialized = true;
+    const root = taskCardSwipeRoot();
+    if (!root) return;
+    root.addEventListener("pointerdown", handleTaskCardSwipePointerDown);
+    root.addEventListener("click", handleTaskCardSwipeClick);
+    root.addEventListener("keydown", handleTaskCardSwipeKeydown);
+    document.addEventListener("pointerdown", handleTaskCardSwipeDocumentPointerDown, true);
+    document.addEventListener("keydown", handleTaskCardSwipeDocumentKeydown);
+    document.addEventListener("scroll", handleTaskCardSwipeScroll, true);
+    window.addEventListener("blur", handleTaskCardSwipeWindowBlur);
+    document.addEventListener("visibilitychange", handleTaskCardSwipeVisibilityChange);
+    Object.assign(getLegacyBridge().methods, {
+      revealTaskCardAction: revealTaskCardAction2,
+      closeOpenTaskCardDrawer: closeOpenTaskCardDrawer2,
+      cancelActiveTaskCardSwipeTracking
+    });
+  }
+
+  // codex_image/webui/frontend/src/task-list-queue-controls.ts
+  var bridge33 = getLegacyBridge();
+  var state27 = bridge33.state;
+  var els36 = bridge33.els;
+  var TASK_QUEUE_AUTOSCROLL_EDGE_PX = 32;
+  var TASK_QUEUE_AUTOSCROLL_STEP_PX = 12;
+  var TASK_QUEUE_TOUCH_MOVE_OPTIONS = { passive: false };
   var taskListQueueControlsInitialized = false;
   var taskListQueueControlsBound = false;
-  var queueDragOriginalOrder = [];
-  var queueDragCommitted = false;
-  var queueDragOverTargetId = "";
-  var queueDragOverPlacement = "after";
-  var queueTransparentDragImage = null;
+  var activeQueueReorderPointer = null;
   function eventTargetElement2(event) {
     return event.target instanceof Element ? event.target : null;
   }
-  function stopQueueControlEvent(event) {
-    event.preventDefault();
-    event.stopPropagation();
-  }
-  function stopQueueDragEvent(event) {
-    event.stopPropagation();
-  }
   function taskListQueueControlRoots() {
-    return [els35.taskActiveList, els35.taskList].filter((root) => root instanceof HTMLElement);
+    return [els36.taskActiveList, els36.taskList].filter((root) => root instanceof HTMLElement);
   }
   function bindTaskListQueueControls() {
     if (taskListQueueControlsBound) return;
     taskListQueueControlsBound = true;
     taskListQueueControlRoots().forEach((root) => {
-      root.addEventListener("click", handleTaskListQueueClick);
-      root.addEventListener("dragstart", handleTaskListQueueDragStart);
-      root.addEventListener("dragover", handleTaskListQueueDragOver);
-      root.addEventListener("drop", handleTaskListQueueDrop);
-      root.addEventListener("dragend", handleTaskListQueueDragEnd);
+      root.addEventListener("pointerdown", handleTaskQueueReorderPointerDown);
+      root.addEventListener("keydown", handleTaskQueueReorderKeydown);
     });
-  }
-  function handleTaskListQueueClick(event) {
-    const target = eventTargetElement2(event);
-    const dragHandle = target?.closest("[data-task-queue-drag-handle-id]");
-    if (dragHandle instanceof HTMLElement) {
-      stopQueueControlEvent(event);
-      return;
-    }
-    const cancelButton = target?.closest("[data-task-queue-cancel-id]");
-    if (cancelButton instanceof HTMLElement) {
-      stopQueueControlEvent(event);
-      cancelRunningTask(cancelButton, cancelButton.dataset.taskQueueCancelId);
-      return;
-    }
-    const moveButton = target?.closest("[data-task-queue-move-id]");
-    if (moveButton instanceof HTMLElement) {
-      stopQueueControlEvent(event);
-      moveQueueTask(moveButton.dataset.taskQueueMoveId, moveButton.dataset.taskQueueDirection);
-      return;
-    }
-    const promoteButton = target?.closest("[data-task-queue-promote-id]");
-    if (promoteButton instanceof HTMLElement) {
-      stopQueueControlEvent(event);
-      void promoteQueueTask(promoteButton.dataset.taskQueuePromoteId);
-      return;
-    }
-    const deleteButton = target?.closest("[data-task-queue-delete-id]");
-    if (deleteButton instanceof HTMLElement) {
-      stopQueueControlEvent(event);
-      deleteQueuedTask(deleteButton, deleteButton.dataset.taskQueueDeleteId);
-    }
-  }
-  function waitingDropTarget(event) {
-    return eventTargetElement2(event)?.closest('[data-active-task-section="waiting"]') || null;
+    document.addEventListener("keydown", handleTaskQueueReorderDocumentKeydown);
+    document.addEventListener("visibilitychange", handleTaskQueueReorderVisibilityChange);
+    window.addEventListener("blur", handleTaskQueueReorderWindowBlur);
   }
   function waitingQueueSectionItems() {
     for (const root of taskListQueueControlRoots()) {
@@ -46204,7 +50408,7 @@ ${galleryText}`;
       applyReorder();
       return;
     }
-    const cards = Array.from(section.querySelectorAll("[data-queue-task-id]"));
+    const cards = Array.from(section.querySelectorAll("[data-queue-task-id]")).filter((card) => !card.classList.contains("queue-dragging"));
     const previousTops = new Map(cards.map((card) => [card, card.getBoundingClientRect().top]));
     applyReorder();
     cards.forEach((card) => {
@@ -46214,126 +50418,357 @@ ${galleryText}`;
       if (Math.abs(dy) > 0.5) {
         card.animate(
           [{ transform: `translateY(${dy}px)` }, { transform: "translateY(0px)" }],
-          { duration: 180, easing: "ease" }
+          { duration: 180, easing: "cubic-bezier(0.16, 1, 0.3, 1)" }
         );
       }
     });
   }
-  function taskQueueTransparentDragImage() {
-    if (queueTransparentDragImage?.isConnected) return queueTransparentDragImage;
-    const element2 = document.createElement("div");
-    element2.className = "task-queue-transparent-drag-image";
-    element2.setAttribute("aria-hidden", "true");
-    document.body.append(element2);
-    queueTransparentDragImage = element2;
-    return element2;
+  function dismissQueueReorderHint() {
+    try {
+      window.localStorage.setItem(TASK_QUEUE_REORDER_HINT_STORAGE_KEY, "1");
+    } catch {
+    }
+    document.querySelectorAll(".task-queue-reorder-hint").forEach((hint) => hint.remove());
   }
-  function moveWaitingQueueDragPlaceholder(targetCard, placement) {
-    const draggedId = String(state26.queueDragTaskId || "");
-    if (!draggedId) return;
-    const parent = targetCard.parentElement;
-    if (!parent) return;
-    const draggedCard = parent.querySelector(`[data-queue-task-id="${cssEscape(draggedId)}"]`);
-    if (!(draggedCard instanceof HTMLElement) || draggedCard === targetCard) return;
-    animateWaitingQueueReorder(() => {
-      if (placement === "before") {
-        parent.insertBefore(draggedCard, targetCard);
-      } else {
-        parent.insertBefore(draggedCard, targetCard.nextSibling);
+  function suppressTaskClickAfterQueueReorder() {
+    state27.suppressTaskClickAfterDrag = true;
+    window.setTimeout(() => {
+      state27.suppressTaskClickAfterDrag = false;
+    }, 0);
+  }
+  function clearQueueReorderHoldTimer(pointer) {
+    if (pointer.holdTimerId === null) return;
+    window.clearTimeout(pointer.holdTimerId);
+    pointer.holdTimerId = null;
+  }
+  function startQueueReorderPointerTracking(pointer) {
+    activeQueueReorderPointer = pointer;
+    window.addEventListener("pointermove", handleTaskQueueReorderPointerMove);
+    window.addEventListener("pointerup", handleTaskQueueReorderPointerUp);
+    window.addEventListener("pointercancel", handleTaskQueueReorderPointerCancel);
+    if (pointer.pointerType !== "mouse") {
+      window.addEventListener("touchmove", handleTaskQueueReorderTouchMove, TASK_QUEUE_TOUCH_MOVE_OPTIONS);
+    }
+  }
+  function releaseQueueReorderPointerCapture(pointer) {
+    const captureTarget = pointer.captureTarget;
+    captureTarget?.removeEventListener("lostpointercapture", handleTaskQueueReorderLostPointerCapture);
+    if (captureTarget) {
+      try {
+        if (captureTarget.hasPointerCapture(pointer.pointerId)) {
+          captureTarget.releasePointerCapture(pointer.pointerId);
+        }
+      } catch {
       }
-    });
+    }
+    pointer.captureTarget = null;
   }
-  function resetQueueDragTracking() {
-    queueDragOriginalOrder = [];
-    queueDragCommitted = false;
-    queueDragOverTargetId = "";
-    queueDragOverPlacement = "after";
+  function stopQueueReorderPointerTracking(pointer) {
+    clearQueueReorderHoldTimer(pointer);
+    pointer.card.classList.remove("queue-reorder-armed");
+    window.removeEventListener("pointermove", handleTaskQueueReorderPointerMove);
+    window.removeEventListener("pointerup", handleTaskQueueReorderPointerUp);
+    window.removeEventListener("pointercancel", handleTaskQueueReorderPointerCancel);
+    window.removeEventListener("touchmove", handleTaskQueueReorderTouchMove, TASK_QUEUE_TOUCH_MOVE_OPTIONS);
+    if (activeQueueReorderPointer === pointer) activeQueueReorderPointer = null;
+    releaseQueueReorderPointerCapture(pointer);
   }
-  function handleTaskListQueueDragStart(event) {
+  function queueReorderCardFromEvent(event) {
+    if (state27.batchMode || !event.isPrimary) return null;
+    if (event.pointerType === "mouse" && event.button !== 0) return null;
     const target = eventTargetElement2(event);
-    const handle = target?.closest("[data-task-queue-drag-handle-id]");
-    if (!(handle instanceof HTMLElement)) {
-      if (target?.closest(".task-thumb")) {
-        event.preventDefault();
-        event.stopPropagation();
+    if (!target || target.closest("button, input, select, textarea, a")) return null;
+    const card = target.closest('[data-queue-reorderable="true"]');
+    return card instanceof HTMLElement ? card : null;
+  }
+  function createQueueDropPlaceholder(card) {
+    const rect = card.getBoundingClientRect();
+    const placeholder = document.createElement("div");
+    placeholder.className = "task-queue-drop-placeholder";
+    placeholder.setAttribute("aria-hidden", "true");
+    placeholder.style.height = `${rect.height}px`;
+    card.before(placeholder);
+    return placeholder;
+  }
+  function captureQueueReorderPointer(pointer, section) {
+    try {
+      section.setPointerCapture(pointer.pointerId);
+      pointer.captureTarget = section;
+      section.addEventListener("lostpointercapture", handleTaskQueueReorderLostPointerCapture);
+      return true;
+    } catch {
+      return false;
+    }
+  }
+  function rollbackQueueReorderStart(pointer) {
+    const { card, placeholder, section } = pointer;
+    pointer.active = false;
+    state27.queueDragTaskId = null;
+    if (section && placeholder?.isConnected) {
+      section.insertBefore(card, placeholder);
+      placeholder.remove();
+    } else if (section && card.parentElement !== section) {
+      section.append(card);
+    }
+    clearDraggedQueueCardStyles(card);
+    section?.classList.remove("task-queue-reordering");
+    releaseQueueReorderPointerCapture(pointer);
+    pointer.placeholder = null;
+  }
+  function beginQueueReorder(pointer) {
+    const section = waitingQueueSectionItems();
+    const dragLayer = els36.taskQueueDragLayer;
+    const sidebar = els36.sidebar;
+    if (!section || pointer.card.parentElement !== section || !(dragLayer instanceof HTMLElement) || !(sidebar instanceof HTMLElement)) return false;
+    getLegacyBridge().methods.cancelActiveTaskCardSwipeTracking?.({ releaseCapture: false });
+    getLegacyBridge().methods.closeOpenTaskCardDrawer?.({ immediate: true });
+    pointer.section = section;
+    if (!captureQueueReorderPointer(pointer, section)) {
+      pointer.section = null;
+      return false;
+    }
+    const rect = pointer.card.getBoundingClientRect();
+    const sidebarRect = sidebar.getBoundingClientRect();
+    try {
+      pointer.originalOrder = waitingQueueDomOrder();
+      pointer.placeholder = createQueueDropPlaceholder(pointer.card);
+      pointer.card.classList.remove("queue-reorder-armed");
+      pointer.card.classList.add("queue-dragging");
+      pointer.card.style.position = "absolute";
+      pointer.card.style.left = `${rect.left - sidebarRect.left}px`;
+      pointer.card.style.top = `${rect.top - sidebarRect.top}px`;
+      pointer.card.style.width = `${rect.width}px`;
+      pointer.card.style.height = `${rect.height}px`;
+      pointer.card.style.setProperty("--task-queue-drag-y", "0px");
+      dragLayer.append(pointer.card);
+      section.classList.add("task-queue-reordering");
+      pointer.active = true;
+      state27.queueDragTaskId = String(pointer.card.dataset.queueTaskId || "");
+      dismissQueueReorderHint();
+      return true;
+    } catch {
+      rollbackQueueReorderStart(pointer);
+      return false;
+    }
+  }
+  function clearDraggedQueueCardStyles(card) {
+    card.classList.remove("queue-dragging", "queue-reorder-armed");
+    card.style.removeProperty("position");
+    card.style.removeProperty("left");
+    card.style.removeProperty("top");
+    card.style.removeProperty("width");
+    card.style.removeProperty("height");
+    card.style.removeProperty("--task-queue-drag-y");
+  }
+  function moveWaitingQueueDropPlaceholder(pointer, clientY) {
+    const { card, placeholder, section } = pointer;
+    if (!section || !placeholder?.isConnected) return;
+    const cards = Array.from(section.querySelectorAll("[data-queue-task-id]")).filter((candidate) => candidate !== card);
+    const beforeCard = cards.find((candidate) => {
+      const rect = candidate.getBoundingClientRect();
+      return clientY < rect.top + rect.height / 2;
+    });
+    if (beforeCard) {
+      if (placeholder.nextElementSibling === beforeCard) return;
+      animateWaitingQueueReorder(() => section.insertBefore(placeholder, beforeCard));
+      return;
+    }
+    if (placeholder === section.lastElementChild) return;
+    animateWaitingQueueReorder(() => section.append(placeholder));
+  }
+  function autoScrollWaitingQueue(pointer, clientY) {
+    const scroller = pointer.section?.closest(".task-active-list, .sidebar-content");
+    if (!scroller || scroller.scrollHeight <= scroller.clientHeight) return;
+    const rect = scroller.getBoundingClientRect();
+    const topDistance = clientY - rect.top;
+    const bottomDistance = rect.bottom - clientY;
+    const delta = topDistance < TASK_QUEUE_AUTOSCROLL_EDGE_PX ? -TASK_QUEUE_AUTOSCROLL_STEP_PX : bottomDistance < TASK_QUEUE_AUTOSCROLL_EDGE_PX ? TASK_QUEUE_AUTOSCROLL_STEP_PX : 0;
+    if (delta) scroller.scrollTop += delta;
+  }
+  function updateQueueReorder(pointer, event) {
+    pointer.card.style.setProperty("--task-queue-drag-y", `${event.clientY - pointer.startY}px`);
+    autoScrollWaitingQueue(pointer, event.clientY);
+    moveWaitingQueueDropPlaceholder(pointer, event.clientY);
+  }
+  function finishQueueReorder(pointer, commit, options = {}) {
+    stopQueueReorderPointerTracking(pointer);
+    if (!pointer.active) return;
+    const { card, placeholder, section } = pointer;
+    if (section && placeholder?.isConnected) {
+      section.insertBefore(card, placeholder);
+      placeholder.remove();
+    }
+    clearDraggedQueueCardStyles(card);
+    section?.classList.remove("task-queue-reordering");
+    state27.queueDragTaskId = null;
+    suppressTaskClickAfterQueueReorder();
+    if (!commit) {
+      if (pointer.originalOrder.length && !sameQueueOrder(pointer.originalOrder, waitingQueueDomOrder())) {
+        animateWaitingQueueReorder(() => restoreWaitingQueueDomOrder(pointer.originalOrder));
+      }
+      if (options.flushDeferred !== false) {
+        getLegacyBridge().methods.flushDeferredActiveTaskGroupRender?.();
       }
       return;
     }
-    const card = handle.closest("[data-queue-task-id]");
-    if (!(card instanceof HTMLElement)) return;
-    stopQueueDragEvent(event);
-    card.classList.add("queue-dragging");
-    if (event.dataTransfer) {
-      event.dataTransfer.setDragImage(taskQueueTransparentDragImage(), 0, 0);
+    const visibleReorderedIds = waitingQueueDomOrder();
+    const currentWaitingIds = (state27.queue.waiting || []).map((task) => String(task.task_id || "")).filter(Boolean);
+    const reorderedIds = mergeTaskQueueReorderIds(currentWaitingIds, visibleReorderedIds);
+    if (reorderedIds.length && !sameQueueOrder(currentWaitingIds, reorderedIds)) {
+      const waitingById = new Map(
+        (state27.queue.waiting || []).map((task) => [String(task.task_id || ""), task])
+      );
+      state27.queue = {
+        ...state27.queue,
+        waiting: reorderedIds.map((taskId) => waitingById.get(taskId)).filter(Boolean)
+      };
+      getLegacyBridge().methods.discardDeferredActiveTaskGroupRender?.();
+      state27.tasksRenderKey = null;
+      getLegacyBridge().methods.renderTasks?.({ preserveScroll: true });
+      void reorderQueue(reorderedIds);
+      return;
     }
-    handleQueueDragStart(event);
-    queueDragOriginalOrder = waitingQueueDomOrder();
-    queueDragCommitted = false;
-    queueDragOverTargetId = "";
-    queueDragOverPlacement = "after";
+    if (options.flushDeferred !== false) {
+      getLegacyBridge().methods.flushDeferredActiveTaskGroupRender?.();
+    }
   }
-  function handleTaskListQueueDragOver(event) {
-    if (!state26.queueDragTaskId || !waitingDropTarget(event)) return;
-    handleQueueDragOver(event);
-    const targetCard = eventTargetElement2(event)?.closest("[data-queue-task-id]");
-    if (!(targetCard instanceof HTMLElement)) return;
-    const targetId = String(targetCard.dataset.queueTaskId || "");
-    if (!targetId || targetId === String(state26.queueDragTaskId)) return;
-    const rect = targetCard.getBoundingClientRect();
-    const placement = event.clientY < rect.top + rect.height / 2 ? "before" : "after";
-    if (queueDragOverTargetId === targetId && queueDragOverPlacement === placement) return;
-    queueDragOverTargetId = targetId;
-    queueDragOverPlacement = placement;
-    moveWaitingQueueDragPlaceholder(targetCard, placement);
+  function cancelActiveTaskQueueReorder(options = {}) {
+    const pointer = activeQueueReorderPointer;
+    if (!pointer?.active) return false;
+    finishQueueReorder(pointer, false, options);
+    return true;
   }
-  function handleTaskListQueueDrop(event) {
-    if (!state26.queueDragTaskId || !waitingDropTarget(event)) return;
+  function handleTaskQueueReorderPointerDown(event) {
+    const card = queueReorderCardFromEvent(event);
+    if (!card) return;
+    if (activeQueueReorderPointer) finishQueueReorder(activeQueueReorderPointer, false);
+    const pointer = {
+      pointerId: event.pointerId,
+      pointerType: event.pointerType || "mouse",
+      card,
+      section: null,
+      captureTarget: null,
+      placeholder: null,
+      startX: event.clientX,
+      startY: event.clientY,
+      holdReady: event.pointerType === "mouse",
+      holdTimerId: null,
+      active: false,
+      originalOrder: []
+    };
+    if (!pointer.holdReady) {
+      pointer.holdTimerId = window.setTimeout(() => {
+        if (activeQueueReorderPointer !== pointer || pointer.active) return;
+        pointer.holdTimerId = null;
+        pointer.holdReady = true;
+        pointer.card.classList.add("queue-reorder-armed");
+      }, TASK_QUEUE_TOUCH_HOLD_MS);
+    }
+    startQueueReorderPointerTracking(pointer);
+  }
+  function handleTaskQueueReorderPointerMove(event) {
+    const pointer = activeQueueReorderPointer;
+    if (!pointer || event.pointerId !== pointer.pointerId) return;
+    if (event.pointerType === "mouse" && (event.buttons & 1) !== 1) {
+      finishQueueReorder(pointer, false);
+      return;
+    }
+    if (pointer.active) {
+      if (event.cancelable) event.preventDefault();
+      updateQueueReorder(pointer, event);
+      return;
+    }
+    const intent = resolveTaskQueueReorderIntent(
+      pointer.pointerType,
+      pointer.holdReady,
+      event.clientX - pointer.startX,
+      event.clientY - pointer.startY
+    );
+    if (intent === "pending") return;
+    if (intent !== "reorder") {
+      stopQueueReorderPointerTracking(pointer);
+      return;
+    }
+    if (!beginQueueReorder(pointer)) {
+      stopQueueReorderPointerTracking(pointer);
+      return;
+    }
+    if (event.cancelable) event.preventDefault();
+    updateQueueReorder(pointer, event);
+  }
+  function handleTaskQueueReorderTouchMove(event) {
+    const pointer = activeQueueReorderPointer;
+    if (!pointer || pointer.pointerType === "mouse" || !pointer.holdReady) return;
+    if (event.cancelable) event.preventDefault();
+  }
+  function handleTaskQueueReorderPointerUp(event) {
+    const pointer = activeQueueReorderPointer;
+    if (!pointer || event.pointerId !== pointer.pointerId) return;
+    if (pointer.active) {
+      if (event.cancelable) event.preventDefault();
+      finishQueueReorder(pointer, true);
+      return;
+    }
+    const suppressLongPressClick = pointer.holdReady && pointer.pointerType !== "mouse";
+    stopQueueReorderPointerTracking(pointer);
+    if (suppressLongPressClick) suppressTaskClickAfterQueueReorder();
+  }
+  function handleTaskQueueReorderPointerCancel(event) {
+    const pointer = activeQueueReorderPointer;
+    if (!pointer || event.pointerId !== pointer.pointerId) return;
+    finishQueueReorder(pointer, false);
+  }
+  function handleTaskQueueReorderLostPointerCapture(event) {
+    const pointer = activeQueueReorderPointer;
+    if (!pointer || event.pointerId !== pointer.pointerId) return;
+    finishQueueReorder(pointer, false);
+  }
+  function handleTaskQueueReorderWindowBlur() {
+    if (activeQueueReorderPointer) finishQueueReorder(activeQueueReorderPointer, false);
+  }
+  function handleTaskQueueReorderVisibilityChange() {
+    if (document.visibilityState === "hidden") handleTaskQueueReorderWindowBlur();
+  }
+  function handleTaskQueueReorderDocumentKeydown(event) {
+    if (event.key !== "Escape" || !activeQueueReorderPointer?.active) return;
+    event.preventDefault();
+    const card = activeQueueReorderPointer.card;
+    finishQueueReorder(activeQueueReorderPointer, false);
+    card.focus({ preventScroll: true });
+  }
+  function handleTaskQueueReorderKeydown(event) {
+    if (!event.altKey || event.ctrlKey || event.metaKey || event.shiftKey || event.key !== "ArrowUp" && event.key !== "ArrowDown") return;
+    const target = eventTargetElement2(event);
+    const card = target?.closest('[data-queue-reorderable="true"]');
+    if (!(card instanceof HTMLElement)) return;
     event.preventDefault();
     event.stopPropagation();
-    const draggedId = String(state26.queueDragTaskId);
-    const reorderedIds = waitingQueueDomOrder();
-    queueDragCommitted = true;
-    if (!reorderedIds.includes(draggedId) || sameQueueOrder(queueDragOriginalOrder, reorderedIds)) return;
-    void reorderQueue(reorderedIds);
-  }
-  function handleTaskListQueueDragEnd(event) {
-    if (!state26.queueDragTaskId) return;
-    const originalOrder = queueDragOriginalOrder.slice();
-    const committed = queueDragCommitted;
-    handleQueueDragEnd(event);
-    taskListQueueControlRoots().forEach((root) => {
-      root.querySelectorAll(".queue-dragging").forEach((element2) => {
-        element2.classList.remove("queue-dragging");
-      });
-    });
-    if (!committed && originalOrder.length && !sameQueueOrder(originalOrder, waitingQueueDomOrder())) {
-      animateWaitingQueueReorder(() => restoreWaitingQueueDomOrder(originalOrder));
-    }
-    resetQueueDragTracking();
+    moveQueueTask(card.dataset.queueTaskId, event.key === "ArrowUp" ? "up" : "down");
   }
   function initTaskListQueueControlsFeature() {
     if (taskListQueueControlsInitialized) return;
     taskListQueueControlsInitialized = true;
     Object.assign(getLegacyBridge().methods, {
       bindTaskListQueueControls,
-      handleTaskListQueueClick,
-      handleTaskListQueueDragStart,
-      handleTaskListQueueDragOver,
-      handleTaskListQueueDrop,
-      handleTaskListQueueDragEnd
+      cancelActiveTaskQueueReorder,
+      handleTaskQueueReorderPointerDown,
+      handleTaskQueueReorderPointerMove,
+      handleTaskQueueReorderPointerUp,
+      handleTaskQueueReorderPointerCancel,
+      handleTaskQueueReorderKeydown
     });
     bindTaskListQueueControls();
   }
 
   // codex_image/webui/frontend/src/task-context-menu.ts
-  var bridge33 = getLegacyBridge();
-  var state27 = bridge33.state;
-  var els36 = bridge33.els;
+  var bridge34 = getLegacyBridge();
+  var state28 = bridge34.state;
+  var els37 = bridge34.els;
   var taskContextMenuInitialized = false;
   var taskContextMenuEventsBound = false;
   var taskContextMenuEl = null;
   var taskListMutationObserver = null;
-  function legacyMethod38(name, ...args) {
+  function legacyMethod39(name, ...args) {
     const method = getLegacyBridge().methods[name];
     if (typeof method !== "function") {
       throw new Error("Legacy bridge method " + name + " is not available");
@@ -46341,50 +50776,56 @@ ${galleryText}`;
     return method(...args);
   }
   function escapeHtml16(...args) {
-    return legacyMethod38("escapeHtml", ...args);
+    return legacyMethod39("escapeHtml", ...args);
   }
   function setStatus18(...args) {
-    return legacyMethod38("setStatus", ...args);
+    return legacyMethod39("setStatus", ...args);
   }
   function closePromptPopover6(...args) {
-    return legacyMethod38("closePromptPopover", ...args);
+    return legacyMethod39("closePromptPopover", ...args);
   }
   function selectTask(...args) {
-    return legacyMethod38("selectTask", ...args);
+    return legacyMethod39("selectTask", ...args);
   }
-  function archiveTask3(...args) {
-    return legacyMethod38("archiveTask", ...args);
-  }
-  function openTaskDeleteConfirm4(...args) {
-    return legacyMethod38("openTaskDeleteConfirm", ...args);
+  function revealTaskCardAction3(...args) {
+    return legacyMethod39("revealTaskCardAction", ...args);
   }
   function bindTaskContextMenuEvents() {
     if (taskContextMenuEventsBound) return;
     taskContextMenuEventsBound = true;
-    els36.taskList.addEventListener("contextmenu", handleTaskListContextMenu);
-    els36.taskList.addEventListener("keydown", handleTaskListContextMenuKeydown);
+    taskContextMenuRoots().forEach((root) => {
+      root.addEventListener("contextmenu", handleTaskListContextMenu);
+      root.addEventListener("keydown", handleTaskListContextMenuKeydown);
+    });
     document.addEventListener("click", handleTaskContextDocumentClick, true);
     document.addEventListener("keydown", handleTaskContextDocumentKeydown);
     document.addEventListener("scroll", closeTaskContextMenu, true);
     window.addEventListener("resize", closeTaskContextMenu);
     if ("MutationObserver" in window) {
       taskListMutationObserver = new MutationObserver(closeTaskContextMenu);
-      taskListMutationObserver.observe(els36.taskList, { childList: true });
+      taskContextMenuRoots().forEach((root) => taskListMutationObserver?.observe(root, { childList: true }));
     }
+  }
+  function taskContextMenuRoots() {
+    return [els37.taskActiveList, els37.taskList].filter((root) => root instanceof HTMLElement);
+  }
+  function taskContextMenuContains(card) {
+    return taskContextMenuRoots().some((root) => root.contains(card));
   }
   function handleTaskListContextMenu(event) {
     const target = eventTargetElement3(event);
     const card = target?.closest(".task-card[data-task-id]");
-    if (!card || !els36.taskList.contains(card)) return;
+    if (!card || !taskContextMenuContains(card)) return;
     event.preventDefault();
     event.stopPropagation();
+    if (card.classList.contains("queue-reorder-armed") || card.classList.contains("queue-dragging")) return;
     openTaskContextMenu(card, event.clientX, event.clientY);
   }
   function handleTaskListContextMenuKeydown(event) {
     if (event.key !== "ContextMenu" && !(event.shiftKey && event.key === "F10")) return;
     const target = eventTargetElement3(event);
     const card = target?.closest(".task-card[data-task-id]");
-    if (!card || !els36.taskList.contains(card)) return;
+    if (!card || !taskContextMenuContains(card)) return;
     event.preventDefault();
     const rect = card.getBoundingClientRect();
     openTaskContextMenu(card, rect.left + 18, rect.top + 18);
@@ -46438,7 +50879,18 @@ ${galleryText}`;
   }
   function taskContextMenuHtml(task) {
     const hasOutput = taskHasOutput(task);
-    const blocked = Boolean(task.local_pending || task.status === "running" || task.status === "submitting" || task.status === "queued");
+    const queueSection = taskContextQueueSection(task);
+    const waitingIndex = queueSection === "waiting" ? (state28.queue.waiting || []).findIndex((item) => String(item?.task_id || "") === String(task?.task_id || "")) : -1;
+    const waitingCount = (state28.queue.waiting || []).length;
+    const lifecycleActions = queueSection === "running" ? taskContextButton("stop", translate("action.stop"), task.status === "cancelling", true) : queueSection === "waiting" ? [
+      taskContextButton("move-up", translate("queue.moveUpTitle"), waitingIndex <= 0),
+      taskContextButton("move-down", translate("queue.moveDownTitle"), waitingIndex < 0 || waitingIndex >= waitingCount - 1),
+      taskContextButton("promote", translate("queue.promote")),
+      taskContextButton("cancel", translate("action.cancel"), false, true)
+    ].join("") : [
+      taskContextButton("archive", translate("taskContext.archive")),
+      taskContextButton("delete", translate("taskContext.delete"), false, true)
+    ].join("");
     return `
     <div class="task-context-menu-section">
       ${taskContextButton("view", translate("taskContext.view"))}
@@ -46449,10 +50901,21 @@ ${galleryText}`;
       ${taskContextButton("reveal-output", translate("taskContext.revealOutput"), !hasOutput)}
     </div>
     <div class="task-context-menu-section">
-      ${taskContextButton("archive", translate("taskContext.archive"))}
-      ${taskContextButton("delete", translate("taskContext.delete"), blocked, true)}
+      ${lifecycleActions}
     </div>
   `;
+  }
+  function taskContextQueueSection(task) {
+    const taskId = String(task?.task_id || "");
+    if ((state28.queue.running || []).some((item) => String(item?.task_id || "") === taskId)) {
+      return "running";
+    }
+    if ((state28.queue.waiting || []).some((item) => String(item?.task_id || "") === taskId)) {
+      return "waiting";
+    }
+    if (["running", "cancelling"].includes(String(task?.status || ""))) return "running";
+    if (String(task?.status || "") === "queued") return "waiting";
+    return null;
   }
   function taskContextButton(action, label, disabled = false, danger = false) {
     const disabledAttr = disabled ? " disabled" : "";
@@ -46477,9 +50940,14 @@ ${galleryText}`;
       closeTaskContextMenu();
       return;
     }
-    if (action === "delete") {
-      openTaskDeleteConfirm4(button, taskId);
+    if (["archive", "delete", "stop", "promote", "cancel"].includes(action)) {
       closeTaskContextMenu();
+      revealTaskCardAction3(taskId, action, true);
+      return;
+    }
+    if (action === "move-up" || action === "move-down") {
+      closeTaskContextMenu();
+      moveQueueTask(taskId, action === "move-up" ? "up" : "down");
       return;
     }
     closeTaskContextMenu();
@@ -46497,8 +50965,6 @@ ${galleryText}`;
         setStatus18(translate("taskContext.promptCopied"), "ok");
       } else if (action === "reveal-output") {
         await revealTaskOutputDirectory(taskId);
-      } else if (action === "archive") {
-        await archiveTask3(taskId);
       }
     } catch (error) {
       setStatus18(errorMessage6(error, translate("taskContext.actionFailed")), "error");
@@ -46529,7 +50995,7 @@ ${galleryText}`;
     input.remove();
   }
   function taskById(taskId) {
-    return state27.tasks.find((item) => String(item.task_id) === String(taskId));
+    return state28.tasks.find((item) => String(item.task_id) === String(taskId));
   }
   function taskCanCopyPrompt(task) {
     return Boolean(task?.summary_only || taskPromptText(task));
@@ -46547,11 +51013,11 @@ ${galleryText}`;
   }
   function replaceTaskInState(taskId, task) {
     if (!task?.task_id) return task;
-    const index = state27.tasks.findIndex((item) => String(item.task_id) === String(taskId));
+    const index = state28.tasks.findIndex((item) => String(item.task_id) === String(taskId));
     if (index >= 0) {
-      state27.tasks.splice(index, 1, task);
+      state28.tasks.splice(index, 1, task);
     } else {
-      state27.tasks.unshift(task);
+      state28.tasks.unshift(task);
     }
     return task;
   }
@@ -46653,18 +51119,18 @@ ${galleryText}`;
     return !getLegacyBridge().state.taskNotificationSeenKeys.has(taskNotificationSeenKey(nextTask, status));
   }
   function openTaskNotificationCenter() {
-    const state32 = getLegacyBridge().state;
-    state32.taskNotificationCenterOpen = true;
-    state32.taskNotifications = state32.taskNotifications.map((notification) => ({
+    const state33 = getLegacyBridge().state;
+    state33.taskNotificationCenterOpen = true;
+    state33.taskNotifications = state33.taskNotifications.map((notification) => ({
       ...notification,
       unread: false
     }));
     renderTaskNotifications();
   }
   function closeTaskNotificationCenter() {
-    const state32 = getLegacyBridge().state;
-    if (!state32.taskNotificationCenterOpen) return;
-    state32.taskNotificationCenterOpen = false;
+    const state33 = getLegacyBridge().state;
+    if (!state33.taskNotificationCenterOpen) return;
+    state33.taskNotificationCenterOpen = false;
     renderTaskNotifications();
   }
   function toggleTaskNotificationCenter() {
@@ -46675,37 +51141,37 @@ ${galleryText}`;
     openTaskNotificationCenter();
   }
   function renderTaskNotifications() {
-    const bridge39 = getLegacyBridge();
-    const state32 = bridge39.state;
-    const els43 = bridge39.els;
-    const unreadCount = state32.taskNotifications.filter((notification) => notification.unread).length;
-    state32.taskNotificationUnreadCount = unreadCount;
+    const bridge40 = getLegacyBridge();
+    const state33 = bridge40.state;
+    const els44 = bridge40.els;
+    const unreadCount = state33.taskNotifications.filter((notification) => notification.unread).length;
+    state33.taskNotificationUnreadCount = unreadCount;
     const unreadLabel = unreadCount > 0 ? formatTranslation("notifications.unread", { count: unreadCount }) : translate("notifications.title");
-    if (els43.taskNotificationBadge) {
-      els43.taskNotificationBadge.textContent = "";
-      els43.taskNotificationBadge.setAttribute("aria-hidden", "true");
-      els43.taskNotificationBadge.classList.toggle("hidden", unreadCount === 0);
+    if (els44.taskNotificationBadge) {
+      els44.taskNotificationBadge.textContent = "";
+      els44.taskNotificationBadge.setAttribute("aria-hidden", "true");
+      els44.taskNotificationBadge.classList.toggle("hidden", unreadCount === 0);
     }
-    if (els43.taskNotificationButton) {
-      els43.taskNotificationButton.classList.toggle("has-unread", unreadCount > 0);
-      els43.taskNotificationButton.setAttribute("aria-label", unreadLabel);
-      els43.taskNotificationButton.title = unreadLabel;
-      els43.taskNotificationButton.setAttribute("aria-expanded", state32.taskNotificationCenterOpen ? "true" : "false");
+    if (els44.taskNotificationButton) {
+      els44.taskNotificationButton.classList.toggle("has-unread", unreadCount > 0);
+      els44.taskNotificationButton.setAttribute("aria-label", unreadLabel);
+      els44.taskNotificationButton.title = unreadLabel;
+      els44.taskNotificationButton.setAttribute("aria-expanded", state33.taskNotificationCenterOpen ? "true" : "false");
     }
-    if (els43.taskNotificationUnreadSummary) {
-      els43.taskNotificationUnreadSummary.textContent = formatTranslation("notifications.unreadSummary", { count: unreadCount });
-      els43.taskNotificationUnreadSummary.classList.toggle("hidden", unreadCount === 0);
+    if (els44.taskNotificationUnreadSummary) {
+      els44.taskNotificationUnreadSummary.textContent = formatTranslation("notifications.unreadSummary", { count: unreadCount });
+      els44.taskNotificationUnreadSummary.classList.toggle("hidden", unreadCount === 0);
     }
-    if (els43.taskNotificationCenter) {
-      els43.taskNotificationCenter.classList.toggle("hidden", !state32.taskNotificationCenterOpen);
-      els43.taskNotificationCenter.setAttribute("aria-hidden", state32.taskNotificationCenterOpen ? "false" : "true");
+    if (els44.taskNotificationCenter) {
+      els44.taskNotificationCenter.classList.toggle("hidden", !state33.taskNotificationCenterOpen);
+      els44.taskNotificationCenter.setAttribute("aria-hidden", state33.taskNotificationCenterOpen ? "false" : "true");
     }
-    if (!els43.taskNotificationList) return;
-    if (!state32.taskNotifications.length) {
-      els43.taskNotificationList.innerHTML = `<div class="task-notification-empty">${translate("notifications.empty")}</div>`;
+    if (!els44.taskNotificationList) return;
+    if (!state33.taskNotifications.length) {
+      els44.taskNotificationList.innerHTML = `<div class="task-notification-empty">${translate("notifications.empty")}</div>`;
       return;
     }
-    els43.taskNotificationList.innerHTML = state32.taskNotifications.map((notification) => taskNotificationItemHtml(notification)).join("");
+    els44.taskNotificationList.innerHTML = state33.taskNotifications.map((notification) => taskNotificationItemHtml(notification)).join("");
   }
   async function requestSystemNotificationPermission() {
     if (typeof Notification === "undefined") {
@@ -46726,23 +51192,23 @@ ${galleryText}`;
     return true;
   }
   function bindTaskNotificationEvents() {
-    const els43 = getLegacyBridge().els;
-    els43.taskNotificationButton?.addEventListener("click", (event) => {
+    const els44 = getLegacyBridge().els;
+    els44.taskNotificationButton?.addEventListener("click", (event) => {
       event.stopPropagation();
       toggleTaskNotificationCenter();
     });
-    els43.taskNotificationClearButton?.addEventListener("click", (event) => {
+    els44.taskNotificationClearButton?.addEventListener("click", (event) => {
       event.stopPropagation();
       clearTaskNotifications();
     });
-    els43.taskNotificationList?.addEventListener("click", (event) => {
+    els44.taskNotificationList?.addEventListener("click", (event) => {
       const item = eventTargetElement4(event)?.closest("[data-task-notification-id]");
       if (!(item instanceof HTMLElement)) return;
       const notification = notificationById(item.dataset.taskNotificationId);
       if (notification) void openNotificationTask(notification);
     });
-    els43.taskNotificationInApp?.addEventListener("change", handleTaskNotificationInAppChange);
-    els43.taskNotificationSystem?.addEventListener("change", (event) => {
+    els44.taskNotificationInApp?.addEventListener("change", handleTaskNotificationInAppChange);
+    els44.taskNotificationSystem?.addEventListener("change", (event) => {
       void handleTaskNotificationSystemChange(event);
     });
     document.addEventListener("click", handleTaskNotificationDocumentClick);
@@ -46751,9 +51217,9 @@ ${galleryText}`;
   function handleTaskNotificationInAppChange(event) {
     const input = event.currentTarget;
     if (!(input instanceof HTMLInputElement)) return;
-    const state32 = getLegacyBridge().state;
-    state32.taskNotificationSettings = {
-      ...state32.taskNotificationSettings,
+    const state33 = getLegacyBridge().state;
+    state33.taskNotificationSettings = {
+      ...state33.taskNotificationSettings,
       inApp: input.checked
     };
     persistTaskNotificationSettings();
@@ -46761,40 +51227,40 @@ ${galleryText}`;
   async function handleTaskNotificationSystemChange(event) {
     const input = event.currentTarget;
     if (!(input instanceof HTMLInputElement)) return;
-    const state32 = getLegacyBridge().state;
+    const state33 = getLegacyBridge().state;
     if (!input.checked) {
-      state32.taskNotificationSettings = { ...state32.taskNotificationSettings, system: false };
+      state33.taskNotificationSettings = { ...state33.taskNotificationSettings, system: false };
       persistTaskNotificationSettings();
       return;
     }
     const granted = await requestSystemNotificationPermission();
-    state32.taskNotificationSettings = { ...state32.taskNotificationSettings, system: granted };
+    state33.taskNotificationSettings = { ...state33.taskNotificationSettings, system: granted };
     input.checked = granted;
     persistTaskNotificationSettings();
   }
   function handleTaskNotificationDocumentClick(event) {
     const target = event.target;
-    const els43 = getLegacyBridge().els;
+    const els44 = getLegacyBridge().els;
     if (!(target instanceof Node)) return;
-    if (els43.taskNotificationCenter?.contains(target) || els43.taskNotificationButton?.contains(target)) return;
+    if (els44.taskNotificationCenter?.contains(target) || els44.taskNotificationButton?.contains(target)) return;
     closeTaskNotificationCenter();
   }
   function handleTaskNotificationKeydown(event) {
     if (event.key === "Escape") closeTaskNotificationCenter();
   }
   function addTaskNotification(notification) {
-    const state32 = getLegacyBridge().state;
-    state32.taskNotifications = [notification, ...state32.taskNotifications].slice(0, MAX_TASK_NOTIFICATIONS);
+    const state33 = getLegacyBridge().state;
+    state33.taskNotifications = [notification, ...state33.taskNotifications].slice(0, MAX_TASK_NOTIFICATIONS);
     renderTaskNotifications();
   }
   function clearTaskNotifications() {
-    const state32 = getLegacyBridge().state;
-    state32.taskNotifications = [];
+    const state33 = getLegacyBridge().state;
+    state33.taskNotifications = [];
     renderTaskNotifications();
   }
   function showTaskNotificationToast(notification) {
-    const bridge39 = getLegacyBridge();
-    const region = bridge39.els.taskNotificationToastRegion;
+    const bridge40 = getLegacyBridge();
+    const region = bridge40.els.taskNotificationToastRegion;
     if (!region) return;
     const toast = document.createElement("button");
     toast.type = "button";
@@ -46808,9 +51274,9 @@ ${galleryText}`;
     region.prepend(toast);
     const timerId = window.setTimeout(() => {
       toast.remove();
-      bridge39.state.taskNotificationToastTimerIds = bridge39.state.taskNotificationToastTimerIds.filter((id) => id !== timerId);
+      bridge40.state.taskNotificationToastTimerIds = bridge40.state.taskNotificationToastTimerIds.filter((id) => id !== timerId);
     }, TASK_NOTIFICATION_TOAST_MS);
-    bridge39.state.taskNotificationToastTimerIds.push(timerId);
+    bridge40.state.taskNotificationToastTimerIds.push(timerId);
   }
   function sendSystemTaskNotification(notification) {
     const settings = getLegacyBridge().state.taskNotificationSettings;
@@ -46825,8 +51291,8 @@ ${galleryText}`;
     };
   }
   async function openNotificationTask(notification) {
-    const bridge39 = getLegacyBridge();
-    const task = bridge39.state.tasks.find((item) => String(item.task_id) === String(notification.task_id));
+    const bridge40 = getLegacyBridge();
+    const task = bridge40.state.tasks.find((item) => String(item.task_id) === String(notification.task_id));
     markTaskNotificationRead(notification.id);
     closeTaskNotificationCenter();
     if (!task) {
@@ -46835,7 +51301,7 @@ ${galleryText}`;
     }
     window.focus();
     try {
-      const selectTask3 = bridge39.methods.selectTask;
+      const selectTask3 = bridge40.methods.selectTask;
       if (typeof selectTask3 !== "function") throw new Error("selectTask is unavailable");
       await selectTask3(task.task_id);
     } catch {
@@ -46843,8 +51309,8 @@ ${galleryText}`;
     }
   }
   function markTaskNotificationRead(notificationId) {
-    const state32 = getLegacyBridge().state;
-    state32.taskNotifications = state32.taskNotifications.map((notification) => notification.id === notificationId ? { ...notification, unread: false } : notification);
+    const state33 = getLegacyBridge().state;
+    state33.taskNotifications = state33.taskNotifications.map((notification) => notification.id === notificationId ? { ...notification, unread: false } : notification);
     renderTaskNotifications();
   }
   function notificationById(notificationId) {
@@ -46903,8 +51369,8 @@ ${galleryText}`;
     return notification.message;
   }
   function firstTaskThumbnailUrl(task) {
-    const bridge39 = getLegacyBridge();
-    const urls = bridge39.methods.taskThumbnailUrls?.(task);
+    const bridge40 = getLegacyBridge();
+    const urls = bridge40.methods.taskThumbnailUrls?.(task);
     if (Array.isArray(urls) && urls[0]) return String(urls[0]);
     if (Array.isArray(task.thumbnail_urls) && task.thumbnail_urls[0]) return String(task.thumbnail_urls[0]);
     const output = Array.isArray(task.outputs) ? task.outputs.find((record5) => record5?.status === "completed") : null;
@@ -46953,26 +51419,26 @@ ${galleryText}`;
     return `${task.task_id}:${status}:${revision}`;
   }
   function rememberTaskNotification(task, status) {
-    const state32 = getLegacyBridge().state;
-    state32.taskNotificationSeenKeys.add(taskNotificationSeenKey(task, status));
-    while (state32.taskNotificationSeenKeys.size > MAX_SEEN_TASK_NOTIFICATION_KEYS) {
-      const firstKey = state32.taskNotificationSeenKeys.values().next().value;
+    const state33 = getLegacyBridge().state;
+    state33.taskNotificationSeenKeys.add(taskNotificationSeenKey(task, status));
+    while (state33.taskNotificationSeenKeys.size > MAX_SEEN_TASK_NOTIFICATION_KEYS) {
+      const firstKey = state33.taskNotificationSeenKeys.values().next().value;
       if (typeof firstKey !== "string") break;
-      state32.taskNotificationSeenKeys.delete(firstKey);
+      state33.taskNotificationSeenKeys.delete(firstKey);
     }
     persistTaskNotificationSeenKeys();
   }
   function restoreTaskNotificationSettings() {
-    const state32 = getLegacyBridge().state;
-    state32.taskNotificationSettings = defaultTaskNotificationSettings();
+    const state33 = getLegacyBridge().state;
+    state33.taskNotificationSettings = defaultTaskNotificationSettings();
     try {
       const stored = JSON.parse(localStorage.getItem(TASK_NOTIFICATION_SETTINGS_KEY) || "{}");
-      state32.taskNotificationSettings = {
+      state33.taskNotificationSettings = {
         inApp: stored.inApp !== false,
         system: stored.system === true && typeof Notification !== "undefined" && Notification.permission === "granted"
       };
     } catch {
-      state32.taskNotificationSettings = defaultTaskNotificationSettings();
+      state33.taskNotificationSettings = defaultTaskNotificationSettings();
     }
     persistTaskNotificationSettings();
     syncTaskNotificationSettingsInputs();
@@ -46988,22 +51454,22 @@ ${galleryText}`;
     syncTaskNotificationSettingsInputs();
   }
   function syncTaskNotificationSettingsInputs() {
-    const bridge39 = getLegacyBridge();
-    const settings = bridge39.state.taskNotificationSettings;
-    if (bridge39.els.taskNotificationInApp instanceof HTMLInputElement) {
-      bridge39.els.taskNotificationInApp.checked = settings.inApp;
+    const bridge40 = getLegacyBridge();
+    const settings = bridge40.state.taskNotificationSettings;
+    if (bridge40.els.taskNotificationInApp instanceof HTMLInputElement) {
+      bridge40.els.taskNotificationInApp.checked = settings.inApp;
     }
-    if (bridge39.els.taskNotificationSystem instanceof HTMLInputElement) {
-      bridge39.els.taskNotificationSystem.checked = settings.system;
+    if (bridge40.els.taskNotificationSystem instanceof HTMLInputElement) {
+      bridge40.els.taskNotificationSystem.checked = settings.system;
     }
   }
   function restoreTaskNotificationSeenKeys() {
-    const state32 = getLegacyBridge().state;
+    const state33 = getLegacyBridge().state;
     try {
       const stored = JSON.parse(localStorage.getItem(TASK_NOTIFICATION_SEEN_KEY) || "[]");
-      state32.taskNotificationSeenKeys = new Set(Array.isArray(stored) ? stored.filter((key) => typeof key === "string") : []);
+      state33.taskNotificationSeenKeys = new Set(Array.isArray(stored) ? stored.filter((key) => typeof key === "string") : []);
     } catch {
-      state32.taskNotificationSeenKeys = /* @__PURE__ */ new Set();
+      state33.taskNotificationSeenKeys = /* @__PURE__ */ new Set();
     }
   }
   function persistTaskNotificationSeenKeys() {
@@ -47099,7 +51565,7 @@ ${galleryText}`;
       "21:9": [3808, 1632]
     }
   };
-  function legacyMethod39(name, ...args) {
+  function legacyMethod40(name, ...args) {
     const method = getLegacyBridge().methods[name];
     if (typeof method !== "function") {
       throw new Error("Legacy bridge method " + name + " is not available");
@@ -47107,7 +51573,7 @@ ${galleryText}`;
     return method(...args);
   }
   function escapeHtml18(...args) {
-    return legacyMethod39("escapeHtml", ...args);
+    return legacyMethod40("escapeHtml", ...args);
   }
   function taskRatio2(task) {
     const dimensions2 = taskSizeDimensions(task);
@@ -47262,16 +51728,30 @@ ${galleryText}`;
   function taskOutputUrls2(task) {
     if (!task) return [];
     const deletedIndexes = taskDeletedOutputIndexes(task);
-    if (Array.isArray(task.output_urls) && task.output_urls.length) {
-      return task.output_urls.filter((url, fallbackIndex) => {
+    const urlsByIndex = /* @__PURE__ */ new Map();
+    const seenUrls = /* @__PURE__ */ new Set();
+    const addUrl = (url, index) => {
+      const urlKey = String(url || "");
+      if (!urlKey || index === null || deletedIndexes.has(index) || urlsByIndex.has(index) || seenUrls.has(urlKey)) return;
+      urlsByIndex.set(index, url);
+      seenUrls.add(urlKey);
+    };
+    const structuredOutputs = Array.isArray(task.outputs) ? task.outputs : [];
+    structuredOutputs.forEach((record5, fallbackIndex) => {
+      if (!record5 || record5.status !== "completed" || taskOutputRecordIsDeleted(record5)) return;
+      const index = positiveInt(record5.index) || fallbackIndex + 1;
+      addUrl(record5.url, index);
+    });
+    if (Array.isArray(task.output_urls)) {
+      task.output_urls.forEach((url, fallbackIndex) => {
         const record5 = Array.isArray(task?.outputs) ? task.outputs.find((item) => taskOutputRecordMatchesUrl(item, url)) : null;
         const index = positiveInt(record5?.index) || taskOutputIndexFromUrl(url) || fallbackIndex + 1;
-        return !deletedIndexes.has(index) && !taskOutputRecordIsDeleted(record5);
+        if (!taskOutputRecordIsDeleted(record5)) addUrl(url, index);
       });
     }
     const singleIndex = taskOutputIndexFromUrl(task.output_url) || 1;
-    if (task.output_url && !deletedIndexes.has(singleIndex)) return [task.output_url];
-    return [];
+    addUrl(task.output_url, singleIndex);
+    return [...urlsByIndex.entries()].sort(([left], [right]) => left - right).map(([, url]) => url);
   }
   function taskDeletedOutputIndexes(task) {
     const indexes = /* @__PURE__ */ new Set();
@@ -47444,13 +51924,13 @@ ${galleryText}`;
   function compressedTaskImageState(states) {
     if (states.includes("failed")) return "failed";
     if (states.includes("running")) return "running";
-    if (states.length && states.every((state32) => state32 === "completed")) return "completed";
+    if (states.length && states.every((state33) => state33 === "completed")) return "completed";
     if (states.includes("queued")) return "queued";
     return "waiting";
   }
   function taskImageStatusCounts2(states) {
-    return states.reduce((counts, state32) => {
-      counts[state32] = (counts[state32] || 0) + 1;
+    return states.reduce((counts, state33) => {
+      counts[state33] = (counts[state33] || 0) + 1;
       return counts;
     }, { completed: 0, failed: 0, running: 0, queued: 0, waiting: 0 });
   }
@@ -47754,12 +52234,12 @@ ${galleryText}`;
   }
 
   // codex_image/webui/frontend/src/task-preview.ts
-  var bridge34 = getLegacyBridge();
-  var state28 = bridge34.state;
-  var els37 = bridge34.els;
+  var bridge35 = getLegacyBridge();
+  var state29 = bridge35.state;
+  var els38 = bridge35.els;
   var previewGridEventsBound = false;
   var pendingPreviewRenderToken = 0;
-  function legacyMethod40(name, ...args) {
+  function legacyMethod41(name, ...args) {
     const method = getLegacyBridge().methods[name];
     if (typeof method !== "function") {
       throw new Error("Legacy bridge method " + name + " is not available");
@@ -47767,66 +52247,66 @@ ${galleryText}`;
     return method(...args);
   }
   function escapeHtml19(...args) {
-    return legacyMethod40("escapeHtml", ...args);
+    return legacyMethod41("escapeHtml", ...args);
   }
   function isTaskArchived4(...args) {
-    return legacyMethod40("isTaskArchived", ...args);
+    return legacyMethod41("isTaskArchived", ...args);
   }
   function updatePreviewElapsedDisplay2(...args) {
-    return legacyMethod40("updatePreviewElapsedDisplay", ...args);
+    return legacyMethod41("updatePreviewElapsedDisplay", ...args);
   }
   function closePromptPopover7(...args) {
-    return legacyMethod40("closePromptPopover", ...args);
+    return legacyMethod41("closePromptPopover", ...args);
   }
   function currentSize2(...args) {
-    return legacyMethod40("currentSize", ...args);
+    return legacyMethod41("currentSize", ...args);
   }
   function syncActiveLightboxUrls2(...args) {
-    return legacyMethod40("syncActiveLightboxUrls", ...args);
+    return legacyMethod41("syncActiveLightboxUrls", ...args);
   }
   function collectReferenceOutput2(...args) {
-    return legacyMethod40("collectReferenceOutput", ...args);
+    return legacyMethod41("collectReferenceOutput", ...args);
   }
   function openPromptPopover(...args) {
-    return legacyMethod40("openPromptPopover", ...args);
+    return legacyMethod41("openPromptPopover", ...args);
   }
   function retryFailedTask2(...args) {
-    return legacyMethod40("retryFailedTask", ...args);
+    return legacyMethod41("retryFailedTask", ...args);
   }
   function acceptTaskSuccesses2(...args) {
-    return legacyMethod40("acceptTaskSuccesses", ...args);
+    return legacyMethod41("acceptTaskSuccesses", ...args);
   }
   function openConfirmPopover7(...args) {
-    return legacyMethod40("openConfirmPopover", ...args);
+    return legacyMethod41("openConfirmPopover", ...args);
   }
   function setStatus20(...args) {
-    return legacyMethod40("setStatus", ...args);
+    return legacyMethod41("setStatus", ...args);
   }
   function updateTaskInState3(...args) {
-    return legacyMethod40("updateTaskInState", ...args);
+    return legacyMethod41("updateTaskInState", ...args);
   }
   function renderTasks7(...args) {
-    return legacyMethod40("renderTasks", ...args);
+    return legacyMethod41("renderTasks", ...args);
   }
   function taskApiProviderId3(...args) {
-    return legacyMethod40("taskApiProviderId", ...args);
+    return legacyMethod41("taskApiProviderId", ...args);
   }
   function taskApiProviderLabel3(...args) {
-    return legacyMethod40("taskApiProviderLabel", ...args);
+    return legacyMethod41("taskApiProviderLabel", ...args);
   }
-  var taskOutputUrls3 = (...args) => legacyMethod40("taskOutputUrls", ...args);
-  var taskSelectedOutputIndexes2 = (...args) => legacyMethod40("taskSelectedOutputIndexes", ...args);
-  var taskOutputSelected2 = (...args) => legacyMethod40("taskOutputSelected", ...args);
-  var positiveInt2 = (...args) => legacyMethod40("positiveInt", ...args);
-  var taskFailureMessage2 = (...args) => legacyMethod40("taskFailureMessage", ...args);
-  var canRetryFailedTask3 = (...args) => legacyMethod40("canRetryFailedTask", ...args);
-  var canAcceptTaskSuccesses3 = (...args) => legacyMethod40("canAcceptTaskSuccesses", ...args);
-  var taskRetryStateText4 = (...args) => legacyMethod40("taskRetryStateText", ...args);
-  var elapsedTimerSpan3 = (...args) => legacyMethod40("elapsedTimerSpan", ...args);
-  var taskGeneratedCount2 = (...args) => legacyMethod40("taskGeneratedCount", ...args);
-  var taskTotalCount2 = (...args) => legacyMethod40("taskTotalCount", ...args);
-  var taskOutputIndex2 = (...args) => legacyMethod40("taskOutputIndex", ...args);
-  var taskProgressStartValue4 = (...args) => legacyMethod40("taskProgressStartValue", ...args);
+  var taskOutputUrls3 = (...args) => legacyMethod41("taskOutputUrls", ...args);
+  var taskSelectedOutputIndexes2 = (...args) => legacyMethod41("taskSelectedOutputIndexes", ...args);
+  var taskOutputSelected2 = (...args) => legacyMethod41("taskOutputSelected", ...args);
+  var positiveInt2 = (...args) => legacyMethod41("positiveInt", ...args);
+  var taskFailureMessage2 = (...args) => legacyMethod41("taskFailureMessage", ...args);
+  var canRetryFailedTask3 = (...args) => legacyMethod41("canRetryFailedTask", ...args);
+  var canAcceptTaskSuccesses3 = (...args) => legacyMethod41("canAcceptTaskSuccesses", ...args);
+  var taskRetryStateText4 = (...args) => legacyMethod41("taskRetryStateText", ...args);
+  var elapsedTimerSpan3 = (...args) => legacyMethod41("elapsedTimerSpan", ...args);
+  var taskGeneratedCount2 = (...args) => legacyMethod41("taskGeneratedCount", ...args);
+  var taskTotalCount2 = (...args) => legacyMethod41("taskTotalCount", ...args);
+  var taskOutputIndex2 = (...args) => legacyMethod41("taskOutputIndex", ...args);
+  var taskProgressStartValue4 = (...args) => legacyMethod41("taskProgressStartValue", ...args);
   function taskRequestPreviewPayload(task) {
     if (!task?.request) return null;
     const request = { ...task.request };
@@ -47849,22 +52329,23 @@ ${galleryText}`;
     const status = String(task?.status || "");
     const taskId = String(task?.task_id || "");
     if (TERMINAL_TASK_STATUSES.has(status)) return status;
-    if (queueContainsTask(state28.queue.running, taskId)) return "running";
-    if (queueContainsTask(state28.queue.waiting, taskId)) return status === "submitting" ? "submitting" : "queued";
+    if (status === "cancelling") return "running";
+    if (queueContainsTask(state29.queue.running, taskId)) return "running";
+    if (queueContainsTask(state29.queue.waiting, taskId)) return status === "submitting" ? "submitting" : "queued";
     return status;
   }
   function renderPreview5(task = null) {
-    const selectedTask = state28.tasks.find((item) => String(item.task_id) === String(state28.selectedTaskId));
+    const selectedTask = state29.tasks.find((item) => String(item.task_id) === String(state29.selectedTaskId));
     const visibleSelectedTask = selectedTask && !isTaskArchived4(selectedTask.task_id) ? selectedTask : null;
-    const selected = task || visibleSelectedTask || state28.tasks.find((item) => !isTaskArchived4(item.task_id)) || selectedTask || state28.tasks[0];
+    const selected = task || visibleSelectedTask || state29.tasks.find((item) => !isTaskArchived4(item.task_id)) || selectedTask || state29.tasks[0];
     const status = taskPreviewStatus(selected);
-    syncGroundingAttribution(els37.previewGrid, selected, "preview");
+    syncGroundingAttribution(els38.previewGrid, selected, "preview");
     updatePreviewDownloadActions(selected);
     const nextPreviewKey = previewStructureKey(selected);
-    if (state28.previewRenderKey === nextPreviewKey) {
+    if (state29.previewRenderKey === nextPreviewKey) {
       return updatePreviewElapsedDisplay2();
     }
-    state28.previewRenderKey = nextPreviewKey;
+    state29.previewRenderKey = nextPreviewKey;
     if (status === "running") {
       if (taskOutputUrls3(selected).length) {
         renderOutputPreview(selected, { running: true });
@@ -47893,7 +52374,7 @@ ${galleryText}`;
       closePromptPopover7();
       cancelDeferredPreviewRender();
       clearPreviewGridLayout();
-      els37.previewGrid.innerHTML = `
+      els38.previewGrid.innerHTML = `
       <div class="empty-preview error-preview">
         <p>${escapeHtml19(taskFailureMessage2(selected) || translate("preview.taskFailed"))}</p>
         ${retryFailureSummaryButton(selected)}
@@ -47907,7 +52388,7 @@ ${galleryText}`;
       closePromptPopover7();
       cancelDeferredPreviewRender();
       clearPreviewGridLayout();
-      els37.previewGrid.innerHTML = `<div class="empty-preview">${escapeHtml19(translate("preview.empty"))}</div>`;
+      els38.previewGrid.innerHTML = `<div class="empty-preview">${escapeHtml19(translate("preview.empty"))}</div>`;
       return;
     }
     renderOutputPreview(selected);
@@ -48006,8 +52487,8 @@ ${galleryText}`;
   }
   function commitOutputPreviewRender(task, { running = false, failure = false, waiting = false, outputUrls, totalCount, itemCount, preservePreviousImages = true, imageAlreadyLoaded = false }) {
     applyPreviewGridLayout(totalCount, itemCount);
-    state28.previewTask = task || null;
-    state28.previewOutputUrls = outputUrls.slice();
+    state29.previewTask = task || null;
+    state29.previewOutputUrls = outputUrls.slice();
     bindPreviewGridEvents();
     reconcilePreviewOutputCards(task, outputUrls, totalCount, { preservePreviousImages, imageAlreadyLoaded });
     reconcilePreviewStatusCard(task, { running, failure, waiting }, outputUrls.length);
@@ -48015,24 +52496,24 @@ ${galleryText}`;
     window.requestAnimationFrame(syncPreviewImageOrientation);
   }
   function reconcilePreviewOutputCards(task, outputUrls, totalCount, { preservePreviousImages = true, imageAlreadyLoaded = false } = {}) {
-    if (!els37.previewGrid) return;
+    if (!els38.previewGrid) return;
     const desiredKeys = new Set(outputUrls.map((url, index) => previewOutputCardKey(task, url, index)));
     removeStalePreviewNodes(desiredKeys);
     outputUrls.forEach((url, index) => {
       const key = previewOutputCardKey(task, url, index);
       const card = ensurePreviewOutputCard(key);
-      if (els37.previewGrid.children[index] !== card) {
-        els37.previewGrid.insertBefore(card, els37.previewGrid.children[index] || null);
+      if (els38.previewGrid.children[index] !== card) {
+        els38.previewGrid.insertBefore(card, els38.previewGrid.children[index] || null);
       }
       updatePreviewOutputCard(card, task, url, index, totalCount, { preservePreviousImage: preservePreviousImages, imageAlreadyLoaded });
     });
   }
   function currentPreviewOutputCardCount() {
-    if (!els37.previewGrid) return 0;
-    return els37.previewGrid.querySelectorAll(".preview-card[data-preview-card-key]").length;
+    if (!els38.previewGrid) return 0;
+    return els38.previewGrid.querySelectorAll(".preview-card[data-preview-card-key]").length;
   }
   function removeStalePreviewNodes(desiredKeys) {
-    [...els37.previewGrid.children].forEach((child) => {
+    [...els38.previewGrid.children].forEach((child) => {
       if (!(child instanceof HTMLElement)) return;
       const key = child.dataset.previewCardKey;
       if (key) {
@@ -48047,7 +52528,7 @@ ${galleryText}`;
     return `slot-${taskOutputIndex2(task, url, index) || index + 1}`;
   }
   function ensurePreviewOutputCard(key) {
-    const existing = [...els37.previewGrid.querySelectorAll(".preview-card[data-preview-card-key]")].find((card2) => {
+    const existing = [...els38.previewGrid.querySelectorAll(".preview-card[data-preview-card-key]")].find((card2) => {
       return card2 instanceof HTMLElement && card2.dataset.previewCardKey === key;
     });
     if (existing instanceof HTMLElement) return existing;
@@ -48066,7 +52547,8 @@ ${galleryText}`;
     <span class="preview-index hidden"></span>
     <button type="button" class="preview-select-button" data-preview-select-output-index="" aria-pressed="false" aria-label="${addFeaturedLabel}" title="${addFeaturedLabel}" data-i18n-attr="aria-label:preview.addFeatured;title:preview.addFeatured" hidden disabled>
       <svg class="preview-select-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-        <path d="M12 3.5l2.7 5.5 6 .9-4.3 4.2 1 6-5.4-2.8-5.4 2.8 1-6-4.3-4.2 6-.9L12 3.5z" />
+        <circle cx="12" cy="12" r="8.5" />
+        <path d="m8.2 12.1 2.4 2.4 5.2-5.4" />
       </svg>
       <span class="preview-select-label" data-preview-select-label data-i18n="preview.featured">${featuredLabel}</span>
     </button>
@@ -48210,7 +52692,7 @@ ${galleryText}`;
     });
   }
   function reconcilePreviewStatusCard(task, flags, visibleOutputCount) {
-    const existing = els37.previewGrid.querySelector("[data-preview-status-card]");
+    const existing = els38.previewGrid.querySelector("[data-preview-status-card]");
     const html = flags.running ? runningProgressCard(task, visibleOutputCount) : flags.waiting ? waitingProgressCard(task, visibleOutputCount) : flags.failure ? failureSummaryCard(task, visibleOutputCount) : "";
     if (!html) {
       existing?.remove();
@@ -48224,13 +52706,13 @@ ${galleryText}`;
     if (existing) {
       existing.replaceWith(next);
     } else {
-      els37.previewGrid.append(next);
+      els38.previewGrid.append(next);
     }
   }
   function bindPreviewGridEvents() {
-    if (previewGridEventsBound || !els37.previewGrid) return;
+    if (previewGridEventsBound || !els38.previewGrid) return;
     previewGridEventsBound = true;
-    els37.previewGrid.addEventListener("click", handlePreviewGridClick);
+    els38.previewGrid.addEventListener("click", handlePreviewGridClick);
   }
   function handlePreviewGridClick(event) {
     const target = event.target instanceof Element ? event.target : null;
@@ -48250,7 +52732,7 @@ ${galleryText}`;
     if (selectButton) {
       event.stopPropagation();
       const outputIndex = positiveInt2(selectButton.dataset.previewSelectOutputIndex);
-      const taskId = selectButton.dataset.previewSelectTaskId || state28.previewTask?.task_id || "";
+      const taskId = selectButton.dataset.previewSelectTaskId || state29.previewTask?.task_id || "";
       if (!taskId || outputIndex === null) return;
       const selected = selectButton.getAttribute("aria-pressed") !== "true";
       void updateTaskOutputSelection(taskId, outputIndex, selected);
@@ -48265,7 +52747,7 @@ ${galleryText}`;
     if (collectButton) {
       collectReferenceOutput2(collectButton.dataset.collectInputUrl, {
         name: collectButton.dataset.collectOutputName || "",
-        sourceTaskId: state28.previewTask?.task_id || "",
+        sourceTaskId: state29.previewTask?.task_id || "",
         outputIndex: positiveInt2(collectButton.dataset.collectOutputIndex) || null
       });
       return;
@@ -48274,16 +52756,19 @@ ${galleryText}`;
     if (promptButton) {
       event.stopPropagation();
       const index = Number.parseInt(promptButton.dataset.promptPopoverIndex || "0", 10);
-      openPromptPopover(promptButton, promptPopoverData(state28.previewTask, index));
+      openPromptPopover(promptButton, promptPopoverData(state29.previewTask, index));
       return;
     }
     const image = target.closest("[data-lightbox-url]");
     if (!image) return;
-    const images = [...els37.previewGrid.querySelectorAll("[data-lightbox-url]")];
+    const images = [...els38.previewGrid.querySelectorAll("[data-lightbox-url]")];
     const urls = images.map((item) => item.dataset.lightboxUrl || item.currentSrc || item.src).filter((url) => Boolean(url));
     const currentUrl = image.dataset.lightboxUrl || image.currentSrc || image.src;
     if (!currentUrl) return;
-    window.openLightbox?.(currentUrl, urls, Math.max(0, images.indexOf(image)));
+    window.openLightbox?.(currentUrl, urls, Math.max(0, images.indexOf(image)), {
+      taskId: String(state29.previewTask?.task_id || state29.selectedTaskId || ""),
+      onTaskNavigate: (direction, context) => legacyMethod41("openMainTaskLightboxByDirection", direction, context)
+    });
   }
   function bindPreviewRetryButtons() {
     bindPreviewGridEvents();
@@ -48291,16 +52776,16 @@ ${galleryText}`;
   function updatePreviewDownloadActions(task) {
     updatePreviewSelectionActions(task);
     const outputUrls = taskOutputUrls3(task);
-    if (!els37.downloadAllButton) return;
+    if (!els38.downloadAllButton) return;
     if (!task?.task_id || outputUrls.length < 2) {
-      els37.downloadAllButton.classList.add("hidden");
-      els37.downloadAllButton.removeAttribute("href");
-      els37.downloadAllButton.removeAttribute("download");
+      els38.downloadAllButton.classList.add("hidden");
+      els38.downloadAllButton.removeAttribute("href");
+      els38.downloadAllButton.removeAttribute("download");
       return;
     }
-    els37.downloadAllButton.href = taskOutputZipUrl(task);
-    els37.downloadAllButton.download = `${task.task_id}-images.zip`;
-    els37.downloadAllButton.classList.remove("hidden");
+    els38.downloadAllButton.href = taskOutputZipUrl(task);
+    els38.downloadAllButton.download = `${task.task_id}-images.zip`;
+    els38.downloadAllButton.classList.remove("hidden");
   }
   function updatePreviewSelectionActions(task) {
     const outputUrls = taskOutputUrls3(task);
@@ -48308,28 +52793,28 @@ ${galleryText}`;
     const selectedCount = selectedUrls.length;
     const totalCount = outputUrls.length;
     const hasSelection = Boolean(task?.task_id && selectedCount > 0 && totalCount > 1);
-    els37.previewSelectionActions?.classList.toggle("hidden", !hasSelection);
-    if (els37.previewSelectionCount) {
-      els37.previewSelectionCount.textContent = selectedCount ? formatTranslation("preview.selectedCount", { selected: selectedCount, total: totalCount }) : translate("preview.selectedZero");
+    els38.previewSelectionActions?.classList.toggle("hidden", !hasSelection);
+    if (els38.previewSelectionCount) {
+      els38.previewSelectionCount.textContent = selectedCount ? formatTranslation("preview.selectedCount", { selected: selectedCount, total: totalCount }) : translate("preview.selectedZero");
     }
-    if (els37.downloadSelectedButton) {
+    if (els38.downloadSelectedButton) {
       if (!hasSelection) {
-        els37.downloadSelectedButton.classList.add("hidden");
-        els37.downloadSelectedButton.removeAttribute("href");
-        els37.downloadSelectedButton.removeAttribute("download");
+        els38.downloadSelectedButton.classList.add("hidden");
+        els38.downloadSelectedButton.removeAttribute("href");
+        els38.downloadSelectedButton.removeAttribute("download");
       } else {
-        els37.downloadSelectedButton.href = taskSelectedOutputDownloadUrl(task);
-        els37.downloadSelectedButton.download = taskSelectedOutputDownloadName(task);
-        els37.downloadSelectedButton.classList.remove("hidden");
+        els38.downloadSelectedButton.href = taskSelectedOutputDownloadUrl(task);
+        els38.downloadSelectedButton.download = taskSelectedOutputDownloadName(task);
+        els38.downloadSelectedButton.classList.remove("hidden");
       }
     }
-    if (els37.deleteUnselectedOutputsButton) {
+    if (els38.deleteUnselectedOutputsButton) {
       const canDeleteUnselected = hasSelection && selectedCount < totalCount;
-      els37.deleteUnselectedOutputsButton.classList.toggle("hidden", !canDeleteUnselected);
+      els38.deleteUnselectedOutputsButton.classList.toggle("hidden", !canDeleteUnselected);
       if (canDeleteUnselected) {
-        els37.deleteUnselectedOutputsButton.dataset.deleteUnselectedTaskId = String(task.task_id || "");
+        els38.deleteUnselectedOutputsButton.dataset.deleteUnselectedTaskId = String(task.task_id || "");
       } else {
-        delete els37.deleteUnselectedOutputsButton.dataset.deleteUnselectedTaskId;
+        delete els38.deleteUnselectedOutputsButton.dataset.deleteUnselectedTaskId;
       }
     }
   }
@@ -48375,8 +52860,8 @@ ${galleryText}`;
     }
   }
   function openDeleteUnselectedOutputsConfirm(button) {
-    const taskId = button.dataset.deleteUnselectedTaskId || state28.previewTask?.task_id || state28.selectedTaskId || "";
-    const task = state28.tasks.find((item) => String(item.task_id) === String(taskId)) || state28.previewTask;
+    const taskId = button.dataset.deleteUnselectedTaskId || state29.previewTask?.task_id || state29.selectedTaskId || "";
+    const task = state29.tasks.find((item) => String(item.task_id) === String(taskId)) || state29.previewTask;
     const selectedCount = taskSelectedOutputUrls(task).length;
     const totalCount = taskOutputUrls3(task).length;
     const deleteCount = Math.max(0, totalCount - selectedCount);
@@ -48405,7 +52890,7 @@ ${galleryText}`;
       if (!response.ok) throw new Error(data.detail || translate("preview.deleteUnselectedFailed"));
       const updatedTask = data.task;
       updateTaskInState3(updatedTask);
-      state28.selectedTaskId = updatedTask.task_id;
+      state29.selectedTaskId = updatedTask.task_id;
       renderTasks7();
       renderPreview5(updatedTask);
       setStatus20(translate("preview.deleteUnselectedDone"), "ok");
@@ -48435,36 +52920,36 @@ ${galleryText}`;
     return String(value || "image").replace(/[^\w.-]+/g, "-") || "image";
   }
   function clearPreviewGridLayout() {
-    if (!els37.previewGrid) return;
-    els37.previewGrid.classList.remove("multi-output");
-    [...els37.previewGrid.classList].forEach((className) => {
+    if (!els38.previewGrid) return;
+    els38.previewGrid.classList.remove("multi-output");
+    [...els38.previewGrid.classList].forEach((className) => {
       if (className.startsWith("preview-count-") || className.startsWith("preview-orientation-")) {
-        els37.previewGrid.classList.remove(className);
+        els38.previewGrid.classList.remove(className);
       }
     });
   }
   function applyPreviewGridLayout(outputCount, itemCount) {
     const previousOrientationClass = currentPreviewOrientationClass();
     clearPreviewGridLayout();
-    if (!els37.previewGrid) return;
-    els37.previewGrid.classList.toggle("multi-output", itemCount > 1);
-    els37.previewGrid.classList.add(`preview-count-${outputCount}`);
-    els37.previewGrid.classList.add(previousOrientationClass || "preview-orientation-unknown");
+    if (!els38.previewGrid) return;
+    els38.previewGrid.classList.toggle("multi-output", itemCount > 1);
+    els38.previewGrid.classList.add(`preview-count-${outputCount}`);
+    els38.previewGrid.classList.add(previousOrientationClass || "preview-orientation-unknown");
   }
   function currentPreviewOrientationClass() {
-    if (!els37.previewGrid) return "";
-    return [...els37.previewGrid.classList].find((className) => className.startsWith("preview-orientation-")) || "";
+    if (!els38.previewGrid) return "";
+    return [...els38.previewGrid.classList].find((className) => className.startsWith("preview-orientation-")) || "";
   }
   function syncPreviewImageOrientation() {
-    if (!els37.previewGrid) return;
-    const images = [...els37.previewGrid.querySelectorAll("[data-lightbox-url]")];
+    if (!els38.previewGrid) return;
+    const images = [...els38.previewGrid.querySelectorAll("[data-lightbox-url]")];
     const loadedImages = images.filter((image) => image.naturalWidth > 0 && image.naturalHeight > 0);
     if (!loadedImages.length) return;
     const portraitCount = loadedImages.filter((image) => image.naturalHeight > image.naturalWidth).length;
     const landscapeCount = loadedImages.filter((image) => image.naturalWidth > image.naturalHeight).length;
     const orientation = portraitCount > landscapeCount ? "portrait" : landscapeCount > portraitCount ? "landscape" : "square";
-    els37.previewGrid.classList.remove("preview-orientation-unknown", "preview-orientation-portrait", "preview-orientation-landscape", "preview-orientation-square");
-    els37.previewGrid.classList.add(`preview-orientation-${orientation}`);
+    els38.previewGrid.classList.remove("preview-orientation-unknown", "preview-orientation-portrait", "preview-orientation-landscape", "preview-orientation-square");
+    els38.previewGrid.classList.add(`preview-orientation-${orientation}`);
   }
   function promptPopoverData(task, index) {
     const originalPrompt = task.prompt || task.prompt_for_model || "";
@@ -48559,7 +53044,7 @@ ${galleryText}`;
     const retryState = taskRetryStateText4(task);
     const retryStateHtml = retryState ? `<p data-preview-retry-state>${escapeHtml19(retryState)}</p>` : "";
     const failureNotice = runningFailureNotice(task);
-    els37.previewGrid.innerHTML = `
+    els38.previewGrid.innerHTML = `
     <div class="waiting-preview">
       <div class="waiting-spinner" aria-hidden="true"></div>
       <div>
@@ -48580,11 +53065,10 @@ ${galleryText}`;
     const elapsed = elapsedTimerSpan3("waiting", elapsedFrom);
     const size = escapeHtml19(task.params?.size || currentSize2());
     const title = submitting ? translate("preview.submittingTitle") : translate("preview.queuedTitle");
-    const detail = submitting ? translate("preview.submittingDetail") : translate("preview.queuedDetail");
     const retryReason = !submitting && task.last_error ? `<p>${escapeHtml19(formatTranslation("preview.lastError", { error: task.last_error }))}</p>` : "";
     const retryState = taskRetryStateText4(task);
     const retryStateHtml = retryState ? `<p data-preview-retry-state>${escapeHtml19(retryState)}</p>` : "";
-    els37.previewGrid.innerHTML = `
+    els38.previewGrid.innerHTML = `
     <div class="waiting-preview">
       <div class="waiting-spinner" aria-hidden="true"></div>
       <div>
@@ -48592,7 +53076,6 @@ ${galleryText}`;
         <p class="elapsed-line">${previewElapsedLineHtml("preview.elapsedLine", {}, elapsed)}</p>
         <p class="elapsed-meta">${size}</p>
         ${retryStateHtml}
-        <p>${escapeHtml19(detail)}</p>
         ${retryReason}
       </div>
       <div class="waiting-bar"><span></span></div>
@@ -48600,12 +53083,12 @@ ${galleryText}`;
   `;
   }
   function initTaskPreviewFeature() {
-    els37.deleteUnselectedOutputsButton?.addEventListener("click", () => {
-      openDeleteUnselectedOutputsConfirm(els37.deleteUnselectedOutputsButton);
+    els38.deleteUnselectedOutputsButton?.addEventListener("click", () => {
+      openDeleteUnselectedOutputsConfirm(els38.deleteUnselectedOutputsButton);
     });
     document.addEventListener(LOCALE_CHANGE_EVENT, () => {
-      state28.previewRenderKey = null;
-      renderPreview5(state28.previewTask);
+      state29.previewRenderKey = null;
+      renderPreview5(state29.previewTask);
     });
     Object.assign(getLegacyBridge().methods, {
       taskRequestPreviewPayload,
@@ -48630,39 +53113,79 @@ ${galleryText}`;
   }
 
   // codex_image/webui/frontend/src/tasks.ts
-  var bridge35 = getLegacyBridge();
-  var state29 = bridge35.state;
-  var els38 = bridge35.els;
-  function legacyMethod41(name, ...args) {
+  var bridge36 = getLegacyBridge();
+  var state30 = bridge36.state;
+  var els39 = bridge36.els;
+  function legacyMethod42(name, ...args) {
     const method = getLegacyBridge().methods[name];
     if (typeof method !== "function") {
       throw new Error("Legacy bridge method " + name + " is not available");
     }
     return method(...args);
   }
-  var updateTaskInState4 = (...args) => legacyMethod41("updateTaskInState", ...args);
-  var cleanupSessionSelections2 = (...args) => legacyMethod41("cleanupSessionSelections", ...args);
-  var renderTasks8 = (...args) => legacyMethod41("renderTasks", ...args);
-  var renderArchiveButton4 = (...args) => legacyMethod41("renderArchiveButton", ...args);
-  var renderArchiveModal4 = (...args) => legacyMethod41("renderArchiveModal", ...args);
-  var renderPreview6 = (...args) => legacyMethod41("renderPreview", ...args);
-  var migrateLegacyArchivedTasks2 = (...args) => legacyMethod41("migrateLegacyArchivedTasks", ...args);
-  var revokeTaskUploadPreviewUrls3 = (...args) => legacyMethod41("revokeTaskUploadPreviewUrls", ...args);
-  var taskHasViewableUpdate2 = (...args) => legacyMethod41("taskHasViewableUpdate", ...args);
-  var markTaskViewed2 = (...args) => legacyMethod41("markTaskViewed", ...args);
-  var ensureSelectedTaskDetail = (...args) => legacyMethod41("ensureSelectedTaskDetail", ...args);
+  var updateTaskInState4 = (...args) => legacyMethod42("updateTaskInState", ...args);
+  var cleanupSessionSelections2 = (...args) => legacyMethod42("cleanupSessionSelections", ...args);
+  var renderTasks8 = (...args) => legacyMethod42("renderTasks", ...args);
+  var renderArchiveButton4 = (...args) => legacyMethod42("renderArchiveButton", ...args);
+  var renderArchiveModal4 = (...args) => legacyMethod42("renderArchiveModal", ...args);
+  var renderPreview6 = (...args) => legacyMethod42("renderPreview", ...args);
+  var migrateLegacyArchivedTasks2 = (...args) => legacyMethod42("migrateLegacyArchivedTasks", ...args);
+  var revokeTaskUploadPreviewUrls3 = (...args) => legacyMethod42("revokeTaskUploadPreviewUrls", ...args);
+  var taskHasViewableUpdate2 = (...args) => legacyMethod42("taskHasViewableUpdate", ...args);
+  var markTaskViewed2 = (...args) => legacyMethod42("markTaskViewed", ...args);
+  var ensureSelectedTaskDetail = (...args) => legacyMethod42("ensureSelectedTaskDetail", ...args);
   var TASK_SEARCH_HISTORY_LIMIT = 100;
   var TASK_SEARCH_HISTORY_DEBOUNCE_MS = 180;
   var TASK_SIDEBAR_GROUP_PAGE_SIZE2 = 50;
+  var TASK_SIDEBAR_REVEAL_PAGE_SIZE = 100;
+  var HISTORY_TASK_REVEAL_LAYOUT_TIMEOUT_MS = 5e3;
   var taskSearchHistoryTimerId = 0;
+  function activeHistoryTaskReveal() {
+    const reveal = state30.historyTaskReveal;
+    if (!reveal?.ready) return null;
+    if (String(reveal.taskId || "") !== String(state30.selectedTaskId || "")) return null;
+    return reveal;
+  }
+  function mergeSidebarTasks(baseTasks, incomingTasks) {
+    const merged = [...baseTasks];
+    const indexById = new Map(
+      merged.map((task, index) => [String(task?.task_id || ""), index])
+    );
+    incomingTasks.forEach((incoming) => {
+      const taskId = String(incoming?.task_id || "");
+      if (!taskId) return;
+      const index = indexById.get(taskId);
+      if (index === void 0) {
+        indexById.set(taskId, merged.length);
+        merged.push(incoming);
+        return;
+      }
+      const existing = merged[index];
+      if (existing?.summary_only !== true && incoming?.summary_only === true) return;
+      merged[index] = incoming;
+    });
+    return merged;
+  }
+  function retainHistoryTaskRevealAfterSnapshot() {
+    const reveal = activeHistoryTaskReveal();
+    if (!reveal) return;
+    const retained = reveal.kind === "group" && reveal.groupTasks.length ? reveal.groupTasks : [reveal.task];
+    state30.tasks = mergeSidebarTasks(state30.tasks, retained);
+    if (reveal.kind === "group") {
+      state30.taskSidebarGroupLoadedCounts[reveal.groupKey] = Math.max(
+        Number(state30.taskSidebarGroupLoadedCounts?.[reveal.groupKey] || 0),
+        Number(reveal.loadedCount || 0)
+      );
+    }
+  }
   function normalizedTaskSearchResultQuery(query) {
     return String(query || "").trim().toLowerCase();
   }
   async function refreshTasks({ migrateLegacyArchives = false } = {}) {
-    const requestSeq = ++state29.tasksRequestSeq;
+    const requestSeq = ++state30.tasksRequestSeq;
     const response = await fetch("/api/tasks/sidebar?limit=50");
     const data = await response.json();
-    if (requestSeq !== state29.tasksRequestSeq) return;
+    if (requestSeq !== state30.tasksRequestSeq) return;
     await applyTasksSnapshot(data.tasks || [], {
       migrateLegacyArchives,
       requestSeq,
@@ -48671,30 +53194,31 @@ ${galleryText}`;
   }
   async function applyTasksSnapshot(tasks, {
     migrateLegacyArchives = false,
-    requestSeq = state29.tasksRequestSeq,
+    requestSeq = state30.tasksRequestSeq,
     taskGroups
   } = {}) {
-    const previousLocalPendingTasks = state29.tasks.filter((task) => task?.local_pending);
-    const pendingTask = state29.pendingTaskId ? state29.tasks.find((task) => task.task_id === state29.pendingTaskId) : null;
-    state29.tasks = Array.isArray(tasks) ? tasks : [];
+    const previousLocalPendingTasks = state30.tasks.filter((task) => task?.local_pending);
+    const pendingTask = state30.pendingTaskId ? state30.tasks.find((task) => task.task_id === state30.pendingTaskId) : null;
+    state30.tasks = mergeActiveQueueTaskDetails(Array.isArray(tasks) ? tasks : []);
     if (Array.isArray(taskGroups)) {
-      state29.taskSidebarGroupCounts = Object.fromEntries(
+      state30.taskSidebarGroupCounts = Object.fromEntries(
         taskGroups.map((group) => [String(group?.key || ""), Math.max(0, Number(group?.count || 0))])
       );
-      state29.taskSidebarGroupLoadedCounts = Object.fromEntries(
+      state30.taskSidebarGroupLoadedCounts = Object.fromEntries(
         taskGroups.map((group) => [String(group?.key || ""), Array.isArray(group?.tasks) ? group.tasks.length : 0])
       );
     }
-    if (pendingTask?.local_pending && !state29.tasks.some((task) => task.task_id === pendingTask.task_id)) {
-      state29.tasks.unshift(pendingTask);
+    retainHistoryTaskRevealAfterSnapshot();
+    if (pendingTask?.local_pending && !state30.tasks.some((task) => task.task_id === pendingTask.task_id)) {
+      state30.tasks.unshift(pendingTask);
     }
-    const retainedTasks = new Set(state29.tasks);
+    const retainedTasks = new Set(state30.tasks);
     previousLocalPendingTasks.forEach((task) => {
       if (!retainedTasks.has(task)) revokeTaskUploadPreviewUrls3(task);
     });
     if (migrateLegacyArchives) {
       await migrateLegacyArchivedTasks2();
-      if (requestSeq !== state29.tasksRequestSeq) return;
+      if (requestSeq !== state30.tasksRequestSeq) return;
     }
     cleanupSessionSelections2();
     renderTasks8({ preserveScroll: true });
@@ -48702,12 +53226,32 @@ ${galleryText}`;
     renderArchiveModal4();
     await renderSelectedTaskPreview(requestSeq);
   }
+  function mergeActiveQueueTaskDetails(tasks) {
+    const activeTasks = [
+      ...Array.isArray(state30.queue?.waiting) ? state30.queue.waiting : [],
+      ...Array.isArray(state30.queue?.running) ? state30.queue.running : []
+    ];
+    const activeById = new Map(
+      activeTasks.filter((task) => task?.task_id).map((task) => [String(task.task_id), task])
+    );
+    const merged = tasks.map((task) => {
+      const taskId = String(task?.task_id || "");
+      const activeTask = activeById.get(taskId);
+      if (!activeTask) return task;
+      activeById.delete(taskId);
+      return { ...task, ...activeTask, summary_only: false };
+    });
+    activeById.forEach((task) => {
+      merged.push({ ...task, summary_only: false });
+    });
+    return merged;
+  }
   async function loadMoreSidebarTaskGroup2(groupKey) {
     const key = String(groupKey || "");
-    if (!key || state29.taskSidebarGroupLoading) return;
-    const offset = Math.max(0, Number(state29.taskSidebarGroupLoadedCounts?.[key] || 0));
-    state29.taskSidebarGroupLoading = key;
-    state29.tasksRenderKey = null;
+    if (!key || state30.taskSidebarGroupLoading) return;
+    const offset = Math.max(0, Number(state30.taskSidebarGroupLoadedCounts?.[key] || 0));
+    state30.taskSidebarGroupLoading = key;
+    state30.tasksRenderKey = null;
     renderTasks8({ preserveScroll: true });
     try {
       const response = await fetch(
@@ -48717,32 +53261,157 @@ ${galleryText}`;
       if (!response.ok) throw new Error(data.detail || "Task group loading failed");
       const incoming = Array.isArray(data.tasks) ? data.tasks : [];
       const incomingById = new Map(incoming.map((task) => [String(task?.task_id || ""), task]));
-      state29.tasks = state29.tasks.map((task) => incomingById.get(String(task?.task_id || "")) || task);
-      const existingIds = new Set(state29.tasks.map((task) => String(task?.task_id || "")));
+      state30.tasks = state30.tasks.map((task) => incomingById.get(String(task?.task_id || "")) || task);
+      const existingIds = new Set(state30.tasks.map((task) => String(task?.task_id || "")));
       incoming.forEach((task) => {
         const taskId = String(task?.task_id || "");
         if (!taskId || existingIds.has(taskId)) return;
-        state29.tasks.push(task);
+        state30.tasks.push(task);
         existingIds.add(taskId);
       });
-      state29.taskSidebarGroupCounts[key] = Math.max(0, Number(data.count || 0));
-      state29.taskSidebarGroupLoadedCounts[key] = Math.max(offset, Number(data.next_offset || offset + incoming.length));
+      state30.taskSidebarGroupCounts[key] = Math.max(0, Number(data.count || 0));
+      state30.taskSidebarGroupLoadedCounts[key] = Math.max(offset, Number(data.next_offset || offset + incoming.length));
     } finally {
-      state29.taskSidebarGroupLoading = null;
-      state29.tasksRenderKey = null;
+      state30.taskSidebarGroupLoading = null;
+      state30.tasksRenderKey = null;
       renderTasks8({ preserveScroll: true });
     }
+  }
+  async function fetchSidebarRevealPage(groupKey, offset) {
+    const response = await fetch(
+      `/api/tasks/sidebar/groups/${encodeURIComponent(groupKey)}?offset=${offset}&limit=${TASK_SIDEBAR_REVEAL_PAGE_SIZE}`
+    );
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(data.detail || "Task group loading failed");
+    return data;
+  }
+  async function loadSidebarTaskGroupThroughTarget(reveal) {
+    const groupKey = String(reveal.groupKey || "");
+    const taskId = String(reveal.taskId || "");
+    for (let attempt = 0; attempt < 2; attempt += 1) {
+      const positionResponse = await fetch(
+        `/api/tasks/sidebar/groups/${encodeURIComponent(groupKey)}/position/${encodeURIComponent(taskId)}`
+      );
+      const positionData = await positionResponse.json().catch(() => ({}));
+      if (!positionResponse.ok) throw new Error(positionData.detail || "Task position loading failed");
+      if (!positionData.found) return false;
+      const targetLoaded = state30.tasks.some((task) => String(task?.task_id || "") === taskId);
+      const loadedCount = Math.max(0, Number(state30.taskSidebarGroupLoadedCounts?.[groupKey] || 0));
+      const plan = sidebarTaskRevealPagePlan({
+        targetIndex: Number(positionData.position),
+        targetLoaded,
+        loadedCount,
+        pageSize: TASK_SIDEBAR_REVEAL_PAGE_SIZE
+      });
+      if (!plan.found) return false;
+      const pages = await Promise.all(plan.offsets.map((offset) => fetchSidebarRevealPage(groupKey, offset)));
+      const fetchedTasks = pages.flatMap((page) => Array.isArray(page.tasks) ? page.tasks : []);
+      if (!targetLoaded && !fetchedTasks.some((task) => String(task?.task_id || "") === taskId)) {
+        continue;
+      }
+      const existingGroupTasks = state30.tasks.filter((task) => sidebarTaskDateBucket(task) === groupKey && !task?.archived_at);
+      const groupTasks = mergeSidebarTasks(
+        mergeSidebarTasks(existingGroupTasks, fetchedTasks),
+        [reveal.task]
+      );
+      const loadedThrough = pages.reduce((maximum, page, index) => {
+        const offset = plan.offsets[index] || 0;
+        return Math.max(maximum, Number(page.next_offset || offset + (page.tasks?.length || 0)));
+      }, loadedCount);
+      reveal.ready = true;
+      reveal.groupTasks = groupTasks;
+      reveal.loadedCount = loadedThrough;
+      state30.tasks = mergeSidebarTasks(state30.tasks, groupTasks);
+      state30.taskSidebarGroupCounts[groupKey] = Math.max(
+        Number(state30.taskSidebarGroupCounts?.[groupKey] || 0),
+        Number(positionData.count || 0),
+        ...pages.map((page) => Number(page.count || 0))
+      );
+      state30.taskSidebarGroupLoadedCounts[groupKey] = loadedThrough;
+      return true;
+    }
+    return false;
+  }
+  function activateTransientHistoryTaskReveal(reveal) {
+    reveal.kind = "transient";
+    reveal.groupKey = "current";
+    reveal.ready = true;
+    reveal.groupTasks = [reveal.task];
+    reveal.loadedCount = 1;
+    state30.tasks = mergeSidebarTasks(state30.tasks, [reveal.task]);
+  }
+  async function scrollHistoryTaskCardIntoView(taskId) {
+    const selector = `.task-card[data-task-id="${cssEscape(taskId)}"]`;
+    const deadline = Date.now() + HISTORY_TASK_REVEAL_LAYOUT_TIMEOUT_MS;
+    while (Date.now() <= deadline) {
+      const card = (els39.taskHistoryShell || els39.taskList)?.querySelector?.(selector);
+      const groupItems = card instanceof HTMLElement ? card.closest("[data-task-group]")?.querySelector(".task-group-items-expanded") : null;
+      if (historyTaskRevealLayoutReady({
+        cardFound: card instanceof HTMLElement,
+        groupRenderComplete: groupItems instanceof HTMLElement && groupItems.dataset.renderComplete === "true",
+        groupLayoutStable: groupItems instanceof HTMLElement && groupItems.style.maxHeight === "none"
+      }) && card instanceof HTMLElement) {
+        card.scrollIntoView({
+          block: "center",
+          inline: "nearest",
+          behavior: "auto"
+        });
+        card.focus({ preventScroll: true });
+        return true;
+      }
+      await new Promise((resolve) => requestAnimationFrame(() => resolve()));
+    }
+    return false;
+  }
+  async function revealHistoryTaskInSidebar(task) {
+    const taskId = String(task?.task_id || "");
+    if (!taskId) return false;
+    const sequence = ++state30.historyTaskRevealSeq;
+    const destination = historyTaskRevealDestination(task);
+    const reveal = {
+      taskId,
+      task,
+      kind: destination.kind,
+      groupKey: destination.groupKey,
+      ready: false,
+      groupTasks: [],
+      loadedCount: 0
+    };
+    state30.historyTaskReveal = reveal;
+    try {
+      await refreshTasks();
+    } catch (error) {
+      console.warn(error);
+    }
+    if (sequence !== state30.historyTaskRevealSeq || state30.historyTaskReveal !== reveal) return false;
+    if (reveal.kind === "group") {
+      try {
+        const located = await loadSidebarTaskGroupThroughTarget(reveal);
+        if (!located) activateTransientHistoryTaskReveal(reveal);
+      } catch (error) {
+        console.warn(error);
+        activateTransientHistoryTaskReveal(reveal);
+      }
+    } else {
+      activateTransientHistoryTaskReveal(reveal);
+    }
+    if (sequence !== state30.historyTaskRevealSeq || state30.historyTaskReveal !== reveal) return false;
+    legacyMethod42("setExpandedTaskGroupKey", reveal.groupKey, { immediate: true });
+    state30.expandedTaskGroupAnimationPending = false;
+    state30.tasksRenderKey = null;
+    renderTasks8();
+    return scrollHistoryTaskCardIntoView(taskId);
   }
   async function refreshTasksAfterDeletion3() {
     await refreshTasks();
   }
   async function applyTaskUpdate(task) {
-    const previousTask = state29.tasks.find((item) => String(item?.task_id || "") === String(task?.task_id || ""));
+    const previousTask = state30.tasks.find((item) => String(item?.task_id || "") === String(task?.task_id || ""));
     const movedFromActiveToHistory = Boolean(
       previousTask && ["submitting", "queued", "running"].includes(String(previousTask.status || "")) && !["submitting", "queued", "running"].includes(String(task?.status || ""))
     );
     if (!updateTaskInState4(task)) return;
-    if (String(task.task_id) === String(state29.selectedTaskId) && taskHasViewableUpdate2(task)) {
+    if (String(task.task_id) === String(state30.selectedTaskId) && taskHasViewableUpdate2(task)) {
       void markTaskViewed2(task.task_id);
     }
     cleanupSessionSelections2();
@@ -48755,12 +53424,12 @@ ${galleryText}`;
     }
   }
   function currentTaskSearchQuery() {
-    return String(els38.taskSearch?.value || "").trim();
+    return String(els39.taskSearch?.value || "").trim();
   }
   function activeOrSelectedTask(task) {
     const taskId = String(task?.task_id || "");
     const status = String(task?.status || "");
-    return Boolean(taskId && (String(state29.selectedTaskId || "") === taskId || task?.local_pending || ["submitting", "queued", "running"].includes(status)));
+    return Boolean(taskId && (String(state30.selectedTaskId || "") === taskId || task?.local_pending || ["submitting", "queued", "running"].includes(status)));
   }
   function historyTaskSummaryToSidebarTask(task) {
     const size = String(task.size || "");
@@ -48793,13 +53462,13 @@ ${galleryText}`;
     };
   }
   function mergeTaskSearchHistoryResults(tasks, query) {
-    const previousResultIds = new Set((state29.taskSearchHistoryResultIds || []).map(String));
+    const previousResultIds = new Set((state30.taskSearchHistoryResultIds || []).map(String));
     const nextTasks = tasks.map(historyTaskSummaryToSidebarTask).filter((task) => task.task_id);
     const nextById = new Map(nextTasks.map((task) => [String(task.task_id), task]));
     const nextIds = new Set(nextById.keys());
     const merged = [];
     const seen = /* @__PURE__ */ new Set();
-    state29.tasks.forEach((task) => {
+    state30.tasks.forEach((task) => {
       const taskId = String(task?.task_id || "");
       if (!taskId) return;
       if (previousResultIds.has(taskId) && !nextIds.has(taskId) && !activeOrSelectedTask(task)) {
@@ -48817,21 +53486,21 @@ ${galleryText}`;
       if (seen.has(String(task.task_id))) return;
       merged.push(task);
     });
-    state29.tasks = merged;
-    state29.taskSearchHistoryResultIds = Array.from(nextIds);
-    state29.taskSearchHistoryResultQuery = normalizedTaskSearchResultQuery(query);
-    state29.tasksRenderKey = null;
+    state30.tasks = merged;
+    state30.taskSearchHistoryResultIds = Array.from(nextIds);
+    state30.taskSearchHistoryResultQuery = normalizedTaskSearchResultQuery(query);
+    state30.tasksRenderKey = null;
   }
   function clearTaskSearchHistoryResults() {
-    const previousResultIds = new Set((state29.taskSearchHistoryResultIds || []).map(String));
+    const previousResultIds = new Set((state30.taskSearchHistoryResultIds || []).map(String));
     if (!previousResultIds.size) return;
-    state29.tasks = state29.tasks.filter((task) => {
+    state30.tasks = state30.tasks.filter((task) => {
       const taskId = String(task?.task_id || "");
       return !previousResultIds.has(taskId) || activeOrSelectedTask(task);
     });
-    state29.taskSearchHistoryResultIds = [];
-    state29.taskSearchHistoryResultQuery = "";
-    state29.tasksRenderKey = null;
+    state30.taskSearchHistoryResultIds = [];
+    state30.taskSearchHistoryResultQuery = "";
+    state30.tasksRenderKey = null;
   }
   async function fetchTaskSearchHistoryResults(query, requestSeq) {
     const params = new URLSearchParams();
@@ -48841,14 +53510,14 @@ ${galleryText}`;
     const response = await fetch(`/api/task-history/tasks?${params.toString()}`);
     const data = await response.json().catch(() => ({}));
     if (!response.ok) throw new Error(data.detail || "Task history search failed");
-    if (requestSeq !== state29.taskSearchHistoryRequestSeq || currentTaskSearchQuery() !== query) return;
+    if (requestSeq !== state30.taskSearchHistoryRequestSeq || currentTaskSearchQuery() !== query) return;
     mergeTaskSearchHistoryResults(Array.isArray(data.tasks) ? data.tasks : [], query);
     renderTasks8({ preserveScroll: true });
   }
   async function syncTaskSearchHistoryResults2() {
     window.clearTimeout(taskSearchHistoryTimerId);
     const query = currentTaskSearchQuery();
-    const requestSeq = ++state29.taskSearchHistoryRequestSeq;
+    const requestSeq = ++state30.taskSearchHistoryRequestSeq;
     if (!query) {
       clearTaskSearchHistoryResults();
       renderTasks8({ preserveScroll: true });
@@ -48856,24 +53525,24 @@ ${galleryText}`;
     }
     taskSearchHistoryTimerId = window.setTimeout(() => {
       void fetchTaskSearchHistoryResults(query, requestSeq).catch((error) => {
-        if (requestSeq !== state29.taskSearchHistoryRequestSeq) return;
+        if (requestSeq !== state30.taskSearchHistoryRequestSeq) return;
         console.warn(error);
       });
     }, TASK_SEARCH_HISTORY_DEBOUNCE_MS);
   }
   async function renderSelectedTaskPreview(requestSeq = null) {
-    const selectedTask = state29.tasks.find((item) => String(item.task_id) === String(state29.selectedTaskId));
+    const selectedTask = state30.tasks.find((item) => String(item.task_id) === String(state30.selectedTaskId));
     if (selectedTask?.summary_only) {
       try {
         const detailedTask = await ensureSelectedTaskDetail(selectedTask.task_id);
-        if (requestSeq !== null && requestSeq !== state29.tasksRequestSeq) return;
+        if (requestSeq !== null && requestSeq !== state30.tasksRequestSeq) return;
         if (detailedTask) {
           renderPreview6(detailedTask);
           return;
         }
       } catch (error) {
         console.warn(error);
-        if (requestSeq !== null && requestSeq !== state29.tasksRequestSeq) return;
+        if (requestSeq !== null && requestSeq !== state30.tasksRequestSeq) return;
       }
     }
     renderPreview6();
@@ -48884,19 +53553,21 @@ ${galleryText}`;
       applyTasksSnapshot,
       applyTaskUpdate,
       loadMoreSidebarTaskGroup: loadMoreSidebarTaskGroup2,
+      revealHistoryTaskInSidebar,
+      scrollHistoryTaskCardIntoView,
       refreshTasksAfterDeletion: refreshTasksAfterDeletion3,
       syncTaskSearchHistoryResults: syncTaskSearchHistoryResults2
     });
   }
 
   // codex_image/webui/frontend/src/task-selection.ts
-  var bridge36 = getLegacyBridge();
-  var state30 = bridge36.state;
-  var els39 = bridge36.els;
+  var bridge37 = getLegacyBridge();
+  var state31 = bridge37.state;
+  var els40 = bridge37.els;
   var taskSelectionInitialized = false;
   var HISTORY_TASK_REUSE_HANDOFF_KEY = "codex-image-history-task-reuse-handoff";
   var selectedTaskDetailRequestSeq = 0;
-  function legacyMethod42(name, ...args) {
+  function legacyMethod43(name, ...args) {
     const method = getLegacyBridge().methods[name];
     if (typeof method !== "function") {
       throw new Error("Legacy method " + name + " is not initialized");
@@ -48904,66 +53575,75 @@ ${galleryText}`;
     return method(...args);
   }
   function setStatus21(message, type) {
-    legacyMethod42("setStatus", message, type);
+    legacyMethod43("setStatus", message, type);
   }
   function closePromptPopover8() {
-    legacyMethod42("closePromptPopover");
+    legacyMethod43("closePromptPopover");
   }
   function markTaskViewed3(taskId) {
-    return legacyMethod42("markTaskViewed", taskId);
+    return legacyMethod43("markTaskViewed", taskId);
   }
   function applyTaskToForm2(task, options = {}) {
-    legacyMethod42("applyTaskToForm", task, options);
+    legacyMethod43("applyTaskToForm", task, options);
   }
   function updateTaskSelectionVisuals3(taskId) {
-    legacyMethod42("updateTaskSelectionVisuals", taskId);
+    legacyMethod43("updateTaskSelectionVisuals", taskId);
   }
   function renderPreview7(task) {
-    legacyMethod42("renderPreview", task);
+    legacyMethod43("renderPreview", task);
   }
   function taskFailureMessage3(task) {
-    return legacyMethod42("taskFailureMessage", task);
+    return legacyMethod43("taskFailureMessage", task);
   }
   function taskRequestPreviewPayload2(task) {
-    return legacyMethod42("taskRequestPreviewPayload", task);
+    return legacyMethod43("taskRequestPreviewPayload", task);
   }
   function revokeUploadPreviewUrls2(sources) {
-    legacyMethod42("revokeUploadPreviewUrls", sources);
+    legacyMethod43("revokeUploadPreviewUrls", sources);
   }
   function renderImageStrip6() {
-    legacyMethod42("renderImageStrip");
+    legacyMethod43("renderImageStrip");
   }
   function updateRequestPreview12() {
-    legacyMethod42("updateRequestPreview");
+    legacyMethod43("updateRequestPreview");
   }
   function taskInputUrls2(task) {
-    return legacyMethod42("taskInputUrls", task);
+    return legacyMethod43("taskInputUrls", task);
+  }
+  function taskOutputUrls4(task) {
+    return legacyMethod43("taskOutputUrls", task);
   }
   function uploadSource3(file) {
-    return legacyMethod42("uploadSource", file);
+    return legacyMethod43("uploadSource", file);
   }
   function gallerySource4(item) {
-    return legacyMethod42("gallerySource", item);
+    return legacyMethod43("gallerySource", item);
   }
   function assetSource2(item) {
-    return legacyMethod42("assetSource", item);
+    return legacyMethod43("assetSource", item);
   }
   function inspectTaskParameters(task) {
-    legacyMethod42("inspectTaskParameters", task);
+    legacyMethod43("inspectTaskParameters", task);
   }
   function clearTaskParameterInspection() {
-    legacyMethod42("clearTaskParameterInspection");
+    legacyMethod43("clearTaskParameterInspection");
+  }
+  function renderTasks9(options = {}) {
+    legacyMethod43("renderTasks", options);
+  }
+  function revealHistoryTaskInSidebar2(task) {
+    return legacyMethod43("revealHistoryTaskInSidebar", task);
   }
   function applyTaskToFormWithOutputLock(task) {
-    const outputSettingsLocked = Boolean(legacyMethod42("isOutputSettingsLocked"));
-    const outputView = taskOutputSettingsView(task, String(state30.selectedModelId || ""), outputSettingsLocked);
+    const outputSettingsLocked = Boolean(legacyMethod43("isOutputSettingsLocked"));
+    const outputView = taskOutputSettingsView(task, String(state31.selectedModelId || ""), outputSettingsLocked);
     applyTaskToForm2(task, {
       preserveOutputSettings: outputView !== "editor",
       preserveComposer: false
     });
     if (outputView === "locked-summary") {
       clearTaskParameterInspection();
-      legacyMethod42("showTaskOutputSettings", task);
+      legacyMethod43("showTaskOutputSettings", task);
       return;
     }
     if (outputView === "parameter-inspector") {
@@ -48971,16 +53651,16 @@ ${galleryText}`;
       return;
     }
     clearTaskParameterInspection();
-    legacyMethod42("showLockedOutputSettings");
+    legacyMethod43("showLockedOutputSettings");
   }
   function selectedTaskInputRestoreCurrent(taskId, restoreSeq) {
     if (restoreSeq == null) return true;
-    return state30.taskInputRestoreSeq === restoreSeq && String(state30.selectedTaskId) === String(taskId);
+    return state31.taskInputRestoreSeq === restoreSeq && String(state31.selectedTaskId) === String(taskId);
   }
   function applySelectedTaskRequestPreview(task) {
     const requestPayload = taskRequestPreviewPayload2(task);
-    if (requestPayload && els39.requestJson) {
-      els39.requestJson.textContent = JSON.stringify(requestPayload, null, 2);
+    if (requestPayload && els40.requestJson) {
+      els40.requestJson.textContent = JSON.stringify(requestPayload, null, 2);
     }
   }
   async function fetchEditingGuidanceFile(url, filename) {
@@ -49019,16 +53699,11 @@ ${galleryText}`;
       }
     }
     const submissionFile = restored.activeGuidance === "instruction-marks" && restored.instructionMarksFile ? restored.instructionMarksFile : restored.baseFile;
-    const primary = {
-      ...uploadSource3(submissionFile),
-      ...restored,
-      file: submissionFile,
-      edited: true
-    };
+    const primary = { ...uploadSource3(submissionFile), ...restored, file: submissionFile, edited: true };
     return [primary, ...sources.slice(1)];
   }
   function showEditingGuidanceRestoreError() {
-    const code = state30.images?.[0]?.restoreError;
+    const code = state31.images?.[0]?.restoreError;
     if (!code) return false;
     setStatus21(`${translate("imageEditor.loadForEditFailed")} (${code})`, "error");
     return true;
@@ -49043,8 +53718,8 @@ ${galleryText}`;
       revokeUploadPreviewUrls2(restoredSources);
       return false;
     }
-    revokeUploadPreviewUrls2(state30.images);
-    state30.images = restoredSources.filter(Boolean);
+    revokeUploadPreviewUrls2(state31.images);
+    state31.images = restoredSources.filter(Boolean);
     renderImageStrip6();
     updateRequestPreview12();
     return true;
@@ -49055,7 +53730,7 @@ ${galleryText}`;
     renderPreview7(task);
     if (task.status === "failed") {
       setStatus21(taskFailureMessage3(task) || translate("taskActions.failedFallback"), "error");
-    } else if (task.status !== "running") {
+    } else if (!["running", "cancelling"].includes(String(task.status || ""))) {
       setStatus21(formatTranslation("status.loadedTask", { taskId }), "ok");
     }
   }
@@ -49082,25 +53757,25 @@ ${galleryText}`;
     if (!response.ok) throw new Error(data.detail || translate("notifications.taskMissing"));
     return data.task;
   }
-  async function ensureSelectedTaskDetail2(taskId = state30.selectedTaskId) {
+  async function ensureSelectedTaskDetail2(taskId = state31.selectedTaskId) {
     const normalizedTaskId = String(taskId || "").trim();
     if (!normalizedTaskId) return null;
-    const task = state30.tasks.find((item) => String(item.task_id) === normalizedTaskId);
+    const task = state31.tasks.find((item) => String(item.task_id) === normalizedTaskId);
     if (!task) return null;
     if (!task.summary_only) return task;
     const detailSeq = ++selectedTaskDetailRequestSeq;
     const fullTask = await loadFullTaskDetail(normalizedTaskId);
     if (detailSeq !== selectedTaskDetailRequestSeq) return null;
-    if (String(state30.selectedTaskId) !== normalizedTaskId) return null;
+    if (String(state31.selectedTaskId) !== normalizedTaskId) return null;
     return replaceSelectedTaskDetail(normalizedTaskId, fullTask);
   }
   function replaceSelectedTaskDetail(taskId, task) {
     if (!task?.task_id) return task;
-    const index = state30.tasks.findIndex((item) => String(item.task_id) === String(taskId));
+    const index = state31.tasks.findIndex((item) => String(item.task_id) === String(taskId));
     if (index >= 0) {
-      state30.tasks.splice(index, 1, task);
+      state31.tasks.splice(index, 1, task);
     } else {
-      state30.tasks.unshift(task);
+      state31.tasks.unshift(task);
     }
     return task;
   }
@@ -49109,13 +53784,13 @@ ${galleryText}`;
     const restoreSeq = options.restoreSeq;
     const referenceFiles = Array.isArray(task?.reference_files) ? task.reference_files : [];
     if (!selectedTaskInputRestoreCurrent(taskId, restoreSeq)) return false;
-    state30.referenceFiles = [];
-    legacyMethod42("renderReferenceFiles");
+    state31.referenceFiles = [];
+    legacyMethod43("renderReferenceFiles");
     if (!referenceFiles.length) {
       updateRequestPreview12();
       return true;
     }
-    state30.referenceFiles = referenceFiles.map((item) => ({
+    state31.referenceFiles = referenceFiles.map((item) => ({
       kind: "asset",
       id: String(item?.id || item?.reference_file_id || ""),
       filename: String(item?.filename || ""),
@@ -49124,7 +53799,7 @@ ${galleryText}`;
       family: item?.family,
       missing: Boolean(item?.missing)
     })).filter((item) => item.id && ["pdf", "spreadsheet", "document", "text"].includes(item.family));
-    legacyMethod42("renderReferenceFiles");
+    legacyMethod43("renderReferenceFiles");
     updateRequestPreview12();
     return true;
   }
@@ -49212,11 +53887,20 @@ ${galleryText}`;
   }
   async function selectTask2(taskId) {
     closePromptPopover8();
-    state30.selectedTaskId = taskId;
-    let task = state30.tasks.find((item) => String(item.task_id) === String(taskId));
+    const leavingHistoryReveal = Boolean(
+      state31.historyTaskReveal && String(state31.historyTaskReveal.taskId || "") !== String(taskId || "")
+    );
+    if (leavingHistoryReveal) {
+      state31.historyTaskReveal = null;
+      state31.historyTaskRevealSeq += 1;
+      state31.tasksRenderKey = null;
+    }
+    state31.selectedTaskId = taskId;
+    if (leavingHistoryReveal) renderTasks9({ preserveScroll: true });
+    let task = state31.tasks.find((item) => String(item.task_id) === String(taskId));
     if (!task) return;
     if (task.summary_only) {
-      const detailSeq = ++state30.taskInputRestoreSeq;
+      const detailSeq = ++state31.taskInputRestoreSeq;
       updateTaskSelectionVisuals3(taskId);
       setStatus21(translate("status.loadingHistoryInputs"), "");
       try {
@@ -49229,7 +53913,7 @@ ${galleryText}`;
         return;
       }
     }
-    const restoreSeq = ++state30.taskInputRestoreSeq;
+    const restoreSeq = ++state31.taskInputRestoreSeq;
     void markTaskViewed3(taskId);
     applyTaskToFormWithOutputLock(task);
     await restoreTaskReferenceFiles(task, { taskId, restoreSeq });
@@ -49239,16 +53923,48 @@ ${galleryText}`;
       await restoreTaskInputs(task, { taskId, restoreSeq });
     } catch (error) {
       if (!selectedTaskInputRestoreCurrent(taskId, restoreSeq)) return;
-      revokeUploadPreviewUrls2(state30.images);
-      state30.images = [];
+      revokeUploadPreviewUrls2(state31.images);
+      state31.images = [];
       renderImageStrip6();
       setStatus21(error.message, "error");
       return;
     }
     if (!selectedTaskInputRestoreCurrent(taskId, restoreSeq)) return;
     applySelectedTaskRequestPreview(task);
-    if (task.status !== "running") renderSelectedTask(task, taskId);
+    if (!["running", "cancelling"].includes(String(task.status || ""))) renderSelectedTask(task, taskId);
     showEditingGuidanceRestoreError();
+  }
+  function mainLightboxTaskIds() {
+    const root = els40.taskHistoryShell || els40.sidebarContent || els40.taskList;
+    if (!root) return [];
+    const seen = /* @__PURE__ */ new Set();
+    return Array.from(root.querySelectorAll(".task-card[data-task-id]")).map((card) => String(card.dataset.taskId || "")).filter((taskId) => {
+      if (!taskId || seen.has(taskId)) return false;
+      seen.add(taskId);
+      const task = state31.tasks.find((item) => String(item.task_id) === taskId);
+      if (!task) return false;
+      return taskOutputUrls4(task).length > 0 || Array.isArray(task.thumbnail_urls) && task.thumbnail_urls.length > 0 || Number(task.generated_count || 0) > 0;
+    });
+  }
+  async function openMainTaskLightboxByDirection(direction, context) {
+    const taskIds = mainLightboxTaskIds();
+    const currentTaskId = String(context?.taskId || state31.selectedTaskId || "");
+    const currentIndex = taskIds.indexOf(currentTaskId);
+    if (currentIndex < 0) return;
+    const step = direction === "previous" ? -1 : 1;
+    for (let index = currentIndex + step; index >= 0 && index < taskIds.length; index += step) {
+      const taskId = taskIds[index];
+      await selectTask2(taskId);
+      const task = state31.tasks.find((item) => String(item.task_id) === taskId);
+      const urls = taskOutputUrls4(task);
+      if (!urls.length) continue;
+      const imageIndex = Math.min(Math.max(0, Number(context?.imageIndex) || 0), urls.length - 1);
+      window.openLightbox?.(urls[imageIndex], urls, imageIndex, {
+        taskId,
+        onTaskNavigate: openMainTaskLightboxByDirection
+      });
+      return;
+    }
   }
   async function restoreHistoryTaskReuseHandoff() {
     let raw = "";
@@ -49264,9 +53980,9 @@ ${galleryText}`;
         task = await loadFullTaskDetail(taskId);
       }
       closePromptPopover8();
-      state30.selectedTaskId = taskId;
-      replaceSelectedTaskDetail(taskId, task);
-      const restoreSeq = ++state30.taskInputRestoreSeq;
+      state31.selectedTaskId = taskId;
+      await revealHistoryTaskInSidebar2(task);
+      const restoreSeq = ++state31.taskInputRestoreSeq;
       applyTaskToFormWithOutputLock(task);
       await restoreTaskReferenceFiles(task, { taskId, restoreSeq });
       if (!selectedTaskInputRestoreCurrent(taskId, restoreSeq)) return;
@@ -49275,8 +53991,8 @@ ${galleryText}`;
         await restoreTaskInputs(task, { taskId, restoreSeq });
       } catch (error) {
         if (!selectedTaskInputRestoreCurrent(taskId, restoreSeq)) return;
-        revokeUploadPreviewUrls2(state30.images);
-        state30.images = [];
+        revokeUploadPreviewUrls2(state31.images);
+        state31.images = [];
         renderImageStrip6();
         setStatus21(error.message || translate("referenceCollector.addFailed"), "error");
         return;
@@ -49296,14 +54012,15 @@ ${galleryText}`;
     taskSelectionInitialized = true;
     Object.assign(getLegacyBridge().methods, {
       ensureSelectedTaskDetail: ensureSelectedTaskDetail2,
+      openMainTaskLightboxByDirection,
       selectTask: selectTask2,
       restoreHistoryTaskReuseHandoff
     });
   }
 
   // codex_image/webui/frontend/src/overlay-popovers.ts
-  var bridge37 = getLegacyBridge();
-  var els40 = bridge37.els;
+  var bridge38 = getLegacyBridge();
+  var els41 = bridge38.els;
   var overlayPopoversInitialized = false;
   var overlayPopoverEventsBound = false;
   var confirmPopoverEl = null;
@@ -49318,7 +54035,7 @@ ${galleryText}`;
     optimizedPrompt: "",
     copyTimerId: null
   };
-  function legacyMethod43(name, ...args) {
+  function legacyMethod44(name, ...args) {
     const method = getLegacyBridge().methods[name];
     if (typeof method !== "function") {
       throw new Error("Legacy method " + name + " is not initialized");
@@ -49326,52 +54043,52 @@ ${galleryText}`;
     return method(...args);
   }
   function escapeHtml20(value) {
-    return legacyMethod43("escapeHtml", value);
+    return legacyMethod44("escapeHtml", value);
   }
   function closeGalleryEditPopover4() {
-    legacyMethod43("closeGalleryEditPopover");
+    legacyMethod44("closeGalleryEditPopover");
   }
   function handlePromptDocumentClick2(event) {
-    legacyMethod43("handlePromptDocumentClick", event);
+    legacyMethod44("handlePromptDocumentClick", event);
   }
   function handleGalleryDocumentClick2(event) {
-    legacyMethod43("handleGalleryDocumentClick", event);
+    legacyMethod44("handleGalleryDocumentClick", event);
   }
   function closeCompressionPopover2() {
-    legacyMethod43("closeCompressionPopover");
+    legacyMethod44("closeCompressionPopover");
   }
   function handleImageEditorHistoryShortcut2(event) {
-    return legacyMethod43("handleImageEditorHistoryShortcut", event);
+    return legacyMethod44("handleImageEditorHistoryShortcut", event);
   }
   function hideMentionSuggest4() {
-    legacyMethod43("hideMentionSuggest");
+    legacyMethod44("hideMentionSuggest");
   }
   function hideColorSuggest5() {
-    legacyMethod43("hideColorSuggest");
+    legacyMethod44("hideColorSuggest");
   }
   function hidePromptSnippetSuggest4() {
-    legacyMethod43("hidePromptSnippetSuggest");
+    legacyMethod44("hidePromptSnippetSuggest");
   }
   function hidePromptSnippetSelectionButton4() {
-    legacyMethod43("hidePromptSnippetSelectionButton");
+    legacyMethod44("hidePromptSnippetSelectionButton");
   }
   function closePromptSnippetPopover4() {
-    legacyMethod43("closePromptSnippetPopover");
+    legacyMethod44("closePromptSnippetPopover");
   }
   function closeArchiveModal3() {
-    legacyMethod43("closeArchiveModal");
+    legacyMethod44("closeArchiveModal");
   }
   function closeImageEditor2() {
-    legacyMethod43("closeImageEditor");
+    legacyMethod44("closeImageEditor");
   }
   function closeGallery3() {
-    legacyMethod43("closeGallery");
+    legacyMethod44("closeGallery");
   }
   function closeApiSettingsModal2() {
-    legacyMethod43("closeApiSettingsModal");
+    legacyMethod44("closeApiSettingsModal");
   }
   function closePromptTemplateDrawer2() {
-    legacyMethod43("closePromptTemplateDrawer");
+    legacyMethod44("closePromptTemplateDrawer");
   }
   function bindOverlayPopoverEvents() {
     if (overlayPopoverEventsBound) return;
@@ -49402,13 +54119,14 @@ ${galleryText}`;
     const message = options.message ? `<p class="confirm-popover-message">${escapeHtml20(options.message)}</p>` : "";
     const detail = options.detail ? `<div class="confirm-popover-detail">${escapeHtml20(options.detail)}</div>` : "";
     const confirmText = options.confirmText || translate("action.confirm");
+    const confirmClass = options.danger === false ? "ghost-button text-sm confirm-popover-confirm" : "ghost-button text-sm danger-button confirm-popover-confirm";
     popover.innerHTML = `
     <div class="confirm-popover-title">${escapeHtml20(options.title || translate("action.confirmQuestion"))}</div>
     ${message}
     ${detail}
     <div class="confirm-popover-actions">
       <button class="ghost-button text-sm" type="button" data-confirm-popover-cancel>${escapeHtml20(translate("action.cancel"))}</button>
-      <button class="ghost-button text-sm danger-button confirm-popover-confirm" type="button" data-confirm-popover-confirm>${escapeHtml20(confirmText)}</button>
+      <button class="${confirmClass}" type="button" data-confirm-popover-confirm>${escapeHtml20(confirmText)}</button>
     </div>
   `;
     popover.querySelector("[data-confirm-popover-cancel]")?.addEventListener("click", closeConfirmPopover4);
@@ -49629,8 +54347,8 @@ ${galleryText}`;
         closeConfirmPopover4();
       }
     }
-    if (!els40.compressionPopover || els40.compressionPopover.classList.contains("hidden")) return;
-    if (els40.compressionPopover.contains(target) || els40.outputFormatField?.contains(target)) return;
+    if (!els41.compressionPopover || els41.compressionPopover.classList.contains("hidden")) return;
+    if (els41.compressionPopover.contains(target) || els41.outputFormatField?.contains(target)) return;
     closeCompressionPopover2();
   }
   function handleDocumentKeydown(event) {
@@ -49687,23 +54405,120 @@ ${galleryText}`;
     return isStandaloneWebApp() ? standaloneTitle : fullTitle;
   }
 
-  // codex_image/webui/frontend/src/shell-ui.ts
+  // codex_image/webui/frontend/src/theme-preference.ts
   var THEME_STORAGE_KEY = "codex-image-theme-preference";
-  var THEME_OPTIONS = /* @__PURE__ */ new Set(["system", "light", "dark"]);
+  var themeTransitionFrame = null;
+  function normalizeThemePreference(value) {
+    return value === "light" || value === "dark" ? value : "system";
+  }
+  function readThemePreference(storage = localStorage) {
+    try {
+      return normalizeThemePreference(
+        storage.getItem(THEME_STORAGE_KEY)
+      );
+    } catch {
+      return "system";
+    }
+  }
+  function persistThemePreference(preference, storage = localStorage) {
+    try {
+      storage.setItem(THEME_STORAGE_KEY, preference);
+    } catch {
+    }
+  }
+  function resolveEffectiveTheme(preference, systemDark = window.matchMedia?.("(prefers-color-scheme: dark)")?.matches === true) {
+    if (preference === "light" || preference === "dark") {
+      return preference;
+    }
+    return systemDark ? "dark" : "light";
+  }
+  function lockThemeTransitions(root) {
+    root.classList.add("theme-transition-lock");
+    const requestFrame = window.requestAnimationFrame?.bind(window);
+    if (!requestFrame) {
+      root.classList.remove("theme-transition-lock");
+      return;
+    }
+    if (themeTransitionFrame !== null) {
+      window.cancelAnimationFrame?.(themeTransitionFrame);
+    }
+    themeTransitionFrame = requestFrame(() => {
+      themeTransitionFrame = requestFrame(() => {
+        root.classList.remove("theme-transition-lock");
+        themeTransitionFrame = null;
+      });
+    });
+  }
+  function applyDocumentTheme(preference, root = document.documentElement, systemDark = window.matchMedia?.("(prefers-color-scheme: dark)")?.matches === true) {
+    const normalized = normalizeThemePreference(preference);
+    const effective = resolveEffectiveTheme(
+      normalized,
+      systemDark
+    );
+    if (root.dataset.theme !== effective) {
+      lockThemeTransitions(root);
+    }
+    root.dataset.theme = effective;
+    root.dataset.themePreference = normalized;
+    return effective;
+  }
+  function syncThemeSwitcher(root, preference) {
+    root?.querySelectorAll("[data-theme-option]").forEach((button) => {
+      const active = button.dataset.themeOption === preference;
+      button.classList.toggle("active", active);
+      button.setAttribute(
+        "aria-pressed",
+        active ? "true" : "false"
+      );
+    });
+  }
+  function bindThemeSwitcher(root, onSelect) {
+    if (!root) return () => void 0;
+    const handleClick = (event) => {
+      const target = event.target;
+      const button = target?.closest(
+        "[data-theme-option]"
+      );
+      if (!button || !root.contains(button)) return;
+      const value = button.dataset.themeOption;
+      if (value !== "system" && value !== "light" && value !== "dark") {
+        return;
+      }
+      onSelect(value);
+    };
+    root.addEventListener("click", handleClick);
+    return () => root.removeEventListener("click", handleClick);
+  }
+  function bindSystemThemePreference(onChange) {
+    const media = window.matchMedia?.(
+      "(prefers-color-scheme: dark)"
+    );
+    if (!media) return () => void 0;
+    const handleChange = (event) => {
+      onChange(event.matches);
+    };
+    if (media.addEventListener) {
+      media.addEventListener("change", handleChange);
+      return () => media.removeEventListener("change", handleChange);
+    }
+    media.addListener?.(handleChange);
+    return () => media.removeListener?.(handleChange);
+  }
+
+  // codex_image/webui/frontend/src/shell-ui.ts
   var SIDEBAR_WIDTH_STORAGE_KEY = "codex-image-sidebar-width";
   var SIDEBAR_MIN_WIDTH = 280;
   var SIDEBAR_MAX_WIDTH = 520;
   var SIDEBAR_DEFAULT_WIDTH = 347;
   var COMPACT_SHELL_MAX_WIDTH = 1180;
-  var bridge38 = getLegacyBridge();
-  var state31 = bridge38.state;
-  var els41 = bridge38.els;
+  var bridge39 = getLegacyBridge();
+  var state32 = bridge39.state;
+  var els42 = bridge39.els;
   var shellUiInitialized = false;
   var shellUiEventsBound = false;
   var sidebarResizeFrameId = null;
   var sidebarResizePendingWidth = null;
-  var themeTransitionLockFrameId = null;
-  function legacyMethod44(name, ...args) {
+  function legacyMethod45(name, ...args) {
     const method = getLegacyBridge().methods[name];
     if (typeof method !== "function") {
       throw new Error("Legacy method " + name + " is not initialized");
@@ -49711,65 +54526,65 @@ ${galleryText}`;
     return method(...args);
   }
   function formatTaskStatus4(task) {
-    return legacyMethod44("formatTaskStatus", task);
+    return legacyMethod45("formatTaskStatus", task);
   }
   function closePromptPopover10() {
-    legacyMethod44("closePromptPopover");
+    legacyMethod45("closePromptPopover");
   }
   function closePromptSnippetPopover5() {
-    legacyMethod44("closePromptSnippetPopover");
+    legacyMethod45("closePromptSnippetPopover");
   }
   function closeArchiveModal4() {
-    legacyMethod44("closeArchiveModal");
+    legacyMethod45("closeArchiveModal");
   }
   function closeGallery4() {
-    legacyMethod44("closeGallery");
+    legacyMethod45("closeGallery");
   }
   function closeImageEditor3() {
-    legacyMethod44("closeImageEditor");
+    legacyMethod45("closeImageEditor");
   }
   function revokeUploadPreviewUrls3(sources) {
-    legacyMethod44("revokeUploadPreviewUrls", sources);
+    legacyMethod45("revokeUploadPreviewUrls", sources);
   }
   function finishBatchMarqueeSelection2() {
-    legacyMethod44("finishBatchMarqueeSelection");
+    legacyMethod45("finishBatchMarqueeSelection");
   }
   function setPromptText3(value) {
-    legacyMethod44("setPromptText", value);
+    legacyMethod45("setPromptText", value);
   }
   function setMode6(mode) {
-    legacyMethod44("setMode", mode);
+    legacyMethod45("setMode", mode);
   }
   function updateSizeFromPreset2() {
-    legacyMethod44("updateSizeFromPreset");
+    legacyMethod45("updateSizeFromPreset");
   }
   function updatePromptCount7() {
-    legacyMethod44("updatePromptCount");
+    legacyMethod45("updatePromptCount");
   }
   function updateQuantity3() {
-    legacyMethod44("updateQuantity");
+    legacyMethod45("updateQuantity");
   }
   function updateCompression3() {
-    legacyMethod44("updateCompression");
+    legacyMethod45("updateCompression");
   }
   function renderImageStrip7() {
-    legacyMethod44("renderImageStrip");
+    legacyMethod45("renderImageStrip");
   }
-  function renderTasks9() {
-    legacyMethod44("renderTasks");
+  function renderTasks10() {
+    legacyMethod45("renderTasks");
   }
   function renderPreview8() {
-    legacyMethod44("renderPreview");
+    legacyMethod45("renderPreview");
   }
   function updateRequestPreview13() {
-    legacyMethod44("updateRequestPreview");
+    legacyMethod45("updateRequestPreview");
   }
   function clearTaskParameterInspection2() {
-    legacyMethod44("clearTaskParameterInspection");
+    legacyMethod45("clearTaskParameterInspection");
   }
   function handleShellLocaleChange() {
-    if (!els41.statusText) return;
-    const current = String(els41.statusText.textContent || "").trim();
+    if (!els42.statusText) return;
+    const current = String(els42.statusText.textContent || "").trim();
     const waitingLabels = [translate("status.waiting", "zh-CN"), translate("status.waiting", "en")];
     if (waitingLabels.includes(current)) {
       setStatus22(translate("status.waiting"), "");
@@ -49778,76 +54593,51 @@ ${galleryText}`;
   function bindShellUiEvents() {
     if (shellUiEventsBound) return;
     shellUiEventsBound = true;
-    els41.themeSwitcher?.addEventListener("click", (event) => {
-      const button = event.target.closest("[data-theme-option]");
-      if (!button) return;
-      applyThemePreference(button.dataset.themeOption || "system");
-    });
-    state31.themeSystemQuery = window.matchMedia?.("(prefers-color-scheme: dark)");
-    state31.themeSystemQuery?.addEventListener?.("change", handleThemeSystemChange);
+    bindThemeSwitcher(
+      els42.themeSwitcher,
+      (preference) => applyThemePreference(preference)
+    );
+    bindSystemThemePreference(handleThemeSystemChange);
     document.addEventListener(LOCALE_CHANGE_EVENT, handleShellLocaleChange);
-    if (els41.copyJsonButton) {
-      els41.copyJsonButton.addEventListener("click", copyJson);
+    if (els42.copyJsonButton) {
+      els42.copyJsonButton.addEventListener("click", copyJson);
     }
-    els41.newTaskButton?.addEventListener("click", resetForm);
-    els41.sidebarResizeHandle?.addEventListener("pointerdown", startSidebarResize);
-    els41.sidebarResizeHandle?.addEventListener("keydown", handleSidebarResizeKeydown);
-    els41.sidebarResizeHandle?.addEventListener("dblclick", resetSidebarWidth);
+    els42.newTaskButton?.addEventListener("click", resetForm);
+    els42.sidebarResizeHandle?.addEventListener("pointerdown", startSidebarResize);
+    els42.sidebarResizeHandle?.addEventListener("keydown", handleSidebarResizeKeydown);
+    els42.sidebarResizeHandle?.addEventListener("dblclick", resetSidebarWidth);
     syncSidebarResizeHandleAria();
   }
-  function normalizeThemePreference(value) {
-    return THEME_OPTIONS.has(value) ? value : "system";
+  function normalizeThemePreference2(value) {
+    return normalizeThemePreference(value);
   }
-  function resolveEffectiveTheme(preference = state31.themePreference) {
-    if (preference === "dark" || preference === "light") return preference;
-    return window.matchMedia?.("(prefers-color-scheme: dark)")?.matches ? "dark" : "light";
+  function resolveEffectiveTheme2(preference = state32.themePreference) {
+    return resolveEffectiveTheme(
+      normalizeThemePreference2(preference)
+    );
   }
   function updateThemeSwitcher() {
-    els41.themeSwitcher?.querySelectorAll("[data-theme-option]").forEach((button) => {
-      const active = button.dataset.themeOption === state31.themePreference;
-      button.classList.toggle("active", active);
-      button.setAttribute("aria-pressed", active ? "true" : "false");
-    });
-  }
-  function lockThemeTransitions() {
-    document.documentElement.classList.add("theme-transition-lock");
-    if (themeTransitionLockFrameId !== null) {
-      cancelAnimationFrame(themeTransitionLockFrameId);
-    }
-    themeTransitionLockFrameId = requestAnimationFrame(() => {
-      themeTransitionLockFrameId = requestAnimationFrame(() => {
-        document.documentElement.classList.remove("theme-transition-lock");
-        themeTransitionLockFrameId = null;
-      });
-    });
+    syncThemeSwitcher(
+      els42.themeSwitcher,
+      state32.themePreference
+    );
   }
   function applyThemePreference(preference, { persist = true } = {}) {
-    state31.themePreference = normalizeThemePreference(preference);
-    const effectiveTheme = resolveEffectiveTheme(state31.themePreference);
-    if (document.documentElement.dataset.theme !== effectiveTheme) {
-      lockThemeTransitions();
-    }
-    document.documentElement.dataset.theme = effectiveTheme;
-    document.documentElement.dataset.themePreference = state31.themePreference;
+    state32.themePreference = normalizeThemePreference2(preference);
+    applyDocumentTheme(state32.themePreference);
     if (persist) {
-      try {
-        localStorage.setItem(THEME_STORAGE_KEY, state31.themePreference);
-      } catch {
-      }
+      persistThemePreference(state32.themePreference);
     }
     updateThemeSwitcher();
   }
   function restoreThemePreference() {
-    let saved = "system";
-    try {
-      saved = localStorage.getItem(THEME_STORAGE_KEY) || "system";
-    } catch {
-      saved = "system";
-    }
-    applyThemePreference(saved, { persist: false });
+    applyThemePreference(
+      readThemePreference(),
+      { persist: false }
+    );
   }
   function handleThemeSystemChange() {
-    if (state31.themePreference === "system") {
+    if (state32.themePreference === "system") {
       applyThemePreference("system", { persist: false });
     }
   }
@@ -49871,7 +54661,7 @@ ${galleryText}`;
     return Math.min(sidebarMaxWidth(), Math.max(SIDEBAR_MIN_WIDTH, width));
   }
   function sidebarWidthFromCss() {
-    const widthOwner = els41.sidebar || document.documentElement;
+    const widthOwner = els42.sidebar || document.documentElement;
     const inlineWidth = Number.parseInt(widthOwner.style.getPropertyValue("--sidebar-width") || "", 10);
     if (!Number.isNaN(inlineWidth)) return clampSidebarWidth(inlineWidth);
     const tokenWidth = Number.parseInt(getComputedStyle(widthOwner).getPropertyValue("--sidebar-width") || "", 10);
@@ -49881,7 +54671,7 @@ ${galleryText}`;
     return sidebarWidthFromCss() ?? SIDEBAR_DEFAULT_WIDTH;
   }
   function syncSidebarResizeHandleAria(width = null) {
-    const handle = els41.sidebarResizeHandle;
+    const handle = els42.sidebarResizeHandle;
     if (!handle) return;
     const currentWidth = width !== null ? width : currentSidebarWidth();
     handle.setAttribute("aria-valuemin", String(SIDEBAR_MIN_WIDTH));
@@ -49890,7 +54680,7 @@ ${galleryText}`;
   }
   function applySidebarWidth(width, { persist = true } = {}) {
     const nextWidth = clampSidebarWidth(width);
-    (els41.sidebar || document.documentElement).style.setProperty("--sidebar-width", `${nextWidth}px`);
+    (els42.sidebar || document.documentElement).style.setProperty("--sidebar-width", `${nextWidth}px`);
     syncSidebarResizeHandleAria(nextWidth);
     if (persist) {
       try {
@@ -49922,48 +54712,48 @@ ${galleryText}`;
     applySidebarWidth(width, { persist: true });
   }
   function startSidebarResize(event) {
-    if (!els41.sidebar || event.button !== 0) return;
+    if (!els42.sidebar || event.button !== 0) return;
     event.preventDefault();
     const currentWidth = currentSidebarWidth();
-    state31.sidebarResize = {
+    state32.sidebarResize = {
       pointerId: event.pointerId,
       startX: event.clientX,
       startWidth: currentWidth,
       lastWidth: currentWidth
     };
-    els41.sidebar.classList.add("resizing");
-    if (els41.sidebarResizeShield) {
-      els41.sidebarResizeShield.hidden = false;
+    els42.sidebar.classList.add("resizing");
+    if (els42.sidebarResizeShield) {
+      els42.sidebarResizeShield.hidden = false;
     }
-    els41.sidebarResizeHandle?.setPointerCapture?.(event.pointerId);
+    els42.sidebarResizeHandle?.setPointerCapture?.(event.pointerId);
     window.addEventListener("pointermove", updateSidebarResize);
     window.addEventListener("pointerup", finishSidebarResize);
     window.addEventListener("pointercancel", finishSidebarResize);
   }
   function updateSidebarResize(event) {
-    const resize = state31.sidebarResize;
+    const resize = state32.sidebarResize;
     if (!resize || event.pointerId !== resize.pointerId) return;
     event.preventDefault();
     resize.lastWidth = resize.startWidth + event.clientX - resize.startX;
     scheduleSidebarResizeWidth(resize.lastWidth);
   }
   function finishSidebarResize(event) {
-    const resize = state31.sidebarResize;
+    const resize = state32.sidebarResize;
     if (!resize || event.pointerId !== resize.pointerId) return;
     const nextWidth = resize.lastWidth ?? resize.startWidth;
-    state31.sidebarResize = null;
-    els41.sidebar?.classList.remove("resizing");
-    if (els41.sidebarResizeShield) {
-      els41.sidebarResizeShield.hidden = true;
+    state32.sidebarResize = null;
+    els42.sidebar?.classList.remove("resizing");
+    if (els42.sidebarResizeShield) {
+      els42.sidebarResizeShield.hidden = true;
     }
-    els41.sidebarResizeHandle?.releasePointerCapture?.(event.pointerId);
+    els42.sidebarResizeHandle?.releasePointerCapture?.(event.pointerId);
     window.removeEventListener("pointermove", updateSidebarResize);
     window.removeEventListener("pointerup", finishSidebarResize);
     window.removeEventListener("pointercancel", finishSidebarResize);
     flushSidebarResizeWidth(nextWidth);
   }
   function handleSidebarResizeKeydown(event) {
-    if (!els41.sidebar) return;
+    if (!els42.sidebar) return;
     const step = event.shiftKey ? 32 : 16;
     const currentWidth = currentSidebarWidth();
     if (event.key === "ArrowLeft") {
@@ -49981,9 +54771,9 @@ ${galleryText}`;
     }
   }
   function updateDocumentTitle2() {
-    const summary = state31.queue.summary || {};
-    const waitingCount = Number(summary.waiting_count ?? state31.queue.waiting.length ?? 0);
-    const runningCount = Number(summary.running_count ?? state31.queue.running.length ?? 0);
+    const summary = state32.queue.summary || {};
+    const waitingCount = Number(summary.waiting_count ?? state32.queue.waiting.length ?? 0);
+    const runningCount = Number(summary.running_count ?? state32.queue.running.length ?? 0);
     const total = waitingCount + runningCount;
     let status = "";
     if (runningCount > 0) {
@@ -49991,7 +54781,7 @@ ${galleryText}`;
     } else if (waitingCount > 0) {
       status = formatTranslation("document.queuedWaiting", { count: waitingCount });
     } else {
-      const selected = state31.tasks.find((item) => String(item.task_id) === String(state31.selectedTaskId));
+      const selected = state32.tasks.find((item) => String(item.task_id) === String(state32.selectedTaskId));
       status = selected ? formatTaskStatus4(selected) : "";
     }
     const defaultTitle = getLegacyBridge().constants.defaultDocumentTitle;
@@ -49999,42 +54789,44 @@ ${galleryText}`;
     document.title = webAppDocumentTitle(status, fullTitle);
   }
   function setStatus22(message, type) {
-    if (!els41.statusText) return;
-    els41.statusText.textContent = message;
-    els41.statusText.className = `status-text ${type || ""}`;
+    if (!els42.statusText) return;
+    els42.statusText.textContent = message;
+    els42.statusText.className = `status-text ${type || ""}`;
   }
   function resetForm() {
-    const outputSettingsLocked = Boolean(legacyMethod44("isOutputSettingsLocked"));
+    const outputSettingsLocked = Boolean(legacyMethod45("isOutputSettingsLocked"));
     closePromptPopover10();
     closePromptSnippetPopover5();
     closeArchiveModal4();
     closeGallery4();
     closeImageEditor3();
-    state31.selectedTaskId = null;
+    state32.historyTaskReveal = null;
+    state32.historyTaskRevealSeq += 1;
+    state32.selectedTaskId = null;
     clearTaskParameterInspection2();
-    state31.mode = "generate";
-    revokeUploadPreviewUrls3(state31.images);
-    state31.images = [];
-    legacyMethod44("clearReferenceFiles", { silent: true });
-    state31.batchMode = false;
-    state31.batchSelectedTaskIds = [];
-    state31.batchSelectionAnchorTaskId = null;
+    state32.mode = "generate";
+    revokeUploadPreviewUrls3(state32.images);
+    state32.images = [];
+    legacyMethod45("clearReferenceFiles", { silent: true });
+    state32.batchMode = false;
+    state32.batchSelectedTaskIds = [];
+    state32.batchSelectionAnchorTaskId = null;
     finishBatchMarqueeSelection2();
     setPromptText3("");
     if (!outputSettingsLocked) {
-      if (els41.customSizeToggle) els41.customSizeToggle.checked = false;
-      if (els41.nInput) els41.nInput.value = "1";
-      if (els41.resolution) els41.resolution.value = "standard";
-      if (els41.ratio) els41.ratio.value = "1:1";
-      if (els41.orientation) els41.orientation.value = "square";
-      els41.size.value = "1024x1024";
-      els41.quality.value = "auto";
-      els41.outputFormat.value = "png";
-      els41.moderation.value = "auto";
-      els41.compression.value = "80";
-      if (els41.promptFidelity) els41.promptFidelity.value = "strict";
-      if (els41.webSearch) els41.webSearch.checked = false;
-      [els41.nInput, els41.resolution, els41.ratio, els41.orientation, els41.quality, els41.outputFormat, els41.moderation, els41.promptFidelity, els41.webSearch].forEach((sel) => {
+      if (els42.customSizeToggle) els42.customSizeToggle.checked = false;
+      if (els42.nInput) els42.nInput.value = "1";
+      if (els42.resolution) els42.resolution.value = "standard";
+      if (els42.ratio) els42.ratio.value = "1:1";
+      if (els42.orientation) els42.orientation.value = "square";
+      els42.size.value = "1024x1024";
+      els42.quality.value = "auto";
+      els42.outputFormat.value = "png";
+      els42.moderation.value = "auto";
+      els42.compression.value = "80";
+      if (els42.promptFidelity) els42.promptFidelity.value = "strict";
+      if (els42.webSearch) els42.webSearch.checked = false;
+      [els42.nInput, els42.resolution, els42.ratio, els42.orientation, els42.quality, els42.outputFormat, els42.moderation, els42.promptFidelity, els42.webSearch].forEach((sel) => {
         if (sel) sel.dispatchEvent(new Event("change"));
       });
       updateSizeFromPreset2();
@@ -50044,15 +54836,15 @@ ${galleryText}`;
     updateQuantity3();
     updateCompression3();
     renderImageStrip7();
-    renderTasks9();
+    renderTasks10();
     renderPreview8();
     updateRequestPreview13();
-    if (outputSettingsLocked) legacyMethod44("showLockedOutputSettings");
+    if (outputSettingsLocked) legacyMethod45("showLockedOutputSettings");
     setStatus22(translate("status.waiting"), "");
   }
   async function copyJson() {
-    if (!els41.requestJson) return;
-    await navigator.clipboard.writeText(els41.requestJson.textContent);
+    if (!els42.requestJson) return;
+    await navigator.clipboard.writeText(els42.requestJson.textContent);
     setStatus22(translate("status.jsonCopied"), "ok");
   }
   function initShellUiFeature() {
@@ -50060,8 +54852,8 @@ ${galleryText}`;
     shellUiInitialized = true;
     Object.assign(getLegacyBridge().methods, {
       bindShellUiEvents,
-      normalizeThemePreference,
-      resolveEffectiveTheme,
+      normalizeThemePreference: normalizeThemePreference2,
+      resolveEffectiveTheme: resolveEffectiveTheme2,
       updateThemeSwitcher,
       applyThemePreference,
       restoreThemePreference,
@@ -50087,31 +54879,31 @@ ${galleryText}`;
   var appVersionInitialized = false;
   var payload = null;
   var onboardingAutoShown = false;
-  function els42() {
+  function els43() {
     return getLegacyBridge().els;
   }
   function setModalHidden(hidden) {
-    const modal = els42().versionModal;
+    const modal = els43().versionModal;
     if (!modal) return;
     modal.classList.toggle("hidden", hidden);
     modal.setAttribute("aria-hidden", hidden ? "true" : "false");
   }
   function renderAppVersion(statusText) {
-    const versionInfo = els42().versionInfo;
-    const versionLabel = els42().versionLabel;
-    const badge = els42().versionUpdateBadge;
-    const current = els42().versionCurrent;
-    const latest = els42().versionLatest;
-    const source = els42().versionSource;
-    const onboardingNotice = els42().versionOnboardingNotice;
-    const onboardingBody = els42().versionOnboardingBody;
-    const releaseLink = els42().versionReleaseLink;
-    const standardDownloadLink = els42().versionStandardDownloadLink;
-    const updateButton = els42().versionUpdateButton;
-    const continuePortableButton = els42().versionContinuePortableButton;
-    const dismissOnboardingButton = els42().versionDismissOnboardingButton;
-    const modalStatus = els42().versionModalStatus;
-    const panel = els42().versionModal?.querySelector(".version-modal-panel");
+    const versionInfo = els43().versionInfo;
+    const versionLabel = els43().versionLabel;
+    const badge = els43().versionUpdateBadge;
+    const current = els43().versionCurrent;
+    const latest = els43().versionLatest;
+    const source = els43().versionSource;
+    const onboardingNotice = els43().versionOnboardingNotice;
+    const onboardingBody = els43().versionOnboardingBody;
+    const releaseLink = els43().versionReleaseLink;
+    const standardDownloadLink = els43().versionStandardDownloadLink;
+    const updateButton = els43().versionUpdateButton;
+    const continuePortableButton = els43().versionContinuePortableButton;
+    const dismissOnboardingButton = els43().versionDismissOnboardingButton;
+    const modalStatus = els43().versionModalStatus;
+    const panel = els43().versionModal?.querySelector(".version-modal-panel");
     const currentLabel = payload?.current_version_label || "...";
     const latestLabel = payload?.latest_version_label || currentLabel;
     const updateAvailable = Boolean(payload?.update_available);
@@ -50196,7 +54988,7 @@ ${galleryText}`;
     }
   }
   async function openUpdater() {
-    const updateButton = els42().versionUpdateButton;
+    const updateButton = els43().versionUpdateButton;
     if (updateButton) updateButton.disabled = true;
     try {
       const response = await fetch("/api/app-version/open-updater", { method: "POST" });
@@ -50219,24 +55011,24 @@ ${galleryText}`;
     }
   }
   function bindAppVersionEvents() {
-    els42().versionInfo?.addEventListener("click", () => {
+    els43().versionInfo?.addEventListener("click", () => {
       renderAppVersion();
       setModalHidden(false);
     });
-    els42().versionModalClose?.addEventListener("click", () => setModalHidden(true));
-    els42().versionModal?.addEventListener("click", (event) => {
-      if (event.target === els42().versionModal) setModalHidden(true);
+    els43().versionModalClose?.addEventListener("click", () => setModalHidden(true));
+    els43().versionModal?.addEventListener("click", (event) => {
+      if (event.target === els43().versionModal) setModalHidden(true);
     });
-    els42().versionUpdateButton?.addEventListener("click", () => {
+    els43().versionUpdateButton?.addEventListener("click", () => {
       void openUpdater();
     });
-    els42().versionStandardDownloadLink?.addEventListener("click", () => {
+    els43().versionStandardDownloadLink?.addEventListener("click", () => {
       if (payload?.post_update_onboarding) void dismissOnboarding(false);
     });
-    els42().versionContinuePortableButton?.addEventListener("click", () => {
+    els43().versionContinuePortableButton?.addEventListener("click", () => {
       void dismissOnboarding(true);
     });
-    els42().versionDismissOnboardingButton?.addEventListener("click", () => {
+    els43().versionDismissOnboardingButton?.addEventListener("click", () => {
       void dismissOnboarding(true);
     });
     document.addEventListener("keydown", (event) => {
@@ -50252,187 +55044,665 @@ ${galleryText}`;
     void refreshAppVersion();
   }
 
-  // codex_image/webui/frontend/src/lightbox.ts
-  var lightboxFeatureInitialized = false;
-  var lightboxEl = null;
-  var lightboxState = {
+  // codex_image/webui/frontend/src/lightbox-controls.ts
+  var LIGHTBOX_FIT_SCALE = 1;
+  var LIGHTBOX_MIN_SCALE = 0.1;
+  var LIGHTBOX_MAX_SCALE = 5;
+  var LIGHTBOX_ZOOM_STEP = 0.25;
+  var LIGHTBOX_FIT_SNAP_EPSILON = 0.025;
+  var LIGHTBOX_SHORTCUT_HINT_DURATION_MS = 3200;
+  var lightboxShortcutHintTimers = /* @__PURE__ */ new WeakMap();
+  function isLightboxFitScale(scale) {
+    return Math.abs(Number(scale) - LIGHTBOX_FIT_SCALE) <= LIGHTBOX_FIT_SNAP_EPSILON;
+  }
+  function isLightboxAtOrBelowFitScale(scale) {
+    const numericScale = Number(scale);
+    if (!Number.isFinite(numericScale)) return true;
+    return numericScale <= LIGHTBOX_FIT_SCALE + LIGHTBOX_FIT_SNAP_EPSILON;
+  }
+  function normalizeLightboxScale(scale) {
+    if (!Number.isFinite(scale)) return LIGHTBOX_FIT_SCALE;
+    const clamped = Math.min(Math.max(scale, LIGHTBOX_MIN_SCALE), LIGHTBOX_MAX_SCALE);
+    if (isLightboxFitScale(clamped)) return LIGHTBOX_FIT_SCALE;
+    return Math.round(clamped * 1e3) / 1e3;
+  }
+  function lightboxScaleFromWheel(scale, deltaY) {
+    return normalizeLightboxScale(scale + Number(deltaY || 0) * -5e-3);
+  }
+  function lightboxSteppedScale(scale, direction) {
+    return normalizeLightboxScale(scale + (direction === "in" ? LIGHTBOX_ZOOM_STEP : -LIGHTBOX_ZOOM_STEP));
+  }
+  function lightboxActualSizeScale(naturalWidth, naturalHeight, fittedWidth, fittedHeight) {
+    const widthScale = Number(naturalWidth) / Math.max(1, Number(fittedWidth));
+    const heightScale = Number(naturalHeight) / Math.max(1, Number(fittedHeight));
+    const scale = Math.max(widthScale || 0, heightScale || 0);
+    return normalizeLightboxScale(scale > 0 ? scale : LIGHTBOX_FIT_SCALE);
+  }
+  function lightboxDisplayPercent(scale, actualSizeScale) {
+    const actual = Math.max(LIGHTBOX_MIN_SCALE, Number(actualSizeScale) || LIGHTBOX_FIT_SCALE);
+    return Math.max(1, Math.round(normalizeLightboxScale(scale) / actual * 100));
+  }
+  function lightboxActionForKey(key) {
+    if (key === "ArrowLeft") return "previous-image";
+    if (key === "ArrowRight") return "next-image";
+    if (key === "ArrowUp" || key === "PageUp") return "previous-task";
+    if (key === "ArrowDown" || key === "PageDown") return "next-task";
+    if (key === "+" || key === "=") return "zoom-in";
+    if (key === "-") return "zoom-out";
+    if (key === "0") return "fit";
+    if (key === "1") return "actual-size";
+    return null;
+  }
+  function shouldCloseLightboxFromClick(target, root) {
+    if (target === root) return true;
+    const candidate = target;
+    if (typeof candidate?.closest !== "function") return false;
+    return !candidate.closest("img, button, [data-lightbox-zoom-toolbar]");
+  }
+  function lightboxZoomChromeHtml() {
+    const zoomControls = escapeHtml(translate("lightbox.zoomControls"));
+    const zoomOut = escapeHtml(translate("lightbox.zoomOut"));
+    const zoomIn = escapeHtml(translate("lightbox.zoomIn"));
+    const fit = escapeHtml(translate("lightbox.fit"));
+    const fitPage = escapeHtml(translate("lightbox.fitPage"));
+    const actualSize = escapeHtml(translate("lightbox.actualSize"));
+    const shortcuts = escapeHtml(translate("lightbox.shortcuts"));
+    const switchImage = escapeHtml(translate("lightbox.switchImage"));
+    const switchTask = escapeHtml(translate("lightbox.switchTask"));
+    const wheelZoom = escapeHtml(translate("lightbox.wheelZoom"));
+    return `
+    <div class="lightbox-zoom-toolbar" data-lightbox-zoom-toolbar role="toolbar" aria-label="${zoomControls}">
+      <button type="button" class="lightbox-zoom-button" data-lightbox-zoom-out aria-label="${zoomOut}" title="${zoomOut}" aria-keyshortcuts="-">\u2212</button>
+      <output class="lightbox-zoom-value" data-lightbox-zoom-value aria-label="${zoomControls}">100%</output>
+      <button type="button" class="lightbox-zoom-button" data-lightbox-zoom-in aria-label="${zoomIn}" title="${zoomIn}" aria-keyshortcuts="+">+</button>
+      <span class="lightbox-zoom-divider" aria-hidden="true"></span>
+      <button type="button" class="lightbox-zoom-mode" data-lightbox-fit aria-label="${fitPage}" title="${fitPage} (0)" aria-keyshortcuts="0">${fit}</button>
+      <button type="button" class="lightbox-zoom-mode" data-lightbox-actual-size aria-label="${actualSize}" title="${actualSize} (1)" aria-keyshortcuts="1">100%</button>
+    </div>
+    <div class="lightbox-shortcut-hint" data-lightbox-shortcut-hint aria-label="${shortcuts}" aria-hidden="true">
+      <span><kbd>\u2190</kbd><kbd>\u2192</kbd>${switchImage}</span>
+      <span data-lightbox-task-shortcut><kbd>\u2191</kbd><kbd>\u2193</kbd>${switchTask}</span>
+      <span class="lightbox-shortcut-wheel">${wheelZoom}</span>
+    </div>
+  `;
+  }
+  function bindLightboxZoomChrome(root, bindings) {
+    root.querySelector("[data-lightbox-zoom-out]")?.addEventListener("click", bindings.zoomOut);
+    root.querySelector("[data-lightbox-zoom-in]")?.addEventListener("click", bindings.zoomIn);
+    root.querySelector("[data-lightbox-fit]")?.addEventListener("click", bindings.fit);
+    root.querySelector("[data-lightbox-actual-size]")?.addEventListener("click", bindings.actualSize);
+  }
+  function lightboxImageActualSizeScale(image) {
+    if (!image) return LIGHTBOX_FIT_SCALE;
+    return lightboxActualSizeScale(
+      image.naturalWidth,
+      image.naturalHeight,
+      image.clientWidth,
+      image.clientHeight
+    );
+  }
+  function updateLightboxZoomChrome(root, scale, image) {
+    if (!root) return;
+    const normalizedScale = normalizeLightboxScale(scale);
+    const actualSizeScale = lightboxImageActualSizeScale(image);
+    const value = root.querySelector("[data-lightbox-zoom-value]");
+    const zoomOut = root.querySelector("[data-lightbox-zoom-out]");
+    const zoomIn = root.querySelector("[data-lightbox-zoom-in]");
+    const fit = root.querySelector("[data-lightbox-fit]");
+    const actualSize = root.querySelector("[data-lightbox-actual-size]");
+    if (value) value.textContent = `${lightboxDisplayPercent(normalizedScale, actualSizeScale)}%`;
+    if (zoomOut) zoomOut.disabled = normalizedScale <= LIGHTBOX_MIN_SCALE;
+    if (zoomIn) zoomIn.disabled = normalizedScale >= LIGHTBOX_MAX_SCALE;
+    fit?.setAttribute("aria-pressed", isLightboxFitScale(normalizedScale) ? "true" : "false");
+    actualSize?.setAttribute(
+      "aria-pressed",
+      Math.abs(normalizedScale - actualSizeScale) <= LIGHTBOX_FIT_SNAP_EPSILON ? "true" : "false"
+    );
+  }
+  function showLightboxShortcutHint(root, hasTaskNavigation) {
+    if (!root) return;
+    const hint = root.querySelector("[data-lightbox-shortcut-hint]");
+    const taskShortcut = root.querySelector("[data-lightbox-task-shortcut]");
+    if (!hint) return;
+    taskShortcut?.toggleAttribute("hidden", !hasTaskNavigation);
+    const previousTimer = lightboxShortcutHintTimers.get(root);
+    if (previousTimer) window.clearTimeout(previousTimer);
+    hint.classList.remove("is-visible");
+    hint.setAttribute("aria-hidden", "false");
+    window.requestAnimationFrame(() => hint.classList.add("is-visible"));
+    const timer = window.setTimeout(() => {
+      hint.classList.remove("is-visible");
+      hint.setAttribute("aria-hidden", "true");
+      lightboxShortcutHintTimers.delete(root);
+    }, LIGHTBOX_SHORTCUT_HINT_DURATION_MS);
+    lightboxShortcutHintTimers.set(root, timer);
+  }
+  function hideLightboxShortcutHint(root) {
+    if (!root) return;
+    const timer = lightboxShortcutHintTimers.get(root);
+    if (timer) window.clearTimeout(timer);
+    lightboxShortcutHintTimers.delete(root);
+    const hint = root.querySelector("[data-lightbox-shortcut-hint]");
+    hint?.classList.remove("is-visible");
+    hint?.setAttribute("aria-hidden", "true");
+  }
+
+  // codex_image/webui/frontend/src/history-lightbox.ts
+  var historyLightboxEl = null;
+  var historyLightboxState = {
+    urls: [],
+    index: 0,
+    taskId: "",
+    onTaskNavigate: null,
     scale: 1,
-    panning: false,
     pointX: 0,
     pointY: 0,
+    panning: false,
     startX: 0,
     startY: 0,
-    urls: [],
-    index: 0
+    isTransitioning: false
   };
-  function legacyMethod45(name, ...args) {
+  function clampedHistoryLightboxIndex(index, count) {
+    return Math.min(Math.max(0, index), Math.max(0, count - 1));
+  }
+  function historyLightboxSlotIndexes(index, count) {
+    const current = clampedHistoryLightboxIndex(index, count);
+    return {
+      previous: current > 0 ? current - 1 : null,
+      current,
+      next: current + 1 < count ? current + 1 : null
+    };
+  }
+  function historyLightboxImage() {
+    return historyLightboxEl?.querySelector("[data-history-lightbox-image]") || null;
+  }
+  function historyLightboxSlot(slot) {
+    return historyLightboxEl?.querySelector(`[data-history-lightbox-slot="${slot}"]`) || null;
+  }
+  function bindHistoryLightboxSlots(index = historyLightboxState.index) {
+    if (!historyLightboxEl || !historyLightboxState.urls.length) return;
+    const slots = historyLightboxSlotIndexes(index, historyLightboxState.urls.length);
+    ["previous", "current", "next"].forEach((slotName) => {
+      const slot = historyLightboxSlot(slotName);
+      const image = slot?.querySelector("img") || null;
+      const slotIndex = slots[slotName];
+      const unavailable = slotIndex === null;
+      slot?.classList.toggle("is-unavailable", unavailable);
+      slot?.setAttribute("aria-hidden", unavailable ? "true" : "false");
+      if (slot instanceof HTMLButtonElement) {
+        slot.disabled = unavailable;
+        slot.tabIndex = unavailable ? -1 : 0;
+      }
+      if (!image) return;
+      if (unavailable) image.removeAttribute("src");
+      else image.src = historyLightboxState.urls[slotIndex] || "";
+    });
+    historyLightboxEl.classList.toggle("is-single", historyLightboxState.urls.length === 1);
+  }
+  async function decodeHistoryLightboxBoundSlots() {
+    if (!historyLightboxEl) return;
+    const images = Array.from(
+      historyLightboxEl.querySelectorAll("[data-history-lightbox-slot] img[src]")
+    );
+    await Promise.allSettled(images.map(async (image) => {
+      if (!image.complete || image.naturalWidth === 0) {
+        await new Promise((resolve, reject) => {
+          image.addEventListener("load", () => resolve(), { once: true });
+          image.addEventListener("error", () => reject(new Error("History lightbox slot failed to load")), { once: true });
+        });
+      }
+      if (typeof image.decode === "function") await image.decode();
+    }));
+  }
+  async function preloadHistoryLightboxImage(url) {
+    const image = new Image();
+    await new Promise((resolve, reject) => {
+      image.onload = () => resolve();
+      image.onerror = () => reject(new Error("History lightbox image failed to load"));
+      image.src = url;
+      if (image.complete && image.naturalWidth > 0) resolve();
+    });
+    if (typeof image.decode === "function") {
+      await image.decode().catch(() => void 0);
+    }
+    return image;
+  }
+  async function preloadHistoryLightboxSlotImages(index) {
+    const slots = historyLightboxSlotIndexes(index, historyLightboxState.urls.length);
+    const urls = Array.from(new Set(
+      Object.values(slots).filter((slotIndex) => slotIndex !== null).map((slotIndex) => historyLightboxState.urls[slotIndex]).filter((url) => Boolean(url))
+    ));
+    const results = await Promise.allSettled(urls.map(async (url) => [url, await preloadHistoryLightboxImage(url)]));
+    return new Map(
+      results.filter((result) => result.status === "fulfilled").map((result) => result.value)
+    );
+  }
+  function historyLightboxFittedRect(image, container) {
+    const naturalWidth = Math.max(1, image.naturalWidth);
+    const naturalHeight = Math.max(1, image.naturalHeight);
+    const scale = Math.min(container.width / naturalWidth, container.height / naturalHeight);
+    const width = naturalWidth * scale;
+    const height = naturalHeight * scale;
+    return {
+      left: container.left + (container.width - width) / 2,
+      top: container.top + (container.height - height) / 2,
+      width,
+      height
+    };
+  }
+  function historyLightboxEdgeRect(side, image, peek) {
+    const peekRect = peek.getBoundingClientRect();
+    const ratio = Math.max(0.05, image.naturalWidth / Math.max(1, image.naturalHeight));
+    let height = peekRect.height;
+    let width = height * ratio;
+    const maxWidth = window.innerWidth * 0.62;
+    if (width > maxWidth) {
+      width = maxWidth;
+      height = width / ratio;
+    }
+    return {
+      left: side === "previous" ? peekRect.width - width : window.innerWidth - peekRect.width,
+      top: (window.innerHeight - height) / 2,
+      width,
+      height
+    };
+  }
+  function historyLightboxTransitionGhost(src, rect, opacity = 1) {
+    const ghost = document.createElement("img");
+    ghost.className = "history-lightbox-transition-ghost";
+    ghost.alt = "";
+    ghost.draggable = false;
+    ghost.src = src;
+    Object.assign(ghost.style, {
+      left: `${rect.left}px`,
+      top: `${rect.top}px`,
+      width: `${rect.width}px`,
+      height: `${rect.height}px`,
+      opacity: `${opacity}`
+    });
+    return ghost;
+  }
+  function historyLightboxGhostKeyframes(from, to, fromOpacity, toOpacity) {
+    const translateX = to.left - from.left;
+    const translateY = to.top - from.top;
+    return [
+      { opacity: fromOpacity, transform: "translate3d(0, 0, 0) scale(1)" },
+      {
+        opacity: toOpacity,
+        transform: `translate3d(${translateX}px, ${translateY}px, 0) scale(${to.width / from.width})`
+      }
+    ];
+  }
+  async function animateHistoryLightboxSwap(direction, targetImage, targetIndex) {
+    if (!historyLightboxEl) return null;
+    const currentImage = historyLightboxImage();
+    const targetPeek = historyLightboxSlot(direction);
+    const outgoingSide = direction === "next" ? "previous" : "next";
+    const outgoingPeek = historyLightboxSlot(outgoingSide);
+    const currentFrame = historyLightboxSlot("current");
+    if (!currentImage || !targetPeek || !outgoingPeek || !currentFrame) return null;
+    const currentRect = currentImage.getBoundingClientRect();
+    const centerRect = historyLightboxFittedRect(targetImage, currentFrame.getBoundingClientRect());
+    const incomingEdgeRect = historyLightboxEdgeRect(direction, targetImage, targetPeek);
+    const outgoingEdgeRect = historyLightboxEdgeRect(outgoingSide, currentImage, outgoingPeek);
+    const incomingStartOpacity = Number.parseFloat(getComputedStyle(targetPeek).opacity) || 0.48;
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const layer = document.createElement("div");
+    layer.className = "history-lightbox-transition-layer";
+    const outgoingGhost = historyLightboxTransitionGhost(currentImage.currentSrc || currentImage.src, currentRect);
+    const incomingGhost = historyLightboxTransitionGhost(
+      targetImage.currentSrc || targetImage.src,
+      reduceMotion ? centerRect : incomingEdgeRect,
+      reduceMotion ? 0 : incomingStartOpacity
+    );
+    layer.append(outgoingGhost, incomingGhost);
+    historyLightboxEl.append(layer);
+    historyLightboxEl.classList.add("is-shared-switching");
+    bindHistoryLightboxSlots(targetIndex);
+    await decodeHistoryLightboxBoundSlots();
+    await nextHistoryLightboxFrame();
+    const duration = reduceMotion ? 100 : 320;
+    const easing = "cubic-bezier(0.22, 1, 0.36, 1)";
+    await Promise.all([
+      outgoingGhost.animate(
+        historyLightboxGhostKeyframes(
+          currentRect,
+          reduceMotion ? currentRect : outgoingEdgeRect,
+          1,
+          0
+        ),
+        { duration, easing, fill: "forwards" }
+      ).finished,
+      incomingGhost.animate(
+        historyLightboxGhostKeyframes(
+          reduceMotion ? centerRect : incomingEdgeRect,
+          centerRect,
+          reduceMotion ? 0 : incomingStartOpacity,
+          1
+        ),
+        { duration, easing, fill: "forwards" }
+      ).finished
+    ]);
+    return layer;
+  }
+  function nextHistoryLightboxFrame() {
+    return new Promise((resolve) => window.requestAnimationFrame(() => resolve()));
+  }
+  async function settleHistoryLightboxSwap(layer) {
+    if (!historyLightboxEl) {
+      layer?.remove();
+      return;
+    }
+    historyLightboxEl.classList.add("is-shared-settling");
+    await nextHistoryLightboxFrame();
+    await nextHistoryLightboxFrame();
+    layer?.remove();
+    historyLightboxEl.classList.remove("is-shared-switching");
+    await nextHistoryLightboxFrame();
+    historyLightboxEl.classList.remove("is-shared-settling");
+  }
+  function isHistoryLightboxActive() {
+    return Boolean(historyLightboxEl && !historyLightboxEl.hidden);
+  }
+  function stopHistoryLightboxPanning() {
+    historyLightboxState.panning = false;
+    historyLightboxEl?.classList.toggle(
+      "is-zoomed",
+      !isLightboxAtOrBelowFitScale(historyLightboxState.scale)
+    );
+  }
+  function setHistoryLightboxTransform() {
+    const image = historyLightboxImage();
+    if (!image) return;
+    image.style.transform = `translate(${historyLightboxState.pointX}px, ${historyLightboxState.pointY}px) scale(${historyLightboxState.scale})`;
+    historyLightboxEl?.classList.toggle(
+      "is-zoomed",
+      !isLightboxAtOrBelowFitScale(historyLightboxState.scale) || historyLightboxState.panning
+    );
+    updateLightboxZoomChrome(historyLightboxEl, historyLightboxState.scale, image);
+  }
+  function setHistoryLightboxScale(scale) {
+    historyLightboxState.scale = normalizeLightboxScale(scale);
+    if (isLightboxAtOrBelowFitScale(historyLightboxState.scale)) {
+      historyLightboxState.pointX = 0;
+      historyLightboxState.pointY = 0;
+      historyLightboxState.panning = false;
+    }
+    setHistoryLightboxTransform();
+  }
+  function zoomHistoryLightbox(direction) {
+    setHistoryLightboxScale(lightboxSteppedScale(historyLightboxState.scale, direction));
+  }
+  function showHistoryLightboxActualSize() {
+    setHistoryLightboxScale(lightboxImageActualSizeScale(historyLightboxImage()));
+  }
+  function resetHistoryLightboxTransform() {
+    historyLightboxState.scale = 1;
+    historyLightboxState.pointX = 0;
+    historyLightboxState.pointY = 0;
+    stopHistoryLightboxPanning();
+    setHistoryLightboxTransform();
+  }
+  function updateHistoryLightboxControls() {
+    if (!historyLightboxEl) return;
+    const hasMultipleImages = historyLightboxState.urls.length > 1;
+    const counter = historyLightboxEl.querySelector("[data-history-lightbox-counter]");
+    counter?.classList.toggle("hidden", !hasMultipleImages);
+    if (counter) {
+      counter.textContent = hasMultipleImages ? `${historyLightboxState.index + 1} / ${historyLightboxState.urls.length}` : "";
+    }
+    updateLightboxZoomChrome(historyLightboxEl, historyLightboxState.scale, historyLightboxImage());
+  }
+  function showHistoryLightboxImage(index) {
+    if (!historyLightboxEl || !historyLightboxState.urls.length) return;
+    historyLightboxState.index = clampedHistoryLightboxIndex(index, historyLightboxState.urls.length);
+    bindHistoryLightboxSlots();
+    resetHistoryLightboxTransform();
+    updateHistoryLightboxControls();
+  }
+  async function transitionHistoryLightboxTo(index) {
+    if (!historyLightboxEl || !isHistoryLightboxActive() || historyLightboxState.isTransitioning) return;
+    const targetIndex = clampedHistoryLightboxIndex(index, historyLightboxState.urls.length);
+    if (targetIndex === historyLightboxState.index) return;
+    const direction = targetIndex > historyLightboxState.index ? "next" : "previous";
+    historyLightboxState.isTransitioning = true;
+    try {
+      const targetUrl = historyLightboxState.urls[targetIndex] || "";
+      const preloadedImages = await preloadHistoryLightboxSlotImages(targetIndex);
+      const targetImage = preloadedImages.get(targetUrl) || await preloadHistoryLightboxImage(targetUrl);
+      resetHistoryLightboxTransform();
+      const transitionLayer = await animateHistoryLightboxSwap(direction, targetImage, targetIndex);
+      historyLightboxState.index = targetIndex;
+      bindHistoryLightboxSlots();
+      resetHistoryLightboxTransform();
+      updateHistoryLightboxControls();
+      await settleHistoryLightboxSwap(transitionLayer);
+    } catch {
+      bindHistoryLightboxSlots();
+    } finally {
+      historyLightboxEl.classList.remove("is-shared-switching", "is-shared-settling");
+      historyLightboxEl.querySelector(".history-lightbox-transition-layer")?.remove();
+      historyLightboxState.isTransitioning = false;
+    }
+  }
+  function showPreviousHistoryLightboxImage() {
+    if (!isHistoryLightboxActive() || historyLightboxState.urls.length < 2) return;
+    void transitionHistoryLightboxTo(historyLightboxState.index - 1);
+  }
+  function showNextHistoryLightboxImage() {
+    if (!isHistoryLightboxActive() || historyLightboxState.urls.length < 2) return;
+    void transitionHistoryLightboxTo(historyLightboxState.index + 1);
+  }
+  function navigateHistoryLightboxTask(direction) {
+    if (!isHistoryLightboxActive() || !historyLightboxState.onTaskNavigate) return;
+    void historyLightboxState.onTaskNavigate(direction, {
+      taskId: historyLightboxState.taskId,
+      imageIndex: historyLightboxState.index
+    });
+  }
+  function showPreviousHistoryTask() {
+    navigateHistoryLightboxTask("previous");
+  }
+  function showNextHistoryTask() {
+    navigateHistoryLightboxTask("next");
+  }
+  function ensureHistoryLightbox() {
+    if (historyLightboxEl) return historyLightboxEl;
+    historyLightboxEl = document.createElement("div");
+    historyLightboxEl.className = "history-lightbox";
+    historyLightboxEl.tabIndex = -1;
+    historyLightboxEl.hidden = true;
+    historyLightboxEl.setAttribute("role", "dialog");
+    historyLightboxEl.setAttribute("aria-modal", "true");
+    historyLightboxEl.setAttribute("aria-label", translate("lightbox.label"));
+    historyLightboxEl.innerHTML = `
+    <button class="history-lightbox-close" type="button" data-history-lightbox-close aria-label="${escapeHtml(translate("lightbox.close"))}">
+      <svg class="drawer-close-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+        <path d="M6 6l12 12M18 6L6 18"></path>
+      </svg>
+    </button>
+    <button class="history-lightbox-peek history-lightbox-peek-previous" type="button" data-history-lightbox-slot="previous" aria-label="${escapeHtml(translate("lightbox.previous"))}">
+      <img alt="" draggable="false">
+    </button>
+    <div class="history-lightbox-track" data-history-lightbox-track>
+      <div class="history-lightbox-current-frame" data-history-lightbox-slot="current">
+        <img class="history-lightbox-current-image" alt="" draggable="false" data-history-lightbox-image>
+      </div>
+    </div>
+    <button class="history-lightbox-peek history-lightbox-peek-next" type="button" data-history-lightbox-slot="next" aria-label="${escapeHtml(translate("lightbox.next"))}">
+      <img alt="" draggable="false">
+    </button>
+    <div class="history-lightbox-counter" data-history-lightbox-counter aria-live="polite"></div>
+    ${lightboxZoomChromeHtml()}
+  `;
+    document.body.append(historyLightboxEl);
+    historyLightboxEl.querySelector("[data-history-lightbox-close]")?.addEventListener("click", closeHistoryLightbox);
+    historyLightboxSlot("previous")?.addEventListener("click", showPreviousHistoryLightboxImage);
+    historyLightboxSlot("next")?.addEventListener("click", showNextHistoryLightboxImage);
+    bindLightboxZoomChrome(historyLightboxEl, {
+      zoomOut: () => zoomHistoryLightbox("out"),
+      zoomIn: () => zoomHistoryLightbox("in"),
+      fit: resetHistoryLightboxTransform,
+      actualSize: showHistoryLightboxActualSize
+    });
+    historyLightboxEl.addEventListener("wheel", (event) => {
+      if (!isHistoryLightboxActive()) return;
+      event.preventDefault();
+      setHistoryLightboxScale(lightboxScaleFromWheel(historyLightboxState.scale, event.deltaY));
+    }, { passive: false });
+    historyLightboxEl.addEventListener("click", (event) => {
+      if (shouldCloseLightboxFromClick(event.target, historyLightboxEl)) closeHistoryLightbox();
+    });
+    const image = historyLightboxImage();
+    image?.addEventListener("mousedown", (event) => {
+      if (event.button !== 0) {
+        stopHistoryLightboxPanning();
+        return;
+      }
+      if (isLightboxAtOrBelowFitScale(historyLightboxState.scale)) {
+        stopHistoryLightboxPanning();
+        return;
+      }
+      event.preventDefault();
+      historyLightboxState.panning = true;
+      historyLightboxState.startX = event.clientX - historyLightboxState.pointX;
+      historyLightboxState.startY = event.clientY - historyLightboxState.pointY;
+    });
+    image?.addEventListener("contextmenu", stopHistoryLightboxPanning);
+    image?.addEventListener("load", updateHistoryLightboxControls);
+    window.addEventListener("mousemove", (event) => {
+      if (!historyLightboxState.panning) return;
+      if (event.buttons !== void 0 && (event.buttons & 1) !== 1) {
+        stopHistoryLightboxPanning();
+        return;
+      }
+      historyLightboxState.pointX = event.clientX - historyLightboxState.startX;
+      historyLightboxState.pointY = event.clientY - historyLightboxState.startY;
+      setHistoryLightboxTransform();
+    });
+    window.addEventListener("mouseup", stopHistoryLightboxPanning);
+    window.addEventListener("blur", stopHistoryLightboxPanning);
+    window.addEventListener("keydown", (event) => {
+      if (!isHistoryLightboxActive()) return;
+      const action = lightboxActionForKey(event.key);
+      if (event.key === "Escape") {
+        event.preventDefault();
+        event.stopPropagation();
+        closeHistoryLightbox();
+      } else if (event.key === "ArrowLeft" && action === "previous-image") {
+        event.preventDefault();
+        event.stopPropagation();
+        showPreviousHistoryLightboxImage();
+      } else if (event.key === "ArrowRight" && action === "next-image") {
+        event.preventDefault();
+        event.stopPropagation();
+        showNextHistoryLightboxImage();
+      } else if (event.key === "ArrowUp" && action === "previous-task") {
+        event.preventDefault();
+        event.stopPropagation();
+        showPreviousHistoryTask();
+      } else if (event.key === "ArrowDown" && action === "next-task") {
+        event.preventDefault();
+        event.stopPropagation();
+        showNextHistoryTask();
+      } else if (event.key === "PageUp" && action === "previous-task") {
+        event.preventDefault();
+        event.stopPropagation();
+        showPreviousHistoryTask();
+      } else if (event.key === "PageDown" && action === "next-task") {
+        event.preventDefault();
+        event.stopPropagation();
+        showNextHistoryTask();
+      } else if (action === "zoom-in") {
+        event.preventDefault();
+        zoomHistoryLightbox("in");
+      } else if (action === "zoom-out") {
+        event.preventDefault();
+        zoomHistoryLightbox("out");
+      } else if (action === "fit") {
+        event.preventDefault();
+        resetHistoryLightboxTransform();
+      } else if (action === "actual-size") {
+        event.preventDefault();
+        showHistoryLightboxActualSize();
+      }
+    });
+    return historyLightboxEl;
+  }
+  function openHistoryLightbox(urls, index = 0, options = {}) {
+    const nextUrls = Array.isArray(urls) ? urls.filter(Boolean) : [];
+    if (!nextUrls.length) return;
+    const wasActive = isHistoryLightboxActive();
+    const lightbox = ensureHistoryLightbox();
+    historyLightboxState.urls = nextUrls;
+    historyLightboxState.index = clampedHistoryLightboxIndex(index, nextUrls.length);
+    historyLightboxState.taskId = String(options.taskId || "");
+    historyLightboxState.onTaskNavigate = options.onTaskNavigate || null;
+    historyLightboxState.isTransitioning = false;
+    showHistoryLightboxImage(historyLightboxState.index);
+    lightbox.hidden = false;
+    document.body.classList.add("history-lightbox-open");
+    lightbox.focus({ preventScroll: true });
+    updateHistoryLightboxControls();
+    if (!wasActive) {
+      showLightboxShortcutHint(lightbox, Boolean(historyLightboxState.onTaskNavigate));
+    }
+  }
+  function syncHistoryLightboxUrls(urls) {
+    if (!isHistoryLightboxActive() || !Array.isArray(urls) || !urls.length) return;
+    const currentUrl = historyLightboxState.urls[historyLightboxState.index];
+    if (!currentUrl) return;
+    const nextUrls = urls.filter(Boolean);
+    const nextIndex = nextUrls.indexOf(currentUrl);
+    if (nextIndex === -1) return;
+    historyLightboxState.urls = nextUrls;
+    historyLightboxState.index = nextIndex;
+    bindHistoryLightboxSlots();
+    updateHistoryLightboxControls();
+  }
+  function closeHistoryLightbox() {
+    if (!historyLightboxEl || historyLightboxEl.hidden) return;
+    historyLightboxEl.hidden = true;
+    historyLightboxEl.querySelectorAll("img").forEach((image) => image.removeAttribute("src"));
+    historyLightboxEl.classList.remove(
+      "is-shared-switching",
+      "is-single",
+      "is-zoomed"
+    );
+    stopHistoryLightboxPanning();
+    historyLightboxState.urls = [];
+    historyLightboxState.index = 0;
+    historyLightboxState.taskId = "";
+    historyLightboxState.onTaskNavigate = null;
+    historyLightboxState.isTransitioning = false;
+    hideLightboxShortcutHint(historyLightboxEl);
+    resetHistoryLightboxTransform();
+    document.body.classList.remove("history-lightbox-open");
+  }
+
+  // codex_image/webui/frontend/src/lightbox.ts
+  var lightboxFeatureInitialized = false;
+  function legacyMethod46(name, ...args) {
     const method = getLegacyBridge().methods[name];
     if (typeof method !== "function") {
       throw new Error("Legacy bridge method " + name + " is not available");
     }
     return method(...args);
   }
-  function isLightboxActive() {
-    return Boolean(lightboxEl?.classList.contains("active"));
-  }
-  function lightboxImage() {
-    return lightboxEl?.querySelector("#lightboxImg") || null;
-  }
-  function setLightboxTransform() {
-    const img = lightboxImage();
-    if (!img) return;
-    img.style.transform = `translate(${lightboxState.pointX}px, ${lightboxState.pointY}px) scale(${lightboxState.scale})`;
-  }
-  function resetLightboxTransform() {
-    lightboxState.scale = 1;
-    lightboxState.pointX = 0;
-    lightboxState.pointY = 0;
-    stopLightboxPanning();
-    setLightboxTransform();
-  }
-  function stopLightboxPanning() {
-    lightboxState.panning = false;
-  }
-  function updateLightboxControls() {
-    if (!lightboxEl) return;
-    const hasMultipleImages = lightboxState.urls.length > 1;
-    const prevButton = lightboxEl.querySelector(".lightbox-prev");
-    const nextButton = lightboxEl.querySelector(".lightbox-next");
-    const counter = lightboxEl.querySelector(".lightbox-counter");
-    [prevButton, nextButton, counter].forEach((element2) => {
-      element2?.classList.toggle("hidden", !hasMultipleImages);
-    });
-    if (counter) {
-      counter.textContent = hasMultipleImages ? `${lightboxState.index + 1} / ${lightboxState.urls.length}` : "";
-    }
-  }
-  function normalizedLightboxIndex(index, count) {
-    if (!count) return 0;
-    return (index % count + count) % count;
+  function openLightbox(url, urls = [], index = 0, options = {}) {
+    const nextUrls = Array.isArray(urls) && urls.length ? urls.filter(Boolean) : [url].filter(Boolean);
+    if (!nextUrls.length) return;
+    const matchedIndex = nextUrls.indexOf(url);
+    const requestedIndex = matchedIndex >= 0 ? matchedIndex : index;
+    openHistoryLightbox(nextUrls, requestedIndex, options);
   }
   function syncActiveLightboxUrls3(urls) {
-    if (!isLightboxActive() || !Array.isArray(urls) || !urls.length) return;
-    const currentUrl = lightboxState.urls[lightboxState.index];
-    if (!currentUrl) return;
-    const nextIndex = urls.indexOf(currentUrl);
-    if (nextIndex === -1) return;
-    lightboxState.urls = urls.slice();
-    lightboxState.index = nextIndex;
-    updateLightboxControls();
-  }
-  function showLightboxImage(index) {
-    if (!lightboxEl || !lightboxState.urls.length) return;
-    const img = lightboxImage();
-    if (!img) return;
-    lightboxState.index = normalizedLightboxIndex(index, lightboxState.urls.length);
-    img.src = lightboxState.urls[lightboxState.index] || "";
-    resetLightboxTransform();
-    updateLightboxControls();
-  }
-  function showPreviousLightboxImage() {
-    if (!isLightboxActive() || lightboxState.urls.length < 2) return;
-    showLightboxImage(lightboxState.index - 1);
-  }
-  function showNextLightboxImage() {
-    if (!isLightboxActive() || lightboxState.urls.length < 2) return;
-    showLightboxImage(lightboxState.index + 1);
-  }
-  function ensureLightboxElement() {
-    if (lightboxEl) return lightboxEl;
-    lightboxEl = document.createElement("div");
-    lightboxEl.className = "lightbox";
-    lightboxEl.setAttribute("role", "dialog");
-    lightboxEl.setAttribute("aria-modal", "true");
-    lightboxEl.setAttribute("aria-label", translate("lightbox.label"));
-    lightboxEl.innerHTML = `
-      <button class="lightbox-close" type="button" aria-label="${translate("lightbox.close")}">
-        <svg class="drawer-close-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-          <path d="M6 6l12 12M18 6L6 18"></path>
-        </svg>
-      </button>
-      <button class="lightbox-nav lightbox-prev" type="button" aria-label="${translate("lightbox.previous")}">&lsaquo;</button>
-      <img id="lightboxImg" src="" alt="" draggable="false">
-      <button class="lightbox-nav lightbox-next" type="button" aria-label="${translate("lightbox.next")}">&rsaquo;</button>
-      <div class="lightbox-counter" aria-live="polite"></div>
-    `;
-    document.body.appendChild(lightboxEl);
-    const img = lightboxEl.querySelector("img");
-    const lightboxClose = lightboxEl.querySelector(".lightbox-close");
-    const prevButton = lightboxEl.querySelector(".lightbox-prev");
-    const nextButton = lightboxEl.querySelector(".lightbox-next");
-    lightboxClose?.addEventListener("click", closeLightbox);
-    prevButton?.addEventListener("click", showPreviousLightboxImage);
-    nextButton?.addEventListener("click", showNextLightboxImage);
-    lightboxEl.addEventListener("wheel", (event) => {
-      if (!isLightboxActive()) return;
-      event.preventDefault();
-      const delta = event.deltaY * -5e-3;
-      lightboxState.scale = Math.min(Math.max(0.5, lightboxState.scale + delta), 5);
-      setLightboxTransform();
-    });
-    lightboxEl.addEventListener("click", (event) => {
-      if (event.target === lightboxEl) closeLightbox();
-    });
-    img?.addEventListener("mousedown", (event) => {
-      if (event.button !== 0) {
-        stopLightboxPanning();
-        return;
-      }
-      event.preventDefault();
-      lightboxState.panning = true;
-      lightboxState.startX = event.clientX - lightboxState.pointX;
-      lightboxState.startY = event.clientY - lightboxState.pointY;
-    });
-    img?.addEventListener("contextmenu", stopLightboxPanning);
-    window.addEventListener("mousemove", (event) => {
-      if (!lightboxState.panning) return;
-      if (event.buttons !== void 0 && (event.buttons & 1) !== 1) {
-        stopLightboxPanning();
-        return;
-      }
-      lightboxState.pointX = event.clientX - lightboxState.startX;
-      lightboxState.pointY = event.clientY - lightboxState.startY;
-      setLightboxTransform();
-    });
-    window.addEventListener("mouseup", stopLightboxPanning);
-    window.addEventListener("blur", stopLightboxPanning);
-    window.addEventListener("keydown", (event) => {
-      if (!isLightboxActive()) return;
-      if (event.key === "Escape") {
-        closeLightbox();
-      } else if (event.key === "ArrowLeft") {
-        event.preventDefault();
-        showPreviousLightboxImage();
-      } else if (event.key === "ArrowRight") {
-        event.preventDefault();
-        showNextLightboxImage();
-      }
-    });
-    return lightboxEl;
-  }
-  function openLightbox(url, urls = [], index = 0) {
-    const element2 = ensureLightboxElement();
-    const nextUrls = Array.isArray(urls) && urls.length ? urls.filter(Boolean) : [url].filter(Boolean);
-    lightboxState.urls = nextUrls.length ? nextUrls : [url].filter(Boolean);
-    const matchedIndex = lightboxState.urls.indexOf(url);
-    lightboxState.index = matchedIndex >= 0 ? matchedIndex : normalizedLightboxIndex(index, lightboxState.urls.length);
-    showLightboxImage(lightboxState.index);
-    document.body.classList.add("lightbox-open");
-    element2.classList.add("active");
-    updateLightboxControls();
-  }
-  function closeLightbox() {
-    if (!lightboxEl) return;
-    lightboxEl.classList.remove("active");
-    document.body.classList.remove("lightbox-open");
-    stopLightboxPanning();
-    lightboxState.urls = [];
-    lightboxState.index = 0;
+    syncHistoryLightboxUrls(urls);
   }
   async function addToInput(url) {
     try {
-      const file = await legacyMethod45("imageFileFromUrl", url, "preview-" + Date.now());
-      legacyMethod45("addImageFiles", [file]);
+      const file = await legacyMethod46("imageFileFromUrl", url, "preview-" + Date.now());
+      legacyMethod46("addImageFiles", [file]);
     } catch (error) {
       console.error("Failed to add image to input", error);
     }
@@ -50441,10 +55711,7 @@ ${galleryText}`;
     if (lightboxFeatureInitialized) return;
     lightboxFeatureInitialized = true;
     window.openLightbox = openLightbox;
-    window.closeLightbox = closeLightbox;
-    window.showLightboxImage = showLightboxImage;
-    window.showPreviousLightboxImage = showPreviousLightboxImage;
-    window.showNextLightboxImage = showNextLightboxImage;
+    window.closeLightbox = closeHistoryLightbox;
     window.addToInput = addToInput;
     Object.assign(getLegacyBridge().methods, {
       syncActiveLightboxUrls: syncActiveLightboxUrls3
@@ -50486,13 +55753,13 @@ ${galleryText}`;
     };
   }
   function inspectTaskParameters2(task) {
-    const { state: state32, methods } = getLegacyBridge();
-    state32.inspectedGenerationSnapshot = snapshotFromTask2(task);
+    const { state: state33, methods } = getLegacyBridge();
+    state33.inspectedGenerationSnapshot = snapshotFromTask2(task);
     methods.renderTaskParameterInspector?.();
   }
   function clearTaskParameterInspection3() {
-    const { state: state32, methods } = getLegacyBridge();
-    state32.inspectedGenerationSnapshot = null;
+    const { state: state33, methods } = getLegacyBridge();
+    state33.inspectedGenerationSnapshot = null;
     methods.renderTaskParameterInspector?.();
     renderCurrentModelParameters();
   }
@@ -50594,33 +55861,33 @@ ${galleryText}`;
     return taskCanonicalModelId(task) === selectedModelId ? "clear" : "inspect";
   }
   function reconcileTaskParameterInspection() {
-    const { state: state32, methods } = getLegacyBridge();
-    const task = state32.tasks.find((item) => String(item.task_id) === String(state32.selectedTaskId));
+    const { state: state33, methods } = getLegacyBridge();
+    const task = state33.tasks.find((item) => String(item.task_id) === String(state33.selectedTaskId));
     const action = taskParameterInspectionAction(
       task,
-      String(state32.selectedModelId || ""),
+      String(state33.selectedModelId || ""),
       Boolean(methods.isOutputSettingsLocked?.())
     );
     if (action === "inspect" && task) inspectTaskParameters2(task);
-    else if (action === "clear" && state32.inspectedGenerationSnapshot) clearTaskParameterInspection3();
+    else if (action === "clear" && state33.inspectedGenerationSnapshot) clearTaskParameterInspection3();
   }
   function renderTaskParameterInspector() {
-    const { state: state32, els: els43 } = getLegacyBridge();
-    const snapshot = state32.inspectedGenerationSnapshot;
-    const inspector = els43.taskParameterInspector;
-    const stage = els43.outputSettingsStage;
+    const { state: state33, els: els44 } = getLegacyBridge();
+    const snapshot = state33.inspectedGenerationSnapshot;
+    const inspector = els44.taskParameterInspector;
+    const stage = els44.outputSettingsStage;
     if (!inspector) return;
     inspector.classList.toggle("hidden", !snapshot);
     inspector.setAttribute("aria-hidden", snapshot ? "false" : "true");
     stage?.classList.toggle("is-inspecting-task", Boolean(snapshot));
     if (!snapshot) {
-      els43.taskParameterInspectorHeader?.replaceChildren();
-      els43.taskParameterInspectorGrid?.replaceChildren();
-      els43.taskParameterInspectorUnknown?.replaceChildren();
+      els44.taskParameterInspectorHeader?.replaceChildren();
+      els44.taskParameterInspectorGrid?.replaceChildren();
+      els44.taskParameterInspectorUnknown?.replaceChildren();
       return;
     }
     const title = document.createElement("strong");
-    title.textContent = taskParameterInspectorTitle(snapshot, state32.generationCatalog);
+    title.textContent = taskParameterInspectorTitle(snapshot, state33.generationCatalog);
     const badge = document.createElement("span");
     badge.className = "task-parameter-history-badge";
     badge.textContent = snapshot.legacy ? translate("modelParameters.legacyTask") : translate("modelParameters.historyConfiguration");
@@ -50629,26 +55896,26 @@ ${galleryText}`;
     adopt.className = "ghost-button text-sm task-parameter-adopt";
     adopt.textContent = translate("output.lock.adoptTask");
     adopt.addEventListener("click", () => {
-      const task = state32.tasks.find((item) => String(item.task_id) === String(state32.selectedTaskId));
+      const task = state33.tasks.find((item) => String(item.task_id) === String(state33.selectedTaskId));
       if (task) adoptTaskParameters(task);
     });
-    els43.taskParameterInspectorHeader?.replaceChildren(title, badge, adopt);
-    const model = state32.generationCatalog?.models.find((item) => item.id === snapshot.canonical_model_id);
+    els44.taskParameterInspectorHeader?.replaceChildren(title, badge, adopt);
+    const model = state33.generationCatalog?.models.find((item) => item.id === snapshot.canonical_model_id);
     const inspectorModel = taskParameterInspectorModel(snapshot, model);
     const inspectorParameters = taskParameterInspectorParameters(snapshot);
-    if (inspectorModel && els43.taskParameterInspectorGrid) {
+    if (inspectorModel && els44.taskParameterInspectorGrid) {
       renderParameterDefinitionsInto(
-        els43.taskParameterInspectorGrid,
+        els44.taskParameterInspectorGrid,
         inspectorModel,
         inspectorParameters,
         { readOnly: true, operation: "generate" }
       );
     } else {
-      els43.taskParameterInspectorGrid?.replaceChildren();
+      els44.taskParameterInspectorGrid?.replaceChildren();
     }
     const known = new Set(inspectorModel?.parameters.map((definition) => definition.id) || []);
     const unknown = Object.entries(inspectorParameters).filter(([id]) => !known.has(id));
-    const list = els43.taskParameterInspectorUnknown;
+    const list = els44.taskParameterInspectorUnknown;
     list?.replaceChildren();
     unknown.forEach(([id, value]) => {
       const term = document.createElement("dt");
@@ -50660,9 +55927,9 @@ ${galleryText}`;
     list?.classList.toggle("hidden", unknown.length === 0);
   }
   function adoptTaskParameters(task) {
-    const { state: state32, methods } = getLegacyBridge();
+    const { state: state33, methods } = getLegacyBridge();
     const snapshot = snapshotFromTask2(task);
-    const model = state32.generationCatalog?.models.find((item) => item.id === snapshot.canonical_model_id);
+    const model = state33.generationCatalog?.models.find((item) => item.id === snapshot.canonical_model_id);
     if (!model) {
       return {
         values: {},
@@ -50673,14 +55940,14 @@ ${galleryText}`;
     const report = migrateParameterValues(model, snapshot.requested_parameters);
     methods.setMode?.(task.mode === "edit" && model.operations.includes("edit") ? "edit" : "generate");
     selectConcreteModel(model.id);
-    state32.parameterDraftsByModel[model.id] = report.values;
-    state32.parameterDraftVersionsByModel[model.id] = model.version;
-    const providers = eligibleProviders(state32.generationCatalog, model.id, state32.mode);
+    state33.parameterDraftsByModel[model.id] = report.values;
+    state33.parameterDraftVersionsByModel[model.id] = model.version;
+    const providers = eligibleProviders(state33.generationCatalog, model.id, state33.mode);
     if (providers.some((provider) => provider.id === snapshot.provider_id)) {
       selectGenerationProvider(snapshot.provider_id);
     }
     methods.persistModelSelection?.();
-    state32.inspectedGenerationSnapshot = null;
+    state33.inspectedGenerationSnapshot = null;
     renderTaskParameterInspector();
     renderCurrentModelParameters();
     notifyParameterMigration(report);
@@ -50730,6 +55997,7 @@ ${galleryText}`;
   initEditRequestPreflightFeature();
   initTaskSubmitFeature();
   initTaskListControlsFeature();
+  initTaskCardSwipeFeature();
   initTaskListQueueControlsFeature();
   initTaskContextMenuFeature();
   initTaskNotificationsFeature();
