@@ -3,6 +3,7 @@ from __future__ import annotations
 from io import BytesIO
 from pathlib import Path
 import asyncio
+import os
 import tempfile
 import unittest
 from unittest.mock import patch
@@ -225,6 +226,48 @@ class WebUISecurityTests(unittest.TestCase):
         self.assertEqual(same_origin.status_code, 200)
         self.assertEqual(local_script.status_code, 200)
         self.assertEqual(localhost.status_code, 200)
+
+    def test_webui_allows_only_explicit_lan_hosts_and_client_cidrs(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp, patch.dict(
+            os.environ,
+            {
+                "ILAB_WEBUI_ALLOWED_HOSTS": "192.168.10.124",
+                "ILAB_WEBUI_ALLOWED_CLIENT_CIDRS": "192.168.10.0/24",
+            },
+        ):
+            app = self._create_app(Path(tmp))
+            allowed_client = TestClient(
+                app,
+                base_url="http://192.168.10.124:8787",
+                client=("192.168.10.42", 4242),
+            )
+            allowed = allowed_client.get("/api/health")
+            same_origin_write = allowed_client.patch(
+                "/api/settings",
+                headers={"Origin": "http://192.168.10.124:8787"},
+                json={},
+            )
+            cross_origin_write = allowed_client.patch(
+                "/api/settings",
+                headers={"Origin": "http://192.168.10.99:8787"},
+                json={},
+            )
+            wrong_host = TestClient(
+                app,
+                base_url="http://192.168.10.125:8787",
+                client=("192.168.10.42", 4242),
+            ).get("/api/health")
+            wrong_subnet = TestClient(
+                app,
+                base_url="http://192.168.10.124:8787",
+                client=("192.168.11.42", 4242),
+            ).get("/api/health")
+
+        self.assertEqual(allowed.status_code, 200)
+        self.assertEqual(same_origin_write.status_code, 200)
+        self.assertEqual(cross_origin_write.status_code, 403)
+        self.assertEqual(wrong_host.status_code, 400)
+        self.assertEqual(wrong_subnet.status_code, 403)
 
     def test_webui_adds_browser_security_headers_and_disables_api_docs(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

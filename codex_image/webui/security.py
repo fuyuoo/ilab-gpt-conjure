@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import ipaddress
+import os
 from typing import Final
 from urllib.parse import urlsplit
 
@@ -98,7 +99,67 @@ def _client_is_loopback(scope: Scope) -> bool:
     return hostname == "testclient" or _is_loopback_name(hostname)
 
 
-def _host_is_allowed(scope: Scope, host_header: str) -> bool:
+def _configured_allowed_hosts(raw: str) -> frozenset[str]:
+    allowed: set[str] = set()
+    for entry in str(raw or "").split(","):
+        entry = entry.strip()
+        if not entry:
+            continue
+        parsed = _parse_authority(entry)
+        if parsed is None or parsed[1] is not None:
+            raise ValueError("ILAB_WEBUI_ALLOWED_HOSTS must contain hostnames without ports")
+        allowed.add(parsed[0])
+    return frozenset(allowed)
+
+
+def _configured_allowed_client_cidrs(
+    raw: str,
+) -> tuple[ipaddress.IPv4Network | ipaddress.IPv6Network, ...]:
+    allowed: list[ipaddress.IPv4Network | ipaddress.IPv6Network] = []
+    for entry in str(raw or "").split(","):
+        entry = entry.strip()
+        if not entry:
+            continue
+        try:
+            network = ipaddress.ip_network(entry, strict=True)
+        except ValueError as exc:
+            raise ValueError(
+                "ILAB_WEBUI_ALLOWED_CLIENT_CIDRS must contain canonical CIDR networks"
+            ) from exc
+        allowed.append(network)
+    return tuple(allowed)
+
+
+def _client_is_allowed(
+    scope: Scope,
+    allowed_client_cidrs: tuple[
+        ipaddress.IPv4Network | ipaddress.IPv6Network,
+        ...,
+    ],
+) -> bool:
+    if _client_is_loopback(scope):
+        return True
+    client = scope.get("client")
+    if not client:
+        return False
+    try:
+        address = ipaddress.ip_address(str(client[0] or "").strip())
+    except ValueError:
+        return False
+    mapped = getattr(address, "ipv4_mapped", None)
+    candidates = (address, mapped) if mapped is not None else (address,)
+    return any(
+        candidate.version == network.version and candidate in network
+        for candidate in candidates
+        for network in allowed_client_cidrs
+    )
+
+
+def _host_is_allowed(
+    scope: Scope,
+    host_header: str,
+    allowed_hosts: frozenset[str],
+) -> bool:
     parsed = _parse_authority(host_header)
     if parsed is None:
         return False
@@ -107,7 +168,11 @@ def _host_is_allowed(scope: Scope, host_header: str) -> bool:
     client_hostname = str(client[0] or "").strip().lower() if client else ""
     if hostname == "testserver":
         return client_hostname == "testclient"
-    return _is_loopback_name(hostname)
+    if _is_loopback_name(hostname):
+        return not allowed_hosts or _client_is_loopback(scope)
+    if _client_is_loopback(scope):
+        return False
+    return hostname in allowed_hosts
 
 
 def _effective_port(scheme: str, explicit_port: int | None) -> int | None:
@@ -162,6 +227,17 @@ class LocalWebUISecurityMiddleware:
             raise ValueError("max_request_bytes must be positive")
         self.app = app
         self.max_request_bytes = int(max_request_bytes)
+        self.allowed_hosts = _configured_allowed_hosts(
+            os.environ.get("ILAB_WEBUI_ALLOWED_HOSTS", "")
+        )
+        self.allowed_client_cidrs = _configured_allowed_client_cidrs(
+            os.environ.get("ILAB_WEBUI_ALLOWED_CLIENT_CIDRS", "")
+        )
+        if bool(self.allowed_hosts) != bool(self.allowed_client_cidrs):
+            raise ValueError(
+                "ILAB_WEBUI_ALLOWED_HOSTS and ILAB_WEBUI_ALLOWED_CLIENT_CIDRS "
+                "must be configured together"
+            )
 
     async def __call__(
         self,
@@ -176,9 +252,9 @@ class LocalWebUISecurityMiddleware:
         headers = Headers(scope=scope)
         host_header = headers.get("host", "")
         rejection: tuple[int, str] | None = None
-        if not _host_is_allowed(scope, host_header):
+        if not _host_is_allowed(scope, host_header, self.allowed_hosts):
             rejection = (400, "Invalid local WebUI host")
-        elif not _client_is_loopback(scope):
+        elif not _client_is_allowed(scope, self.allowed_client_cidrs):
             rejection = (403, "WebUI access is limited to this device")
         elif scope["type"] == "http" and str(scope.get("method") or "").upper() not in _SAFE_METHODS:
             fetch_site = headers.get("sec-fetch-site", "").strip().lower()
