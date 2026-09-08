@@ -22,6 +22,7 @@ function legacyMethod(name: string, ...args: any[]): any {
 }
 
 const SUBMIT_TASK_TIMEOUT_MS = 45000;
+let taskSubmissionPending = false;
 
 interface ApplyTaskToFormOptions {
   preserveOutputSettings?: boolean;
@@ -264,6 +265,16 @@ function addQueuedTask(task: any) {
 }
 
 async function runTask(options: { responsesResizeConfirmationKey?: string } = {}) {
+  if (taskSubmissionPending) return;
+  taskSubmissionPending = true;
+  try {
+    await submitTask(options);
+  } finally {
+    taskSubmissionPending = false;
+  }
+}
+
+async function submitTask(options: { responsesResizeConfirmationKey?: string }) {
   syncPromptFromEditor();
   syncGalleryInputsFromPrompt();
   const prompt = getPromptText();
@@ -366,8 +377,6 @@ async function runTask(options: { responsesResizeConfirmationKey?: string } = {}
     els.requestJson.textContent = JSON.stringify(pendingTask.request, null, 2);
   }
   startRunFeedback(pendingTask, translate("taskStatus.submitting"));
-  els.runButton.disabled = true;
-
   const controller = new AbortController();
   const submitTimeoutId = window.setTimeout(() => controller.abort(), SUBMIT_TASK_TIMEOUT_MS);
   try {
@@ -399,7 +408,6 @@ async function runTask(options: { responsesResizeConfirmationKey?: string } = {}
   } finally {
     window.clearTimeout(submitTimeoutId);
     stopRunFeedback();
-    els.runButton.disabled = !state.authAvailable;
   }
 }
 
