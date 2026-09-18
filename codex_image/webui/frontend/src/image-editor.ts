@@ -786,6 +786,7 @@ function updateImageEditorControls() {
   if (els.imageEditorStrokeValue) els.imageEditorStrokeValue.textContent = `${imageEditorState.strokeWidth}px`;
   document.querySelectorAll<HTMLElement>("[data-image-editor-tool]").forEach((button) => {
     button.classList.toggle("active", button.dataset.imageEditorTool === imageEditorState.tool);
+    button.setAttribute("aria-pressed", String(button.dataset.imageEditorTool === imageEditorState.tool));
   });
   document.querySelectorAll<HTMLElement>("[data-image-editor-guidance]").forEach((button) => {
     const guidance = button.dataset.imageEditorGuidance;
@@ -1728,7 +1729,7 @@ async function saveImageEdit() {
     legacyMethod("syncPromptGalleryMentionsFromInputs");
     legacyMethod("renderImageStrip");
     legacyMethod("updateRequestPreview");
-    closeImageEditor();
+    closeImageEditor(true);
     legacyMethod("setStatus", translate("imageEditor.saved"), "ok");
   } catch (error: any) {
     setImageEditorStatus(error.message || translate("imageEditor.saveFailed"), "error");
@@ -1972,8 +1973,18 @@ async function openImageEditor(index: any) {
   }
 }
 
-function closeImageEditor() {
+function closeImageEditor(force = false) {
   const els = getEls();
+  if (force !== true && (imageEditorState.historyIndex > 0 || Boolean(imageEditorState.crop?.width && imageEditorState.crop?.height))) {
+    legacyMethod("openConfirmPopover", els.imageEditorClose, {
+      title: translate("ux.discardEdits"),
+      focusCancel: true,
+      message: translate("ux.imageUnsaved"),
+      confirmText: translate("ux.discardEdits"),
+      onConfirm: () => closeImageEditor(true),
+    });
+    return;
+  }
   nextImageEditorSession();
   els.imageEditorModal?.classList.add("hidden");
   destroyImageEditorKonva();
@@ -2114,8 +2125,8 @@ function bindImageEditorStageEvents(stage: any) {
 
 function bindImageEditorEvents() {
   const els = getEls();
-  els.imageEditorClose?.addEventListener("click", closeImageEditor);
-  els.imageEditorCancel?.addEventListener("click", closeImageEditor);
+  els.imageEditorClose?.addEventListener("click", () => closeImageEditor());
+  els.imageEditorCancel?.addEventListener("click", () => closeImageEditor());
   els.imageEditorModal?.addEventListener("click", (event: MouseEvent) => {
     if (event.target === els.imageEditorModal) closeImageEditor();
   });

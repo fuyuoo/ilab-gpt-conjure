@@ -143,7 +143,6 @@ function renderTasks(options: { preserveScroll?: boolean; appendGroupKey?: strin
   }
   state.tasksRenderKey = nextRenderKey;
   renderTaskHistoryAnchors(layout);
-  renderHistoryLibraryGroup(tasks, query);
   const activeHtml = activeGroup ? activeTaskGroupHtml(activeGroup) : "";
   renderActiveTaskGroup(activeHtml);
 
@@ -241,13 +240,6 @@ function restoreTaskListScrollAnchor(anchor: TaskListScrollAnchor | null): void 
     anchor.scroller.scrollTop = anchor.scrollTop;
   };
   restore();
-}
-
-function renderHistoryLibraryGroup(tasks: any[], query: string) {
-  if (!els.taskHistoryLibrarySlot) return;
-  const html = historyLibraryGroup(tasks, query);
-  els.taskHistoryLibrarySlot.innerHTML = html;
-  els.taskHistoryLibrarySlot.classList.toggle("hidden", !html);
 }
 
 function applyActiveTaskGroupHtml(activeHtml: string) {
@@ -645,6 +637,7 @@ function activeTaskSections(tasks: any[]) {
   const running: any[] = [];
   const waiting: any[] = [];
   tasks.forEach((task: any) => {
+    if (!isAlwaysVisibleTask(task)) return;
     const taskId = String(task?.task_id || "");
     const status = String(task?.status || "");
     if (queueIds.running.has(taskId) || status === "running" || status === "cancelling") {
@@ -928,6 +921,7 @@ function taskCardHtml(task: any) {
     <div class="task-card${active}${unreadClass}${statusClass}${batchClass}${batchSelectedClass}${queueClass}" role="button" tabindex="0" data-task-id="${taskId}" data-task-unread="${unread ? "true" : "false"}" data-task-swipe-enabled="${swipeEnabled ? "true" : "false"}" data-task-swipe-positive-action="${escapeHtml(swipeActions.positive || "")}" data-task-swipe-negative-action="${escapeHtml(swipeActions.negative || "")}" data-active-label="${activeLabel}" aria-keyshortcuts="${swipeKeyboardShortcuts}"${activeCurrent}${queueTaskData}>
       ${swipeActionsHtml}
       <div class="task-card-swipe-surface">
+        <button type="button" class="task-touch-menu ghost-button" data-task-context-trigger aria-label="${escapeHtml(translate("mobile.taskActions"))}" aria-haspopup="menu">···</button>
         ${batchSelect}
         ${image}
         <div class="task-info">
@@ -1039,20 +1033,10 @@ function taskHistoryGroups(tasks: any, query: any) {
   return groups;
 }
 
-function historyLibraryGroup(tasks: any[], query: string) {
-  if (query) return "";
-  if (!tasks.some((task: any) => !isAlwaysVisibleTask(task))) return "";
-  return `
-    <a class="task-history-library-card" href="/history">
-      <span>${escapeHtml(translate("footer.historyLibrary"))}</span>
-      <small>${escapeHtml(translate("historyLibrary.openFull"))}</small>
-    </a>
-  `;
-}
-
 function isAlwaysVisibleTask(task: any) {
   const status = String(task?.status || "");
-  return Boolean(task?.local_pending || ["submitting", "queued", "running"].includes(status));
+  if (["failed", "completed", "cancelled"].includes(status)) return false;
+  return Boolean(task?.local_pending || ["submitting", "queued", "running", "cancelling"].includes(status));
 }
 
 function queueTaskIdsBySection() {

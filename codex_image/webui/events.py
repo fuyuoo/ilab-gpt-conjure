@@ -101,6 +101,9 @@ def queue_snapshot(ctx: WebUIContext) -> dict[str, Any]:
     return {
         "waiting": waiting,
         "running": running,
+        # Preserve queue mutations even when a task starts and finishes between
+        # SSE checks and both visible snapshots are empty.
+        "updated_at": state["updated_at"] if ctx.queue_storage.path.exists() else "",
         "summary": {
             "waiting_count": len(waiting),
             "running_count": len(running),
@@ -134,10 +137,12 @@ def generation_page_payload(
 
 
 def event_snapshot(ctx: WebUIContext) -> dict[str, Any]:
-    queue = queue_snapshot(ctx)
-    page = generation_page_payload(ctx, queue)
+    with ctx.app.state.state_sync_clock.capture() as sync:
+        queue = queue_snapshot(ctx)
+        page = generation_page_payload(ctx, queue)
     return {
         "type": "snapshot",
+        "sync": sync,
         **page,
         "queue": queue,
         "gallery": [_gallery_item_response(item) for item in ctx.gallery_storage.list_items()],

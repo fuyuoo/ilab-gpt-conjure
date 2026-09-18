@@ -1,3 +1,4 @@
+import { isGptImageModel } from "./gpt-image-models";
 import { LOCALE_CHANGE_EVENT, translate } from "./i18n";
 import { aspectRatioSlots, createAspectRatioIcon } from "./aspect-ratio-controls";
 import { refreshSegmentedIndicators } from "./segmented-indicator";
@@ -655,7 +656,7 @@ export function legacyParameterVisibility(modelId: string, sizeMode: unknown): {
   legacyGpt: boolean;
   customSize: boolean;
 } {
-  const legacyGpt = modelId === "gpt-image-2";
+  const legacyGpt = isGptImageModel(modelId);
   return {
     legacyGpt,
     customSize: legacyGpt && sizeMode === "custom",
@@ -811,6 +812,7 @@ export function renderModelParameters(
   }
   els.settingsGrid?.classList.toggle("custom-size-mode", visibility.customSize);
   els.webSearchField?.classList.toggle("hidden", !legacyGpt);
+  els.transparentBackgroundField?.classList.toggle("hidden", !legacyGpt);
   root.classList.toggle("hidden", legacyGpt);
   if (legacyGpt) root.replaceChildren();
   else renderInteractiveParameterDefinitionsInto(

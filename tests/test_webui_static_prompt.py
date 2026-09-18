@@ -76,7 +76,7 @@ class WebUIStaticPromptTests(WebUIStaticTestCase):
         self.assertIn("promptForEditingGuidanceSubmission(", script)
         self.assertIn('translate("imageEditor.promptHint")', script)
         self.assertIn("params.prompt_fidelity = currentPromptFidelity()", script)
-        self.assertIn('state.selectedModelId === "gpt-image-2"', script)
+        self.assertIn('isGptImageModel(state.selectedModelId)', script)
         self.assertIn('form.append("prompt_fidelity", currentPromptFidelity())', script)
 
     def test_prompt_fidelity_help_explains_each_transport_without_adding_a_layout_row(self) -> None:
@@ -516,7 +516,10 @@ class WebUIStaticPromptTests(WebUIStaticTestCase):
         self.assertIn('applyPromptTemplate(template, "replace")', source)
         self.assertIn("syncPromptFromEditor();", source)
         self.assertIn('fetch(`${PROMPT_TEMPLATES_ENDPOINT}/${encodeURIComponent(template.id)}/use`', source)
-        self.assertIn("navigator.clipboard.writeText", source)
+        self.assertIn("await copyTextToClipboard(template.content)", source)
+        clipboard = Path("codex_image/webui/frontend/src/clipboard-text.ts").read_text(encoding="utf-8")
+        self.assertIn("navigator.clipboard.writeText", clipboard)
+        self.assertIn('document.execCommand?.("copy")', clipboard)
         self.assertIn("thumbnail_url", source)
         self.assertIn('translate("templates.back")', source)
         self.assertIn('translate("action.delete")', source)
@@ -1230,21 +1233,21 @@ console.log(cases.map((color) => readableTextColor(color)).join("\\n"));
         self.assertIn('id="mainModelToggle"', html)
         self.assertIn('id="mainModelOptions"', html)
         self.assertIn('role="listbox"', html)
-        self.assertIn('/static/app.js?v=runtime-788', html)
-        self.assertIn('/static/styles.css?v=runtime-789', html)
+        self.assertIn('/static/app.js?v=runtime-827', html)
+        self.assertIn('/static/styles.css?v=runtime-821', html)
         self.assertIn("mainModel: document.querySelector", script)
         self.assertIn("mainModelCombobox: document.querySelector", script)
         self.assertIn("mainModelToggle: document.querySelector", script)
         self.assertIn("mainModelOptions: document.querySelector", script)
         self.assertIn("mainModelShowAllOptions: false", script)
         self.assertIn('"gpt-6-astra",', script)
-        self.assertLess(script.index('"gpt-6-astra"'), script.index('"gpt-5.6-sol"'))
+        self.assertLess(script.index('"gpt-6-astra",'), script.index('"gpt-5.6-sol",'))
         self.assertIn('"gpt-5.6-sol",', script)
         self.assertIn('"gpt-5.6-terra",', script)
         self.assertIn('"gpt-5.6-luna",', script)
-        self.assertLess(script.index('"gpt-5.6-sol"'), script.index('"gpt-5.6-terra"'))
-        self.assertLess(script.index('"gpt-5.6-terra"'), script.index('"gpt-5.6-luna"'))
-        self.assertLess(script.index('"gpt-5.6-luna"'), script.index('"gpt-5.5"'))
+        self.assertLess(script.index('"gpt-5.6-sol",'), script.index('"gpt-5.6-terra",'))
+        self.assertLess(script.index('"gpt-5.6-terra",'), script.index('"gpt-5.6-luna",'))
+        self.assertLess(script.index('"gpt-5.6-luna",'), script.index('"gpt-5.5",'))
         self.assertIn('const RETIRED_MAIN_MODEL_OPTIONS = new Set(["gpt-5.3-codex-spark"]);', script)
         self.assertIn("function mainModelOptionsForQuery", script)
         self.assertIn("function openMainModelCombobox", script)
@@ -1257,7 +1260,7 @@ console.log(cases.map((color) => readableTextColor(color)).join("\\n"));
         self.assertIn('localStorage.getItem(MAIN_MODEL_STORAGE_KEY)', script)
         self.assertIn('localStorage.setItem(MAIN_MODEL_STORAGE_KEY', script)
         self.assertIn("params.main_model = currentMainModel()", script)
-        self.assertIn('state.selectedModelId === "gpt-image-2"', script)
+        self.assertIn('isGptImageModel(state.selectedModelId)', script)
         self.assertIn('form.append("main_model", currentMainModel())', script)
         self.assertIn('params.main_model || request.main_model || (usesResponses ? request.model : "")', script)
         self.assertRegex(styles, r"\.model-combobox\s*\{[^}]*position:\s*relative")
@@ -1314,7 +1317,7 @@ console.log(cases.map((color) => readableTextColor(color)).join("\\n"));
         script = Path("codex_image/webui/frontend/src/main-model-combobox.ts").read_text(encoding="utf-8")
         harness = "\n".join(
             [
-                'const DEFAULT_MAIN_MODEL = "gpt-5.4-mini";',
+                re.search(r'export (const DEFAULT_MAIN_MODEL = [^;]+;)', script).group(1),
                 'const MAIN_MODEL_STORAGE_KEY = "codex-image-main-model";',
                 'const RETIRED_MAIN_MODEL_OPTIONS = new Set(["gpt-5.3-codex-spark"]);',
                 """
@@ -1339,6 +1342,16 @@ console.log(cases.map((color) => readableTextColor(color)).join("\\n"));
                 if (renderCount !== 1) {
                   throw new Error(`expected options render once, got ${renderCount}`);
                 }
+                delete storedValues[MAIN_MODEL_STORAGE_KEY];
+                restoreMainModel();
+                if (els.mainModel.value !== "gpt-5.6-luna") {
+                  throw new Error("new users must default to Luna");
+                }
+                for (const model of ["gpt-5.4-mini", "provider-custom-model"]) {
+                  storedValues[MAIN_MODEL_STORAGE_KEY] = model;
+                  restoreMainModel();
+                  if (els.mainModel.value !== model) throw new Error("saved model must survive");
+                }
                 storedValues[MAIN_MODEL_STORAGE_KEY] = "gpt-6-astra";
                 restoreMainModel();
                 if (els.mainModel.value !== "gpt-6-astra") {
@@ -1357,6 +1370,7 @@ console.log(cases.map((color) => readableTextColor(color)).join("\\n"));
         styles = Path("codex_image/webui/static/styles.css").read_text(encoding="utf-8")
 
         self.assertIn('id="mainModelField"', html)
+        self.assertRegex(html, r'<input\s+id="mainModel"[^>]*aria-labelledby="mainModelLabel"')
         self.assertIn('id="promptFidelityField"', html)
         self.assertIn('id="apiDirectSettingsNotice"', html)
         self.assertIn('id="modeSpecificSettings"', html)
@@ -1364,14 +1378,13 @@ console.log(cases.map((color) => readableTextColor(color)).join("\\n"));
         self.assertIn('class="mode-settings-slot full-width"', html)
         self.assertIn('class="mode-specific-settings mode-transition"', html)
         self.assertIn('class="model-tool-row"', html)
-        self.assertIn('class="field api-direct-settings-notice mode-transition mode-collapsed hidden"', html)
+        self.assertIn('class="api-direct-settings-notice mode-transition mode-collapsed hidden"', html)
         self.assertRegex(
             html,
             r'id="modeSpecificSettings"[\s\S]*id="mainModelField"[\s\S]*id="apiDirectSettingsNotice"[\s\S]*id="promptFidelityField"',
         )
-        self.assertIn("使用 API 图像生成模型", html)
+        self.assertIn("直接使用所选图像模型生成", html)
         self.assertIn("API 设置", html)
-        self.assertIn("不参与本次请求", html)
         self.assertNotIn("原始/保真/创意可用，保真规则随 prompt 发送", html)
         self.assertNotIn("<span>提示词模式</span>\n                      <strong>原始/保真/创意可用", html)
         self.assertIn("modeSettingsSlot: document.querySelector(\"#modeSettingsSlot\")", script)
@@ -1397,7 +1410,7 @@ console.log(cases.map((color) => readableTextColor(color)).join("\\n"));
             r"async function applyAuthSource\(source[^)]*\)[^{]*\{[\s\S]*state\.pendingAuthSource = source;[\s\S]*applyAuthSourceSelection\(source\);[\s\S]*const response = await fetch",
         )
         self.assertIn("function resolveModeSettingsVisibility", script)
-        self.assertIn('if (modelId !== "gpt-image-2")', script)
+        self.assertIn('if (!isGptImageModel(modelId))', script)
         self.assertIn("setModeSpecificElementVisibility(els.modeSettingsSlot, showModeSettings);", script)
         self.assertIn("setModeSpecificElementVisibility(els.mainModelField, visibility.showMainModel);", script)
         self.assertIn("setModeSpecificElementVisibility(els.apiDirectSettingsNotice, visibility.showApiDirectNotice);", script)
@@ -1408,23 +1421,21 @@ console.log(cases.map((color) => readableTextColor(color)).join("\\n"));
         self.assertNotIn('els.apiDirectSettingsNotice?.classList.toggle("hidden", !isDirectApi)', script)
         self.assertNotIn('if (isDirectApiMode()) return "off";', script)
         self.assertNotIn("if (isDirectApiMode()) return buildPromptForModel();", script)
-        self.assertIn('return !state.generationCatalog || state.selectedModelId === "gpt-image-2";', script)
+        self.assertIn('return !state.generationCatalog || isGptImageModel(state.selectedModelId);', script)
         self.assertIn('const value = els.promptFidelity?.value || "off";', script)
         self.assertIn("updateModeSpecificSettings();", script)
-        self.assertRegex(styles, r"\.api-direct-settings-notice\s*\{[^}]*min-height:\s*60px")
-        self.assertRegex(styles, r"\.api-direct-settings-control\s*\{[^}]*height:\s*36px")
-        self.assertRegex(styles, r"\.api-direct-settings-control\s*\{[^}]*grid-template-columns:\s*minmax\(0,\s*1fr\) max-content")
-        self.assertRegex(styles, r"\.api-direct-settings-header\s*\{[^}]*grid-template-columns:\s*max-content minmax\(0,\s*1fr\)")
-        self.assertRegex(styles, r"\.api-direct-settings-button\s*\{[^}]*min-height:\s*28px")
+        self.assertRegex(styles, r"\.api-direct-settings-notice\s*\{[^}]*min-height:\s*36px")
         self.assertNotIn(".api-direct-settings-grid", styles)
+        self.assertNotIn('id="apiDirectSettingsButton"', html)
+        self.assertIn('id="generationProviderSettingsButton"', html)
         self.assertRegex(styles, r"\.mode-settings-slot\s*\{[^}]*display:\s*grid")
-        self.assertRegex(styles, r"\.mode-settings-slot\s*\{[^}]*--mode-settings-stable-height:\s*144px")
-        self.assertRegex(styles, r"\.mode-settings-slot\s*\{[^}]*min-height:\s*var\(--mode-settings-stable-height\)")
+        self.assertNotIn("--mode-settings-stable-height", styles)
         self.assertNotRegex(styles, r"\.mode-settings-slot\s*\{[^}]*transition:\s*height")
         self.assertNotRegex(styles, r"\.mode-settings-slot\s*>\s*\.mode-transition\s*\{[^}]*grid-area:\s*1\s*/\s*1")
         self.assertRegex(styles, r"\.mode-specific-settings\s*\{[^}]*display:\s*grid")
-        self.assertRegex(styles, r"\.model-tool-row\s*\{[^}]*display:\s*grid")
-        self.assertRegex(styles, r"\.model-tool-row\s*\{[^}]*grid-template-columns:\s*minmax\(0,\s*1fr\)\s+minmax\(104px,\s*max-content\)")
+        self.assertRegex(styles, r"\.model-tool-row\s*\{[^}]*display:\s*flex")
+        self.assertRegex(styles, r"\.model-tool-row\s*\{[^}]*flex-wrap:\s*wrap")
+        self.assertRegex(styles, r"\.model-tool-row\s*\{[^}]*justify-content:\s*space-between")
         self.assertRegex(styles, r"\.mode-transition\s*\{[^}]*transition:")
         self.assertNotIn("max-height: var(--mode-transition-max-height", styles)
     def test_javascript_uses_official_gpt_image_2_size_presets(self) -> None:

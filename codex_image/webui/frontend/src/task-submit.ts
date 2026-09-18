@@ -1,3 +1,6 @@
+import { composerFingerprint, markComposerSubmitted } from "./composer-draft";
+import { isGptImageModel } from "./gpt-image-models";
+import { setBackgroundControl } from "./background-controls";
 import { getLegacyBridge } from "./state";
 import { currentLocaleCode, formatTranslation, translate } from "./i18n";
 import { editMaskForSubmission, imageFilesForSubmission } from "./edit-region-materialization";
@@ -158,6 +161,7 @@ export function applyTaskOutputParams(task: any): void {
   }
   if (output.quality && els.quality) els.quality.value = output.quality;
   if (output.output_format && els.outputFormat) els.outputFormat.value = output.output_format;
+  setBackgroundControl(output.background);
   if (output.moderation && els.moderation) els.moderation.value = output.moderation;
   if (output.output_compression !== null && output.output_compression !== undefined && els.compression) {
     els.compression.value = output.output_compression;
@@ -203,6 +207,7 @@ function buildPreviewRequest() {
     requested_backend: requestedBackend,
     canonical_model_id: selection.canonicalModelId,
     provider_id: selection.providerId,
+    binding_id: selection.bindingId,
     parameters,
     ui_language: currentLocaleCode(),
     prompt: getPromptText(),
@@ -213,7 +218,15 @@ function buildPreviewRequest() {
     reference_files: fileUploads.map((source: any) => source.filename),
     reference_file_ids: storedFiles.map((source: any) => source.id),
   };
-  const usesGptPromptProcessing = !state.generationCatalog || state.selectedModelId === "gpt-image-2";
+  const usesGptPromptProcessing = !state.generationCatalog || isGptImageModel(state.selectedModelId);
+  if (parameters["gpt.background"] === "transparent") {
+    const binding = selectedProviderBinding();
+    payload.output_requirements = {
+      background: "transparent",
+      method: binding?.transparency_mode || "native",
+      instruction: binding?.transparency_instruction || undefined,
+    };
+  }
   if (usesGptPromptProcessing) payload.prompt_fidelity = currentPromptFidelity();
   if (isApi) {
     payload.api_provider_id = state.selectedProviderId;
@@ -277,6 +290,7 @@ async function runTask(options: { responsesResizeConfirmationKey?: string } = {}
 async function submitTask(options: { responsesResizeConfirmationKey?: string }) {
   syncPromptFromEditor();
   syncGalleryInputsFromPrompt();
+  const submittedComposer = composerFingerprint();
   const prompt = getPromptText();
   const promptForModel = currentPromptForModel();
   const uploads = uploadInputs();
@@ -297,6 +311,11 @@ async function submitTask(options: { responsesResizeConfirmationKey?: string }) 
     return;
   }
   if (!prompt) {
+    const fieldError = document.getElementById("promptValidationError");
+    if (fieldError) { fieldError.hidden = false; fieldError.textContent = translate("status.emptyPrompt"); }
+    els.promptEditor?.setAttribute("aria-invalid", "true");
+    els.promptEditor?.setAttribute("aria-describedby", "promptValidationError");
+    els.promptEditor?.focus();
     setStatus(translate("status.emptyPrompt"), "error");
     return;
   }
@@ -312,6 +331,7 @@ async function submitTask(options: { responsesResizeConfirmationKey?: string }) 
   if (customSizeError) {
     updateCustomSize();
     updatePixelPreview("custom");
+    els.customWidth?.focus();
     setStatus(customSizeError, "error");
     return;
   }
@@ -350,7 +370,7 @@ async function submitTask(options: { responsesResizeConfirmationKey?: string }) 
   form.append("prompt_for_model", promptForModel);
   form.append("ui_language", currentLocaleCode());
   appendCanonicalGenerationFields(form, currentGenerationSelection());
-  if (!state.generationCatalog || state.selectedModelId === "gpt-image-2") {
+  if (!state.generationCatalog || isGptImageModel(state.selectedModelId)) {
     form.append("main_model", currentMainModel());
     form.append("prompt_fidelity", currentPromptFidelity());
   }
@@ -390,6 +410,7 @@ async function submitTask(options: { responsesResizeConfirmationKey?: string }) 
       throw new Error(responseErrorMessage(data.detail));
     }
     addQueuedTask(data.task);
+    markComposerSubmitted(submittedComposer);
     if (els.requestJson) {
       els.requestJson.textContent = JSON.stringify(data.request || {}, null, 2);
     }
@@ -397,7 +418,8 @@ async function submitTask(options: { responsesResizeConfirmationKey?: string }) 
     setStatus(translate("taskSubmit.queued"), "ok");
     await window.refreshQueue?.();
     await refreshRecentAssets();
-    renderPreview(data.task);
+    renderPreview();
+    getLegacyBridge().methods.showMobilePreview?.();
   } catch (error) {
     stopRunFeedback();
     const message = error instanceof DOMException && error.name === "AbortError"

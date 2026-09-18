@@ -49,13 +49,13 @@ class WebUILauncherTests(unittest.TestCase):
                 app_module.read_text(encoding="utf-8"),
             )
 
-    def test_launcher_starts_shutdown_aware_server_on_local_network(self) -> None:
+    def test_launcher_uses_shutdown_aware_server_listener_settings(self) -> None:
         launcher = Path("Start WebUI.command")
         text = launcher.read_text(encoding="utf-8")
 
         self.assertIn("-m codex_image.webui.server", text)
         self.assertIn("codex_image.webui.app:app", text)
-        self.assertIn("--host 0.0.0.0", text)
+        self.assertNotIn("--host", text)
         self.assertIn("--port 8787", text)
         self.assertIn("--no-access-log", text)
 
@@ -379,20 +379,3 @@ class WebUILauncherTests(unittest.TestCase):
     @unittest.skipUnless(os.name == "posix", "SIGINT integration test requires POSIX")
     def test_server_coalesces_repeated_sigint_without_traceback(self) -> None:
         self._assert_clean_sigint_shutdown(repeated=True)
-
-    def test_launchers_listen_on_all_network_interfaces(self) -> None:
-        launchers = (
-            Path("Start WebUI.command"),
-            Path("Start WebUI Debug.command"),
-            Path("Start WebUI.bat"),
-            Path("packaging/macos/Start WebUI Portable.command"),
-            Path("packaging/windows/Start WebUI Portable.bat"),
-        )
-
-        for launcher in launchers:
-            with self.subTest(launcher=launcher):
-                text = launcher.read_text(encoding="utf-8")
-
-                self.assertIn("codex_image.webui.server", text)
-                self.assertIn("--host 0.0.0.0", text)
-                self.assertNotIn("--host 127.0.0.1", text)

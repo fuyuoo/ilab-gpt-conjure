@@ -19,7 +19,6 @@ pub mod standard_update;
 pub const APP_NAME: &str = "iLab CONJURE";
 pub const LEGACY_DATA_DIR_NAME: &str = "iLab GPT CONJURE";
 pub const DEFAULT_PORT: u16 = 8787;
-pub const UVICORN_HOST: &str = "0.0.0.0";
 pub const WEBUI_URL: &str = "http://127.0.0.1:8787/";
 pub const HEALTH_PATH: &str = "/api/health";
 pub const LOG_FILE_NAME: &str = "webui-server.log";
@@ -1806,8 +1805,6 @@ impl WebUiService {
                 "-m",
                 "codex_image.webui.server",
                 self.config.uvicorn_app(),
-                "--host",
-                UVICORN_HOST,
                 "--port",
                 &self.config.port.to_string(),
                 "--no-access-log",

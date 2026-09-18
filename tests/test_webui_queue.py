@@ -650,7 +650,16 @@ class WebUIQueueTests(unittest.TestCase):
                 },
             )
             client = TestClient(app)
+            before = client.get("/api/queue").json()["sync"]
             response = client.get("/api/events")
+            after = client.get("/api/tasks/sidebar").json()["sync"]
+            streamed = json.loads(response.text.removeprefix("data: "))["sync"]
+            self.assertEqual(before["instance"], streamed["instance"])
+            self.assertEqual(streamed["instance"], after["instance"])
+            self.assertLess(before["revision"], streamed["revision"])
+            self.assertLess(streamed["revision"], after["revision"])
+            self.assertEqual(response.headers["cache-control"], "no-cache")
+            self.assertEqual(response.headers["x-accel-buffering"], "no")
 
         self.assertEqual(response.status_code, 200)
         self.assertIn("text/event-stream", response.headers["content-type"])
@@ -708,6 +717,62 @@ class WebUIQueueTests(unittest.TestCase):
         self.assertEqual(payload["tasks"][0]["task_id"], task_id)
         self.assertEqual(payload["tasks"][0]["status"], "failed")
         self.assertIn("timed out", payload["tasks"][0]["error"])
+
+    def test_event_stream_reports_tasks_finished_between_checks(self) -> None:
+        from types import SimpleNamespace
+        from codex_image.webui.app import create_app
+
+        async def exercise(app):
+            checks = 0
+
+            async def wait(_delay):
+                nonlocal checks
+                checks += 1
+                return checks > 1
+
+            async def is_disconnected():
+                return False
+
+            app.state.webui_shutdown_coordinator = SimpleNamespace(wait=wait)
+            endpoint = next(route.endpoint for route in app.routes if route.path == "/api/events")
+            request = SimpleNamespace(app=app, is_disconnected=is_disconnected)
+            response = await endpoint(request, stream=True)
+            stream = response.body_iterator
+            initial = json.loads((await anext(stream)).removeprefix("data: "))
+            self.assertEqual(initial["queue"]["waiting"], [])
+            self.assertEqual(initial["queue"]["running"], [])
+            app.state.queue_storage.enqueue("fast-task")
+            app.state.queue_storage.remove_waiting("fast-task")
+            try:
+                event = json.loads((await anext(stream)).removeprefix("data: "))
+            except StopAsyncIteration:
+                self.fail("the stream lost an entire task lifecycle between checks")
+            self.assertEqual(event["type"], "queue")
+            self.assertEqual(event["queue"]["waiting"], [])
+            self.assertEqual(event["queue"]["running"], [])
+            await stream.aclose()
+
+        with tempfile.TemporaryDirectory() as tmp:
+            app = create_app(output_root=Path(tmp), auth_checker=lambda: True, auto_start_queue=False)
+            asyncio.run(exercise(app))
+
+    def test_empty_queue_snapshots_stay_stable_until_a_mutation(self) -> None:
+        from codex_image.webui.app import create_app
+        from codex_image.webui.events import event_key, queue_snapshot
+        from codex_image.webui.queue_storage import QueueStorage
+
+        with tempfile.TemporaryDirectory() as tmp:
+            app = create_app(output_root=Path(tmp), auth_checker=lambda: True, auto_start_queue=False)
+            for storage in (app.state.queue_storage, QueueStorage(Path(tmp) / "missing-queue.json")):
+                with self.subTest(storage=type(storage).__name__):
+                    app.state.ctx.queue_storage = storage
+                    first = queue_snapshot(app.state.ctx)
+                    self.assertEqual(event_key(first), event_key(queue_snapshot(app.state.ctx)))
+                    storage.enqueue("fast-task")
+                    storage.remove_waiting("fast-task")
+                    changed = queue_snapshot(app.state.ctx)
+                    self.assertNotEqual(event_key(first), event_key(changed))
+                    self.assertEqual(event_key(changed), event_key(queue_snapshot(app.state.ctx)))
 
     def test_create_app_uses_sqlite_queue_storage_by_default(self) -> None:
         from codex_image.webui.app import create_app
@@ -1571,6 +1636,7 @@ raise SystemExit(1)
             with patch.dict(os.environ, {"CODEX_IMAGE_REQUEST_TIMEOUT_SECONDS": "1"}):
                 app = create_app(
                     output_root=root,
+                    network_egress_settings_path=root / "network-settings.json",
                     client_factory=lambda: fake,
                     auth_checker=lambda: True,
                     batch_delay_seconds=0,

@@ -1,3 +1,4 @@
+import { isGptImageModel } from "./gpt-image-models";
 import { LOCALE_CHANGE_EVENT, translate } from "./i18n";
 import { getLegacyBridge } from "./state";
 
@@ -14,6 +15,7 @@ export interface OutputSettingsSnapshot {
   n: number;
   prompt_fidelity: "original" | "strict" | "off";
   quality: string;
+  background: string;
   output_format: string;
   output_compression: number | null;
   moderation: string;
@@ -112,6 +114,7 @@ export function normalizeOutputSettingsSnapshot(params: any): OutputSettingsSnap
     n: Math.max(1, Math.min(4, Math.round(Number(parameters["output.count"] ?? params?.n) || 1))),
     prompt_fidelity: fidelity === "original" || fidelity === "off" ? fidelity : "strict",
     quality: String(parameters["gpt.quality"] || params?.quality || "auto"),
+    background: String(parameters["gpt.background"] || params?.background || "auto"),
     output_format: String(parameters["output.format"] || params?.output_format || "png").toLowerCase(),
     output_compression: compression === null || compression === undefined ? null : Number(compression),
     moderation: String(parameters["gpt.moderation"] || params?.moderation || "auto"),
@@ -163,7 +166,7 @@ export function buildOutputSettingsSummaryModel(
   snapshot: OutputSettingsSnapshot,
   context: OutputSettingsSummaryContext,
 ): OutputSettingsSummaryModel {
-  const gptImage = snapshot.canonical_model_id === "gpt-image-2";
+  const gptImage = isGptImageModel(snapshot.canonical_model_id);
   const geminiImage = snapshot.canonical_model_id.startsWith("nano-banana");
   const details: SummaryDetail[] = [];
   if (gptImage) {
@@ -195,7 +198,7 @@ export function buildOutputSettingsSummaryModel(
         kind: "format" as const,
         label: translate("output.lock.output"),
         value: snapshot.output_format.toUpperCase(),
-        meta: translate("output.lock.fileFormat"),
+        meta: translate(snapshot.background === "transparent" ? "output.transparentBackground" : "output.lock.fileFormat"),
       }
     : {
         kind: "resolution" as const,
@@ -274,7 +277,7 @@ function snapshotFromCurrentSelection(): OutputSettingsSnapshot {
   const bridge = getLegacyBridge();
   const legacy = legacyMethod("currentTaskParams");
   const model = bridge.state.generationCatalog?.models.find((item: any) => item.id === bridge.state.selectedModelId);
-    const parameters = model && model.id !== "gpt-image-2" && typeof bridge.methods.activeParameterValues === "function"
+    const parameters = model && !isGptImageModel(model.id) && typeof bridge.methods.activeParameterValues === "function"
     ? bridge.methods.activeParameterValues(model)
     : typeof bridge.methods.currentCanonicalParameters === "function"
       ? bridge.methods.currentCanonicalParameters()

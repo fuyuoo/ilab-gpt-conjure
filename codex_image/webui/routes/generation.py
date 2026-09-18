@@ -8,6 +8,7 @@ from typing import Any
 from fastapi import FastAPI, File, Form, HTTPException, Request, UploadFile
 
 from codex_image.client import DEFAULT_MAIN_MODEL, image_model_supports_input_fidelity
+from codex_image.generation.catalog import GPT_IMAGE_MODEL_IDS
 from codex_image.generation.snapshot import generation_snapshot
 from codex_image.generation.service import redacted_protocol_request
 from codex_image.client_types import ResponsesInputFile
@@ -173,7 +174,10 @@ def _api_binding_appends_aspect_ratio_prompt(
 
 def _generation_request_error(exc: ValueError) -> HTTPException:
     message = str(exc)
-    if "does not support model" in message:
+    if message == "transparent_background_requires_png_or_webp":
+        code = message
+        safe_message = "Transparent backgrounds require PNG or WebP output."
+    elif "does not support model" in message:
         code = "provider_model_binding_missing"
         safe_message = "The selected provider does not support this model."
     elif "does not support operation" in message:
@@ -294,7 +298,7 @@ def _prepare_generation_submission(
 ) -> PreparedGenerationSubmission:
     h = ctx.route_helpers
     compression = _normalize_compression(output_format, output_compression)
-    uses_gpt_prompt_processing = canonical_model_id in {None, "gpt-image-2"}
+    uses_gpt_prompt_processing = (canonical_model_id is None or canonical_model_id in GPT_IMAGE_MODEL_IDS)
     effective_main_model = main_model if uses_gpt_prompt_processing else ""
     fidelity = _normalize_prompt_fidelity(prompt_fidelity) if uses_gpt_prompt_processing else "off"
     effective_size = size
@@ -430,7 +434,7 @@ def _prepare_generation_submission(
         request_kwargs["instructions"] = request_instructions
     if web_search_enabled:
         request_kwargs["web_search"] = True
-    if canonical_model_id is not None:
+    if canonical_model_id is not None or plan.command.parameters.get("gpt.background") == "transparent":
         protocol_preview = redacted_protocol_request(plan)
         request_payload = dict(protocol_preview.json_body or protocol_preview.form_fields)
     else:

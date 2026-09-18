@@ -1,3 +1,4 @@
+import { isGptImageModel } from "./gpt-image-models";
 import type { GenerationCatalog } from "./types";
 
 function record(value: unknown): Record<string, unknown> {
@@ -19,13 +20,18 @@ export function taskCanonicalModelId(task: unknown): string {
 
 export type TaskOutputSettingsView = "locked-summary" | "parameter-inspector" | "editor";
 
+export function modelsShareParameterEditor(leftModelId: string, rightModelId: string): boolean {
+  return leftModelId === rightModelId
+    || (isGptImageModel(leftModelId) && isGptImageModel(rightModelId));
+}
+
 export function taskOutputSettingsView(
   task: unknown,
   selectedModelId: string,
   outputSettingsLocked: boolean,
 ): TaskOutputSettingsView {
   if (outputSettingsLocked) return "locked-summary";
-  return taskCanonicalModelId(task) === selectedModelId ? "editor" : "parameter-inspector";
+  return modelsShareParameterEditor(taskCanonicalModelId(task), selectedModelId) ? "editor" : "parameter-inspector";
 }
 
 export function taskRequestedParameters(task: unknown): Record<string, unknown> {
@@ -84,7 +90,7 @@ export function taskModelFamilyId(
   const modelId = taskCanonicalModelId(task);
   const familyId = catalog?.models.find((model) => model.id === modelId)?.family_id;
   if (familyId === "gpt-image" || familyId === "gemini-image") return familyId;
-  if (modelId === "gpt-image-2") return "gpt-image";
+  if (isGptImageModel(modelId)) return "gpt-image";
   if (modelId.startsWith("nano-banana")) return "gemini-image";
   return "unknown";
 }
@@ -129,7 +135,7 @@ export function taskCanvasSummaryParts(task: unknown): string[] {
     ? `${size[0] / greatestCommonDivisor(size[0], size[1])}:${size[1] / greatestCommonDivisor(size[0], size[1])}`
     : "");
   const explicitResolution = String(parameters["canvas.resolution"] || params.resolution || "").trim();
-  const resolution = taskCanonicalModelId(task) === "gpt-image-2"
+  const resolution = isGptImageModel(taskCanonicalModelId(task))
     ? normalizedGptResolution(explicitResolution)
     : explicitResolution;
   const honestResolution = resolution && resolution.toLowerCase() !== "custom"

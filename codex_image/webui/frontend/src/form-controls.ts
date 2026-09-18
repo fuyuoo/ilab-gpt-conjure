@@ -1,4 +1,5 @@
 import { getLegacyBridge } from "./state";
+import { handleTransparentBackgroundChange, updateTransparencyControls } from "./background-controls";
 import {
   closeMainModelCombobox,
   currentMainModel,
@@ -61,6 +62,8 @@ function syncRunButtonLabel(): void {
 export function bindFormControlEvents(): void {
   if (formControlEventsBound) return;
   formControlEventsBound = true;
+  els.transparentBackground?.addEventListener("change", handleTransparentBackgroundChange);
+  document.addEventListener(LOCALE_CHANGE_EVENT, updateTransparencyControls);
 
   document.querySelectorAll("[data-mode]").forEach((button: any) => {
     button.addEventListener("click", () => setMode(button.dataset.mode));
@@ -119,12 +122,12 @@ export function bindFormControlEvents(): void {
   });
 
   [els.resolution, els.ratio, els.orientation].filter(Boolean).forEach((element: any) => {
-    element.addEventListener("input", () => {
-      updateSizeFromPreset();
+    element.addEventListener("input", (event: Event) => {
+      updateSizeFromPreset(event);
       saveCurrentModelParameterDraft();
     });
-    element.addEventListener("change", () => {
-      updateSizeFromPreset();
+    element.addEventListener("change", (event: Event) => {
+      updateSizeFromPreset(event);
       saveCurrentModelParameterDraft();
     });
   });

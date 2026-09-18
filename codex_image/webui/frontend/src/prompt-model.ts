@@ -1,3 +1,4 @@
+import { isGptImageModel } from "./gpt-image-models";
 import { getLegacyBridge } from "./state";
 import { formatTranslation, translate, translationsForKey } from "./i18n";
 import { promptForEditingGuidanceSubmission } from "./edit-region-materialization";
@@ -71,7 +72,7 @@ export function currentPromptFidelity(): string {
 
 export function supportsGptPromptProcessing(): boolean {
   const { state } = getLegacyBridge();
-  return !state.generationCatalog || state.selectedModelId === "gpt-image-2";
+  return !state.generationCatalog || isGptImageModel(state.selectedModelId);
 }
 
 export function initPromptModelFeature(): void {

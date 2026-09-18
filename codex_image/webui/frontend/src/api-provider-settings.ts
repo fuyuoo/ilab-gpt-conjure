@@ -37,6 +37,7 @@ import {
   normalizeProviderBindings,
   readProviderBindingCards,
   renderProviderBindingCards,
+  remoteModelAfterSelection,
   validateProviderBindingOverlaps,
 } from "./provider-model-bindings";
 import type { BindingProtocol } from "./provider-model-bindings";
@@ -314,7 +315,7 @@ function writeProviderForm(provider: any): void {
     provider.bindings || [],
     state.generationCatalog?.models || [],
     provider.id,
-    state.apiSettings.default_provider_by_model || {},
+    defaultsForProviderDraft(provider),
   );
   updateApiRequestEndpointPreview();
   resetApiAdvancedSettings();
@@ -322,6 +323,9 @@ function writeProviderForm(provider: any): void {
 
 function defaultsForProviderDraft(provider: any): Record<string, string> {
   const defaults = { ...(state.apiSettings.default_provider_by_model || {}) };
+  Object.keys(defaults).forEach((modelId) => {
+    if (defaults[modelId] === provider.id) delete defaults[modelId];
+  });
   (provider.default_model_ids || []).forEach((modelId: string) => { defaults[modelId] = provider.id; });
   return defaults;
 }
@@ -453,6 +457,14 @@ function applyApiProviderDraft(settings: any): any {
     if (normalized.default_provider_by_model[modelId] !== draft.id) continue;
     if (!(draft.bindings || []).some((binding: any) => binding.canonical_model_id === modelId)) {
       delete normalized.default_provider_by_model[modelId];
+    }
+  }
+  // Every configured model needs a default, including the model a binding left.
+  // Keep valid choices and prefer another supporter when this draft opted out.
+  const fallbackProviders = normalized.providers.filter((provider: any) => provider.id !== draft.id).concat(draft);
+  for (const provider of fallbackProviders) {
+    for (const binding of provider.bindings) {
+      normalized.default_provider_by_model[binding.canonical_model_id] ??= provider.id;
     }
   }
   state.apiProviderEditingId = null;
@@ -691,6 +703,10 @@ export function confirmDeleteApiProvider(anchor: any = els.deleteApiProviderButt
 }
 
 export function openApiSettingsModal(): void {
+  if (apiProviderEditorActive()) {
+    openSystemSettingsModal("api");
+    return;
+  }
   closePromptPopover();
   state.apiProviderEditingId = null;
   state.apiProviderDraft = null;
@@ -719,6 +735,8 @@ export function selectApiProvider(providerId: any, anchor?: HTMLElement | null):
   }
   if (state.apiProviderSortMode) return;
   const provider = providerById(id);
+  const providerChanged = provider.id !== activeApiProvider().id;
+  if (!providerChanged && provider.id === currentApiProviderId()) return;
   const continueSwitch = () => {
     state.apiSettings = normalizeApiSettings({
       ...state.apiSettings,
@@ -729,12 +747,8 @@ export function selectApiProvider(providerId: any, anchor?: HTMLElement | null):
     persistApiSettings();
     legacyMethod("selectGenerationProvider", provider.id);
     renderAuthSourceAfterProviderChange();
-    queueApiSettingsAutosave();
+    if (providerChanged) queueApiSettingsAutosave({ silent: true });
   };
-  if (provider.id === currentApiProviderId()) {
-    continueSwitch();
-    return;
-  }
   void anchor;
   continueSwitch();
 }
@@ -745,7 +759,11 @@ export function editApiProvider(): void {
   const provider = activeApiProvider();
   state.apiProviderEditingId = provider.id;
   state.apiProviderDraftIsNew = false;
-  state.apiProviderDraft = normalizeApiProvider({ ...provider }, 0);
+  state.apiProviderDraft = normalizeApiProvider({
+    ...provider,
+    default_model_ids: Object.keys(state.apiSettings.default_provider_by_model || {})
+      .filter((modelId) => state.apiSettings.default_provider_by_model[modelId] === provider.id),
+  }, 0);
   populateApiSettingsForm();
   setApiSettingsFeedback(translate("apiSettings.editDraftStatus"), "running");
   scrollApiProviderEditorIntoView();
@@ -858,6 +876,9 @@ export function addProviderBinding(): void {
     draft.id,
     defaultsForProviderDraft(draft),
   );
+  const added = [...(els.apiProviderBindings as HTMLElement).querySelectorAll<HTMLDetailsElement>("details[data-binding-id]")]
+    .find(card => card.dataset.bindingId === bindingId);
+  if (added) { added.open = true; added.querySelector<HTMLElement>("summary")?.focus(); }
   updateApiRequestEndpointPreview();
 }
 
@@ -921,7 +942,14 @@ export function handleProviderBindingEditorChange(event: Event): void {
     }
     const remoteInput = card.querySelector<HTMLInputElement>("[data-binding-remote-model]");
     const model = state.generationCatalog?.models.find((item: any) => item.id === modelId);
-    if (remoteInput && !remoteInput.value.trim()) remoteInput.value = model?.official_model_id || modelId;
+    const previousModelId = card.dataset.bindingPreviousModelId || card.dataset.bindingOriginalModelId || "";
+    const previousModel = state.generationCatalog?.models.find((item: any) => item.id === previousModelId);
+    if (remoteInput) remoteInput.value = remoteModelAfterSelection(
+      remoteInput.value,
+      previousModel?.official_model_id || previousModelId,
+      model?.official_model_id || modelId,
+    );
+    card.dataset.bindingPreviousModelId = modelId;
     const existingOperations = String(card.dataset.bindingModelOperations || "")
       .split(",")
       .filter(Boolean);
@@ -1055,15 +1083,15 @@ export function selectCodexMode(mode: any, anchor?: HTMLElement | null): boolean
   return true;
 }
 
-export function queueApiSettingsAutosave(): void {
+export function queueApiSettingsAutosave(options: { silent?: boolean } = {}): void {
   if (apiProviderEditorActive()) return;
   if (apiSettingsAutosaveTimerId !== null) {
     window.clearTimeout(apiSettingsAutosaveTimerId);
   }
-  setApiSettingsFeedback(translate("apiSettings.autoSaving"), "running");
+  setApiSettingsFeedback(options.silent ? "" : translate("apiSettings.autoSaving"), options.silent ? "" : "running");
   apiSettingsAutosaveTimerId = window.setTimeout(() => {
     apiSettingsAutosaveTimerId = null;
-    void saveApiSettings({ auto: true });
+    void saveApiSettings({ auto: true, silent: options.silent });
   }, 260);
 }
 
@@ -1142,6 +1170,7 @@ function setSaveButtonText(stateName: "saving" | "saved" | "failed" | "default")
 
 export async function saveApiSettings(options: any = {}): Promise<boolean> {
   const autoSave = Boolean(options.auto);
+  const silent = autoSave && Boolean(options.silent);
   if (autoSave && apiProviderEditorActive()) return true;
   const sortFocusId = autoSave ? focusedApiProviderSortId() : "";
   if (state.apiSettingsSaveTimerId) {
@@ -1150,7 +1179,7 @@ export async function saveApiSettings(options: any = {}): Promise<boolean> {
   }
   const previousSettings = normalizeApiSettings(state.apiSettings);
   const previousEditingId = state.apiProviderEditingId;
-  const previousDraft = state.apiProviderDraft ? structuredClone(state.apiProviderDraft) : null;
+  const previousDraft = apiProviderEditorActive() ? draftProviderFromForm() : null;
   const previousDraftIsNew = state.apiProviderDraftIsNew;
   let confirmedOriginChange: ProviderOriginChangeConfirmation | null = null;
   if (!autoSave && apiProviderEditorActive()) {
@@ -1238,7 +1267,7 @@ export async function saveApiSettings(options: any = {}): Promise<boolean> {
     setSaveButtonsDisabled(true);
     setSaveButtonText("saving");
   }
-  setApiSettingsFeedback(translate(autoSave ? "apiSettings.autoSaving" : "apiSettings.savingStatus"), "running");
+  if (!silent) setApiSettingsFeedback(translate(autoSave ? "apiSettings.autoSaving" : "apiSettings.savingStatus"), "running");
   try {
     const response = await fetch("/api/api-settings", {
       method: "PATCH",
@@ -1261,7 +1290,7 @@ export async function saveApiSettings(options: any = {}): Promise<boolean> {
     persistApiSettings();
     populateApiSettingsForm();
     focusApiProviderSortHandle(sortFocusId);
-    setApiSettingsFeedback(autoSave ? translate("apiSettings.autoSaved") : formatTranslation("apiSettings.savedSummary", {
+    if (!silent) setApiSettingsFeedback(autoSave ? translate("apiSettings.autoSaved") : formatTranslation("apiSettings.savedSummary", {
       codex: codexModeLabel(currentCodexMode()),
       provider: activeApiProvider().name,
       mode: apiModeLabel(currentApiMode()),
@@ -1273,7 +1302,7 @@ export async function saveApiSettings(options: any = {}): Promise<boolean> {
       if (!autoSave) setSaveButtonText("default");
       state.apiSettingsSaveTimerId = null;
     }, 1600);
-    setStatus(translate("apiSettings.savedStatus"), "ok");
+    if (!silent) setStatus(translate("apiSettings.savedStatus"), "ok");
     await refreshGenerationCatalog();
     await refreshHealth();
     updateRequestPreview();

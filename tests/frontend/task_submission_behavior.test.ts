@@ -92,7 +92,7 @@ const fakeWindow: any = {
 };
 
 (globalThis as any).window = fakeWindow;
-(globalThis as any).document = { hidden: false };
+(globalThis as any).document = { hidden: false, getElementById: () => null };
 
 const runtimeFeedback = await import("../../codex_image/webui/frontend/src/runtime-feedback");
 const { initTaskSubmitFeature } = await import("../../codex_image/webui/frontend/src/task-submit");
@@ -298,4 +298,120 @@ test("resize confirmation can resume submission after releasing the lock", async
     pendingFetch.resolveAll();
     await submission;
   }
+});
+
+test("editing during an in-flight submission remains an unsaved draft", async () => {
+  resetSubmissionState();
+  const { composerHasChanges, markComposerBaseline } = await import("../../codex_image/webui/frontend/src/composer-draft");
+  let prompt = "saved baseline";
+  methods.getPromptText = () => prompt;
+  methods.currentPromptForModel = () => prompt;
+  markComposerBaseline();
+  prompt = "first request";
+  const pendingFetch = deferredFetch();
+  const submission = methods.runTask();
+  await Promise.resolve();
+  prompt = "second draft typed while waiting";
+  pendingFetch.resolveAll();
+  await submission;
+  assert.equal(composerHasChanges(), true);
+});
+
+test("submission preview uses the latest task after queue and asset requests", async () => {
+  resetSubmissionState();
+  const statuses: string[] = [];
+  methods.renderPreview = (task?: any) => statuses.push((task || state.tasks[0]).status);
+  fakeWindow.refreshQueue = async () => {
+    state.tasks = [{ ...state.tasks[0], status: "failed", error: "HTTP 404 model_not_found" }];
+  };
+  const pendingFetch = deferredFetch();
+  const submission = methods.runTask();
+  await Promise.resolve();
+  pendingFetch.resolveAll();
+  await submission;
+  fakeWindow.refreshQueue = async () => {};
+  assert.equal(statuses.at(-1), "failed");
+});
+
+test("a late submit or viewed response cannot replace newer task progress", () => {
+  resetSubmissionState();
+  const completed: any = { task_id: "race", status: "failed", updated_at: "2026-09-14T06:15:42Z" };
+  const queued: any = { task_id: "race", status: "queued", updated_at: "2026-09-14T06:15:40Z" };
+  state.tasks = [{ task_id: "pending", status: "submitting", local_pending: true }, completed];
+  Object.assign(methods, { renderTasks() {}, renderPreview() {}, revokeTaskUploadPreviewUrls() {} });
+  runtimeFeedback.replacePendingTask("pending", queued);
+  assert.equal(state.tasks.length, 1);
+  assert.equal(state.tasks[0].status, "failed");
+  assert.equal(runtimeFeedback.updateTaskInState(queued), false);
+  assert.equal(state.tasks[0].status, "failed");
+  const retry: any = { ...queued, updated_at: "2026-09-14T06:16:00Z" };
+  assert.equal(runtimeFeedback.updateTaskInState(retry), true);
+  assert.equal(state.tasks[0].status, "queued", "a new retry must still be accepted");
+});
+
+test("accepted submissions retire matching drafts but protect unrelated and in-flight edits", async () => {
+  resetSubmissionState();
+  let prompt = "";
+  let beforeUnload: (event: any) => void = () => {};
+  const restoreButton = { hidden: true, textContent: "", addEventListener() {} };
+  (globalThis as any).document.getElementById = () => restoreButton;
+  fakeWindow.addEventListener = (name: string, handler: any) => {
+    if (name === "beforeunload") beforeUnload = handler;
+  };
+  methods.getPromptText = () => prompt;
+  methods.setPromptText = (value: string) => { prompt = value; };
+  methods.currentPromptForModel = () => prompt;
+  methods.setMode = (value: string) => { state.mode = value; };
+  const drafts = await import("../../codex_image/webui/frontend/src/composer-draft");
+  drafts.initComposerDraft();
+  const unloadBlocked = () => {
+    let blocked = false;
+    beforeUnload({ preventDefault: () => { blocked = true; } });
+    return blocked;
+  };
+
+  prompt = "submitted draft";
+  drafts.preserveComposerDraft();
+  assert.equal(restoreButton.hidden, false);
+  let pendingFetch = deferredFetch();
+  let submission = methods.runTask();
+  await Promise.resolve();
+  pendingFetch.resolveAll();
+  await submission;
+  assert.equal(restoreButton.hidden, true);
+  assert.equal(unloadBlocked(), false);
+
+  prompt = "unrelated draft";
+  drafts.preserveComposerDraft();
+  prompt = "second submission";
+  drafts.preserveComposerDraft();
+  pendingFetch = deferredFetch();
+  submission = methods.runTask();
+  await Promise.resolve();
+  prompt = "new edits while submitting";
+  pendingFetch.resolveAll();
+  await submission;
+  assert.equal(drafts.composerHasChanges(), true);
+  assert.equal(unloadBlocked(), true);
+  drafts.restoreComposerDraft();
+  assert.equal(prompt, "unrelated draft", "only the accepted submission was retired");
+});
+
+
+test("edits during preflight remain an unsaved draft after submission", async () => {
+  resetSubmissionState();
+  const drafts = await import("../../codex_image/webui/frontend/src/composer-draft");
+  let prompt = "original request";
+  methods.getPromptText = () => prompt;
+  methods.currentPromptForModel = () => prompt;
+  let resolvePreflight!: (value: any) => void;
+  methods.updateEditRequestPreflight = () => new Promise((resolve) => { resolvePreflight = resolve; });
+  const pendingFetch = deferredFetch();
+  const submission = methods.runTask();
+  prompt = "new draft during preflight";
+  resolvePreflight({ issues: [] });
+  await Promise.resolve();
+  pendingFetch.resolveAll();
+  await submission;
+  assert.equal(drafts.composerHasChanges(), true);
 });
